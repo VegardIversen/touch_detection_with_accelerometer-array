@@ -51,6 +51,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+touch/
 
 #files
 *.jpg
@@ -58,3 +59,6 @@ venv.bak/
 *.png
 *.gif
 *.csv
+
+#folders
+

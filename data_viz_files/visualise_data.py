@@ -1,7 +1,10 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.fftpack
+from pathlib import Path
+import scipy
+
+
 
 # Config 
 SAMPLE_RATE = 80000     # Hz
@@ -12,7 +15,11 @@ CROP_AFTER = 120000     # samples
 
 DATA_DELIMITER = ","
 
-df = pd.read_csv('..\\first_test_touch_passive_setup2\\touch_test_passive_setup2_place_C1_center_v1.csv', delimiter=DATA_DELIMITER)
+data_folder = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
+test_file = data_folder + '\\first_test_touch_passive_setup2\\touch_test_passive_setup2_place_A1_center_v1.csv'
+print(test_file)
+df = pd.read_csv(test_file, delimiter=DATA_DELIMITER, names=['channel 1', 'channel 2', 'channel 3'] )
+print(df.head())
 
 
 def crop_data(data, crop_mode):
@@ -28,24 +35,31 @@ def crop_data(data, crop_mode):
 
     return data_cropped
 
+def plot_fft(df, Fs=80000, window=False):
+    
+    if window:
+        hamming_window = scipy.signal.hamming(len(df))
+        data_fft = scipy.fft.fft(df.values * hamming_window)
+    else:
+        data_fft = scipy.fft.fft(df.values)
+    
+    fftfreq = scipy.fft.fftfreq(len(data_fft),1/Fs)
+    N = int(len(data_fft)/2)
+    #fft_x_axis = np.linspace(0,(Fs/ 2),N)
 
-df = crop_data(df, CROP_MODE)
-df.plot()
+    plt.title('fft of signal')
+    plt.xlabel("Frequency [hz]")
+    plt.ylabel("Amplitude")
+    plt.plot(fftfreq[fftfreq > 0], 20*np.log10(np.abs(data_fft[fftfreq > 0])))
+    plt.show()
 
-plt.legend(["Channel 1", "Channel 2", "Channel 3"])
-plt.grid()
-plt.show()
+
+def plot_fft_with_hamming(df, Fs=80000):    
+    plot_fft(df, window=True)
 
 
-# Number of sample points
-N = len(df)
-# sample spacing
-T = 1.0 / 800.0
-x = np.linspace(0.0, N*T, N)
-yf = scipy.fftpack.fft(df.iloc[:,0])
-xf = np.linspace(0.0, 1.0/(2.0*T), N//2)
 
-fig, ax = plt.subplots()
-ax.plot(xf, 2.0/N * np.abs(yf[:N//2]))
-plt.grid()
-plt.show()
+
+if __name__=='__main__':
+    plot_fft(df['channel 3'])
+    plot_fft_with_hamming(df['channel 3'])
