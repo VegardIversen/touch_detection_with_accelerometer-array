@@ -52,3 +52,9 @@ ENV/
 env.bak/
 venv.bak/
 
+#files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.csv
