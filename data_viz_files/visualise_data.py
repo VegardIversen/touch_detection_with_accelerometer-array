@@ -6,20 +6,6 @@ import scipy
 
 
 
-# Config 
-SAMPLE_RATE = 80000     # Hz
-
-CROP_MODE = "Auto"      # Auto or Manual
-CROP_BEFORE = 80000     # samples
-CROP_AFTER = 120000     # samples
-
-DATA_DELIMITER = ","
-
-data_folder = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
-test_file = data_folder + '\\first_test_touch_passive_setup2\\touch_test_passive_setup2_place_A1_center_v1.csv'
-print(test_file)
-df = pd.read_csv(test_file, delimiter=DATA_DELIMITER, names=['channel 1', 'channel 2', 'channel 3'] )
-print(df.head())
 
 
 def crop_data(data, crop_mode):
@@ -57,9 +43,34 @@ def plot_fft(df, Fs=80000, window=False):
 def plot_fft_with_hamming(df, Fs=80000):    
     plot_fft(df, window=True)
 
+def plot_data(df, crop=True):
+    if crop:
+        df = crop_data(df, CROP_MODE)
+
+    df.plot()
+    plt.legend(df.columns)
+    plt.grid()
+    plt.show()
 
 
 
 if __name__=='__main__':
-    plot_fft(df['channel 3'])
-    plot_fft_with_hamming(df['channel 3'])
+
+    # Config 
+    SAMPLE_RATE = 80000     # Hz
+
+    CROP_MODE = "Auto"      # Auto or Manual
+    CROP_BEFORE = 80000     # samples
+    CROP_AFTER = 120000     # samples
+
+    DATA_DELIMITER = ","
+
+    data_folder = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
+    test_file = data_folder + '\\first_test_touch_passive_setup2\\touch_test_passive_setup2_place_A2_center_v1.csv'
+    print(test_file)
+    df = pd.read_csv(test_file, delimiter=DATA_DELIMITER, names=['channel 1', 'channel 2', 'channel 3'] )
+    print(df.head())
+    #print(df.columns)
+    plot_data(df)
+    #plot_fft(df['channel 3'])
+    #plot_fft_with_hamming(df['channel 3'])
