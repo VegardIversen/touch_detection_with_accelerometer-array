@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 import scipy
-
+from scipy import signal
 
 
 
@@ -57,7 +57,7 @@ def plot_data(df, crop=True):
 if __name__=='__main__':
 
     # Config 
-    SAMPLE_RATE = 80000     # Hz
+    SAMPLE_RATE = 150000     # Hz
 
     CROP_MODE = "Auto"      # Auto or Manual
     CROP_BEFORE = 80000     # samples
@@ -66,11 +66,21 @@ if __name__=='__main__':
     DATA_DELIMITER = ","
 
     data_folder = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
-    test_file = data_folder + '\\first_test_touch_passive_setup2\\touch_test_passive_setup2_place_A2_center_v1.csv'
+    test_file = data_folder + '\\first_test_touch_passive_setup2\\touch_test_passive_setup2_place_C2_center_v1.csv'
     print(test_file)
     df = pd.read_csv(test_file, delimiter=DATA_DELIMITER, names=['channel 1', 'channel 2', 'channel 3'] )
-    print(df.head())
+    #print(df.head())
+    print(len(df['channel 1'].values))
+    print(int(50e-3*SAMPLE_RATE))
+    df_crop = crop_data(df, CROP_MODE)
+    x = df['channel 1'].values
+    f, t , sxx = scipy.signal.spectrogram(x, fs=SAMPLE_RATE, nperseg=int(50e-3*SAMPLE_RATE), noverlap=50e-3*SAMPLE_RATE//2, nfft=10*1024)
+    #plt.plot(sxx[10,:])
+    plt.pcolormesh(t, f, sxx)
+    plt.ylabel('Frequency [Hz]')
+    plt.xlabel('Time [sec]')
+    plt.show()
     #print(df.columns)
-    plot_data(df)
-    #plot_fft(df['channel 3'])
+    #plot_data(df)
+    #plot_fft(df)
     #plot_fft_with_hamming(df['channel 3'])
