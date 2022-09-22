@@ -42,7 +42,7 @@ if __name__ == '__main__':
     DATA_DELIMITER = ","
 
     data_folder = f'{pl.Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
-    test_file = data_folder + '\\first_test_touch_passive_setup2\\touch_test_passive_setup2_place_A1_center_v1.csv'
+    test_file = data_folder + '\\first_test_touch_passive_setup2\\touch_test_passive_setup2_place_A1_center_v2.csv'
     print(test_file)
     df = pd.read_csv(test_file, delimiter=DATA_DELIMITER, names=['channel 1', 'channel 2', 'channel 3'] )
     print(df.head())
