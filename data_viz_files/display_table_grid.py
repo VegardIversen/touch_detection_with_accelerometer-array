@@ -1,3 +1,4 @@
+from __future__ import division
 import sys
 import pygame
 from pygame.locals import KEYDOWN, K_q
@@ -7,10 +8,16 @@ SCREENSIZE = WIDTH, HEIGHT = 325, 325
 BLACK = (0, 0, 0)
 GREY = (160, 160, 160)
 WHITE = (255, 255, 255)
+BLUE = (135, 206, 250)
 CONTAINER_WIDTH_HEIGHT = 300  # Not to be confused with SCREENSIZE
 CONT_X, CONT_Y = 10, 10  # TOP LEFT OF CONTAINER
+DIVISIONS = 3
 # VARS:
 _VARS = {'surf': False}
+
+
+# config
+cell_to_color = {"x": 0, "y": 0}
 
 
 def main():
@@ -19,20 +26,20 @@ def main():
     while True:
         checkEvents()
         _VARS['surf'].fill(WHITE)
-        drawGrid(divisions = 3)
-        drawRect(divisions = 3, row = 2, col = 2)
+        drawGrid(divisions=DIVISIONS)
+        drawRect(divisions=DIVISIONS, row=cell_to_color["x"], col=cell_to_color["y"])
         pygame.display.update()
 
 
-# Draw filled rectangle at coordinates x,y 18,18 with size width,height
-# 60,60
 def drawRect(divisions, row, col):
+    # Draw a box in the cell specified by row and col
+    PADDING_MARKER = 0.2
     pygame.draw.rect(
-     _VARS['surf'], BLACK,
-     (CONT_X + row * CONTAINER_WIDTH_HEIGHT / divisions + (0.1 * CONTAINER_WIDTH_HEIGHT / divisions),
-     CONT_Y + col * CONTAINER_WIDTH_HEIGHT / divisions + (0.1 * CONTAINER_WIDTH_HEIGHT / divisions), 
-     0.8 * CONTAINER_WIDTH_HEIGHT / divisions,
-     0.8 * CONTAINER_WIDTH_HEIGHT / divisions)
+     _VARS['surf'], BLUE,
+     (CONT_X + row * CONTAINER_WIDTH_HEIGHT / divisions + (PADDING_MARKER * CONTAINER_WIDTH_HEIGHT / divisions),
+     CONT_Y + col * CONTAINER_WIDTH_HEIGHT / divisions + (PADDING_MARKER * CONTAINER_WIDTH_HEIGHT / divisions), 
+     (1-2*PADDING_MARKER) * CONTAINER_WIDTH_HEIGHT / divisions,
+     (1-2*PADDING_MARKER) * CONTAINER_WIDTH_HEIGHT / divisions)
     )
 
 
