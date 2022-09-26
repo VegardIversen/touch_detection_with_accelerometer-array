@@ -33,20 +33,22 @@ def main():
 
 def drawRect(divisions, row, col):
     # Draw a box in the cell specified by row and col
-    PADDING_MARKER = 0.2
+    MARKER_PADDING = 0.2
     pygame.draw.rect(
-     _VARS['surf'], BLUE,
-     (CONT_X + row * CONTAINER_WIDTH_HEIGHT / divisions + (PADDING_MARKER * CONTAINER_WIDTH_HEIGHT / divisions),
-     CONT_Y + col * CONTAINER_WIDTH_HEIGHT / divisions + (PADDING_MARKER * CONTAINER_WIDTH_HEIGHT / divisions), 
-     (1-2*PADDING_MARKER) * CONTAINER_WIDTH_HEIGHT / divisions,
-     (1-2*PADDING_MARKER) * CONTAINER_WIDTH_HEIGHT / divisions)
+        _VARS['surf'], BLUE,
+        (CONT_X + row * CONTAINER_WIDTH_HEIGHT / divisions 
+            + (MARKER_PADDING * CONTAINER_WIDTH_HEIGHT / divisions),
+        CONT_Y + col * CONTAINER_WIDTH_HEIGHT / divisions 
+            + (MARKER_PADDING * CONTAINER_WIDTH_HEIGHT / divisions),
+        (1 - 2 * MARKER_PADDING) * CONTAINER_WIDTH_HEIGHT / divisions,
+        (1 - 2 * MARKER_PADDING) * CONTAINER_WIDTH_HEIGHT / divisions)
     )
 
 
 def drawGrid(divisions):
 
     # Get cell size, just one since its a square grid.
-    cellSize = CONTAINER_WIDTH_HEIGHT/divisions
+    cellSize = CONTAINER_WIDTH_HEIGHT / divisions
 
     # DRAW Grid Border:
     # TOP lEFT TO RIGHT
