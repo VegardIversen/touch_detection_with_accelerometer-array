@@ -20,15 +20,17 @@ CELL_CORDS = {
                     'C1': [0,0], 'C2': [1,0], 'C3':[2,0]}
 
 # config
-cell_to_color = {"x": 0, "y": 2}
+cell_to_color = {"x": 1, "y": 1}
+confidence_score = 1
+cell_color = (255 * (1 - confidence_score), 255, 255 * (1 - confidence_score))
 
 
 def draw(cell):
     pygame.init()
-    _VARS['surf'] = pygame.display.set_mode(SCREENSIZE)
+    _VARS['surf'] = pygame.display.set_mode(size=SCREENSIZE)
     while True:
         checkEvents()
-        _VARS['surf'].fill(WHITE)
+        _VARS['surf'].fill(color=WHITE)
         drawGrid(divisions=DIVISIONS)
         drawRect(divisions=DIVISIONS, row=CELL_CORDS[cell][0], col=CELL_CORDS[cell][1])
         pygame.display.update()
@@ -38,10 +40,10 @@ def drawRect(divisions, row, col):
     # Draw a box in the cell specified by row and col
     MARKER_PADDING = 0.2
     pygame.draw.rect(
-        _VARS['surf'], BLUE,
+        _VARS['surf'], cell_color,
         (CONT_X + row * CONTAINER_WIDTH_HEIGHT / divisions 
             + (MARKER_PADDING * CONTAINER_WIDTH_HEIGHT / divisions),
-        CONT_Y + col * CONTAINER_WIDTH_HEIGHT / divisions 
+        CONT_Y + col * CONTAINER_WIDTH_HEIGHT / divisions
             + (MARKER_PADDING * CONTAINER_WIDTH_HEIGHT / divisions),
         (1 - 2 * MARKER_PADDING) * CONTAINER_WIDTH_HEIGHT / divisions,
         (1 - 2 * MARKER_PADDING) * CONTAINER_WIDTH_HEIGHT / divisions)
