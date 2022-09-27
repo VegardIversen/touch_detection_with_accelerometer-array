@@ -1,8 +1,7 @@
-from __future__ import division
 import sys
 import pygame
 from pygame.locals import KEYDOWN, K_q
-
+from pathlib import Path
 # CONSTANTS:
 SCREENSIZE = WIDTH, HEIGHT = 325, 325
 BLACK = (0, 0, 0)
@@ -15,19 +14,23 @@ DIVISIONS = 3
 # VARS:
 _VARS = {'surf': False}
 
+CELL_CORDS = {
+                    'A1': [0,2], 'A2': [1,2], 'A3': [2,2],
+                    'B1': [0,1], 'B2': [1,1], 'B3': [2,1],
+                    'C1': [0,0], 'C2': [1,0], 'C3':[2,0]}
 
 # config
-cell_to_color = {"x": 0, "y": 0}
+cell_to_color = {"x": 0, "y": 2}
 
 
-def main():
+def draw(cell):
     pygame.init()
     _VARS['surf'] = pygame.display.set_mode(SCREENSIZE)
     while True:
         checkEvents()
         _VARS['surf'].fill(WHITE)
         drawGrid(divisions=DIVISIONS)
-        drawRect(divisions=DIVISIONS, row=cell_to_color["x"], col=cell_to_color["y"])
+        drawRect(divisions=DIVISIONS, row=CELL_CORDS[cell][0], col=CELL_CORDS[cell][1])
         pygame.display.update()
 
 
@@ -96,4 +99,5 @@ def checkEvents():
 
 
 if __name__ == '__main__':
-    main()
+    cell = 'A1'
+    draw(cell)

@@ -6,7 +6,7 @@ d = 0.08
 #are t_max=0.08s/300m/s = 0.00026666666 s, with sampling freq on 150k Hz
 #this will approximate 40 samples
 def correlate(x, y, upSamplingFactor=1, maxdelay=40, mod='valid'): #maxdelay calculated from formula, bc of distance between mics
-    corr = np.abs(np.correlate(x,y[(maxdelay*upSamplingFactor):-(maxdelay*upSamplingFactor)], mode=mod))
+    corr = np.abs(np.correlate(x,y.iloc[(maxdelay*upSamplingFactor):-(maxdelay*upSamplingFactor)], mode=mod))
     return corr
 #calculate degree from lags array, from the lag of the different mics
 def degree(lags, positive_angl=True):
@@ -33,7 +33,7 @@ def degree_calc(df,upsampl=1):
 
 if __name__ == '__main__':
     # Config 
-    SAMPLE_RATE = 80000     # Hz
+    SAMPLE_RATE = 150000     # Hz
 
     CROP_MODE = "Auto"      # Auto or Manual
     CROP_BEFORE = 80000     # samples
