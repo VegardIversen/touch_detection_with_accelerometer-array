@@ -2,6 +2,7 @@ import sys
 import pygame
 from pygame.locals import KEYDOWN, K_q
 from pathlib import Path
+
 # CONSTANTS:
 SCREENSIZE = WIDTH, HEIGHT = 325, 325
 BLACK = (0, 0, 0)
