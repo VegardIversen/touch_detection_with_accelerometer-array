@@ -4,6 +4,8 @@ from pathlib import Path
 import pickle
 from data_processing.direction_of_arrival import degree_calc
 from statistics import mode
+
+
 SAMPLE_RATE = 150000     # Hz
 
 CROP_MODE = "Auto"      # Auto or Manual
@@ -17,15 +19,16 @@ DIRECTION_CHECK = {
                     'B1': range(180,250), 'B2': range(250,290), 'B3': range(290,350),
                     'C1': range(100,190), 'C2': range(250,290), 'C3': range(350,60)}
 GRID_NAMES = ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3']
+
 DATA_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
 OUTPUT_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\base_data\\grid_data.pkl'
 Path(OUTPUT_FOLDER).parent.mkdir(parents=True, exist_ok=True)
 print(OUTPUT_FOLDER)
 
+
 def CropData(data):
     data_cropped = data.loc[(data>0.0006).any(axis=1)]
     return data_cropped
-
 
 
 def SetBase(path='\\first_test_touch_passive_setup2\\', crop=True, cell_names=GRID_NAMES, output_folder=OUTPUT_FOLDER):
@@ -42,11 +45,13 @@ def SetBase(path='\\first_test_touch_passive_setup2\\', crop=True, cell_names=GR
     with open(output_folder, 'wb') as f:
         pickle.dump(base_dict, f) 
 
+
 def LoadData(file_loc=OUTPUT_FOLDER):
     with open(file_loc, 'rb') as f:
         loaded_dict = pd.read_pickle(f)
     return loaded_dict
         
+
 def FindTouchPosition(file, crop=True, direction_check=True, channel='channel 1'):
     test_data = pd.read_csv(file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
     highest_score = 0
@@ -73,8 +78,8 @@ def FindTouchPosition(file, crop=True, direction_check=True, channel='channel 1'
             print(mode(grid_cells))
             return mode(grid_cells)
 
-    return grid_cell
 
+    return grid_cell
 
 
 if __name__ == '__main__':
