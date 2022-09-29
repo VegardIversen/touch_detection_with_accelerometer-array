@@ -34,11 +34,14 @@ def plot_fft(df, Fs=150000, window=False):
     fftfreq = scipy.fft.fftfreq(len(data_fft),1/Fs)
     N = int(len(data_fft)/2)
     #fft_x_axis = np.linspace(0,(Fs/ 2),N)
-
+    plt.grid()
     plt.title('fft of signal')
     plt.xlabel("Frequency [hz]")
     plt.ylabel("Amplitude")
-    plt.plot(fftfreq, 20*np.log10(np.abs(data_fft)))
+    plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
+    # Only plot positive frequencies
+    ax = plt.subplot(1, 1, 1)
+    ax.set_xlim(0)
     plt.show()
 
 
