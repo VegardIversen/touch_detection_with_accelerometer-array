@@ -1,10 +1,8 @@
 import numpy as np
 import pandas as pd
 from pathlib import Path
-import os
-import matplotlib.pyplot as plt
 import pickle
-from direction_of_arrival import degree_calc
+from data_processing.direction_of_arrival import degree_calc
 from statistics import mode
 SAMPLE_RATE = 150000     # Hz
 
@@ -46,7 +44,7 @@ def SetBase(path='\\first_test_touch_passive_setup2\\', crop=True, cell_names=GR
 
 def LoadData(file_loc=OUTPUT_FOLDER):
     with open(file_loc, 'rb') as f:
-        loaded_dict = pickle.load(f)
+        loaded_dict = pd.read_pickle(f)
     return loaded_dict
         
 def FindTouchPosition(file, crop=True, direction_check=True, channel='channel 1'):
@@ -80,6 +78,8 @@ def FindTouchPosition(file, crop=True, direction_check=True, channel='channel 1'
 
 
 if __name__ == '__main__':
-    
+    dict = LoadData()
+    #print(pd.__version__)
+    print(type(dict))
     print(FindTouchPosition(DATA_FOLDER + '\\fingernail_test_passive_setup2\\touch_test_fingernail_passive_setup2_place_A1_center_v2.csv'))
 
