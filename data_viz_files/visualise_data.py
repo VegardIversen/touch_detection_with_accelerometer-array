@@ -43,6 +43,10 @@ def plot_fft(df, Fs=150000, window=False):
     ax.set_xlim(0)
     plt.show()
 
+def filter_signal(sig, FS=150000, Q=10):
+    b_notch, a_notch = signal.iirnotch(50/(0.5*FS), Q)
+    signal_filt = signal.filtfilt(b_notch, a_notch, sig)
+    return signal_filt
 
 def plot_fft_with_hamming(df, Fs=80000):    
     plot_fft(df, window=True)
@@ -64,7 +68,7 @@ def plot_spectogram(df, include_signal=True, sample_rate=150000, channel='channe
         time_axis = np.linspace(0, len(df) // sample_rate, num=len(df))
         ax1 = plt.subplot(211)
         plt.grid()
-        plt.plot(time_axis, df[channel])
+        plt.plot(time_axis, filter_signal(df[channel]))
         plt.xlabel('Time')
         plt.ylabel('Amplitude')
         ax2 = plt.subplot(212, sharex=ax1)
