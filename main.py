@@ -6,5 +6,5 @@ from pathlib import Path
 DATA_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
 
 if __name__=='__main__':
-    cell = FindTouchPosition(DATA_FOLDER+ '\\fingernail_test_passive_setup2\\touch_test_fingernail_passive_setup2_place_A1_center_v2.csv')
+    cell = FindTouchPosition(DATA_FOLDER+ '\\first_test_touch_active_setup2_5\\touch_test_active_setup2_5_A1_v2.csv')
     draw(cell)

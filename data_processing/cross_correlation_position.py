@@ -3,9 +3,10 @@ import pandas as pd
 from pathlib import Path
 import pickle
 from data_processing.direction_of_arrival import degree_calc
+#from direction_of_arrival import degree_calc
 from statistics import mode
-
-
+import matplotlib.pyplot as plt
+import scipy
 SAMPLE_RATE = 150000     # Hz
 
 CROP_MODE = "Auto"      # Auto or Manual
@@ -21,7 +22,7 @@ DIRECTION_CHECK = {
 GRID_NAMES = ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3']
 
 DATA_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
-OUTPUT_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\base_data\\grid_data.pkl'
+OUTPUT_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\base_data\\grid_data_active_touch.pkl'
 Path(OUTPUT_FOLDER).parent.mkdir(parents=True, exist_ok=True)
 print(OUTPUT_FOLDER)
 
@@ -31,7 +32,7 @@ def CropData(data):
     return data_cropped
 
 
-def SetBase(path='\\first_test_touch_passive_setup2\\', crop=True, cell_names=GRID_NAMES, output_folder=OUTPUT_FOLDER):
+def SetBase(path='\\first_test_touch_active_setup2_5\\', crop=True, cell_names=GRID_NAMES, output_folder=OUTPUT_FOLDER):
     file_path = Path(DATA_FOLDER + path).rglob('*_v1.csv')
     base_dict = {}
     for idx, file in enumerate(sorted(file_path)):
@@ -67,7 +68,9 @@ def FindTouchPosition(file, crop=True, direction_check=True, channel='channel 1'
             grid_cell = cell
     if direction_check:
         degree = degree_calc(test_data)
-        if int(degree) in DIRECTION_CHECK[grid_cell]:
+        print(f'degree of signal: {degree}')
+        print(f'range of cell: {grid_cell} is {DIRECTION_CHECK[grid_cell]}')
+        if int(degree) not in DIRECTION_CHECK[grid_cell]:
             print('Probably error in estimation')
             print('Checking different channels')
             grid_cells = [grid_cell]
@@ -75,16 +78,24 @@ def FindTouchPosition(file, crop=True, direction_check=True, channel='channel 1'
             for ch in CHANNEL_NAMES[1:]:
                 grid_cells.append(FindTouchPosition(file, direction_check=False, channel=ch))
             print(grid_cells)
-            print(mode(grid_cells))
-            return mode(grid_cells)
+            try: 
+                print(mode(grid_cells))
+                return mode(grid_cells)
+            except:
+                print('uncertain result, this is the guessed cells. Returns the first value')
+                print(grid_cells)
+                return grid_cell
+            
 
 
     return grid_cell
 
 
 if __name__ == '__main__':
-    dict = LoadData()
+    
     #print(pd.__version__)
-    print(type(dict))
-    print(FindTouchPosition(DATA_FOLDER + '\\fingernail_test_passive_setup2\\touch_test_fingernail_passive_setup2_place_A1_center_v2.csv'))
+    SetBase()
+    #dict = LoadData()
+    #print(type(dict))
+    #print(FindTouchPosition(DATA_FOLDER + '\\fingernail_test_passive_setup2\\touch_test_fingernail_passive_setup2_place_A1_center_v2.csv'))
 

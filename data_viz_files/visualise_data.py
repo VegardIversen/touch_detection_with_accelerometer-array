@@ -21,13 +21,15 @@ def crop_data(data, crop_mode):
 
     return data_cropped
 
-def plot_fft(df, Fs=80000, window=False):
+def plot_fft(df, Fs=150000, window=False):
     
     if window:
         hamming_window = scipy.signal.hamming(len(df))
         data_fft = scipy.fft.fft(df.values * hamming_window)
     else:
-        data_fft = scipy.fft.fft(df.values)
+        data_fft = scipy.fft.fft(df.values, axis=0)
+    
+    #print(df.values)
     
     fftfreq = scipy.fft.fftfreq(len(data_fft),1/Fs)
     N = int(len(data_fft)/2)
@@ -36,7 +38,7 @@ def plot_fft(df, Fs=80000, window=False):
     plt.title('fft of signal')
     plt.xlabel("Frequency [hz]")
     plt.ylabel("Amplitude")
-    plt.plot(fftfreq[fftfreq > 0], 20*np.log10(np.abs(data_fft[fftfreq > 0])))
+    plt.plot(fftfreq, 20*np.log10(np.abs(data_fft)))
     plt.show()
 
 
@@ -66,21 +68,24 @@ if __name__=='__main__':
     DATA_DELIMITER = ","
 
     data_folder = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
-    test_file = data_folder + '\\first_test_touch_passive_setup2\\touch_test_passive_setup2_place_C2_center_v1.csv'
+
+    test_file = data_folder + '\\fingernail_test_passive_setup2\\touch_test_fingernail_passive_setup2_place_A1_center_v2.csv'
     print(test_file)
     df = pd.read_csv(test_file, delimiter=DATA_DELIMITER, names=['channel 1', 'channel 2', 'channel 3'] )
     #print(df.head())
     print(len(df['channel 1'].values))
     print(int(50e-3*SAMPLE_RATE))
     df_crop = crop_data(df, CROP_MODE)
-    x = df['channel 1'].values
-    f, t , sxx = scipy.signal.spectrogram(x, fs=SAMPLE_RATE, nperseg=int(50e-3*SAMPLE_RATE), noverlap=50e-3*SAMPLE_RATE//2, nfft=10*1024)
+    #x = df['channel 1'].values
+    #f, t , sxx = scipy.signal.spectrogram(x, fs=SAMPLE_RATE, nperseg=int(50e-3*SAMPLE_RATE), noverlap=50e-3*SAMPLE_RATE//2, nfft=10*1024)
     #plt.plot(sxx[10,:])
-    plt.pcolormesh(t, f, sxx)
-    plt.ylabel('Frequency [Hz]')
-    plt.xlabel('Time [sec]')
-    plt.show()
+    # plt.pcolormesh(t, f, sxx)
+    # plt.ylabel('Frequency [Hz]')
+    # plt.xlabel('Time [sec]')
+    # plt.show()
     #print(df.columns)
     #plot_data(df)
-    #plot_fft(df)
+    plot_fft(df)
     #plot_fft_with_hamming(df['channel 3'])
+    plt.plot(df)
+    plt.show()
