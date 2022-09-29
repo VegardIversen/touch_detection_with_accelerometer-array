@@ -58,6 +58,25 @@ def plot_data(df, crop=True):
     plt.show()
 
 
+def plot_spectogram(df, include_signal=True, sample_rate=150000, channel='channel 1', freq_max=None):
+    
+    if include_signal:
+        time_axis = np.linspace(0, len(df)//sample_rate, num=len(df))
+        ax1 = plt.subplot(211)
+        plt.plot(time_axis, df[channel])
+        plt.xlabel('Time')
+        plt.ylabel('Amplitude')
+        ax2 = plt.subplot(212, sharex=ax1)
+        plt.specgram(df[channel],Fs=sample_rate)
+        plt.axis(ymax=freq_max)
+        plt.xlabel('Time')
+        plt.ylabel('Frequency')
+    else:
+        plt.specgram(df[channel],Fs=sample_rate)
+        plt.axis(ymax=freq_max)
+        plt.xlabel('Time')
+        plt.ylabel('Frequency')
+    plt.show()
 
 if __name__=='__main__':
 
@@ -79,18 +98,4 @@ if __name__=='__main__':
     print(len(df['channel 1'].values))
     print(int(50e-3*SAMPLE_RATE))
     df_crop = crop_data(df, CROP_MODE)
-    #x = df['channel 1'].values
-    #f, t , sxx = scipy.signal.spectrogram(x, fs=SAMPLE_RATE, nperseg=int(50e-3*SAMPLE_RATE), noverlap=50e-3*SAMPLE_RATE//2, nfft=10*1024)
-    #plt.plot(sxx[10,:])
-    # plt.pcolormesh(t, f, sxx)
-    # plt.ylabel('Frequency [Hz]')
-    # plt.xlabel('Time [sec]')
-    # plt.show()
-    #print(df.columns)
-    #plot_data(df)
-    plot_fft(df)
-    plt.grid()
-    plt.plot(np.linspace(0, len(df['channel 1']) * (1000 / SAMPLE_RATE), len(df['channel 1'])), df['channel 1'])
-    plt.xlabel("Time [ms]")
-    plt.ylabel("Amplitude")
-    plt.show()
+    plot_spectogram(df)

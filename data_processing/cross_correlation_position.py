@@ -22,7 +22,7 @@ DIRECTION_CHECK = {
 GRID_NAMES = ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'C1', 'C2', 'C3']
 
 DATA_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
-OUTPUT_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\base_data\\grid_data_active_touch.pkl'
+OUTPUT_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\base_data\\grid_data.pkl'
 Path(OUTPUT_FOLDER).parent.mkdir(parents=True, exist_ok=True)
 print(OUTPUT_FOLDER)
 
@@ -31,8 +31,15 @@ def CropData(data):
     data_cropped = data.loc[(data>0.0006).any(axis=1)]
     return data_cropped
 
+def CropRegion(data):
+    mask = data['channel 1'].gt(0.1)
+    rgns = mask.diff().fillna(True).cumsum()
+    gb = data[mask].groupby(rgns)
+    gb.plot()
+    plt.show()
 
-def SetBase(path='\\first_test_touch_active_setup2_5\\', crop=True, cell_names=GRID_NAMES, output_folder=OUTPUT_FOLDER):
+
+def SetBase(path='\\first_test_touch_passive_setup2\\', crop=True, cell_names=GRID_NAMES, output_folder=OUTPUT_FOLDER):
     file_path = Path(DATA_FOLDER + path).rglob('*_v1.csv')
     base_dict = {}
     for idx, file in enumerate(sorted(file_path)):
@@ -55,6 +62,7 @@ def LoadData(file_loc=OUTPUT_FOLDER):
 
 def FindTouchPosition(file, crop=True, direction_check=True, channel='channel 1'):
     test_data = pd.read_csv(file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
+    #CropRegion(test_data)
     highest_score = 0
     grid_cell = ' '
     base_dict = LoadData(OUTPUT_FOLDER)
@@ -94,8 +102,8 @@ def FindTouchPosition(file, crop=True, direction_check=True, channel='channel 1'
 if __name__ == '__main__':
     
     #print(pd.__version__)
-    SetBase()
+    #SetBase()
     #dict = LoadData()
     #print(type(dict))
-    #print(FindTouchPosition(DATA_FOLDER + '\\fingernail_test_passive_setup2\\touch_test_fingernail_passive_setup2_place_A1_center_v2.csv'))
-
+    print(FindTouchPosition(DATA_FOLDER + '\\first_test_touch_passive_setup2\\touch_test_passive_setup2_place_A2_center_v2.csv'))
+    #CropRegion()
