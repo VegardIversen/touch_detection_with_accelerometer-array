@@ -35,7 +35,7 @@ def degree_calc(df, upsampl=1):
     autocorr1_1 = correlate(df['channel 2'], df['channel 2'], upSamplingFactor=upsampl) # mic 1 mic 1, autocorr
     lags = np.array([lag(crosscorr2_1, upSamplingFactor=upsampl), lag(crosscorr3_1, upSamplingFactor=upsampl), lag(crosscorr3_2, upSamplingFactor=upsampl)])
     degrees = degree(lags)
-    print(f' has {degrees} degrees calculated')
+    print(f'\n{degrees} degrees calculated')
     
     return degrees
 
