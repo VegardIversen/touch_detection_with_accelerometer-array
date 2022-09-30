@@ -1,3 +1,5 @@
+from distutils.util import change_root
+from lzma import FILTER_DELTA
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,7 +15,7 @@ def crop_data(data, crop_mode):
     """
     if crop_mode == "Auto":
         # Removes zero sections of the data
-        data_cropped = data.loc[(df!=0).any(1)]
+        data_cropped = data.loc[(df != 0).any(1)]
     elif crop_mode == "Manual":
         data_cropped = data.truncate(before=CROP_BEFORE, after=CROP_AFTER)
 
@@ -30,9 +32,7 @@ def plot_fft(df, Fs=150000, window=False):
 
     # print(df.values)
 
-    fftfreq = scipy.fft.fftfreq(len(data_fft),  1/Fs)
-    N = int(len(data_fft) / 2)
-    # fft_x_axis = np.linspace(0,(Fs/ 2),N)
+    fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / Fs)
     plt.grid()
     plt.title('fft of signal')
     plt.xlabel("Frequency [hz]")
@@ -48,7 +48,7 @@ def filter_signal(sig, FS=150000, Q=10):
     signal_filt = signal.filtfilt(b_notch, a_notch, sig)
     return signal_filt
 
-def plot_fft_with_hamming(df, Fs=80000):    
+def plot_fft_with_hamming(df, Fs=150000):
     plot_fft(df, window=True)
 
 
@@ -100,8 +100,9 @@ if __name__ == '__main__':
     test_file = data_folder + '\\first_test_touch_active_setup2_5\\touch_test_active_setup2_5_B2_v1.csv'
     print(test_file)
     df = pd.read_csv(test_file, delimiter=DATA_DELIMITER, names=['channel 1', 'channel 2', 'channel 3'] )
-    #print(df.head())
+    # df = filter_signal(df, FS=SAMPLE_RATE, Q=3)
+    # print(df.head())
     print(len(df['channel 1'].values))
-    print(int(50e-3*SAMPLE_RATE))
+    print(int(50e-3 * SAMPLE_RATE))
     df_crop = crop_data(df, CROP_MODE)
     plot_spectogram(df)
