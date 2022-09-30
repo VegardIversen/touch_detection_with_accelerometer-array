@@ -23,7 +23,7 @@ def crop_data(data, crop_mode):
 
 
 def plot_fft(df, Fs=150000, window=False):
-    
+
     if window:
         hamming_window = scipy.signal.hamming(len(df))
         data_fft = scipy.fft.fft(df.values * hamming_window)
@@ -43,10 +43,6 @@ def plot_fft(df, Fs=150000, window=False):
     ax.set_xlim(0)
     plt.show()
 
-def filter_signal(sig, FS=150000, Q=10):
-    b_notch, a_notch = signal.iirnotch(50/(0.5*FS), Q)
-    signal_filt = signal.filtfilt(b_notch, a_notch, sig)
-    return signal_filt
 
 def plot_fft_with_hamming(df, Fs=150000):
     plot_fft(df, window=True)
@@ -77,25 +73,40 @@ def plot_spectogram(df, include_signal=True, sample_rate=150000, channel='channe
         time_axis = np.linspace(0, len(df) // sample_rate, num=len(df))
         ax1 = plt.subplot(211)
         plt.grid()
-        plt.plot(time_axis, filter_signal(df[channel]))
-        plt.xlabel('Time')
+        plt.plot(time_axis, df[channel])
+        plt.xlabel('Time [s]')
         plt.ylabel('Amplitude')
         ax2 = plt.subplot(212, sharex=ax1)
         plt.specgram(df[channel], Fs=sample_rate)
         plt.axis(ymax=freq_max)
-        plt.xlabel('Time')
+        plt.xlabel('Time [s]')
         plt.ylabel('Frequency')
     else:
         plt.specgram(df[channel], Fs=sample_rate)
         plt.axis(ymax=freq_max)
-        plt.xlabel('Time')
+        plt.xlabel('Time [s]')
         plt.ylabel('Frequency')
+    plt.show()
+
+
+def compare_filtered(df, sample_rate=150000, channel='channel 1'):
+    time_axis = np.linspace(0, len(df) // sample_rate, num=len(df))
+    ax1 = plt.subplot(211)
+    plt.grid()
+    plt.plot(time_axis, df[channel])
+    plt.xlabel('Time [s]')
+    plt.ylabel('Amplitude')
+    ax2 = plt.subplot(212, sharex=ax1)
+    plt.grid()
+    plt.plot(time_axis, filter_signal(df)[channel])
+    plt.xlabel('Time [s]')
+    plt.ylabel('Amplitude')
     plt.show()
 
 
 if __name__ == '__main__':
 
-    # Config 
+    # Config
     SAMPLE_RATE = 150000     # Hz
 
     CROP_MODE = "Auto"      # Auto or Manual
@@ -115,3 +126,5 @@ if __name__ == '__main__':
     print(int(50e-3 * SAMPLE_RATE))
     df_crop = crop_data(df, CROP_MODE)
     plot_spectogram(df)
+    plot_fft(df['channel 1'])
+    compare_filtered(df, sample_rate=SAMPLE_RATE, channel='channel 1')
