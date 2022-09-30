@@ -52,6 +52,15 @@ def plot_fft_with_hamming(df, Fs=150000):
     plot_fft(df, window=True)
 
 
+def filter_signal(sig, FS=150000, Q=3):
+    b_notch, a_notch = signal.iirnotch(50 / (0.5 * FS), Q)
+    # signal_filt = signal.filtfilt(b_notch, a_notch, sig)
+
+    for channel in sig:
+        sig[channel] = signal.filtfilt(b_notch, a_notch, sig[channel].values)
+    return sig
+
+
 def plot_data(df, crop=True):
     if crop:
         df = crop_data(df, CROP_MODE)
