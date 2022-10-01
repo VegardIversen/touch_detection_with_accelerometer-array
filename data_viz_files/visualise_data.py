@@ -17,7 +17,7 @@ def crop_data(data):
     return data_cropped
 
 
-def plot_fft(df, Fs=150000, window=False):
+def plot_fft(df, sample_rate=150000, window=False):
 
     if window:
         hamming_window = scipy.signal.hamming(len(df))
@@ -25,7 +25,7 @@ def plot_fft(df, Fs=150000, window=False):
     else:
         data_fft = scipy.fft.fft(df.values, axis=0)
 
-    fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / Fs)
+    fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / sample_rate)
     plt.grid()
     plt.title('fft of signal')
     plt.xlabel("Frequency [hz]")
@@ -37,29 +37,31 @@ def plot_fft(df, Fs=150000, window=False):
     plt.show()
 
 
-def plot_fft_with_hamming(df, Fs=150000):
+def plot_fft_with_hamming(df, sample_rate=150000):
     plot_fft(df, window=True)
 
 
-def filter_signal(sig, freqs, FS=150000):
-    """ Input an array of frequencies <freqs> to filter out
+def filter_signal(sig, freqs, sample_rate=150000):
+    """Input an array of frequencies <freqs> to filter out
     with a Q factor given by an array of <Qs>.
     """
     for freq in freqs:
         # We want smaller q-factors for higher frequencies
         q = freq ** (1 / 3)
-        b_notch, a_notch = signal.iirnotch(freq / (0.5 * FS), q)
+        b_notch, a_notch = signal.iirnotch(freq / (0.5 * sample_rate), q)
         sig_filtered = sig
 
         for channel in sig_filtered:
-            sig_filtered[channel] = signal.filtfilt(b_notch, a_notch, sig[channel].values)
+            sig_filtered[channel] = signal.filtfilt(b_notch,
+                                                    a_notch,
+                                                    sig[channel].values)
 
     return sig_filtered
 
 
 def plot_data(df, crop=True):
     if crop:
-        df = crop_data(df, CROP_MODE)
+        df = crop_data(df)
 
     df.plot()
     plt.legend(df.columns)
@@ -67,7 +69,11 @@ def plot_data(df, crop=True):
     plt.show()
 
 
-def plot_spectogram(df, include_signal=True, sample_rate=150000, channel='channel 1', freq_max=None):
+def plot_spectogram(df,
+                    include_signal=True,
+                    sample_rate=150000,
+                    channel='channel 1',
+                    freq_max=None):
 
     if include_signal:
         time_axis = np.linspace(0, len(df) // sample_rate, num=len(df))
@@ -77,49 +83,54 @@ def plot_spectogram(df, include_signal=True, sample_rate=150000, channel='channe
         plt.xlabel('Time [s]')
         plt.ylabel('Amplitude')
         ax2 = plt.subplot(212, sharex=ax1)
-        plt.specgram(df[channel], Fs=sample_rate)
+        plt.specgram(df[channel], sample_rate=sample_rate)
         plt.axis(ymax=freq_max)
         plt.xlabel('Time [s]')
         plt.ylabel('Frequency')
     else:
-        plt.specgram(df[channel], Fs=sample_rate)
+        plt.specgram(df[channel], sample_rate=sample_rate)
         plt.axis(ymax=freq_max)
         plt.xlabel('Time [s]')
         plt.ylabel('Frequency')
     plt.show()
 
 
-def compare_signals(df1, df2, sample_rate=150000, channel='channel 1', freq_max=60000, time_start=0, time_end=None, plot_diff=False):
+def compare_signals(df1, df2,
+                    sample_rate=150000,
+                    freq_max=60000,
+                    time_start=0,
+                    time_end=None,
+                    plot_diff=False):
 
     # Time signal 1
     time_axis = np.linspace(0, len(df1) // sample_rate, num=len(df1))
     ax1 = plt.subplot(231)
     ax1.set_xlim(time_start, time_end)
     plt.grid()
-    plt.plot(time_axis, df1[channel])
+    plt.plot(time_axis, df1)
     plt.title('Time signal 1')
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
 
     # Time signal 2
-    ax2 = plt.subplot(234, sharex=ax1, sharey=ax1)
+    plt.subplot(234, sharex=ax1, sharey=ax1)
     plt.grid()
-    plt.plot(time_axis, df2[channel])
+    plt.plot(time_axis, df2)
     plt.title('Time signal 2')
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
 
     # Spectogram of signal 1
     ax3 = plt.subplot(232, sharex=ax1)
-    plt.specgram(df1[channel], Fs=sample_rate)
+    plt.specgram(df1, Fs=sample_rate)
     plt.axis(ymax=freq_max, xmin=time_start, xmax=time_end)
     plt.title('Spectrogram of signal 1')
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
 
     # Spectogram of signal 2
-    ax4 = plt.subplot(235, sharex=ax1)
-    plt.specgram(df2[channel], Fs=sample_rate)
+    plt.subplot(235, sharex=ax3, sharey=ax3)
+    plt.specgram(df2, Fs=sample_rate)
     plt.axis(ymin=0, ymax=freq_max, xmin=time_start, xmax=time_end)
     plt.title('Spectrogram of signal 2')
     plt.xlabel('Time [s]')
@@ -128,7 +139,7 @@ def compare_signals(df1, df2, sample_rate=150000, channel='channel 1', freq_max=
     # FFT of signal 1
     ax5 = plt.subplot(233)
     ax5.set_xlim(left=0, right=freq_max)
-    data_fft = scipy.fft.fft(df1[channel].values, axis=0)
+    data_fft = scipy.fft.fft(crop_data(df1.values), axis=0)
     fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / sample_rate)
     data_fft = np.fft.fftshift(data_fft)
     fftfreq = np.fft.fftshift(fftfreq)
@@ -139,8 +150,8 @@ def compare_signals(df1, df2, sample_rate=150000, channel='channel 1', freq_max=
     plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
 
     # FFT of signal 2
-    ax6 = plt.subplot(236, sharex=ax5, sharey=ax5)
-    data_fft = scipy.fft.fft(df2[channel].values, axis=0)
+    plt.subplot(236, sharex=ax5, sharey=ax5)
+    data_fft = scipy.fft.fft(crop_data(df2.values), axis=0)
     fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / sample_rate)
     data_fft = np.fft.fftshift(data_fft)
     fftfreq = np.fft.fftshift(fftfreq)
@@ -151,18 +162,24 @@ def compare_signals(df1, df2, sample_rate=150000, channel='channel 1', freq_max=
     plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
 
     # Adjust to look nice in fullscreen view
-    plt.subplots_adjust(left=0.06, right=0.985, top=0.97, bottom=0.06, hspace=0.3, wspace=0.2)
+    plt.subplots_adjust(left=0.06, right=0.985,
+                        top=0.97, bottom=0.06,
+                        hspace=0.3, wspace=0.2)
     plt.show()
 
-    # Plot difference between signals
+    """Plot difference between signals
+    NOTE:   Be careful if using on two different measurements,
+            as the time axis might be different
+    """
     if plot_diff:
-        signal_diff = df1[channel] - df2[channel]
+        # Time signal difference
+        signal_diff = np.abs(df1 - df2)
         time_axis = np.linspace(0, len(df1) // sample_rate, num=len(df1))
-        ax1 = plt.subplot(111)
+        ax1 = plt.subplot(311)
         ax1.set_xlim(time_start, time_end)
         plt.grid()
         plt.plot(time_axis, signal_diff)
-        plt.title('Differential between signal 1 and signal 2')
+        plt.title('Difference between signals 1 and 2')
         plt.xlabel('Time [s]')
         plt.ylabel('Amplitude [V]')
 
@@ -190,30 +207,43 @@ def compare_signals(df1, df2, sample_rate=150000, channel='channel 1', freq_max=
         plt.subplots_adjust(left=0.06, right=0.985,
                             top=0.97, bottom=0.06,
                             hspace=0.3, wspace=0.2)
-    plt.show()
+        plt.show()
 
 
 if __name__ == '__main__':
 
-    # Config
-    SAMPLE_RATE = 150000    # Hz
+    # CONFIG
+    SAMPLE_RATE = 150000     # Hz
 
-    CROP_MODE = "Manual"    # Auto or Manual
-    CROP_BEFORE = 0         # samples
-    CROP_AFTER = 1          # samples
+    # Crop limits in seconds
+    TIME_START = 0
+    TIME_END = 5
 
     DATA_DELIMITER = ","
 
     data_folder = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
-    test_file = data_folder + '\\first_test_touch_active_setup2_5\\touch_test_active_setup2_5_B2_v1.csv'
-    df = pd.read_csv(test_file, delimiter=DATA_DELIMITER, names=['channel 1', 'channel 2', 'channel 3'])
-    df_filtered = filter_signal(df.copy(), freqs=[49, 24000, 48000, 56000], FS=SAMPLE_RATE)
+    test_file1 = data_folder + ('\\holdfinger_test_active_setup2_5\\'
+                                'hold_test_B1_setup2_5_sinus_2khz_10vpp_cyclcount_1_burstp_1s_v1.csv')
+    test_file2 = data_folder + ('\\holdfinger_test_active_setup2_5'
+                                '\\hold_test_B1_setup2_5_sinus_2khz_10vpp_cyclcount_1_burstp_1s_v2.csv')
 
-    # print(len(df['channel 1'].values))
-    # print(int(50e-3 * SAMPLE_RATE))
+    df1 = pd.read_csv(test_file1,
+                      delimiter=DATA_DELIMITER,
+                      names=['channel 1', 'channel 2', 'channel 3'])
+    df2 = pd.read_csv(test_file2,
+                      delimiter=DATA_DELIMITER,
+                      names=['channel 1', 'channel 2', 'channel 3'])
 
-    df_crop = crop_data(df, CROP_MODE)
+    # Filter a signal
+    df1_filtered = filter_signal(df1.copy(),
+                                 freqs=[49, 150, 24000, 48000, 56000],
+                                 sample_rate=SAMPLE_RATE)
+    df2_filtered = filter_signal(df2.copy(),
+                                 freqs=[49, 150, 24000, 48000, 56000],
+                                 sample_rate=SAMPLE_RATE)
 
-    # plot_spectogram(df)
-    # plot_fft(df['channel 1'])
-    compare_signals(df, df_filtered, sample_rate=SAMPLE_RATE, channel='channel 1', time_start=1.42, time_end=1.575)
+    compare_signals(df1['channel 1'],
+                    df2['channel 1'],
+                    sample_rate=SAMPLE_RATE,
+                    time_start=TIME_START,
+                    time_end=TIME_END)
