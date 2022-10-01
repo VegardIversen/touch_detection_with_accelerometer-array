@@ -48,13 +48,19 @@ def plot_fft_with_hamming(df, Fs=150000):
     plot_fft(df, window=True)
 
 
-def filter_signal(sig, freq, FS=150000, Q=3):
-    b_notch, a_notch = signal.iirnotch(freq / (0.5 * FS), Q)
-    # signal_filt = signal.filtfilt(b_notch, a_notch, sig)
+def filter_signal(sig, freqs, FS=150000):
+    """ Input an array of frequencies <freqs> to filter out
+    with a Q factor given by an array of <Qs>.
+    """
+    for freq in freqs:
+        # We want smaller q-factors for higher frequencies
+        q = freq ** (1 / 3)
+        b_notch, a_notch = signal.iirnotch(freq / (0.5 * FS), q)
     sig_filtered = sig
 
     for channel in sig_filtered:
         sig_filtered[channel] = signal.filtfilt(b_notch, a_notch, sig[channel].values)
+
     return sig_filtered
 
 
