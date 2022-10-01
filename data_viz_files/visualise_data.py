@@ -8,17 +8,12 @@ import scipy
 from scipy import signal
 
 
-def crop_data(data, crop_mode):
-    """CROP_MODE:
-    Manual,
-    Auto
+def crop_data(data):
+    """Crop data to the range given by the
+    global variables CROP_START and CROP_END.
     """
-    if crop_mode == "Auto":
-        # Removes zero sections of the data
-        data_cropped = data.loc[(df != 0).any(1)]
-    elif crop_mode == "Manual":
-        data_cropped = data.truncate(before=CROP_BEFORE, after=CROP_AFTER)
-
+    data_cropped = data[int(TIME_START * SAMPLE_RATE)
+                        :int(TIME_END * SAMPLE_RATE)]
     return data_cropped
 
 
