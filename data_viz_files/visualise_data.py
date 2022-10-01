@@ -150,8 +150,18 @@ def compare_signals(df1, df2, sample_rate=150000, channel='channel 1', freq_max=
     plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
     # Only plot positive frequencies
 
-    plt.tight_layout()
-    plt.subplots_adjust(left=0.06, right=0.99, top=0.97, bottom=0.06, hspace=0.3, wspace=0.2)
+    # Plot difference between signals
+    if plot_diff:
+        signal_diff = df1[channel] - df2[channel]
+        time_axis = np.linspace(0, len(df1) // sample_rate, num=len(df1))
+        ax1 = plt.subplot(111)
+        ax1.set_xlim(time_start, time_end)
+        plt.grid()
+        plt.plot(time_axis, signal_diff)
+        plt.title('Differential between signal 1 and signal 2')
+        plt.xlabel('Time [s]')
+        plt.ylabel('Amplitude [V]')
+
     plt.show()
 
 
