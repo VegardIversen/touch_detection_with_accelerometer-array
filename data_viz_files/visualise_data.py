@@ -166,6 +166,30 @@ def compare_signals(df1, df2, sample_rate=150000, channel='channel 1', freq_max=
         plt.xlabel('Time [s]')
         plt.ylabel('Amplitude [V]')
 
+        # Spectogram of signal difference
+        ax2 = plt.subplot(312, sharex=ax1)
+        plt.specgram(signal_diff, sample_rate=sample_rate)
+        plt.axis(ymax=freq_max, xmin=time_start, xmax=time_end)
+        plt.title('Spectrogram of the difference between signals 1 and 2')
+        plt.xlabel('Time [s]')
+        plt.ylabel('Frequency [Hz]')
+
+        # FFT of signal difference
+        ax5 = plt.subplot(313)
+        ax5.set_xlim(left=0, right=freq_max)
+        data_fft = scipy.fft.fft(signal_diff.values, axis=0)
+        fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / sample_rate)
+        data_fft = np.fft.fftshift(data_fft)
+        fftfreq = np.fft.fftshift(fftfreq)
+        plt.grid()
+        plt.title('FFT of the difference between signals 1 and 2')
+        plt.xlabel("Frequency [Hz]")
+        plt.ylabel("Amplitude [dB]")
+        plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
+
+        plt.subplots_adjust(left=0.06, right=0.985,
+                            top=0.97, bottom=0.06,
+                            hspace=0.3, wspace=0.2)
     plt.show()
 
 
