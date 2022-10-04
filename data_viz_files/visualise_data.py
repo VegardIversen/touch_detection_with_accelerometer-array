@@ -9,7 +9,7 @@ DATA_DELIMITER = ","
 CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3']
 SAMPLE_RATE = 150000     # Hz
 
-    # Crop limits in seconds
+# Crop limits in seconds
 TIME_START = 0
 TIME_END = 5
 
@@ -214,13 +214,15 @@ def compare_signals(df1, df2,
                             hspace=0.3, wspace=0.2)
         plt.show()
 
+
 def plot_data_vs_noiseavg(data_file, channel='channel 1'):
     noise_df = pd.read_csv(
                             f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\base_data\\df_average_noise.csv',
                             delimiter=DATA_DELIMITER)
     df = pd.read_csv(data_file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
-    
+
     compare_signals(df[channel], noise_df[channel])
+
 
 def plot_data_subtracted_noise(data_file, channel='channel 1'):
     noise_df = pd.read_csv(
@@ -228,8 +230,9 @@ def plot_data_subtracted_noise(data_file, channel='channel 1'):
                             delimiter=DATA_DELIMITER)
     df = pd.read_csv(data_file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
 
-    df_sub_noise = df-noise_df
+    df_sub_noise = df - noise_df
     compare_signals(df[channel], df_sub_noise[channel])
+
 
 def plot_data_sub_ffts(data_file, channel='channel 1'):
     noise_df = pd.read_csv(
@@ -238,7 +241,7 @@ def plot_data_sub_ffts(data_file, channel='channel 1'):
     df = pd.read_csv(data_file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
     noise_df_fft = scipy.fft.fft(noise_df.values, axis=0)
     df_fft = scipy.fft.fft(df.values, axis=0)
-    df_fft_sub_noise_fft = df_fft-noise_df_fft
+    df_fft_sub_noise_fft = df_fft - noise_df_fft
     df_sub_noise = pd.DataFrame(scipy.fft.ifft(df_fft_sub_noise_fft), columns=CHANNEL_NAMES)
     ax1 = plt.subplot(311)
     fftfreq_data = scipy.fft.fftfreq(len(df_fft),  1 / SAMPLE_RATE)
@@ -260,8 +263,6 @@ def plot_data_sub_ffts(data_file, channel='channel 1'):
     plt.ylabel("Amplitude [dB]")
     plt.plot(fftfreq_data_noise, 20 * np.log10(np.abs(data_noise_fft)))
 
-
-    
     plt.subplot(313, sharey=ax1, sharex=ax1)
     fftfreq_data_sub_noise = scipy.fft.fftfreq(len(df_fft_sub_noise_fft),  1 / SAMPLE_RATE)
     data_sub_noise_fft = np.fft.fftshift(df_fft_sub_noise_fft)
@@ -274,8 +275,8 @@ def plot_data_sub_ffts(data_file, channel='channel 1'):
 
     plt.tight_layout()
     plt.show()
-    #print(df_sub_noise.head())
-    #compare_signals(df[channel], noise_df[channel])
+    # print(df_sub_noise.head())
+    # compare_signals(df[channel], noise_df[channel])
 
 
 if __name__ == '__main__':
