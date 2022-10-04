@@ -228,7 +228,7 @@ def plot_data_subtracted_noise(data_file, channel='channel 1'):
                             delimiter=DATA_DELIMITER)
     df = pd.read_csv(data_file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
 
-    df_sub_noise = df-noise_df
+    df_sub_noise = noise_df-df
     compare_signals(df[channel], df_sub_noise[channel])
 
 def plot_data_sub_ffts(data_file, channel='channel 1'):
@@ -295,7 +295,7 @@ if __name__ == '__main__':
     test_file2 = data_folder + ('\\holdfinger_test_active_setup2_5'
                                 '\\hold_test_B1_setup2_5_sinus_2khz_10vpp_cyclcount_1_burstp_1s_v2.csv')
     data_file = data_folder + '\\first_test_touch_passive_setup2\\touch_test_passive_setup2_place_A1_center_v2.csv'
-    plot_data_sub_ffts(data_file)
+    plot_data_subtracted_noise(data_file)
     # df1 = pd.read_csv(test_file1,
     #                   delimiter=DATA_DELIMITER,
     #                   names=['channel 1', 'channel 2', 'channel 3'])
