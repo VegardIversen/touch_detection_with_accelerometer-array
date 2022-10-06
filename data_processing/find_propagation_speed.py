@@ -35,9 +35,11 @@ def FindPropagationSpeed(df, sr, distance_between_sensors=0.1):
     print("Propagation speed is", propagation_speed, "m/s")
 
 
-# Sine sample with some noise and copy to y1 and y2 with a 1-second lag
-sr = 150000
+if __name__ == '__main__':
 
-df = pd.read_csv(FILE_PATH, names=CHANNEL_NAMES)
+    # Sine sample with some noise and copy to y1 and y2 with a 1-second lag
+    sr = 150000
 
-FindPropagationSpeed(df, sr)
+    df = pd.read_csv(FILE_PATH, names=CHANNEL_NAMES)
+
+    FindPropagationSpeed(df, sr)
