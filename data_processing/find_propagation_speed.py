@@ -2,18 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 import pandas as pd
-from pathlib import Path
-
-# Set the path to the data
-DATA_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
-FILE_FOLDER = '\\div_files'
-FILE_NAME = '\\chirp_test_fs_96000_t_max_2s_20000-60000hz_1vpp_1cyc_setup3_method_linear_v3'
-FILE_EXTENSION = '.csv'
-FILE_PATH = DATA_FOLDER + FILE_FOLDER + FILE_NAME + FILE_EXTENSION
-print("\nUsing data file path:", FILE_PATH, "\n")
-
-# Headers for the dataframe df
-CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3']
+from csv_to_df import csv_to_df
 
 
 def find_propagation_speed(df, sr, distance_between_sensors=0.1):
@@ -40,6 +29,7 @@ if __name__ == '__main__':
     # Sine sample with some noise and copy to y1 and y2 with a 1-second lag
     sr = 150000
 
-    df = pd.read_csv(FILE_PATH, names=CHANNEL_NAMES)
+    chirp_df = csv_to_df(file_folder='div_files',
+                         file_name='chirp_test_fs_96000_t_max_2s_20000-60000hz_1vpp_1cyc_setup3_method_linear_v3')
 
-    find_propagation_speed(df, sr)
+    find_propagation_speed(chirp_df, sr)

@@ -5,6 +5,8 @@ from pathlib import Path
 import scipy
 from scipy import signal
 
+from csv_to_df import csv_to_df
+
 
 DATA_DELIMITER = ","
 CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3']
@@ -300,22 +302,18 @@ if __name__ == '__main__':
     TIME_START = 0
     TIME_END = 5
 
-    DATA_DELIMITER = ","
+    chirp_df = csv_to_df(file_folder='div_files',
+                         file_name='chirp_test_fs_96000_t_max_2s_20000-60000hz_1vpp_1cyc_setup3_method_linear_v3')
 
-    data_folder = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
-    test_file1 = data_folder + ('\\holdfinger_test_active_setup2_5\\'
-                                'hold_test_B1_setup2_5_sinus_2khz_10vpp_cyclcount_1_burstp_1s_v1.csv')
-    test_file2 = data_folder + ('\\holdfinger_test_active_setup2_5'
-                                '\\hold_test_B1_setup2_5_sinus_2khz_10vpp_cyclcount_1_burstp_1s_v2.csv')
-    data_file = data_folder + '\\fingernail_test_passive_setup2\\touch_test_fingernail_passive_setup2_place_A1_center_v2.csv'
-    chirp_file = data_folder + '\\div_files\\chirp_test_fs_96000_t_max_2s_20000-60000hz_1vpp_1cyc_setup3_method_linear_v3.csv'
-    print(chirp_file)
-    chirp_gen = data_folder + '\\div_files\\chirp_custom_fs_96000_tmax_2_20000-60000_method_linear.csv'
-    chirp_df = pd.read_csv(chirp_file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
-    chirp_gen_df = pd.read_csv(chirp_gen, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
-    touch_df = pd.read_csv(data_file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
+    chirp_gen_df = csv_to_df(file_folder='div_files',
+                             file_name='chirp_custom_fs_96000_tmax_2_20000-60000_method_linear')
+
+    touch_df = csv_to_df(file_folder='fingernail_test_passive_setup2',
+                         file_name='touch_test_fingernail_passive_setup2_place_A1_center_v2')
+
     stop = 400000
     print(stop)
+
     time_axis = np.linspace(0,5, num=len(touch_df['channel 1']))
     b, a = scipy.signal.butter(5, 1000/(SAMPLE_RATE/2),btype='highpass', output='ba')
     filt_touch = scipy.signal.filtfilt(b,a,touch_df['channel 1'])
@@ -338,28 +336,3 @@ if __name__ == '__main__':
     #plt.subplot(212, sharex=ax1, sharey=ax1)
     #plt.plot(filt_chirp)
     plt.show()
-    #plot_data_subtracted_noise(data_file)
-    #df = pd.read_csv(data_file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
-
-    #y, e, w = adaptive_filter_RLS(df['channel 1'])
-    #compare_signals(df['channel 1'], y)
-    # df1 = pd.read_csv(test_file1,
-    #                   delimiter=DATA_DELIMITER,
-    #                   names=['channel 1', 'channel 2', 'channel 3'])
-    # df2 = pd.read_csv(test_file2,
-    #                   delimiter=DATA_DELIMITER,
-    #                   names=['channel 1', 'channel 2', 'channel 3'])
-
-    # # Filter a signal
-    # df1_filtered = filter_signal(df1.copy(),
-    #                              freqs=[49, 150, 24000, 48000, 56000],
-    #                              sample_rate=SAMPLE_RATE)
-    # df2_filtered = filter_signal(df2.copy(),
-    #                              freqs=[49, 150, 24000, 48000, 56000],
-    #                              sample_rate=SAMPLE_RATE)
-
-    # compare_signals(df1['channel 1'],
-    #                 df2['channel 1'],
-    #                 sample_rate=SAMPLE_RATE,
-    #                 time_start=TIME_START,
-    #                 time_end=TIME_END)
