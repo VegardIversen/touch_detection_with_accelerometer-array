@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import scipy
 from scipy import signal
-
 DATA_DELIMITER = ","
 CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3']
 SAMPLE_RATE = 150000     # Hz
@@ -21,6 +20,9 @@ def crop_data(data):
                         :int(TIME_END * SAMPLE_RATE)]
     return data_cropped
 
+def crop_data_threshold(data, threshold=0.0006):
+    data_cropped = data.loc[(data>threshold).any(axis=1)]
+    return data_cropped
 
 def plot_fft(df, sample_rate=150000, window=False):
 
@@ -88,12 +90,12 @@ def plot_spectogram(df,
         plt.xlabel('Time [s]')
         plt.ylabel('Amplitude')
         ax2 = plt.subplot(212, sharex=ax1)
-        plt.specgram(df[channel], sample_rate=sample_rate)
+        plt.specgram(df[channel], Fs=sample_rate)
         plt.axis(ymax=freq_max)
         plt.xlabel('Time [s]')
         plt.ylabel('Frequency')
     else:
-        plt.specgram(df[channel], sample_rate=sample_rate)
+        plt.specgram(df[channel], Fs=sample_rate)
         plt.axis(ymax=freq_max)
         plt.xlabel('Time [s]')
         plt.ylabel('Frequency')
@@ -105,7 +107,9 @@ def compare_signals(df1, df2,
                     freq_max=60000,
                     time_start=0,
                     time_end=None,
-                    plot_diff=False):
+                    plot_diff=False, 
+                    save=False,
+                    filename='compared_signal.png'):
 
     # Time signal 1
     time_axis = np.linspace(0, len(df1) // sample_rate, num=len(df1))
@@ -170,6 +174,9 @@ def compare_signals(df1, df2,
     plt.subplots_adjust(left=0.06, right=0.985,
                         top=0.97, bottom=0.06,
                         hspace=0.3, wspace=0.2)
+    if save:
+        plt.tight_layout()
+        plt.savefig(filename, dpi=200)
     plt.show()
 
     """Plot difference between signals
@@ -295,8 +302,42 @@ if __name__ == '__main__':
                                 'hold_test_B1_setup2_5_sinus_2khz_10vpp_cyclcount_1_burstp_1s_v1.csv')
     test_file2 = data_folder + ('\\holdfinger_test_active_setup2_5'
                                 '\\hold_test_B1_setup2_5_sinus_2khz_10vpp_cyclcount_1_burstp_1s_v2.csv')
-    data_file = data_folder + '\\first_test_touch_passive_setup2\\touch_test_passive_setup2_place_A1_center_v2.csv'
-    plot_data_subtracted_noise(data_file)
+    data_file = data_folder + '\\fingernail_test_passive_setup2\\touch_test_fingernail_passive_setup2_place_A1_center_v2.csv'
+    chirp_file = data_folder + '\\div_files\\chirp_test_fs_96000_t_max_2s_20000-60000hz_1vpp_1cyc_setup3_method_linear_v3.csv'
+    print(chirp_file)
+    chirp_gen = data_folder + '\\div_files\\chirp_custom_fs_96000_tmax_2_20000-60000_method_linear.csv'
+    chirp_df = pd.read_csv(chirp_file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
+    chirp_gen_df = pd.read_csv(chirp_gen, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
+    touch_df = pd.read_csv(data_file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
+    stop = 400000
+    print(stop)
+    time_axis = np.linspace(0,5, num=len(touch_df['channel 1']))
+    b, a = scipy.signal.butter(5, 1000/(SAMPLE_RATE/2),btype='highpass', output='ba')
+    filt_touch = scipy.signal.filtfilt(b,a,touch_df['channel 1'])
+    plot_spectogram(chirp_gen_df, sample_rate=96000)
+    ax1 = plt.subplot((211))
+    plt.plot(time_axis, touch_df['channel 1'])
+    plt.subplot(212, sharex=ax1, sharey=ax1)
+    plt.plot(time_axis, filt_touch)
+    
+    #chirp_cropped = crop_data_threshold(chirp_df.iloc[:stop])
+    #x = np.correlate(chirp_cropped['channel 1'], chirp_gen_df['channel 1'], 'full')
+    #ax1 = plt.subplot(211)
+    #plt.plot(chirp_df['channel 1'])
+    #plt.subplot(212)
+    #plt.plot(chirp_gen_df['channel 1'])
+    #b, a = scipy.signal.butter(2,[2,5]*1000//(SAMPLE_RATE*2))
+    #filt_chirp = scipy.signal.filtfilt(b,a, x)
+    #ax1 = plt.subplot(211)
+    #plt.plot(x)
+    #plt.subplot(212, sharex=ax1, sharey=ax1)
+    #plt.plot(filt_chirp)
+    plt.show()
+    #plot_data_subtracted_noise(data_file)
+    #df = pd.read_csv(data_file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
+
+    #y, e, w = adaptive_filter_RLS(df['channel 1'])
+    #compare_signals(df['channel 1'], y)
     # df1 = pd.read_csv(test_file1,
     #                   delimiter=DATA_DELIMITER,
     #                   names=['channel 1', 'channel 2', 'channel 3'])

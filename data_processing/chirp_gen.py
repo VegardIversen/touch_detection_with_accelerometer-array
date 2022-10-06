@@ -3,10 +3,10 @@ import scipy.signal as ss
 import pandas as pd
 import numpy as np
 
-Fs = 96000
+Fs = 150000
 freq_start = 20000
 freq_stop = 40000
-t_max = 2
+t_max = 1
 scale = 'linear'
 t = np.linspace(0,t_max, t_max*Fs)
 y = ss.chirp(t, freq_start, t_max, freq_stop, method=scale)
