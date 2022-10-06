@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import scipy
 from scipy import signal
+
+
 DATA_DELIMITER = ","
 CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3']
 SAMPLE_RATE = 150000     # Hz
@@ -11,6 +13,7 @@ SAMPLE_RATE = 150000     # Hz
 # Crop limits in seconds
 TIME_START = 0
 TIME_END = 5
+
 
 def crop_data(data):
     """Crop data to the range given by the
@@ -20,9 +23,11 @@ def crop_data(data):
                         :int(TIME_END * SAMPLE_RATE)]
     return data_cropped
 
+
 def crop_data_threshold(data, threshold=0.0006):
     data_cropped = data.loc[(data>threshold).any(axis=1)]
     return data_cropped
+
 
 def plot_fft(df, sample_rate=150000, window=False):
 
@@ -107,7 +112,7 @@ def compare_signals(df1, df2,
                     freq_max=60000,
                     time_start=0,
                     time_end=None,
-                    plot_diff=False, 
+                    plot_diff=False,
                     save=False,
                     filename='compared_signal.png'):
 
@@ -319,7 +324,7 @@ if __name__ == '__main__':
     plt.plot(time_axis, touch_df['channel 1'])
     plt.subplot(212, sharex=ax1, sharey=ax1)
     plt.plot(time_axis, filt_touch)
-    
+
     #chirp_cropped = crop_data_threshold(chirp_df.iloc[:stop])
     #x = np.correlate(chirp_cropped['channel 1'], chirp_gen_df['channel 1'], 'full')
     #ax1 = plt.subplot(211)

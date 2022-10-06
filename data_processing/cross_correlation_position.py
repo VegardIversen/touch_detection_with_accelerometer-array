@@ -7,6 +7,8 @@ from data_processing.direction_of_arrival import degree_calc
 from statistics import mode
 import matplotlib.pyplot as plt
 import scipy
+
+
 SAMPLE_RATE = 150000     # Hz
 
 CROP_MODE = "Auto"      # Auto or Manual
@@ -31,6 +33,7 @@ def CropData(data):
     data_cropped = data.loc[(data>0.0006).any(axis=1)]
     return data_cropped
 
+
 def CropRegion(data):
     mask = data['channel 1'].gt(0.1)
     rgns = mask.diff().fillna(True).cumsum()
@@ -43,22 +46,22 @@ def SetBase(path='\\first_test_touch_passive_setup2\\', crop=True, cell_names=GR
     file_path = Path(DATA_FOLDER + path).rglob('*_v1.csv')
     base_dict = {}
     for idx, file in enumerate(sorted(file_path)):
-        
+
         data = pd.read_csv(file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
         if crop:
             data = CropData(data)
         base_dict[cell_names[idx]] = data
     print(output_folder)
-    
+
     with open(output_folder, 'wb') as f:
-        pickle.dump(base_dict, f) 
+        pickle.dump(base_dict, f)
 
 
 def LoadData(file_loc=OUTPUT_FOLDER):
     with open(file_loc, 'rb') as f:
         loaded_dict = pd.read_pickle(f)
     return loaded_dict
-        
+
 
 def FindTouchPosition(file, crop=True, direction_check=True, channel='channel 1'):
     test_data = pd.read_csv(file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
@@ -86,21 +89,19 @@ def FindTouchPosition(file, crop=True, direction_check=True, channel='channel 1'
             for ch in CHANNEL_NAMES[1:]:
                 grid_cells.append(FindTouchPosition(file, direction_check=False, channel=ch))
             print(grid_cells)
-            try: 
+            try:
                 print(mode(grid_cells))
                 return mode(grid_cells)
             except:
                 print('uncertain result, this is the guessed cells. Returns the first value')
                 print(grid_cells)
                 return grid_cell
-            
-
 
     return grid_cell
 
 
 if __name__ == '__main__':
-    
+
     #print(pd.__version__)
     #SetBase()
     #dict = LoadData()
