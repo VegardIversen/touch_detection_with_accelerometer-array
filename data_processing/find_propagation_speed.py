@@ -16,7 +16,7 @@ print("\nUsing data file path:", FILE_PATH, "\n")
 CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3']
 
 
-def FindPropagationSpeed(df, sr, distance_between_sensors=0.1):
+def find_propagation_speed(df, sr, distance_between_sensors=0.1):
     """Use the cross correlation between the two channels
     to find the propagation speed. Based on:
     https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
@@ -42,4 +42,4 @@ if __name__ == '__main__':
 
     df = pd.read_csv(FILE_PATH, names=CHANNEL_NAMES)
 
-    FindPropagationSpeed(df, sr)
+    find_propagation_speed(df, sr)
