@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import scipy
 from scipy import signal
-
 from csv_to_df import csv_to_df
 
 
@@ -27,7 +26,7 @@ def crop_data(data):
 
 
 def crop_data_threshold(data, threshold=0.0006):
-    data_cropped = data.loc[(data>threshold).any(axis=1)]
+    data_cropped = data.loc[(data > threshold).any(axis=1)]
     return data_cropped
 
 
@@ -314,25 +313,25 @@ if __name__ == '__main__':
     stop = 400000
     print(stop)
 
-    time_axis = np.linspace(0,5, num=len(touch_df['channel 1']))
-    b, a = scipy.signal.butter(5, 1000/(SAMPLE_RATE/2),btype='highpass', output='ba')
-    filt_touch = scipy.signal.filtfilt(b,a,touch_df['channel 1'])
+    time_axis = np.linspace(0, 5, num=len(touch_df['channel 1']))
+    b, a = scipy.signal.butter(5, 1000 / (SAMPLE_RATE/2), btype='highpass', output='ba')
+    filt_touch = scipy.signal.filtfilt(b, a, touch_df['channel 1'])
     plot_spectogram(chirp_gen_df, sample_rate=96000)
     ax1 = plt.subplot((211))
     plt.plot(time_axis, touch_df['channel 1'])
     plt.subplot(212, sharex=ax1, sharey=ax1)
     plt.plot(time_axis, filt_touch)
 
-    #chirp_cropped = crop_data_threshold(chirp_df.iloc[:stop])
-    #x = np.correlate(chirp_cropped['channel 1'], chirp_gen_df['channel 1'], 'full')
-    #ax1 = plt.subplot(211)
-    #plt.plot(chirp_df['channel 1'])
-    #plt.subplot(212)
-    #plt.plot(chirp_gen_df['channel 1'])
-    #b, a = scipy.signal.butter(2,[2,5]*1000//(SAMPLE_RATE*2))
-    #filt_chirp = scipy.signal.filtfilt(b,a, x)
-    #ax1 = plt.subplot(211)
-    #plt.plot(x)
-    #plt.subplot(212, sharex=ax1, sharey=ax1)
-    #plt.plot(filt_chirp)
+    # chirp_cropped = crop_data_threshold(chirp_df.iloc[:stop])
+    # x = np.correlate(chirp_cropped['channel 1'], chirp_gen_df['channel 1'], 'full')
+    # ax1 = plt.subplot(211)
+    # plt.plot(chirp_df['channel 1'])
+    # plt.subplot(212)
+    # plt.plot(chirp_gen_df['channel 1'])
+    # b, a = scipy.signal.butter(2,[2,5]*1000//(SAMPLE_RATE*2))
+    # filt_chirp = scipy.signal.filtfilt(b,a, x)
+    # ax1 = plt.subplot(211)
+    # plt.plot(x)
+    # plt.subplot(212, sharex=ax1, sharey=ax1)
+    # plt.plot(filt_chirp)
     plt.show()
