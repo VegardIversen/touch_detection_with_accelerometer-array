@@ -314,7 +314,7 @@ if __name__ == '__main__':
     print(stop)
 
     time_axis = np.linspace(0, 5, num=len(touch_df['channel 1']))
-    b, a = scipy.signal.butter(5, 1000 / (SAMPLE_RATE/2), btype='highpass', output='ba')
+    b, a = scipy.signal.butter(5, 1000 / (SAMPLE_RATE / 2), btype='highpass', output='ba')
     filt_touch = scipy.signal.filtfilt(b, a, touch_df['channel 1'])
     plot_spectogram(chirp_gen_df, sample_rate=96000)
     ax1 = plt.subplot((211))
