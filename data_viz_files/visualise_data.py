@@ -7,21 +7,11 @@ from scipy import signal
 from csv_to_df import csv_to_df
 
 
-DATA_DELIMITER = ","
-CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3']
-SAMPLE_RATE = 150000     # Hz
-
-# Crop limits in seconds
-TIME_START = 0
-TIME_END = 5
-
-
-def crop_data(data):
+def crop_data(data, time_start=0, time_end=5, sample_rate=150000):
     """Crop data to the range given by the
     global variables CROP_START and CROP_END.
     """
-    data_cropped = data[int(TIME_START * SAMPLE_RATE)
-                        :int(TIME_END * SAMPLE_RATE)]
+    data_cropped = data[int(time_start * sample_rate):int(time_end * sample_rate)]
     return data_cropped
 
 
@@ -52,24 +42,6 @@ def plot_fft(df, sample_rate=150000, window=False):
 
 def plot_fft_with_hamming(df, sample_rate=150000):
     plot_fft(df, window=True)
-
-
-def filter_signal(sig, freqs, sample_rate=150000):
-    """Input an array of frequencies <freqs> to filter out
-    with a Q factor given by an array of <Qs>.
-    """
-    for freq in freqs:
-        # We want smaller q-factors for higher frequencies
-        q = freq ** (1 / 3)
-        b_notch, a_notch = signal.iirnotch(freq / (0.5 * sample_rate), q)
-        sig_filtered = sig
-
-        for channel in sig_filtered:
-            sig_filtered[channel] = signal.filtfilt(b_notch,
-                                                    a_notch,
-                                                    sig[channel].values)
-
-    return sig_filtered
 
 
 def plot_data(df, crop=True):
@@ -116,7 +88,9 @@ def compare_signals(df1, df2,
                     plot_diff=False,
                     save=False,
                     filename='compared_signal.png'):
-
+    """Visually compare two signals, by plotting:
+    time signal, spectogram, fft and (optionally) difference signal
+    """
     # Time signal 1
     time_axis = np.linspace(0, len(df1) // sample_rate, num=len(df1))
     ax1 = plt.subplot(231)
@@ -180,6 +154,7 @@ def compare_signals(df1, df2,
     plt.subplots_adjust(left=0.06, right=0.985,
                         top=0.97, bottom=0.06,
                         hspace=0.3, wspace=0.2)
+
     if save:
         plt.tight_layout()
         plt.savefig(filename, dpi=200)
@@ -228,36 +203,41 @@ def compare_signals(df1, df2,
         plt.show()
 
 
-def plot_data_vs_noiseavg(data_file, channel='channel 1'):
-    noise_df = pd.read_csv(
-                            f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\base_data\\df_average_noise.csv',
-                            delimiter=DATA_DELIMITER)
-    df = pd.read_csv(data_file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
-
+def plot_data_vs_noiseavg(df, channel='channel 1'):
+    """Plot data vs noise average
+    Input:  df with all channels or channel specified by argument
+    Output: Plot of data vs noise average
+    """
+    noise_df = csv_to_df(file_folder='base_data',
+                         file_name='df_average_noise')
     compare_signals(df[channel], noise_df[channel])
 
 
-def plot_data_subtracted_noise(data_file, channel='channel 1'):
-    noise_df = pd.read_csv(
-                            f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\base_data\\df_average_noise.csv',
-                            delimiter=DATA_DELIMITER)
-    df = pd.read_csv(data_file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
-
-    df_sub_noise = noise_df-df
+def plot_data_subtracted_noise(df, channel='channel 1'):
+    """Plot data subtracted by noise average
+    Input:  df with all channels or channel specified by argument
+    Output: Plot of data subtracted by noise average
+    """
+    noise_df = csv_to_df(file_folder='base_data',
+                         file_name='df_average_noise')
+    df_sub_noise = noise_df - df
     compare_signals(df[channel], df_sub_noise[channel])
 
 
-def plot_data_sub_ffts(data_file, channel='channel 1'):
-    noise_df = pd.read_csv(
-                            f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\base_data\\df_average_noise.csv',
-                            delimiter=DATA_DELIMITER)
-    df = pd.read_csv(data_file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
+def plot_data_sub_ffts(df, channel='channel 1', sample_rate=150000):
+    """Plot data subtracted by noise average FFT
+    Input:  df with all channels or channel specified by argument
+    Output: Plot of data subtracted by noise average
+    """
+    noise_df = csv_to_df(file_folder='base_data',
+                         file_name='df_average_noise')
     noise_df_fft = scipy.fft.fft(noise_df.values, axis=0)
     df_fft = scipy.fft.fft(df.values, axis=0)
     df_fft_sub_noise_fft = df_fft - noise_df_fft
-    df_sub_noise = pd.DataFrame(scipy.fft.ifft(df_fft_sub_noise_fft), columns=CHANNEL_NAMES)
+    df_sub_noise = pd.DataFrame(scipy.fft.ifft(df_fft_sub_noise_fft),
+                                columns=['channel 1', 'channel 2', 'channel 3'])
     ax1 = plt.subplot(311)
-    fftfreq_data = scipy.fft.fftfreq(len(df_fft),  1 / SAMPLE_RATE)
+    fftfreq_data = scipy.fft.fftfreq(len(df_fft),  1 / sample_rate)
     data_fft = np.fft.fftshift(df_fft)
     fftfreq_data = np.fft.fftshift(fftfreq_data)
     plt.grid()
@@ -267,7 +247,7 @@ def plot_data_sub_ffts(data_file, channel='channel 1'):
     plt.plot(fftfreq_data, 20 * np.log10(np.abs(data_fft)))
 
     plt.subplot(312, sharey=ax1, sharex=ax1)
-    fftfreq_data_noise = scipy.fft.fftfreq(len(noise_df_fft),  1 / SAMPLE_RATE)
+    fftfreq_data_noise = scipy.fft.fftfreq(len(noise_df_fft),  1 / sample_rate)
     data_noise_fft = np.fft.fftshift(noise_df_fft)
     fftfreq_data_noise = np.fft.fftshift(fftfreq_data_noise)
     plt.grid()
@@ -277,7 +257,7 @@ def plot_data_sub_ffts(data_file, channel='channel 1'):
     plt.plot(fftfreq_data_noise, 20 * np.log10(np.abs(data_noise_fft)))
 
     plt.subplot(313, sharey=ax1, sharex=ax1)
-    fftfreq_data_sub_noise = scipy.fft.fftfreq(len(df_fft_sub_noise_fft),  1 / SAMPLE_RATE)
+    fftfreq_data_sub_noise = scipy.fft.fftfreq(len(df_fft_sub_noise_fft),  1 / sample_rate)
     data_sub_noise_fft = np.fft.fftshift(df_fft_sub_noise_fft)
     fftfreq_data_sub_noise = np.fft.fftshift(fftfreq_data_sub_noise)
     plt.grid()
@@ -293,14 +273,6 @@ def plot_data_sub_ffts(data_file, channel='channel 1'):
 
 
 if __name__ == '__main__':
-
-    # CONFIG
-    SAMPLE_RATE = 150000     # Hz
-
-    # Crop limits in seconds
-    TIME_START = 0
-    TIME_END = 5
-
     chirp_df = csv_to_df(file_folder='div_files',
                          file_name='chirp_test_fs_96000_t_max_2s_20000-60000hz_1vpp_1cyc_setup3_method_linear_v3')
 
@@ -314,7 +286,7 @@ if __name__ == '__main__':
     print(stop)
 
     time_axis = np.linspace(0, 5, num=len(touch_df['channel 1']))
-    b, a = scipy.signal.butter(5, 1000 / (SAMPLE_RATE / 2), btype='highpass', output='ba')
+    b, a = scipy.signal.butter(5, 1000 / (sample_rate / 2), btype='highpass', output='ba')
     filt_touch = scipy.signal.filtfilt(b, a, touch_df['channel 1'])
     plot_spectogram(chirp_gen_df, sample_rate=96000)
     ax1 = plt.subplot((211))
