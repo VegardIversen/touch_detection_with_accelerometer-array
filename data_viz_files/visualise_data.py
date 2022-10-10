@@ -90,7 +90,7 @@ def compare_signals(df1, df2,
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
 
-    # Spectogram of signal 1
+    # Spectrogram of signal 1
     ax3 = plt.subplot(232, sharex=ax1)
     plt.specgram(df1, Fs=sample_rate, xextent=(time_start, time_end))
     plt.axis(ymax=freq_max)
@@ -98,7 +98,7 @@ def compare_signals(df1, df2,
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
 
-    # Spectogram of signal 2
+    # Spectrogram of signal 2
     plt.subplot(235, sharex=ax1, sharey=ax3)
     plt.specgram(df2, Fs=sample_rate, xextent=(time_start, time_end))
     plt.title('Spectrogram of signal 2')
