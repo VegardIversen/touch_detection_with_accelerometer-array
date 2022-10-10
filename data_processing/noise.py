@@ -15,7 +15,6 @@ OUTPUT_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\base_da
 Path(OUTPUT_FOLDER).parent.mkdir(parents=True, exist_ok=True)
 
 
-
 def SetNoiseAvg(files=FILES, save=True, output_folder=OUTPUT_FOLDER):
     n_files = 0
     for idx, file in enumerate(files):
@@ -24,13 +23,14 @@ def SetNoiseAvg(files=FILES, save=True, output_folder=OUTPUT_FOLDER):
         if idx == 0:
             df_channel_sum = df
         else:
-            df_channel_sum += df 
+            df_channel_sum += df
         n_files += 1
 
-    df_channel_mean = df_channel_sum/n_files 
+    df_channel_mean = df_channel_sum/n_files
     print(df_channel_mean.describe())
     df_channel_mean.to_csv(output_folder, index=False)
     return df_channel_mean
+
 
 def adaptive_filter_RLS(signal, n=20, mu=0.9):
     x = pa.input_from_history(signal, n)[:-1]
@@ -38,6 +38,7 @@ def adaptive_filter_RLS(signal, n=20, mu=0.9):
     f = pa.filters.FilterRLS(mu=mu, n=n)
     y, e, w = f.run(sig, x)
     return y, e, w
+
 
 def adaptive_filter_NLMS(signal, n=10, mu=0.25):
     x = pa.input_from_history(signal, n)[:-1]
@@ -57,6 +58,8 @@ def noise_reduce_signal(sig, noise, show=False):
         plt.plot(reduced_noise)
         plt.show()
     return reduced_noise
+
+
 if __name__ == '__main__':
     #SetNoiseAvg()
     noise = pd.read_csv(OUTPUT_FOLDER, delimiter=DATA_DELIMITER)
