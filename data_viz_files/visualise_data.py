@@ -80,7 +80,7 @@ def compare_signals(df1, df2,
     time signal, spectogram, fft and (optionally) difference signal
     """
     # Time signal 1
-    time_axis = np.linspace(0, len(df1) // sample_rate, num=len(df1))
+    time_axis = np.linspace(time_start, time_start + len(df1) / sample_rate, num=len(df1))
     ax1 = plt.subplot(231)
     ax1.set_xlim(time_start, time_end)
     plt.grid()
@@ -99,16 +99,15 @@ def compare_signals(df1, df2,
 
     # Spectogram of signal 1
     ax3 = plt.subplot(232, sharex=ax1)
-    plt.specgram(df1, Fs=sample_rate)
-    plt.axis(ymax=freq_max, xmin=time_start, xmax=time_end)
+    plt.specgram(df1, Fs=sample_rate, xextent=(time_start, time_end))
+    plt.axis(ymax=freq_max)
     plt.title('Spectrogram of signal 1')
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
 
     # Spectogram of signal 2
-    plt.subplot(235, sharex=ax3, sharey=ax3)
-    plt.specgram(df2, Fs=sample_rate)
-    plt.axis(ymin=0, ymax=freq_max, xmin=time_start, xmax=time_end)
+    plt.subplot(235, sharex=ax1, sharey=ax3)
+    plt.specgram(df2, Fs=sample_rate, xextent=(time_start, time_end))
     plt.title('Spectrogram of signal 2')
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
@@ -116,7 +115,7 @@ def compare_signals(df1, df2,
     # FFT of signal 1
     ax5 = plt.subplot(233)
     ax5.set_xlim(left=0, right=freq_max)
-    data_fft = scipy.fft.fft(crop_data(df1.values), axis=0)
+    data_fft = scipy.fft.fft(df1.values, axis=0)
     fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / sample_rate)
     data_fft = np.fft.fftshift(data_fft)
     fftfreq = np.fft.fftshift(fftfreq)
@@ -124,11 +123,12 @@ def compare_signals(df1, df2,
     plt.title('FFT of signal 1')
     plt.xlabel("Frequency [Hz]")
     plt.ylabel("Amplitude [dB]")
-    plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
+    # plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
+    plt.plot(fftfreq, (np.angle(data_fft, deg=True)))
 
     # FFT of signal 2
     plt.subplot(236, sharex=ax5, sharey=ax5)
-    data_fft = scipy.fft.fft(crop_data(df2.values), axis=0)
+    data_fft = scipy.fft.fft(df2.values, axis=0)
     fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / sample_rate)
     data_fft = np.fft.fftshift(data_fft)
     fftfreq = np.fft.fftshift(fftfreq)

@@ -22,7 +22,7 @@ def main():
 
     signal_df = crop_data(signal_df, time_start=TIME_START, time_end=TIME_END)
 
-    find_indices_of_peaks(signal_df['channel 1'], plot=True)
+    compare_signals(signal_df['channel 1'], signal_df['channel 1'], sample_rate=SAMPLE_RATE, time_start=TIME_START, time_end=TIME_END)
 
 
 if __name__ == '__main__':
