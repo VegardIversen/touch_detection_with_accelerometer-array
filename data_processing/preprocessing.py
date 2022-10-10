@@ -1,22 +1,22 @@
-import numpy as np
 from scipy import signal
 
 
 """FILTERING"""
 
 
-def high_pass_filter(sig, cutoff=1000, fs=150000, order=5):
-    """High pass filter a signal."""
-    b, a = signal.butter(order, cutoff / (fs / 2), btype='highpass')
-    filtered_sig = signal.filtfilt(b, a, sig)
-    return filtered_sig
+def hp_or_lp_filter(sig, filtertype, cutoff=1000, fs=150000, order=5):
+    """filtertype: 'highpass' or 'lowpass'"""
 
+    b, a = signal.butter(order, cutoff / (fs / 2), btype=filtertype)
 
-def low_pass_filter(sig, cutoff=1000, fs=150000, order=5):
-    """Low pass filter a signal."""
-    b, a = signal.butter(order, cutoff / (fs / 2), btype='lowpass')
-    filtered_sig = signal.filtfilt(b, a, sig)
-    return filtered_sig
+    sig_filtered = sig
+    for channel in sig_filtered:
+        # Probably a better way to do this than a double for loop
+        sig_filtered[channel] = signal.filtfilt(b,
+                                                a,
+                                                sig[channel].values)
+
+    return sig_filtered
 
 
 def filter_signal(sig, freqs, sample_rate=150000):
@@ -24,16 +24,14 @@ def filter_signal(sig, freqs, sample_rate=150000):
     with a Q factor given by an array of <Qs>.
     """
     for freq in freqs:
-        # We want smaller q-factors for higher frequencies
-        q = freq ** (1 / 3)
+        q = freq ** (1 / 3) # We want smaller q-factors for higher frequencies
         b_notch, a_notch = signal.iirnotch(freq / (0.5 * sample_rate), q)
         sig_filtered = sig
-
         for channel in sig_filtered:
+            # Probably a better way to do this than a double for loop
             sig_filtered[channel] = signal.filtfilt(b_notch,
                                                     a_notch,
                                                     sig[channel].values)
-
     return sig_filtered
 
 
