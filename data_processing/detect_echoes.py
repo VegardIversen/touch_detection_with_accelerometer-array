@@ -6,7 +6,7 @@ import scipy.signal as signal
 import matplotlib.pyplot as plt
 from csv_to_df import csv_to_df
 from data_viz_files.visualise_data import crop_data
-from filtering.filters import high_pass_filter, low_pass_filter
+from data_processing.preprocessing import high_pass_filter, low_pass_filter
 
 
 def find_indices_of_peaks(sig, plot=False):

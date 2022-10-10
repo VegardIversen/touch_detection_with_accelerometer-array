@@ -5,20 +5,7 @@ from pathlib import Path
 import scipy
 from scipy import signal
 from csv_to_df import csv_to_df
-
-
-def crop_data(df, time_start=0, time_end=5, sample_rate=150000):
-    """Crop data to the range given by the
-    global variables CROP_START and CROP_END.
-    """
-    data_cropped = df.truncate(before=(time_start * sample_rate),
-                               after=(time_end * sample_rate))
-    return data_cropped
-
-
-def crop_data_threshold(data, threshold=0.0006):
-    data_cropped = data.loc[(data > threshold).any(axis=1)]
-    return data_cropped
+from data_processing.preprocessing import crop_data
 
 
 def plot_fft(df, sample_rate=150000, window=False):

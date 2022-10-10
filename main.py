@@ -1,8 +1,9 @@
-from data_viz_files.visualise_data import compare_signals, crop_data, crop_data_threshold, plot_data_vs_noiseavg
+from data_viz_files.visualise_data import compare_signals, plot_data_vs_noiseavg
 from data_processing.noise import adaptive_filter_RLS, adaptive_filter_NLMS, noise_reduce_signal
 from csv_to_df import csv_to_df
 from data_processing.find_propagation_speed import find_propagation_speed
-from data_processing.detect_delays import find_indices_of_peaks
+from data_processing.detect_echoes import find_indices_of_peaks
+from data_processing.preprocessing import crop_data
 
 
 print('\n' + __file__ + '\n')
@@ -22,7 +23,6 @@ def main():
     signal_df = crop_data(signal_df, time_start=TIME_START, time_end=TIME_END)
 
     find_indices_of_peaks(signal_df['channel 1'], plot=True)
-
 
 
 if __name__ == '__main__':
