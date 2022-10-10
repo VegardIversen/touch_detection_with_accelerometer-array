@@ -9,13 +9,11 @@ from data_processing.preprocessing import crop_data
 
 
 def plot_fft(df, sample_rate=150000, window=False):
-
     if window:
         hamming_window = scipy.signal.hamming(len(df))
         data_fft = scipy.fft.fft(df.values * hamming_window)
     else:
         data_fft = scipy.fft.fft(df.values, axis=0)
-
     fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / sample_rate)
     plt.grid()
     plt.title('fft of signal')
@@ -28,14 +26,9 @@ def plot_fft(df, sample_rate=150000, window=False):
     plt.show()
 
 
-def plot_fft_with_hamming(df, sample_rate=150000):
-    plot_fft(df, window=True)
-
-
 def plot_data(df, crop=True):
     if crop:
         df = crop_data(df)
-
     df.plot()
     plt.legend(df.columns)
     plt.grid()
@@ -97,7 +90,7 @@ def compare_signals(df1, df2,
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
 
-    # Spectogram of signal 1
+    # Spectrogram of signal 1
     ax3 = plt.subplot(232, sharex=ax1)
     plt.specgram(df1, Fs=sample_rate, xextent=(time_start, time_end))
     plt.axis(ymax=freq_max)
@@ -105,7 +98,7 @@ def compare_signals(df1, df2,
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
 
-    # Spectogram of signal 2
+    # Spectrogram of signal 2
     plt.subplot(235, sharex=ax1, sharey=ax3)
     plt.specgram(df2, Fs=sample_rate, xextent=(time_start, time_end))
     plt.title('Spectrogram of signal 2')
@@ -123,8 +116,10 @@ def compare_signals(df1, df2,
     plt.title('FFT of signal 1')
     plt.xlabel("Frequency [Hz]")
     plt.ylabel("Amplitude [dB]")
-    # plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
-    plt.plot(fftfreq, (np.angle(data_fft, deg=True)))
+    plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
+    # data_fft_phase = data_fft
+    # data_fft_phase[data_fft_phase < 0.1] = 0
+    # plt.plot(fftfreq, (np.angle( data_fft_phase, deg=True)))
 
     # FFT of signal 2
     plt.subplot(236, sharex=ax5, sharey=ax5)
