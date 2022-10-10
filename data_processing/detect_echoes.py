@@ -6,14 +6,14 @@ import scipy.signal as signal
 import matplotlib.pyplot as plt
 from csv_to_df import csv_to_df
 from data_viz_files.visualise_data import crop_data
-from data_processing.preprocessing import high_pass_filter, low_pass_filter
+from data_processing.preprocessing import hp_or_lp_filter
 
 
 def find_indices_of_peaks(sig, plot=False):
     """Find the indices of the peaks in the signal."""
     sig_np = sig.to_numpy()
     # Crop the signal
-    sig_np_filtered = high_pass_filter(sig_np, cutoff=1000, order=5)
+    sig_np_filtered = hp_or_lp_filter(sig_np, filtertype='highpass', cutoff=1000, order=5)
     sig_np_filtered_hilbert = get_hilbert_envelope(sig_np_filtered)
     # peak_indices = signal.argrelmax(sig_np_filtered_hilbert, order=10000)[0]
     # peak_indices = signal.find_peaks(sig_np_filtered_hilbert, height=0.0005, threshold=0.0001)[0]
