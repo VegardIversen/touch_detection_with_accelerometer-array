@@ -39,6 +39,7 @@ def filter_signal(sig, freqs, sample_rate=150000):
 
 """CROPPING"""
 
+
 def crop_data(df, time_start=0, time_end=5, sample_rate=150000):
     """Crop data to the range given by the
     global variables CROP_START and CROP_END.
