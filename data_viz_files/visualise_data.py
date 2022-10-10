@@ -116,8 +116,10 @@ def compare_signals(df1, df2,
     plt.title('FFT of signal 1')
     plt.xlabel("Frequency [Hz]")
     plt.ylabel("Amplitude [dB]")
-    # plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
-    plt.plot(fftfreq, (np.angle( data_fft, deg=True)))
+    plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
+    # data_fft_phase = data_fft
+    # data_fft_phase[data_fft_phase < 0.1] = 0
+    # plt.plot(fftfreq, (np.angle( data_fft_phase, deg=True)))
 
     # FFT of signal 2
     plt.subplot(236, sharex=ax5, sharey=ax5)
