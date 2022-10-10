@@ -9,7 +9,8 @@ d = 0.08
 # if speed in material is 300, then the maximum time delay between two sensor
 # are t_max=0.08s/300m/s = 0.00026666666 s, with sampling freq on 150k Hz
 # this will approximate 40 samples
-def correlate(x, y, upSamplingFactor=1, maxdelay=40, mod='valid'):  # maxdelay calculated from formula, bc of distance between mics
+#with new measurement for speed around 500 m/s, we ge t_max = 0.00015733474 s which with samplerate of 1500000 Hz is 23.6 samples
+def correlate(x, y, upSamplingFactor=1, maxdelay=24, mod='valid'):  # maxdelay calculated from formula, bc of distance between mics
     corr = np.abs(np.correlate(x, y.iloc[(maxdelay * upSamplingFactor):-(maxdelay * upSamplingFactor)], mode=mod))
     return corr
 
@@ -22,7 +23,7 @@ def degree(lags, positive_angl=True):
     return np.degrees(theta)
 
 
-def lag(corr, upSamplingFactor=1, maxdelay=40): # max delay on our circuit is 5, tor is 9.
+def lag(corr, upSamplingFactor=1, maxdelay=24): # max delay on our circuit is 5, tor is 9.
     lag = np.argmax(corr) - (maxdelay * upSamplingFactor) # calculate lag, 
     return lag
 
