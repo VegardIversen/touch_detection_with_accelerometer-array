@@ -7,11 +7,12 @@ from scipy import signal
 from csv_to_df import csv_to_df
 
 
-def crop_data(data, time_start=0, time_end=5, sample_rate=150000):
+def crop_data(df, time_start=0, time_end=5, sample_rate=150000):
     """Crop data to the range given by the
     global variables CROP_START and CROP_END.
     """
-    data_cropped = data[int(time_start * sample_rate):int(time_end * sample_rate)]
+    data_cropped = df.truncate(before=(time_start * sample_rate),
+                               after=(time_end * sample_rate))
     return data_cropped
 
 
