@@ -1,5 +1,3 @@
-from symbol import file_input
-from threading import TIMEOUT_MAX
 from time import time
 import numpy as np
 import scipy.signal as signal

@@ -19,10 +19,35 @@ def plot_fft(df, sample_rate=150000, window=False):
     plt.title('fft of signal')
     plt.xlabel("Frequency [hz]")
     plt.ylabel("Amplitude")
-    plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
+    plt.plot(np.fft.fftshift(fftfreq), 20 * np.log10(np.abs(np.fft.fftshift(data_fft))))
     ax = plt.subplot(1, 1, 1)
     # Only plot positive frequencies
     ax.set_xlim(0)
+    plt.show()
+
+def plot_2fft(df1, df2, sample_rate=150000, window=False):
+    if window:
+        hamming_window1 = scipy.signal.hamming(len(df1))
+        data_fft1 = scipy.fft.fft(df1.values * hamming_window1, axis=0)
+        hamming_window2 = scipy.signal.hamming(len(df1))
+        data_fft2 = scipy.fft.fft(df2.values * hamming_window2, axis=0)
+    else:
+        data_fft1 = scipy.fft.fft(df1.values, axis=0)
+        data_fft2 = scipy.fft.fft(df2.values, axis=0)
+    fftfreq1 = scipy.fft.fftfreq(len(data_fft1),  1 / sample_rate)
+    fftfreq2 = scipy.fft.fftfreq(len(data_fft2),  1 / sample_rate)
+    plt.grid()
+    ax1 = plt.subplot(211)
+    plt.title(f'fft of {df1.name}')
+    plt.xlabel("Frequency [hz]")
+    plt.ylabel("Amplitude")
+    plt.plot(np.fft.fftshift(fftfreq1), 20 * np.log10(np.abs(np.fft.fftshift(data_fft1))))
+    plt.subplot(212, sharex=ax1, sharey=ax1)
+    plt.title(f'fft of {df2.name}')
+    plt.xlabel("Frequency [hz]")
+    plt.ylabel("Amplitude")
+    plt.plot(np.fft.fftshift(fftfreq2), 20 * np.log10(np.abs(np.fft.fftshift(data_fft2))))
+    plt.tight_layout()
     plt.show()
 
 
