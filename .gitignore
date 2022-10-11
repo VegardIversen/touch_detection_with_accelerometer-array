@@ -59,6 +59,7 @@ touch/
 *.png
 *.gif
 *.csv
+main.py
 
 #folders
 
