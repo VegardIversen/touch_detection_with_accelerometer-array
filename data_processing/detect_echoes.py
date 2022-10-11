@@ -46,6 +46,13 @@ def get_hilbert_envelope(sig_np):
     return amplitude_envelope
 
 
+def find_first_peak(sig_np, height):
+    """Return the index of the first peak of sig_np"""
+    peaks, _ = signal.find_peaks(sig_np.to_numpy(), height=height)
+    peak_index = peaks[0]
+    return peak_index
+
+
 if __name__ == '__main__':
     signal_df = csv_to_df(file_folder='first_test_touch_passive_setup2',
                           file_name='touch_test_passive_setup2_place_C3_center_v2')
