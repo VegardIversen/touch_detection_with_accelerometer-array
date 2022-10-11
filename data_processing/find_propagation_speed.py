@@ -2,6 +2,8 @@ import numpy as np
 import scipy.signal as signal
 from csv_to_df import csv_to_df
 from data_processing.preprocessing import hp_or_lp_filter
+from data_processing.detect_echoes import find_first_peak
+import matplotlib.pyplot as plt
 
 
 def find_propagation_speed(df, ch1, ch2, sr, distance_between_sensors=0.1):
@@ -25,9 +27,7 @@ def find_propagation_speed(df, ch1, ch2, sr, distance_between_sensors=0.1):
     return propagation_speed
 
 
-
-
-def find_propagation_speed_func(chirp_df, start_freq, end_freq, steps=1000, sample_rate=150000):
+def find_propagation_speed_corr(chirp_df, start_freq, end_freq, steps=1000, sample_rate=150000):
     frequencies = np.array([])
     freq_speeds = np.array([])
 
@@ -35,11 +35,11 @@ def find_propagation_speed_func(chirp_df, start_freq, end_freq, steps=1000, samp
         chirp_bp = hp_or_lp_filter(sig=chirp_df,
                                    filtertype='lowpass',
                                    cutoff=freq,
-                                   order=5)
+                                   order=8)
         chirp_bp = hp_or_lp_filter(sig=chirp_df,
                                    filtertype='highpass',
                                    cutoff=freq,
-                                   order=5)
+                                   order=8)
         freq_prop_speed = find_propagation_speed(df=chirp_bp,
                                                  ch1='channel 1',
                                                  ch2='chirp',
@@ -50,10 +50,97 @@ def find_propagation_speed_func(chirp_df, start_freq, end_freq, steps=1000, samp
     return frequencies, freq_speeds
 
 
+def find_propagation_speed_first_peak(chirp_df,
+                                      start_freq,
+                                      end_freq,
+                                      time_start=0,
+                                      time_end=5,
+                                      distance=0.1,
+                                      steps=100,
+                                      sample_rate=150000,
+                                      plot=False):
+    """Find the propagation speed by looking at the first peaks"""
+    frequencies = np.array([])
+    freq_speeds = np.array([])
+
+    for freq in range(start_freq,
+                      end_freq + (end_freq - start_freq) // steps,
+                      (end_freq - start_freq) // steps):
+        time_axis = np.linspace(time_start, time_end, len(chirp_df['chirp']))
+
+        chirp_bp = hp_or_lp_filter(sig=chirp_df,
+                                   filtertype='lowpass',
+                                   cutoff=freq,
+                                   order=8)
+        chirp_bp = hp_or_lp_filter(sig=chirp_bp,
+                                   filtertype='highpass',
+                                   cutoff=freq,
+                                   order=8)
+
+        # Apply a window function to the signal
+        chirp_bp['channel 1'] = chirp_bp['channel 1'] * signal.windows.tukey(len(chirp_bp['channel 1']), alpha=0.1)
+        chirp_bp['channel 3'] = chirp_bp['channel 3'] * signal.windows.tukey(len(chirp_bp['channel 3']), alpha=0.1)
+
+        height = np.abs(np.max(chirp_bp['channel 1'].truncate(before=0, after=0.5 * sample_rate) * 1.5))
+
+        peak_index_ch1 = find_first_peak(chirp_bp['channel 1'], height)
+        peak_index_ch3 = find_first_peak(chirp_bp['channel 3'], height)
+        # peak_index_chirp = find_first_peak(chirp_bp['chirp'], height)
+
+        """Use the first peaks in ch1 and ch3 to find the propagation speed"""
+        sample_delay_ch1_ch3 = np.abs(peak_index_ch1 - peak_index_ch3)
+        time_delay_ch1_ch3 = sample_delay_ch1_ch3 / sample_rate
+        if time_delay_ch1_ch3 != 0:
+            freq_prop_speed_ch1_ch3 = np.abs(distance / time_delay_ch1_ch3)
+        else:
+            freq_prop_speed_ch1_ch3 = -1
+        # print('\nPropagation speed (between channel 1 and channel 3) for',
+        #       freq / 1000, 'kHz is', freq_prop_speed_ch1_ch3, 'm/s')
+
+        """Could also use the chirp signal to find the propagation speed"""
+        # sample_delay_chirp_ch1 = np.abs(peak_index_ch1 - peak_index_chirp)
+        # time_delay_chirp_ch1 = sample_delay_chirp_ch1 / sample_rate
+        # freq_prop_speed_chirp_ch1 = np.abs(distance / time_delay_chirp_ch1)
+        # print('\nPropagation speed (between channel 1 and the chrip) for', freq / 1000, 'kHz is', freq_prop_speed_chirp_ch1, 'm/s')
+
+        if plot:
+            # Plot the propagation speed vs frequency
+            time_axis = np.linspace(time_start, time_end, len(chirp_bp['channel 1']))
+            plt.subplot(1, 1, 1)
+
+            plt.plot(time_axis,
+                     chirp_bp['channel 1'],
+                     label='channel 1')
+
+            plt.plot(time_axis[peak_index_ch1],
+                     chirp_bp['channel 1'][peak_index_ch1],
+                     'rx',
+                     label='peak ch1')
+
+            plt.plot(time_axis,
+                     chirp_bp['channel 3'],
+                     label='chirp')
+
+            plt.plot(time_axis[peak_index_ch3],
+                     chirp_bp['channel 3'][peak_index_ch3],
+                     'rx',
+                     label='peak ch3')
+
+            plt.legend()
+            plt.title('Chirp signal of frequency ' + str(freq) + ' Hz')
+            plt.xlabel('Time (s)')
+            plt.ylabel('Amplitude (V)')
+            plt.grid()
+            plt.show()
+
+        frequencies = np.append(frequencies, freq)
+        freq_speeds = np.append(freq_speeds, freq_prop_speed_ch1_ch3)
+
+    return frequencies, freq_speeds
+
+
 if __name__ == '__main__':
     chirp_df = csv_to_df(file_folder='div_files',
                          file_name='chirp_test_fs_150000_t_max_0_1s_20000-60000hz_1vpp_1cyc_setup3_v2')
-
-
 
     find_propagation_speed(chirp_df, sr=150000)
