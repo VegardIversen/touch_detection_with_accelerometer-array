@@ -25,6 +25,7 @@ def plot_fft(df, sample_rate=150000, window=False):
     ax.set_xlim(0)
     plt.show()
 
+
 def plot_2fft(df1, df2, sample_rate=150000, window=False):
     if window:
         hamming_window1 = scipy.signal.hamming(len(df1))
@@ -117,18 +118,20 @@ def compare_signals(df1, df2,
 
     # Spectrogram of signal 1
     ax3 = plt.subplot(232, sharex=ax1)
-    plt.specgram(df1, Fs=sample_rate, xextent=(time_start, time_end))
+    plt.specgram(df1, Fs=sample_rate)
     plt.axis(ymax=freq_max)
     plt.title('Spectrogram of signal 1')
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
+    plt.colorbar()
 
     # Spectrogram of signal 2
     plt.subplot(235, sharex=ax1, sharey=ax3)
-    plt.specgram(df2, Fs=sample_rate, xextent=(time_start, time_end))
+    plt.specgram(df2, Fs=sample_rate)
     plt.title('Spectrogram of signal 2')
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
+    plt.colorbar()
 
     # FFT of signal 1
     ax5 = plt.subplot(233)
