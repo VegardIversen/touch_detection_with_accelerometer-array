@@ -4,7 +4,7 @@ from scipy import signal
 """FILTERING"""
 
 
-def hp_or_lp_filter(sig, filtertype, cutoff=1000, fs=150000, order=5):
+def hp_or_lp_filter(sig, filtertype, cutoff=1000, fs=150000, order=8):
     """filtertype: 'highpass' or 'lowpass'"""
 
     b, a = signal.butter(order, cutoff / (fs / 2), btype=filtertype)
