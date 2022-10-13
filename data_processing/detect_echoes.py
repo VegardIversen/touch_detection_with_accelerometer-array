@@ -48,7 +48,7 @@ def get_hilbert_envelope(sig_np):
 
 def find_first_peak(sig_np, height):
     """Return the index of the first peak of sig_np"""
-    peaks, _ = signal.find_peaks(sig_np.to_numpy(), height)
+    peaks, _ = signal.find_peaks(sig_np, height)
     if peaks.size == 0:
         # raise ValueError('No peaks found!')
         return 0
