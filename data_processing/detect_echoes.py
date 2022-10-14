@@ -4,7 +4,7 @@ import scipy.signal as signal
 import matplotlib.pyplot as plt
 from csv_to_df import csv_to_df
 from data_viz_files.visualise_data import crop_data
-from data_processing.preprocessing import hp_or_lp_filter
+from data_processing.preprocessing import filter_general
 
 
 def find_indices_of_peaks(sig_np, plot=False):

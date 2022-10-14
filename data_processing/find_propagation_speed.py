@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.signal as signal
 from csv_to_df import csv_to_df
-from data_processing.preprocessing import hp_or_lp_filter
+from data_processing.preprocessing import filter_general
 from data_processing.detect_echoes import find_first_peak
 import matplotlib.pyplot as plt
 
@@ -32,11 +32,11 @@ def find_propagation_speed_corr(chirp_df, start_freq, end_freq, steps=1000, samp
     freq_speeds = np.array([])
 
     for freq in range(start_freq, end_freq, steps):
-        chirp_bp = hp_or_lp_filter(sig=chirp_df,
+        chirp_bp = filter_general(sig=chirp_df,
                                    filtertype='lowpass',
                                    cutoff=freq,
                                    order=8)
-        chirp_bp = hp_or_lp_filter(sig=chirp_df,
+        chirp_bp = filter_general(sig=chirp_df,
                                    filtertype='highpass',
                                    cutoff=freq,
                                    order=8)
@@ -68,11 +68,11 @@ def find_propagation_speed_first_peak(chirp_df,
                       (end_freq - start_freq) // steps):
         time_axis = np.linspace(time_start, time_end, len(chirp_df['chirp']))
 
-        chirp_bp = hp_or_lp_filter(sig=chirp_df,
+        chirp_bp = filter_general(sig=chirp_df,
                                    filtertype='lowpass',
                                    cutoff=freq,
                                    order=8)
-        chirp_bp = hp_or_lp_filter(sig=chirp_bp,
+        chirp_bp = filter_general(sig=chirp_bp,
                                    filtertype='highpass',
                                    cutoff=freq,
                                    order=8)
