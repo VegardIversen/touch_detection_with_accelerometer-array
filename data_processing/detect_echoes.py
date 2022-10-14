@@ -41,6 +41,7 @@ def find_indices_of_peaks(sig_np, plot=False):
 
 def get_hilbert_envelope(sig_np):
     """Get the Hilbert envelope from a numpy array sig_np"""
+    sig_np = sig_np.copy()
     analytic_signal = signal.hilbert(sig_np)
     amplitude_envelope = np.abs(analytic_signal)
     return amplitude_envelope

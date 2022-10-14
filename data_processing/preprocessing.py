@@ -9,7 +9,7 @@ def hp_or_lp_filter(sig, filtertype, cutoff=1000, fs=150000, order=8):
 
     b, a = signal.butter(order, cutoff / (fs / 2), btype=filtertype)
 
-    sig_filtered = sig
+    sig_filtered = sig.copy()
     for channel in sig_filtered:
         # Probably a better way to do this than a double for loop
         sig_filtered[channel] = signal.filtfilt(b,
