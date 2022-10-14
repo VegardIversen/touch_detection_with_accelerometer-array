@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from csv_to_df import csv_to_df
 from data_viz_files.visualise_data import crop_data
 from data_processing.preprocessing import filter_general
+import pandas as pd
 
 
 def find_indices_of_peaks(sig_np, plot=False):
@@ -39,12 +40,15 @@ def find_indices_of_peaks(sig_np, plot=False):
     return peak_indices
 
 
-def get_hilbert_envelope(sig_np):
-    """Get the Hilbert envelope from a numpy array sig_np"""
-    sig_np = sig_np.copy()
-    analytic_signal = signal.hilbert(sig_np)
-    amplitude_envelope = np.abs(analytic_signal)
-    return amplitude_envelope
+def get_hilbert_envelope(sig):
+    """Get the Hilbert envelope for all channels in df"""
+    sig_hilb = sig.copy()
+    if isinstance(sig, np.ndarray):
+        sig_hilb = np.abs(signal.hilbert(sig))
+    elif isinstance(sig, pd.DataFrame):
+        for channel in sig_hilb:
+            sig_hilb[channel] = np.abs(signal.hilbert(sig[channel]))
+        return sig_hilb
 
 
 def find_first_peak(sig_np, height):
