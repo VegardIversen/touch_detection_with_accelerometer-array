@@ -9,11 +9,18 @@ from data_processing.preprocessing import crop_data
 
 
 def plot_fft(df, sample_rate=150000, window=False):
-    if window:
-        hamming_window = scipy.signal.hamming(len(df))
-        data_fft = scipy.fft.fft(df.values * hamming_window)
-    else:
-        data_fft = scipy.fft.fft(df.values, axis=0)
+    if isinstance(df, pd.DataFrame):
+        if window:
+            hamming_window = scipy.signal.hamming(len(df))
+            data_fft = scipy.fft.fft(df.values * hamming_window)
+        else:
+            data_fft = scipy.fft.fft(df.values, axis=0)
+    else: 
+        if window:
+            hamming_window = scipy.signal.hamming(len(df))
+            data_fft = scipy.fft.fft(df * hamming_window)
+        else:
+            data_fft = scipy.fft.fft(df, axis=0)
     fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / sample_rate)
     plt.grid()
     plt.title('fft of signal')
@@ -39,6 +46,7 @@ def plot_2fft(df1, df2, sample_rate=150000, window=False):
     fftfreq2 = scipy.fft.fftfreq(len(data_fft2),  1 / sample_rate)
     plt.grid()
     ax1 = plt.subplot(211)
+    plt.grid()
     plt.title(f'fft of {df1.name}')
     plt.xlabel("Frequency [hz]")
     plt.ylabel("Amplitude")

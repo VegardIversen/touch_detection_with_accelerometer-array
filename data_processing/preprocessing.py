@@ -1,5 +1,5 @@
 from scipy import signal
-
+import pandas as pd
 
 """FILTERING"""
 
@@ -10,11 +10,18 @@ def hp_or_lp_filter(sig, filtertype, cutoff=1000, fs=150000, order=8):
     b, a = signal.butter(order, cutoff / (fs / 2), btype=filtertype)
 
     sig_filtered = sig
-    for channel in sig_filtered:
-        # Probably a better way to do this than a double for loop
-        sig_filtered[channel] = signal.filtfilt(b,
-                                                a,
-                                                sig[channel].values)
+    if isinstance(sig, pd.DataFrame):
+        for channel in sig_filtered:
+            # Probably a better way to do this than a double for loop
+            sig_filtered[channel] = signal.filtfilt(b,
+                                                    a,
+                                                    sig[channel].values)
+    else:
+        sig_filtered = signal.filtfilt(b,
+                                       a,
+                                       sig)
+
+
 
     return sig_filtered
 
@@ -48,5 +55,8 @@ def crop_data(df, time_start=0, time_end=5, sample_rate=150000):
 
 
 def crop_data_threshold(data, threshold=0.0006):
-    data_cropped = data.loc[(data > threshold).any(axis=1)]
+    if isinstance(data, pd.DataFrame):
+        data_cropped = data.loc[(data > threshold).any(axis=1)]
+    else:
+        data_cropped = data.loc[data > threshold]
     return data_cropped

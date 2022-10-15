@@ -1,4 +1,3 @@
-from cProfile import label
 import numpy as np
 from csv_to_df import csv_to_df
 from scipy import signal
@@ -9,10 +8,10 @@ def transfer_function():
     CHANNEL_NAMES_CHIRP = ['channel 1', 'channel 2', 'channel 3', 'chirp']
     CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3']
     chirp_df = csv_to_df(file_folder='div_files',
-                        file_name='chirp_test_fs_150000_t_max_1s_20000-40000hz_1vpp_1cyc_setup3_v3', channel_names=CHANNEL_NAMES_CHIRP)
+                        file_name='chirp_test_fs_150000_t_max_1s_20000-60000hz_1vpp_1cyc_setup3_v3', channel_names=CHANNEL_NAMES_CHIRP)
 
     chirp_gen_df = csv_to_df(file_folder='div_files',
-                                file_name='chirp_custom_fs_150000_tmax_1_20000-40000_method_linear', channel_names=['chirp'])
+                                file_name='chirp_custom_fs_150000_tmax_1_20000-60000_method_linear', channel_names=['chirp'])
 
     #b, a = signal.butter(5, 1000 / (SAMPLE_RATE / 2), btype='highpass', output='ba')
     #filt_touch = signal.filtfilt(b, a, touch_df['channel 1'])
