@@ -3,8 +3,7 @@ import numpy as np
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 from csv_to_df import csv_to_df
-from data_viz_files.visualise_data import crop_data
-from data_processing.preprocessing import filter_general
+from data_processing.preprocessing import filter_general, crop_data
 import pandas as pd
 
 
