@@ -7,15 +7,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from data_viz_files.visualise_data import compare_signals, plot_data_vs_noiseavg, plot_data, plot_fft, plot_2fft
 from data_processing.noise import adaptive_filter_RLS, adaptive_filter_NLMS, noise_reduce_signal
-<<<<<<< HEAD
-from data_processing.find_propagation_speed import find_propagation_speed, find_propagation_speed_plot, find_propagation_speed_first_peak
-from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_hilbert_envelope
-from data_processing.preprocessing import crop_data, crop_data_threshold, filter_general
-=======
 from data_processing.find_propagation_speed import find_propagation_speed, find_propagation_speed_corr
 from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_hilbert_envelope, get_expected_reflections_pos
 from data_processing.preprocessing import crop_data, crop_data_threshold, hp_or_lp_filter
->>>>>>> d4b72ec9bc01bc620a532b29e33f76ed9471976d
 from data_processing.transfer_function import transfer_function
 import matplotlib.pyplot as plt
 from data_processing.signal_separation import signal_sep
@@ -35,9 +29,6 @@ CHIRP_CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3', 'chirp']
 
 
 def main():
-<<<<<<< HEAD
-    pass
-=======
     #corr, chirp = transfer_function()
     #corr_df = pd.Series(corr, name='Corr sig')
     chirp, sens = signal_sep()
@@ -68,7 +59,6 @@ def main():
     #signal_df = csv_to_df(file_folder='first_test_touch_passive_setup2', file_name='touch_test_passive_setup2_place_A3_center_v2')
     #signal_df = crop_data(signal_df, time_start=TIME_START, time_end=TIME_END)
     # signal_df = crop_data(signal_df, time_start=TIME_START, time_end=TIME_END)
->>>>>>> d4b72ec9bc01bc620a532b29e33f76ed9471976d
 
 
 if __name__ == '__main__':
