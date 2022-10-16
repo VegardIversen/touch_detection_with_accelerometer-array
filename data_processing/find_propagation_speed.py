@@ -35,6 +35,7 @@ def find_propagation_speed_plot(chirp_df,
     """Return an array of frequencies and an array of propagation speeds"""
     frequencies = np.array([])
     freq_speeds = np.array([])
+    chirp_bps = np.array([])
 
     for freq in range(start_freq, end_freq, steps):
         chirp_bp = filter_general(sig=chirp_df,
@@ -48,97 +49,9 @@ def find_propagation_speed_plot(chirp_df,
                                                  sr=sample_rate)
         frequencies = np.append(frequencies, freq)
         freq_speeds = np.append(freq_speeds, freq_prop_speed)
+        chirp_bps = np.append(chirp_bps, chirp_bp)
 
-    return frequencies, freq_speeds
-
-
-def find_propagation_speed_first_peak(chirp_df,
-                                      start_freq,
-                                      end_freq,
-                                      time_start=0,
-                                      time_end=5,
-                                      distance=0.1,
-                                      steps=100,
-                                      sample_rate=150000,
-                                      plot=False):
-    """Find the propagation speed by looking at the first peaks"""
-    frequencies = np.array([])
-    freq_speeds = np.array([])
-
-    for freq in range(start_freq,
-                      end_freq + (end_freq - start_freq) // steps,
-                      (end_freq - start_freq) // steps):
-        time_axis = np.linspace(time_start, time_end, len(chirp_df['chirp']))
-
-        chirp_bp = filter_general(sig=chirp_df,
-                                   filtertype='lowpass',
-                                   cutoff=freq,
-                                   order=8)
-        chirp_bp = filter_general(sig=chirp_bp,
-                                   filtertype='highpass',
-                                   cutoff=freq,
-                                   order=8)
-
-        # Apply a window function to the signal
-        chirp_bp['channel 1'] = chirp_bp['channel 1'] * signal.windows.tukey(len(chirp_bp['channel 1']), alpha=0.1)
-        chirp_bp['channel 3'] = chirp_bp['channel 3'] * signal.windows.tukey(len(chirp_bp['channel 3']), alpha=0.1)
-
-        height = np.abs(np.max(chirp_bp['channel 1'].truncate(before=0, after=0.5 * sample_rate) * 1.5))
-
-        peak_index_ch1 = find_first_peak(chirp_bp['channel 1'], height)
-        peak_index_ch3 = find_first_peak(chirp_bp['channel 3'], height)
-        # peak_index_chirp = find_first_peak(chirp_bp['chirp'], height)
-
-        """Use the first peaks in ch1 and ch3 to find the propagation speed"""
-        sample_delay_ch1_ch3 = np.abs(peak_index_ch1 - peak_index_ch3)
-        time_delay_ch1_ch3 = sample_delay_ch1_ch3 / sample_rate
-        if time_delay_ch1_ch3 != 0:
-            freq_prop_speed_ch1_ch3 = np.abs(distance / time_delay_ch1_ch3)
-        else:
-            freq_prop_speed_ch1_ch3 = -1
-        # print('\nPropagation speed (between channel 1 and channel 3) for',
-        #       freq / 1000, 'kHz is', freq_prop_speed_ch1_ch3, 'm/s')
-
-        """Could also use the chirp signal to find the propagation speed"""
-        # sample_delay_chirp_ch1 = np.abs(peak_index_ch1 - peak_index_chirp)
-        # time_delay_chirp_ch1 = sample_delay_chirp_ch1 / sample_rate
-        # freq_prop_speed_chirp_ch1 = np.abs(distance / time_delay_chirp_ch1)
-        # print('\nPropagation speed (between channel 1 and the chrip) for', freq / 1000, 'kHz is', freq_prop_speed_chirp_ch1, 'm/s')
-
-        if plot:
-            # Plot the propagation speed vs frequency
-            time_axis = np.linspace(time_start, time_end, len(chirp_bp['channel 1']))
-            plt.subplot(1, 1, 1)
-
-            plt.plot(time_axis,
-                     chirp_bp['channel 1'],
-                     label='channel 1')
-
-            plt.plot(time_axis[peak_index_ch1],
-                     chirp_bp['channel 1'][peak_index_ch1],
-                     'rx',
-                     label='peak ch1')
-
-            plt.plot(time_axis,
-                     chirp_bp['channel 3'],
-                     label='chirp')
-
-            plt.plot(time_axis[peak_index_ch3],
-                     chirp_bp['channel 3'][peak_index_ch3],
-                     'rx',
-                     label='peak ch3')
-
-            plt.legend()
-            plt.title('Chirp signal of frequency ' + str(freq) + ' Hz')
-            plt.xlabel('Time (s)')
-            plt.ylabel('Amplitude (V)')
-            plt.grid()
-            plt.show()
-
-        frequencies = np.append(frequencies, freq)
-        freq_speeds = np.append(freq_speeds, freq_prop_speed_ch1_ch3)
-
-    return frequencies, freq_speeds
+    return frequencies, freq_speeds, chirp_bps
 
 
 if __name__ == '__main__':
