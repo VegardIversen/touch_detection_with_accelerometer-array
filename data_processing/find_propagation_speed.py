@@ -27,22 +27,24 @@ def find_propagation_speed(df, ch1, ch2, sr, distance_between_sensors=0.1):
     return propagation_speed
 
 
-def find_propagation_speed_corr(chirp_df, start_freq, end_freq, steps=1000, sample_rate=150000):
+def find_propagation_speed_plot(chirp_df,
+                                start_freq,
+                                end_freq,
+                                steps=1000,
+                                sample_rate=150000):
+    """Return an array of frequencies and an array of propagation speeds"""
     frequencies = np.array([])
     freq_speeds = np.array([])
 
     for freq in range(start_freq, end_freq, steps):
         chirp_bp = filter_general(sig=chirp_df,
-                                   filtertype='lowpass',
-                                   cutoff=freq,
-                                   order=8)
-        chirp_bp = filter_general(sig=chirp_df,
-                                   filtertype='highpass',
-                                   cutoff=freq,
-                                   order=8)
+                                  filtertype='bandpass',
+                                  cutoff_low=freq * 0.9,
+                                  cutoff_high=freq * 1.1,
+                                  order=4)
         freq_prop_speed = find_propagation_speed(df=chirp_bp,
                                                  ch1='channel 1',
-                                                 ch2='chirp',
+                                                 ch2='channel 3',
                                                  sr=sample_rate)
         frequencies = np.append(frequencies, freq)
         freq_speeds = np.append(freq_speeds, freq_prop_speed)
