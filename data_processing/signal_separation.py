@@ -2,7 +2,9 @@ import numpy as np
 from csv_to_df import csv_to_df
 from scipy import signal
 import matplotlib.pyplot as plt
-from data_processing.preprocessing import crop_data, hp_or_lp_filter
+from data_processing.preprocessing import crop_data, filter_general
+
+
 def signal_sep():
     SAMPLE_RATE = 150000
     CHANNEL_NAMES_CHIRP = ['channel 1', 'channel 2', 'channel 3', 'chirp']

@@ -1,9 +1,6 @@
 from scipy import signal
 import pandas as pd
-<<<<<<< HEAD
-=======
 
->>>>>>> 2ad3c45b834bb8f828bc4935bf0a3858e3099109
 
 """FILTERING"""
 
@@ -21,7 +18,6 @@ def filter_general(sig, filtertype, cutoff_low=20000, cutoff_high=40000, fs=1500
     else:
         raise ValueError('Filtertype not recognized')
 
-<<<<<<< HEAD
     b, a = signal.butter(order, cutoff / (fs / 2), btype=filtertype)
 
     sig_filtered = sig
@@ -38,13 +34,6 @@ def filter_general(sig, filtertype, cutoff_low=20000, cutoff_high=40000, fs=1500
 
 
 
-=======
-    sig_filtered = sig.copy()
-    for channel in sig_filtered:
-        # Probably a better way to do this than a double for loop
-        sig_filtered[channel] = signal.filtfilt(b, a,
-                                                sig[channel].values)
->>>>>>> 2ad3c45b834bb8f828bc4935bf0a3858e3099109
     return sig_filtered
 
 
