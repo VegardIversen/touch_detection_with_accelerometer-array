@@ -59,6 +59,12 @@ def find_first_peak(sig_np, height):
     peak_index = peaks[0]
     return peak_index
 
+def get_expected_reflections_pos(speed, peak,Fs=150000):
+
+    s = [0.26, 0.337, 0.386, 0.41] 
+    t = s/speed
+    n = t*Fs + peak
+    return n.tolist()
 
 if __name__ == '__main__':
     signal_df = csv_to_df(file_folder='first_test_touch_passive_setup2',

@@ -1,6 +1,9 @@
 from scipy import signal
 import pandas as pd
+<<<<<<< HEAD
+=======
 
+>>>>>>> 2ad3c45b834bb8f828bc4935bf0a3858e3099109
 
 """FILTERING"""
 
@@ -18,11 +21,30 @@ def filter_general(sig, filtertype, cutoff_low=20000, cutoff_high=40000, fs=1500
     else:
         raise ValueError('Filtertype not recognized')
 
+<<<<<<< HEAD
+    b, a = signal.butter(order, cutoff / (fs / 2), btype=filtertype)
+
+    sig_filtered = sig
+    if isinstance(sig, pd.DataFrame):
+        for channel in sig_filtered:
+            # Probably a better way to do this than a double for loop
+            sig_filtered[channel] = signal.filtfilt(b,
+                                                    a,
+                                                    sig[channel].values)
+    else:
+        sig_filtered = signal.filtfilt(b,
+                                       a,
+                                       sig)
+
+
+
+=======
     sig_filtered = sig.copy()
     for channel in sig_filtered:
         # Probably a better way to do this than a double for loop
         sig_filtered[channel] = signal.filtfilt(b, a,
                                                 sig[channel].values)
+>>>>>>> 2ad3c45b834bb8f828bc4935bf0a3858e3099109
     return sig_filtered
 
 
@@ -54,5 +76,8 @@ def crop_data(df, time_start=0, time_end=5, sample_rate=150000):
 
 
 def crop_data_threshold(data, threshold=0.0006):
-    data_cropped = data.loc[(data > threshold).any(axis=1)]
+    if isinstance(data, pd.DataFrame):
+        data_cropped = data.loc[(data > threshold).any(axis=1)]
+    else:
+        data_cropped = data.loc[data > threshold]
     return data_cropped
