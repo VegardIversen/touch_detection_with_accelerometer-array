@@ -1,7 +1,6 @@
 from scipy import signal
 import pandas as pd
 
-
 """FILTERING"""
 
 
