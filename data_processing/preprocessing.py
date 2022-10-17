@@ -18,9 +18,7 @@ def filter_general(sig, filtertype, cutoff_low=20000, cutoff_high=40000, fs=1500
     else:
         raise ValueError('Filtertype not recognized')
 
-    b, a = signal.butter(order, cutoff / (fs / 2), btype=filtertype)
-
-    sig_filtered = sig
+    sig_filtered = sig.copy()
     if isinstance(sig, pd.DataFrame):
         for channel in sig_filtered:
             # Probably a better way to do this than a double for loop
