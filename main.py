@@ -1,5 +1,3 @@
-from calendar import c
-from turtle import color
 import scipy.signal as signal
 from scipy import interpolate
 import pandas as pd
@@ -7,12 +5,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from data_viz_files.visualise_data import compare_signals, plot_data_vs_noiseavg, plot_data, plot_fft, plot_2fft
 from data_processing.noise import adaptive_filter_RLS, adaptive_filter_NLMS, noise_reduce_signal
-from data_processing.find_propagation_speed import find_propagation_speed, find_propagation_speed_corr
+from data_processing.find_propagation_speed import find_propagation_speed, find_propagation_speed_plot
 from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_hilbert_envelope, get_expected_reflections_pos
 from data_processing.preprocessing import crop_data, crop_data_threshold, filter_general, filter_notches
 from data_processing.transfer_function import transfer_function
 import matplotlib.pyplot as plt
 from data_processing.signal_separation import signal_sep
+from csv_to_df import csv_to_df
 print('\n' + __file__ + '\n')
 
 # Sample rate in Hz
@@ -29,31 +28,44 @@ CHIRP_CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3', 'chirp']
 
 
 def main():
+    signal_df = csv_to_df(file_folder='first_test_touch_passive_setup2', file_name='touch_test_passive_setup2_place_C3_center_v2')
+    #plot_data(signal_df, crop=False)
+    #speed = find_propagation_speed(signal_df, ch1='channel 3', ch2='channel 2', sr=SAMPLE_RATE, distance_between_sensors=np.sqrt(0.8))
+    #print(speed)
     #corr, chirp = transfer_function()
+    peaks_ch1 = find_indices_of_peaks(signal_df['channel 1'])
+    peaks_ch3 = find_indices_of_peaks(signal_df['channel 3'])
+    freq, speeds, _ = find_propagation_speed_plot(signal_df, 10, 20000)
+    plt.stem(freq, speeds)
+    plt.ylabel(ylabel='Speed (m/s)')
+    plt.xlabel(xlabel='Frequency (Hz)')
+    plt.show()
     #corr_df = pd.Series(corr, name='Corr sig')
-    chirp, sens = signal_sep()
-    peak = find_first_peak(sens['channel 2'], 0.0005)
-    speed = find_propagation_speed(sens, 'channel 1', 'channel 2', 150000)
-    lines = get_expected_reflections_pos(speed, peak)
-    lines.append(peak)
+    #plot_2fft(corr_df, chirp)
+    #corr_df = pd.Series(corr, name='Corr sig')
+    # chirp, sens = signal_sep()
+    # peak = find_first_peak(sens['channel 2'], 0.0005)
+    # speed = find_propagation_speed(sens, 'channel 1', 'channel 2', 150000)
+    # lines = get_expected_reflections_pos(speed, peak)
+    # lines.append(peak)
     
 
-    print(type(lines))
-    vlines = ['s1','s2','s3','s4','peak']
-    #sens = pd.DataFrame(sens)
-    #print(sens.loc[(sens>0.006)])
-    #print(isinstance(sens, pd.DataFrame))
-    #crop = crop_data_threshold(sens)
-    #fix, axs = plt.subplot(111)
-    for idx, s in enumerate(vlines):
-        print(lines[idx])
-        plt.vlines(lines[idx],0,1, label=s)
-        plt.text(lines[idx], -0.05, s, color='black')
+    # print(type(lines))
+    # vlines = ['s1','s2','s3','s4','peak']
+    # #sens = pd.DataFrame(sens)
+    # #print(sens.loc[(sens>0.006)])
+    # #print(isinstance(sens, pd.DataFrame))
+    # #crop = crop_data_threshold(sens)
+    # #fix, axs = plt.subplot(111)
+    # for idx, s in enumerate(vlines):
+    #     print(lines[idx])
+    #     plt.vlines(lines[idx],0,1, label=s)
+    #     plt.text(lines[idx], -0.05, s, color='black')
         
-    #plt.vlines(n,0,1, label=vlines)
-    plt.plot(sens)
-    plt.legend()
-    plt.show()
+    # #plt.vlines(n,0,1, label=vlines)
+    # plt.plot(sens)
+    # plt.legend()
+    # plt.show()
     #plot_fft(sens)
     #plt.plot(corr_df.iloc[333100:333200])
     #plt.show()
