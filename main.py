@@ -9,7 +9,7 @@ from data_viz_files.visualise_data import compare_signals, plot_data_vs_noiseavg
 from data_processing.noise import adaptive_filter_RLS, adaptive_filter_NLMS, noise_reduce_signal
 from data_processing.find_propagation_speed import find_propagation_speed, find_propagation_speed_corr
 from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_hilbert_envelope, get_expected_reflections_pos
-from data_processing.preprocessing import crop_data, crop_data_threshold, hp_or_lp_filter
+from data_processing.preprocessing import crop_data, crop_data_threshold, filter_general, filter_notches
 from data_processing.transfer_function import transfer_function
 import matplotlib.pyplot as plt
 from data_processing.signal_separation import signal_sep
@@ -34,17 +34,22 @@ def main():
     chirp, sens = signal_sep()
     peak = find_first_peak(sens['channel 2'], 0.0005)
     speed = find_propagation_speed(sens, 'channel 1', 'channel 2', 150000)
-    n = get_expected_reflections_pos(speed, peak)
-    n = n.append(peak)
-    print(type(peak))
+    lines = get_expected_reflections_pos(speed, peak)
+    lines.append(peak)
+    
+
+    print(type(lines))
     vlines = ['s1','s2','s3','s4','peak']
     #sens = pd.DataFrame(sens)
     #print(sens.loc[(sens>0.006)])
     #print(isinstance(sens, pd.DataFrame))
     #crop = crop_data_threshold(sens)
+    #fix, axs = plt.subplot(111)
     for idx, s in enumerate(vlines):
         print(lines[idx])
         plt.vlines(lines[idx],0,1, label=s)
+        plt.text(lines[idx], -0.05, s, color='black')
+        
     #plt.vlines(n,0,1, label=vlines)
     plt.plot(sens)
     plt.legend()
