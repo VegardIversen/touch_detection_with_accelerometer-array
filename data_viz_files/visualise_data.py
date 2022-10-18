@@ -15,7 +15,7 @@ def plot_fft(df, sample_rate=150000, window=False):
             data_fft = scipy.fft.fft(df.values * hamming_window)
         else:
             data_fft = scipy.fft.fft(df.values, axis=0)
-    else: 
+    else:
         if window:
             hamming_window = scipy.signal.hamming(len(df))
             data_fft = scipy.fft.fft(df * hamming_window)
@@ -105,18 +105,19 @@ def compare_signals(df1, df2,
     time signal, spectogram, fft and (optionally) difference signal
     """
     # Time signal 1
-    time_axis = np.linspace(0, len(df1) / sample_rate, num=len(df1))
+    time_axis_1 = np.linspace(0, len(df1) / sample_rate, num=len(df1))
     ax1 = plt.subplot(231)
     plt.grid()
-    plt.plot(time_axis, df1)
+    plt.plot(time_axis_1, df1)
     plt.title('Time signal 1')
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
 
     # Time signal 2
-    plt.subplot(234, sharex=ax1, sharey=ax1)
+    time_axis_2 = np.linspace(0, len(df2) / sample_rate, num=len(df2))
+    ax2 = plt.subplot(234)
     plt.grid()
-    plt.plot(time_axis, df2)
+    plt.plot(time_axis_2, df2)
     plt.title('Time signal 2')
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
@@ -124,15 +125,15 @@ def compare_signals(df1, df2,
     # Spectrogram of signal 1
     ax3 = plt.subplot(232, sharex=ax1)
     plt.specgram(df1, Fs=sample_rate)
-    plt.axis(ymax=freq_max)
     plt.title('Spectrogram of signal 1')
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
     plt.colorbar()
 
     # Spectrogram of signal 2
-    plt.subplot(235, sharex=ax1, sharey=ax3)
+    plt.subplot(235, sharex=ax2)
     plt.specgram(df2, Fs=sample_rate)
+    plt.axis(ymax=freq_max)
     plt.title('Spectrogram of signal 2')
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
