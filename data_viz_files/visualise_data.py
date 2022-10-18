@@ -100,7 +100,8 @@ def compare_signals(df1, df2,
                     freq_max=60000,
                     plot_diff=False,
                     save=False,
-                    filename='compared_signal.png'):
+                    filename='compared_signal.png',
+                    sync_time=False):
     """Visually compare two signals, by plotting:
     time signal, spectogram, fft and (optionally) difference signal
     """
@@ -115,7 +116,10 @@ def compare_signals(df1, df2,
 
     # Time signal 2
     time_axis_2 = np.linspace(0, len(df2) / sample_rate, num=len(df2))
-    ax2 = plt.subplot(234)
+    if sync_time:
+        ax2 = plt.subplot(234, sharex=ax1)
+    else:
+        ax2 = plt.subplot(234)
     plt.grid()
     plt.plot(time_axis_2, df2)
     plt.title('Time signal 2')
@@ -125,13 +129,14 @@ def compare_signals(df1, df2,
     # Spectrogram of signal 1
     ax3 = plt.subplot(232, sharex=ax1)
     plt.specgram(df1, Fs=sample_rate)
+    plt.axis(ymax=freq_max)
     plt.title('Spectrogram of signal 1')
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
     plt.colorbar()
 
     # Spectrogram of signal 2
-    plt.subplot(235, sharex=ax2)
+    plt.subplot(235, sharex=ax2, sharey=ax3)
     plt.specgram(df2, Fs=sample_rate)
     plt.axis(ymax=freq_max)
     plt.title('Spectrogram of signal 2')
@@ -184,17 +189,16 @@ def compare_signals(df1, df2,
     if plot_diff:
         # Time signal difference
         signal_diff = np.abs(df1 - df2)
-        time_axis = np.linspace(0, len(df1) // sample_rate, num=len(df1))
         ax1 = plt.subplot(311)
         plt.grid()
-        plt.plot(time_axis, signal_diff)
+        plt.plot(time_axis_1, signal_diff)
         plt.title('Difference between signals 1 and 2')
         plt.xlabel('Time [s]')
         plt.ylabel('Amplitude [V]')
 
         # Spectogram of signal difference
         ax2 = plt.subplot(312, sharex=ax1)
-        plt.specgram(signal_diff, sample_rate=sample_rate)
+        plt.specgram(signal_diff, Fs=sample_rate)
         plt.axis(ymax=freq_max)
         plt.title('Spectrogram of the difference between signals 1 and 2')
         plt.xlabel('Time [s]')
@@ -213,9 +217,9 @@ def compare_signals(df1, df2,
         plt.ylabel("Amplitude [dB]")
         plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
 
-        plt.subplots_adjust(left=0.06, right=0.985,
-                            top=0.97, bottom=0.06,
-                            hspace=0.3, wspace=0.2)
+        # plt.subplots_adjust(left=0.06, right=0.985,
+        #                     top=0.97, bottom=0.06,
+        #                     hspace=0.3, wspace=0.2)
         plt.show()
 
 
