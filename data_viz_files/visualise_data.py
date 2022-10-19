@@ -141,7 +141,7 @@ def compare_signals(df1, df2,
     plt.subplot(235, sharex=ax2, sharey=ax3)
     plt.specgram(df2, Fs=sample_rate)
     plt.axis(ymax=freq_max)
-    plt.title('Spectrogram of signal 2')
+    plt.title(f'{plot_2_name}, spectrogram')
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
     plt.colorbar()
