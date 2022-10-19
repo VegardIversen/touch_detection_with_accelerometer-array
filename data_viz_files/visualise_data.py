@@ -105,7 +105,7 @@ def compare_signals(df1, df2,
     """Visually compare two signals, by plotting:
     time signal, spectogram, fft and (optionally) difference signal
     """
-    # Time signal 1 bing bong
+    # Time signal 1
     time_axis_1 = np.linspace(0, len(df1) / sample_rate, num=len(df1))
     ax1 = plt.subplot(231)
     plt.grid()
