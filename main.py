@@ -18,31 +18,42 @@ from csv_to_df import csv_to_df
 
 print('\n' + __file__ + '\n')
 
-# Sample rate in Hz
-SAMPLE_RATE = 150000
-
-# Crop limits in seconds
-TIME_START = 0
-TIME_END = 5
-
-FREQ_START = 20000
-FREQ_END = 40000
-
-CHIRP_CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3', 'chirp']
-
 
 def main():
+    # Crop limits, in seconds
+    TIME_START = 0
+    TIME_END = 0.1
+
+    FREQ_START = 20000
+    FREQ_END = 40000
+
+    CHIRP_CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3', 'chirp']
+
+    CROP = True
+    FILTER = True
+
     chirp_meas_df = csv_to_df(file_folder='div_files',
                               file_name='chirp_30000_30005_finger_hold_B2_setup4_5_v1',
                               channel_names=CHIRP_CHANNEL_NAMES,)
 
-    chirp_meas_crop_df = crop_data(chirp_meas_df, time_start=TIME_START, time_end=TIME_START + 1.01, sample_rate=SAMPLE_RATE)
+    if CROP:
+        chirp_meas_df = crop_data(chirp_meas_df,
+                                  time_start=TIME_START,
+                                  time_end=TIME_END)
+
+    if FILTER:
+        chirp_meas_df = filter_general(chirp_meas_df,
+                                       filtertype='highpass',
+                                       cutoff_highpass=5000,
+                                       order=32)
 
     chirp_ideal_df = csv_to_df(file_folder='div_files',
                                file_name='chirp_custom_fs_150000_tmax_1_20000-40000_method_linear',
                                channel_names=['chirp'])
 
-    compare_signals(chirp_meas_df['channel 1'], chirp_meas_df['chirp'], sync_time=True)
+    compare_signals(chirp_meas_df['channel 1'],
+                    chirp_meas_df['chirp'],
+                    sync_time=True)
 
 
 if __name__ == '__main__':
