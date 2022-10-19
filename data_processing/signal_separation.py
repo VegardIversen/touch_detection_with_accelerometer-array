@@ -19,5 +19,5 @@ def signal_sep():
     # filt_touch = signal.filtfilt(b, a, touch_df['channel 1'])
     chirp = chirp_df['chirp']
     close_to_chirp = chirp_df['channel 2']
-    close_to_chirp_filt = filter_general(close_to_chirp, 'lowpass', cutoff_low=20000)
+    close_to_chirp_filt = filter_general(close_to_chirp, 'lowpass', cutoff_lowpass=20000)
     return chirp, chirp_df
