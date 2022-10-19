@@ -1,0 +1,10 @@
+{
+    "python.linting.pylintEnabled": false,
+    "python.linting.enabled": true,
+    "python.linting.pylamaEnabled": true,
+
+    "python.linting.pylamaArgs": [
+        "--max-line-length=79"
+    ],
+    "python.formatting.provider": "autopep8"
+}
