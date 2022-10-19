@@ -40,8 +40,8 @@ def find_propagation_speed_plot(chirp_df,
     for freq in range(start_freq, end_freq, steps):
         chirp_bp = filter_general(sig=chirp_df,
                                   filtertype='bandpass',
-                                  cutoff_low=freq * 0.9,
-                                  cutoff_high=freq * 1.1,
+                                  cutoff_lowpass=freq * 0.9,
+                                  cutoff_highpass=freq * 1.1,
                                   order=4)
         freq_prop_speed = find_propagation_speed(df=chirp_bp,
                                                  ch1='channel 1',
@@ -87,8 +87,8 @@ if __name__ == '__main__':
 
     burst_meas_crop_filt_df = filter_general(burst_meas_crop_df,
                                              filtertype='bandpass',
-                                             cutoff_low=29000,
-                                             cutoff_high=31000,
+                                             cutoff_lowpass=29000,
+                                             cutoff_highpass=31000,
                                              order=2)
 
     time_axis = np.linspace(start=0,
