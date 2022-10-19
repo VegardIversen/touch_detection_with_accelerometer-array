@@ -16,9 +16,6 @@ from data_processing.signal_separation import signal_sep
 from csv_to_df import csv_to_df
 
 
-print('\n' + __file__ + '\n')
-
-
 def main():
     # Crop limits, in seconds
     TIME_START = 0
