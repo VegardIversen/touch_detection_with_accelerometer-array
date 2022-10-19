@@ -4,15 +4,15 @@ import pandas as pd
 """FILTERING"""
 
 
-def filter_general(sig, filtertype, cutoff_low=20000, cutoff_high=40000, fs=150000, order=8):
+def filter_general(sig, filtertype, cutoff_lowpass=20000, cutoff_highpass=40000, fs=150000, order=8):
     """filtertype: 'highpass', 'lowpass' or 'bandpass"""
     if filtertype == 'highpass':
-        b, a = signal.butter(order, cutoff_low / (0.5 * fs), 'highpass')
+        b, a = signal.butter(order, cutoff_lowpass / (0.5 * fs), 'highpass')
     elif filtertype == 'lowpass':
-        b, a = signal.butter(order, cutoff_high / (0.5 * fs), 'lowpass')
+        b, a = signal.butter(order, cutoff_highpass / (0.5 * fs), 'lowpass')
     elif filtertype == 'bandpass':
-        b, a = signal.butter(order, [cutoff_low / (0.5 * fs),
-                             cutoff_high / (0.5 * fs)],
+        b, a = signal.butter(order, [cutoff_lowpass / (0.5 * fs),
+                             cutoff_highpass / (0.5 * fs)],
                              'bandpass')
     else:
         raise ValueError('Filtertype not recognized')
@@ -28,8 +28,6 @@ def filter_general(sig, filtertype, cutoff_low=20000, cutoff_high=40000, fs=1500
         sig_filtered = signal.filtfilt(b,
                                        a,
                                        sig)
-
-
 
     return sig_filtered
 
