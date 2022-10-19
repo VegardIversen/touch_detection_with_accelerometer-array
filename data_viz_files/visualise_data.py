@@ -101,6 +101,8 @@ def compare_signals(df1, df2,
                     plot_diff=False,
                     save=False,
                     filename='compared_signal.png',
+                    plot_1_name='signal 1',
+                    plot_2_name='signal 2',
                     sync_time=False):
     """Visually compare two signals, by plotting:
     time signal, spectogram, fft and (optionally) difference signal
@@ -110,7 +112,7 @@ def compare_signals(df1, df2,
     ax1 = plt.subplot(231)
     plt.grid()
     plt.plot(time_axis_1, df1)
-    plt.title('Time signal 1')
+    plt.title(f'{plot_1_name}, time signal')
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
 
@@ -122,7 +124,7 @@ def compare_signals(df1, df2,
         ax2 = plt.subplot(234)
     plt.grid()
     plt.plot(time_axis_2, df2)
-    plt.title('Time signal 2')
+    plt.title(f'{plot_2_name}, time signal')
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
 
@@ -130,7 +132,7 @@ def compare_signals(df1, df2,
     ax3 = plt.subplot(232, sharex=ax1)
     plt.specgram(df1, Fs=sample_rate)
     plt.axis(ymax=freq_max)
-    plt.title('Spectrogram of signal 1')
+    plt.title(f'{plot_1_name}, spectrogram')
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
     plt.colorbar()
@@ -152,7 +154,7 @@ def compare_signals(df1, df2,
     data_fft = np.fft.fftshift(data_fft)
     fftfreq = np.fft.fftshift(fftfreq)
     plt.grid()
-    plt.title('FFT of signal 1')
+    plt.title(f'{plot_1_name}, FFT')
     plt.xlabel("Frequency [Hz]")
     plt.ylabel("Amplitude [dB]")
     plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
@@ -167,7 +169,7 @@ def compare_signals(df1, df2,
     data_fft = np.fft.fftshift(data_fft)
     fftfreq = np.fft.fftshift(fftfreq)
     plt.grid()
-    plt.title('FFT of signal 2')
+    plt.title(f'{plot_2_name}, FFT')
     plt.xlabel("Frequency [Hz]")
     plt.ylabel("Amplitude [dB]")
     plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
