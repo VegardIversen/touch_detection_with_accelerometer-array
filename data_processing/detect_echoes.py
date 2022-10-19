@@ -7,11 +7,12 @@ from data_processing.preprocessing import filter_general, crop_data
 import pandas as pd
 
 
-def find_indices_of_peaks(sig_np, plot=False):
+def find_indices_of_peaks(sig_np, plot=False, hilbert=True):
     """Find the indices of the peaks in the signal."""
     # sig_np = sig.to_numpy()
 
     # Find the peaks of the square of the signal
+<<<<<<< Updated upstream
     signal_sqr = np.power(sig_np, 2)
     peak_indices_sqr, _ = signal.find_peaks(signal_sqr, prominence=0.0000001) #, distance=0.01 * 150000)
     
@@ -20,6 +21,15 @@ def find_indices_of_peaks(sig_np, plot=False):
     
     peak_indices, _ = signal.find_peaks(sig_np_filtered_hilbert, prominence=0.001, distance=0.01 * 150000)
     
+=======
+    if not hilbert:
+        signal_sqr = np.power(sig_np, 2)
+        peak_indices, _ = signal.find_peaks(signal_sqr, prominence=0.00001, distance=0.01 * 150000)
+    else: 
+    # Find the peaks of the Hilbert envelope of the signal
+        sig_np_filtered_hilbert = get_hilbert_envelope(sig_np)
+        peak_indices, _ = signal.find_peaks(sig_np_filtered_hilbert, prominence=0.001, distance=0.01 * 150000)
+>>>>>>> Stashed changes
     if peak_indices.size == 0:
         print('No peaks found!')
 
@@ -28,10 +38,13 @@ def find_indices_of_peaks(sig_np, plot=False):
         fig, ax0 = plt.subplots(nrows=1)
         # ax0.plot(time_axis, sig_np, label='signal')
         # ax0.plot(time_axis / 150000, sig_np_filtered_hilbert, label='filtered')
-        ax0.plot(time_axis / 150000, signal_sqr, label='sqrd')
-        ax0.plot(time_axis[peak_indices_sqr] / 150000, signal_sqr[peak_indices_sqr], 'x', label='peaks')
-        ax0.plot(time_axis / 150000, sig_np_filtered_hilbert, label='filtered hilbert')
-        ax0.plot(time_axis[peak_indices] / 150000, sig_np_filtered_hilbert[peak_indices], 'x', label='peaks')
+        if not hilbert:
+            ax0.plot(time_axis / 150000, signal_sqr, label='sqrd')
+            ax0.plot(time_axis[peak_indices] / 150000, signal_sqr[peak_indices], 'x', label='peaks')
+        
+        else:
+            ax0.plot(time_axis / 150000, sig_np_filtered_hilbert, label='filtered hilbert')
+            ax0.plot(time_axis[peak_indices] / 150000, sig_np_filtered_hilbert[peak_indices], 'x', label='peaks')
         ax0.set_xlabel("Time [s]")
         ax0.legend()
         fig.tight_layout()

@@ -5,7 +5,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from data_viz_files.visualise_data import compare_signals, plot_data_vs_noiseavg, plot_data, plot_fft, plot_2fft
 from data_processing.noise import adaptive_filter_RLS, adaptive_filter_NLMS, noise_reduce_signal
+<<<<<<< Updated upstream
 from data_processing.find_propagation_speed import find_propagation_speed, find_propagation_speed_plot
+=======
+from data_processing.find_propagation_speed import find_propagation_speed, find_propagation_speed_plot, find_propagation_speed_with_delay
+>>>>>>> Stashed changes
 from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_hilbert_envelope, get_expected_reflections_pos
 from data_processing.preprocessing import crop_data, crop_data_threshold, filter_general, filter_notches
 from data_processing.transfer_function import transfer_function
@@ -25,13 +29,32 @@ FREQ_START = 20000
 FREQ_END = 40000
 
 CHIRP_CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3', 'chirp']
-
+SIGNAL_CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3', 'WAVE_GEN']
 
 def main():
+<<<<<<< Updated upstream
     signal_df = csv_to_df(file_folder='first_test_touch_passive_setup2', file_name='touch_test_passive_setup2_place_C3_center_v2')
     #plot_data(signal_df, crop=False)
     #speed = find_propagation_speed(signal_df, ch1='channel 3', ch2='channel 2', sr=SAMPLE_RATE, distance_between_sensors=np.sqrt(0.8))
     #print(speed)
+=======
+    signal_df = csv_to_df(file_folder='div_files',
+                         file_name='prop_speed_fingertouch_hard_setup3_v1')
+    #plot_data(np.abs(signal_df))
+    corr = signal.correlate(signal_df['channel 1'], signal_df['channel 3'])
+    print(len(signal_df['channel 1']))
+    print(0.1/((len(signal_df['channel 1']) - np.argmax(corr))/SAMPLE_RATE))
+    #t = np.linspace(-len(signal_df['channel 1']), len(signal_df['channel 1']) , len(signal_df['channel 1'])*2 -1)
+    #plt.plot(t, corr)
+    #plt.show()
+    speed = find_propagation_speed(signal_df, 'channel 1', 'channel 3', SAMPLE_RATE)
+    speed1 = find_propagation_speed_with_delay(signal_df, 'channel 1', 'channel 3')
+    speed2 = find_propagation_speed_with_delay(signal_df, 'channel 1', 'channel 3', hilbert=False)
+    print(f'speed calculated with correlation: {speed}')
+    print(f'speed calculated with delay using hilbert: {speed1}')
+    print(f'speed calculated with delay: {speed2}')
+    #signal_df = csv_to_df(file_folder='first_test_touch_passive_setup2', file_name='touch_test_passive_setup2_place_A3_center_v2')
+>>>>>>> Stashed changes
     #corr, chirp = transfer_function()
     peaks_ch1 = find_indices_of_peaks(signal_df['channel 1'])
     peaks_ch3 = find_indices_of_peaks(signal_df['channel 3'])
@@ -41,8 +64,11 @@ def main():
     plt.xlabel(xlabel='Frequency (Hz)')
     plt.show()
     #corr_df = pd.Series(corr, name='Corr sig')
+<<<<<<< Updated upstream
     #plot_2fft(corr_df, chirp)
     #corr_df = pd.Series(corr, name='Corr sig')
+=======
+>>>>>>> Stashed changes
     # chirp, sens = signal_sep()
     # peak = find_first_peak(sens['channel 2'], 0.0005)
     # speed = find_propagation_speed(sens, 'channel 1', 'channel 2', 150000)

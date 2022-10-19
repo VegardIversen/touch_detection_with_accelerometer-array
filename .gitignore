@@ -59,9 +59,9 @@ touch/
 *.png
 *.gif
 *.csv
-main.py
+
 
 #folders
 
 .vscode/settings.json
-main.py
+
