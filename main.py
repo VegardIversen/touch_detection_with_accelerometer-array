@@ -41,16 +41,60 @@ def main():
     if FILTER:
         chirp_meas_df = filter_general(chirp_meas_df,
                                        filtertype='highpass',
-                                       cutoff_highpass=5000,
-                                       order=32)
+                                       cutoff_lowpass=1000,
+                                       order=4)
 
-    chirp_ideal_df = csv_to_df(file_folder='div_files',
-                               file_name='chirp_custom_fs_150000_tmax_1_20000-40000_method_linear',
-                               channel_names=['chirp'])
+    chirp_meas_hilbert_df = get_hilbert_envelope(chirp_meas_df)
 
-    compare_signals(chirp_meas_df['channel 1'],
-                    chirp_meas_df['chirp'],
-                    sync_time=True)
+    compressed_chirps = signal.correlate(chirp_meas_df['channel 1'],
+                                         chirp_meas_df['channel 3'],
+                                         mode='same')
+
+    compressed_hilbert = get_hilbert_envelope(compressed_chirps)
+
+    # peak_indices = find_indices_of_peaks(chirp_meas_hilbert_df)
+
+    # compare_signals(chirp_meas_df['channel 1'],
+    #                 chirp_meas_df['chirp'],
+    #                 plot_1_name='Measured signal',
+    #                 plot_2_name='Chirp signal',
+    #                 sync_time=True)
+
+    """Plot the chirp signal and the measured signal along with the hilbert envelopes"""
+    time_axis = np.linspace(0, len(chirp_meas_df['channel 1']) / 150000, len(chirp_meas_df['channel 1']))
+    ax1 = plt.subplot(311)
+    plt.title('Chirp signal')
+    plt.plot(time_axis, chirp_meas_df['chirp'] / 150, label='Chirp signal')
+    plt.plot(time_axis, chirp_meas_hilbert_df['chirp'] / 150, label='Chirp Hilbert envelope')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Amplitude [V]')
+    plt.legend()
+    plt.grid()
+
+    plt.subplot(312, sharex=ax1)
+    plt.title('Measured signal')
+    plt.plot(time_axis, chirp_meas_df['channel 1'], label='Measured signal')
+    plt.plot(time_axis, chirp_meas_hilbert_df['channel 1'], label='Hilbert envelope')
+    # plt.plot(time_axis[peak_indices], chirp_meas_hilbert_df['channel 1'][peak_indices], 'x', label='Peaks')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Amplitude [V]')
+    plt.legend()
+    plt.grid()
+
+    """Plot the correlation between the chirp signal and the measured signal"""
+    time_axis_corr = np.linspace(-len(chirp_meas_df['channel 1']) / 150000,
+                                 len(chirp_meas_df['channel 1']) / 150000,
+                                 len(chirp_meas_df['channel 1']))
+    plt.subplot(313, sharex=ax1)
+    plt.title('Correlation between chirp and measured signal')
+    plt.plot(time_axis_corr, compressed_chirps, label='Correlation')
+    plt.plot(time_axis_corr, compressed_hilbert, label='Hilbert envelope')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Amplitude [V]')
+    plt.grid()
+
+    plt.tight_layout()
+    plt.show()
 
 
 if __name__ == '__main__':
