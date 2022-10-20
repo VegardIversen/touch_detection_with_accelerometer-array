@@ -1,4 +1,5 @@
 from calendar import c
+from sys import orig_argv
 from turtle import color
 import scipy.signal as signal
 from scipy import interpolate
@@ -18,11 +19,8 @@ from csv_to_df import csv_to_df
 
 def main():
     # Crop limits, in seconds
-    TIME_START = 0
-    TIME_END = 0.1
-
-    FREQ_START = 20000
-    FREQ_END = 40000
+    TIME_START = 1.01734
+    TIME_END = 5
 
     CHIRP_CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3', 'chirp']
 
@@ -30,13 +28,8 @@ def main():
     FILTER = True
 
     chirp_meas_df = csv_to_df(file_folder='div_files',
-                              file_name='chirp_30000_30005_finger_hold_B2_setup4_5_v1',
+                              file_name='chirp_test_fs_150000_t_max_2s_20000-40000hz_1vpp_1cyc_setup3_v1',
                               channel_names=CHIRP_CHANNEL_NAMES,)
-
-    if CROP:
-        chirp_meas_df = crop_data(chirp_meas_df,
-                                  time_start=TIME_START,
-                                  time_end=TIME_END)
 
     if FILTER:
         chirp_meas_df = filter_general(chirp_meas_df,
@@ -44,13 +37,22 @@ def main():
                                        cutoff_lowpass=1000,
                                        order=4)
 
-    chirp_meas_hilbert_df = get_hilbert_envelope(chirp_meas_df)
-
     compressed_chirps = signal.correlate(chirp_meas_df['channel 1'],
-                                         chirp_meas_df['channel 3'],
+                                         chirp_meas_df['chirp'],
                                          mode='same')
 
     compressed_hilbert = get_hilbert_envelope(compressed_chirps)
+    original_len = len(chirp_meas_df['channel 1'])
+
+    if CROP:
+        chirp_meas_df = crop_data(chirp_meas_df,
+                                  time_start=TIME_START,
+                                  time_end=TIME_END)
+
+    compressed_hilbert = get_hilbert_envelope(compressed_chirps)
+
+    chirp_meas_hilbert_df = get_hilbert_envelope(chirp_meas_df)
+
 
     # peak_indices = find_indices_of_peaks(chirp_meas_hilbert_df)
 
@@ -82,18 +84,19 @@ def main():
     plt.grid()
 
     """Plot the correlation between the chirp signal and the measured signal"""
-    time_axis_corr = np.linspace(-len(chirp_meas_df['channel 1']) / 150000,
-                                 len(chirp_meas_df['channel 1']) / 150000,
-                                 len(chirp_meas_df['channel 1']))
+    time_axis_corr = np.linspace(-original_len / 150000,
+                                 (original_len) / 150000,
+                                 (original_len))
     plt.subplot(313, sharex=ax1)
     plt.title('Correlation between chirp and measured signal')
     plt.plot(time_axis_corr, compressed_chirps, label='Correlation')
     plt.plot(time_axis_corr, compressed_hilbert, label='Hilbert envelope')
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
+    plt.legend()
     plt.grid()
 
-    plt.tight_layout()
+    plt.subplots_adjust(hspace=0.5)
     plt.show()
 
 
