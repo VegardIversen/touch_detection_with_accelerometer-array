@@ -52,17 +52,14 @@ def filter_notches(sig, freqs, sample_rate=150000):
 
 
 def crop_data(sig, time_start=0, time_end=5, sample_rate=150000):
-    """Crop either DataFrame input or a numpy array input"""
+    """Crop either DataFrame input, pandas series or a numpy array input"""
 
-    if isinstance(sig, pd.DataFrame):
-        # data_cropped = input.loc[time_start * sample_rate:time_end * sample_rate]
-        data_cropped = sig.truncate(before=(time_start * sample_rate),
-                                after=(time_end * sample_rate))
-    elif isinstance(sig, np.ndarray):
+    if isinstance(sig, np.ndarray):
         data_cropped = sig[int(time_start * sample_rate):int(time_end * sample_rate)]
     else:
-        raise ValueError('Input datatype not supported.')
-
+        # data_cropped = input.loc[time_start * sample_rate:time_end * sample_rate]
+        data_cropped = sig.truncate(before=(time_start * sample_rate),
+                                    after=(time_end * sample_rate))
 
     return data_cropped
 
