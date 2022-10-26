@@ -12,16 +12,6 @@ def find_indices_of_peaks(sig_np, plot=False, hilbert=True):
     # sig_np = sig.to_numpy()
 
     # Find the peaks of the square of the signal
-<<<<<<< Updated upstream
-    signal_sqr = np.power(sig_np, 2)
-    peak_indices_sqr, _ = signal.find_peaks(signal_sqr, prominence=0.0000001) #, distance=0.01 * 150000)
-    
-    # Find the peaks of the Hilbert envelope of the signal
-    sig_np_filtered_hilbert = get_hilbert_envelope(sig_np)
-    
-    peak_indices, _ = signal.find_peaks(sig_np_filtered_hilbert, prominence=0.001, distance=0.01 * 150000)
-    
-=======
     if not hilbert:
         signal_sqr = np.power(sig_np, 2)
         peak_indices, _ = signal.find_peaks(signal_sqr, prominence=0.00001, distance=0.01 * 150000)
@@ -29,7 +19,6 @@ def find_indices_of_peaks(sig_np, plot=False, hilbert=True):
     # Find the peaks of the Hilbert envelope of the signal
         sig_np_filtered_hilbert = get_hilbert_envelope(sig_np)
         peak_indices, _ = signal.find_peaks(sig_np_filtered_hilbert, prominence=0.001, distance=0.01 * 150000)
->>>>>>> Stashed changes
     if peak_indices.size == 0:
         print('No peaks found!')
 
