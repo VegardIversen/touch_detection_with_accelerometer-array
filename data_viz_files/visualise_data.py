@@ -107,6 +107,13 @@ def compare_signals(df1, df2,
     """Visually compare two signals, by plotting:
     time signal, spectogram, fft and (optionally) difference signal
     """
+
+    # Change numpy array to dataframe if needed
+    if isinstance(df1, np.ndarray):
+        df1 = pd.DataFrame(df1)
+    if isinstance(df2, np.ndarray):
+        df2 = pd.DataFrame(df2)
+
     # Time signal 1
     time_axis_1 = np.linspace(0, len(df1) / sample_rate, num=len(df1))
     ax1 = plt.subplot(231)
