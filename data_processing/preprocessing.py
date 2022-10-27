@@ -50,15 +50,30 @@ def filter_notches(sig, freqs, sample_rate=150000):
 """CROPPING"""
 
 
-def crop_data(sig, time_start=0, time_end=5, sample_rate=150000):
-    """Crop either DataFrame input, pandas series or a numpy array input"""
+def crop_data(sig, time_start=None, time_end=None, threshold=0, sample_rate=150000):
+    """Crop either DataFrame input, pandas series or a numpy array input.
+    NOTE:   Vegard will fix this to work properly,
+            but could use some logic from here.
+    """
+    # Some logic for assuming cropping type and length
+    if (time_start or time_start == 0) and not time_end:
+        time_end = len(sig) / sample_rate
+    elif time_end and not (time_start or time_start == 0):
+        time_start = 0
 
-    if isinstance(sig, np.ndarray):
-        data_cropped = sig[int(time_start * sample_rate):int(time_end * sample_rate)]
-    else:
-        # data_cropped = input.loc[time_start * sample_rate:time_end * sample_rate]
-        data_cropped = sig.truncate(before=(time_start * sample_rate),
-                                    after=(time_end * sample_rate))
+    if (time_start or time_start ==0) and time_end:
+        if isinstance(sig, np.ndarray):
+            data_cropped = sig[int(time_start * sample_rate):int(time_end * sample_rate)]
+        else:
+            # data_cropped = input.loc[time_start * sample_rate:time_end * sample_rate]
+            data_cropped = sig.truncate(before=(time_start * sample_rate),
+                                        after=(time_end * sample_rate))
+    elif not (time_start or time_start == 0) and not time_end:
+        if isinstance(sig, pd.DataFrame):
+            data_cropped = sig.loc[(sig > threshold).any(axis=1)]
+            data_cropped = sig.loc[(sig.iloc[::-1] > threshold).any(axis=1)]
+        else:
+            data_cropped = sig.loc[sig > threshold]
 
     return data_cropped
 
