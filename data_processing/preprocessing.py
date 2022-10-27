@@ -21,7 +21,6 @@ def filter_general(sig, filtertype, cutoff_lowpass=20000, cutoff_highpass=40000,
     sig_filtered = sig.copy()
     if isinstance(sig, pd.DataFrame):
         for channel in sig_filtered:
-            # Probably a better way to do this than a double for loop
             sig_filtered[channel] = signal.filtfilt(b,
                                                     a,
                                                     sig[channel].values)
