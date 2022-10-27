@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from data_viz_files.visualise_data import compare_signals, plot_data_vs_noiseavg
 from data_processing.noise import adaptive_filter_RLS, adaptive_filter_NLMS, noise_reduce_signal
 from data_processing.find_propagation_speed import find_propagation_speed, find_propagation_speed_plot
-from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_hilbert_envelope, get_expected_reflections_pos
+from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_hilbert_envelope, get_expected_reflections_pos, get_mirrored_source_travel_distances
 from data_processing.preprocessing import crop_data, crop_data_threshold, filter_general, filter_notches
 from data_processing.transfer_function import transfer_function
 import matplotlib.pyplot as plt
@@ -18,8 +18,13 @@ from csv_to_df import csv_to_df
 
 
 def main():
+    table_length = 0.716    # m
+    table_width = 0.597     # m
+    get_mirrored_source_travel_distances(actuator_coord=np.array([table_length / 6, table_width / 2]),
+                                         sensor_coord=np.array([2 * table_length / 3, 2 * table_width / 3]))
+
     # Crop limits, in seconds
-    TIME_START = 0.9932
+    TIME_START = 3.9932
     TIME_END = 2.001
 
     CHIRP_CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3', 'chirp']
@@ -32,7 +37,7 @@ def main():
                               channel_names=CHIRP_CHANNEL_NAMES,)
 
     chirp = chirp_meas_df['chirp']
-    chirp = crop_data(chirp, time_start=TIME_START, time_end=TIME_END)
+    chirp = crop_data(chirp)
 
     if CROP:
         chirp_meas_df = crop_data(chirp_meas_df,
