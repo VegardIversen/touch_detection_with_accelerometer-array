@@ -60,12 +60,55 @@ def find_first_peak(sig_np, height):
     peak_index = peaks[0]
     return peak_index
 
-def get_expected_reflections_pos(speed, peak,Fs=150000):
 
+def get_expected_reflections_pos(speed, peak, Fs=150000):
     s = [0.26, 0.337, 0.386, 0.41]
-    t = s/speed
-    n = t*Fs + peak
+    t = s / speed
+    n = t * Fs + peak
     return n.tolist()
+
+
+def get_mirrored_source_travel_distances(actuator_coord=np.array([0, 0]),
+                                         sensor_coord=np.array([0, 0])):
+    """Get the travel distance of a mirrored source.
+    See figure in "Predicting reflection times" on Notion.
+    NOTE:   These are currently only for the four direct reflections.
+    TODO:   Add secondary reflections and add option for outputting
+            the n first reflections along with their travel paths.
+    """
+    table_length = 0.716    # m
+    table_width = 0.597     # m
+    # Collection of calcualted distances
+    s = np.array([])
+
+    # Vector from actuator to edge:
+    d = actuator_coord - np.array([actuator_coord[0], table_width])
+    # Vector between actuator and sensor:
+    s_0 = sensor_coord - actuator_coord
+    # Vector from mirrored source to sensor:
+    s_1 = np.linalg.norm(2 * d + s_0)
+    s = np.append(s, s_1)
+
+    # Use vector to different edge:
+    d = actuator_coord - np.array([table_length, actuator_coord[1]])
+    # Vector from mirrored source to sensor:
+    s_2 = np.linalg.norm(2 * d + s_0)
+    s = np.append(s, s_2)
+
+    # Use vector to different edge:
+    d = actuator_coord - np.array([actuator_coord[0], 0])
+    # Vector from mirrored source to sensor:
+    s_3 = np.linalg.norm(2 * d + s_0)
+    s = np.append(s, s_3)
+
+    # Use vector to different edge:
+    d = actuator_coord - np.array([0, actuator_coord[1]])
+    # Vector from mirrored source to sensor:
+    s_4 = np.linalg.norm(2 * d + s_0)
+    s = np.append(s, s_4)
+
+    return s
+
 
 if __name__ == '__main__':
     signal_df = csv_to_df(file_folder='first_test_touch_passive_setup2',
