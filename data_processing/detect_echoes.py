@@ -79,35 +79,37 @@ def get_mirrored_source_travel_distances(actuator_coord: np.array,
     TABLE_LENGTH = 0.716    # m
     TABLE_WIDTH = 0.597     # m
     # Collection of calcualted distances
-    s = np.array([])
+    s_norms = pd.DataFrame()
+
+    # Vector between actuator and sensor:
+    s_0 = sensor_coord - actuator_coord
+    s_0_norm = np.linalg.norm(s_0)
 
     # Vector from actuator to edge:
     d = actuator_coord - np.array([actuator_coord[0], TABLE_WIDTH])
-    # Vector between actuator and sensor:
-    s_0 = sensor_coord - actuator_coord
     # Vector from mirrored source to sensor:
-    s_1 = np.linalg.norm(2 * d + s_0)
-    s = np.append(s, s_1)
+    s_1_norm = np.linalg.norm(2 * d + s_0)
+    s_norms['s_1'] = [s_1_norm, d]
 
     # Use vector to different edge:
     d = actuator_coord - np.array([TABLE_LENGTH, actuator_coord[1]])
     # Vector from mirrored source to sensor:
-    s_2 = np.linalg.norm(2 * d + s_0)
-    s = np.append(s, s_2)
+    s_2_norm = np.linalg.norm(2 * d + s_0)
+    s_norms['s_2'] = [s_2_norm, d]
 
     # Use vector to different edge:
     d = actuator_coord - np.array([actuator_coord[0], 0])
     # Vector from mirrored source to sensor:
-    s_3 = np.linalg.norm(2 * d + s_0)
-    s = np.append(s, s_3)
+    s_3_norm = np.linalg.norm(2 * d + s_0)
+    s_norms['s_3'] = [s_3_norm, d]
 
     # Use vector to different edge:
     d = actuator_coord - np.array([0, actuator_coord[1]])
     # Vector from mirrored source to sensor:
-    s_4 = np.linalg.norm(2 * d + s_0)
-    s = np.append(s, s_4)
+    s_4_norm = np.linalg.norm(2 * d + s_0)
+    s_norms['s_4'] = [s_4_norm, d]
 
-    return s
+    return s_norms
 
 
 if __name__ == '__main__':
