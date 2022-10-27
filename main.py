@@ -18,10 +18,10 @@ from csv_to_df import csv_to_df
 
 
 def main():
-    table_length = 0.716    # m
-    table_width = 0.597     # m
-    get_mirrored_source_travel_distances(actuator_coord=np.array([table_length / 6, table_width / 2]),
-                                         sensor_coord=np.array([2 * table_length / 3, 2 * table_width / 3]))
+    TABLE_LENGTH = 0.716    # m
+    TABLE_WIDTH = 0.597     # m
+    get_mirrored_source_travel_distances(actuator_coord=np.array([TABLE_LENGTH / 2, TABLE_WIDTH / 2]),
+                                         sensor_coord=np.array([2 * TABLE_LENGTH / 3, 2 * TABLE_WIDTH / 3]))
 
     # Crop limits, in seconds
     TIME_START = 3.9932
