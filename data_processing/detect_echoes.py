@@ -76,13 +76,13 @@ def get_mirrored_source_travel_distances(actuator_coord=np.array([0, 0]),
     TODO:   Add secondary reflections and add option for outputting
             the n first reflections along with their travel paths.
     """
-    table_length = 0.716    # m
-    table_width = 0.597     # m
+    TABLE_LENGTH = 0.716    # m
+    TABLE_WIDTH = 0.597     # m
     # Collection of calcualted distances
     s = np.array([])
 
     # Vector from actuator to edge:
-    d = actuator_coord - np.array([actuator_coord[0], table_width])
+    d = actuator_coord - np.array([actuator_coord[0], TABLE_WIDTH])
     # Vector between actuator and sensor:
     s_0 = sensor_coord - actuator_coord
     # Vector from mirrored source to sensor:
@@ -90,7 +90,7 @@ def get_mirrored_source_travel_distances(actuator_coord=np.array([0, 0]),
     s = np.append(s, s_1)
 
     # Use vector to different edge:
-    d = actuator_coord - np.array([table_length, actuator_coord[1]])
+    d = actuator_coord - np.array([TABLE_LENGTH, actuator_coord[1]])
     # Vector from mirrored source to sensor:
     s_2 = np.linalg.norm(2 * d + s_0)
     s = np.append(s, s_2)
