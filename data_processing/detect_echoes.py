@@ -68,8 +68,8 @@ def get_expected_reflections_pos(speed, peak, Fs=150000):
     return n.tolist()
 
 
-def get_mirrored_source_travel_distances(actuator_coord=np.array([0, 0]),
-                                         sensor_coord=np.array([0, 0])):
+def get_mirrored_source_travel_distances(actuator_coord: np.array,
+                                         sensor_coord: np.array):
     """Get the travel distance of a mirrored source.
     See figure in "Predicting reflection times" on Notion.
     NOTE:   These are currently only for the four direct reflections.
