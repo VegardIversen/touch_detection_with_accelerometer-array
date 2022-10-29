@@ -6,7 +6,9 @@ from scipy import interpolate
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+
 from data_viz_files.visualise_data import compare_signals, plot_data_vs_noiseavg
+from data_viz_files.drawing import draw_table, draw_actuator, draw_sensor
 from data_processing.noise import adaptive_filter_RLS, adaptive_filter_NLMS, noise_reduce_signal
 from data_processing.find_propagation_speed import find_propagation_speed, find_propagation_speed_plot
 from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_hilbert_envelope, get_expected_reflections_pos, get_mirrored_source_travel_distances
@@ -21,7 +23,14 @@ def main():
     TABLE_LENGTH = 0.716    # m
     TABLE_WIDTH = 0.597     # m
     get_mirrored_source_travel_distances(actuator_coord=np.array([TABLE_LENGTH / 2, TABLE_WIDTH / 2]),
-                                         sensor_coord=np.array([2 * TABLE_LENGTH / 3, 2 * TABLE_WIDTH / 3]))
+                                         sensor_coord=np.array([TABLE_LENGTH / 2, TABLE_WIDTH / 2]))
+
+    plt.axes()
+    draw_table()
+    draw_actuator(np.array([TABLE_LENGTH / 2, TABLE_WIDTH / 2]))
+    draw_sensor(np.array([TABLE_LENGTH / 3, TABLE_WIDTH / 2]))
+    plt.axis('scaled')
+    plt.show()
 
     # Crop limits, in seconds
     TIME_START = 3.9932
