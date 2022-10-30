@@ -14,10 +14,40 @@ class Table:
     BOTTOM_EDGE = 3
     LEFT_EDGE = 4
 
+
+class Vector:
+    """Everything is a Vector"""
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return f'({self.x}, {self.y})'
+
+    def __repr__(self):
+        return f'({self.x}, {self.y})'
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __add__(self, other):
+        return Vector(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Vector(self.x - other.x, self.y - other.y)
+
+    def __mul__(self, other):
+        return Vector(self.x * other, self.y * other)
+
+    def __truediv__(self, other):
+        return Vector(self.x / other, self.y / other)
+
+
 def draw_table(plot_lines=True):
     "Draw the table with the real dimensions, including the lines."
-    TABLE_LENGTH = 0.716    # m
-    TABLE_WIDTH = 0.597     # m
     TABLE_SURFACE_COLOUR = '#fbe5b6'
     TABLE_LINE_COLOUR = '#f0c18b'
 
@@ -100,8 +130,6 @@ def flip_and_draw_sources(source_coords: np.array,
                 3
 
     """
-    TABLE_LENGTH = 0.716    # m
-    TABLE_WIDTH = 0.597     # m
 
     for edge in edges_to_flip_around:
         for source_coord in source_coords:
@@ -136,9 +164,6 @@ def flip_and_draw_sensors(sensor_coords,
                 3
 
     """
-    TABLE_LENGTH = 0.716    # m
-    TABLE_WIDTH = 0.597     # m
-
     for edge in edges_to_flip_around:
         for sensor_coord in sensor_coords:
             if edge == Table.TOP_EDGE:
