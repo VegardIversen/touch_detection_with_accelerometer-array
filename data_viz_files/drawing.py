@@ -15,37 +15,6 @@ class Table:
     LEFT_EDGE = 4
 
 
-class Vector:
-    """Everything is a Vector"""
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __str__(self):
-        return f'({self.x}, {self.y})'
-
-    def __repr__(self):
-        return f'({self.x}, {self.y})'
-
-    def __eq__(self, other):
-        return self.x == other.x and self.y == other.y
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __add__(self, other):
-        return Vector(self.x + other.x, self.y + other.y)
-
-    def __sub__(self, other):
-        return Vector(self.x - other.x, self.y - other.y)
-
-    def __mul__(self, other):
-        return Vector(self.x * other, self.y * other)
-
-    def __truediv__(self, other):
-        return Vector(self.x / other, self.y / other)
-
-
 def draw_table(plot_lines=True):
     "Draw the table with the real dimensions, including the lines."
     TABLE_SURFACE_COLOUR = '#fbe5b6'
@@ -215,7 +184,7 @@ def draw_setup_1():
     plt.show()
 
 
-def draw_a_setup():
+# def draw_a_setup():
     ACTUATOR_COORD = np.array([Table.LENGTH / 6,
                                Table.WIDTH / 2])
     SENSOR_1_COORD = np.array([2 * Table.LENGTH / 3,
