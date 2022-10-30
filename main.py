@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from data_viz_files.visualise_data import compare_signals, plot_data_vs_noiseavg
-from data_viz_files.drawing import draw_setup_1, draw_table, draw_actuator, draw_sensor, draw_waves
+from data_viz_files.drawing import draw_a_setup, draw_setup_1
 from data_processing.noise import adaptive_filter_RLS, adaptive_filter_NLMS, noise_reduce_signal
 from data_processing.find_propagation_speed import find_propagation_speed, find_propagation_speed_plot
 from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_hilbert_envelope, get_expected_reflections_pos, get_mirrored_source_travel_distances
@@ -25,7 +25,7 @@ def main():
     get_mirrored_source_travel_distances(actuator_coord=np.array([TABLE_LENGTH / 2, TABLE_WIDTH / 2]),
                                          sensor_coord=np.array([TABLE_LENGTH / 2, TABLE_WIDTH / 2]))
 
-    draw_setup_1()
+    draw_a_setup()
 
     # Crop limits, in seconds
     TIME_START = 3.9932
