@@ -17,13 +17,12 @@ from data_processing.transfer_function import transfer_function
 import matplotlib.pyplot as plt
 from data_processing.signal_separation import signal_sep
 from csv_to_df import csv_to_df
+from Table import Table
 
 
 def main():
-    TABLE_LENGTH = 0.716    # m
-    TABLE_WIDTH = 0.597     # m
-    get_mirrored_source_travel_distances(actuator_coord=np.array([TABLE_LENGTH / 2, TABLE_WIDTH / 2]),
-                                         sensor_coord=np.array([TABLE_LENGTH / 2, TABLE_WIDTH / 2]))
+    get_mirrored_source_travel_distances(actuator_coord=np.array([Table.LENGTH / 2, Table.WIDTH / 2]),
+                                         sensor_coord=np.array([Table.LENGTH / 2, Table.WIDTH / 2]))
 
     draw_a_setup()
 
