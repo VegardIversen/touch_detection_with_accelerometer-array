@@ -75,8 +75,93 @@ def draw_waves(actuator_coord: np.array, n_waves=3):
                           lw=0.75,
                           linestyle='--')
         plt.gca().add_patch(arc)
-    # arc = patches.Arc(actuator_coord, 0.2, 0.2, theta1=0, theta2=180, color=ARC_COLOUR)
-    # plt.gca().add_patch(arc)
+
+
+def flip_and_draw_sources(source_coords: np.array,
+                          edges_to_flip_around: np.array):
+    """Draw the sources in the flipped positions.
+    The table edges are numbered as:
+
+         _______1_______
+        |               |
+      4 |               | 2
+        |               |
+        |_______________|
+                3
+
+    """
+    TABLE_LENGTH = 0.716    # m
+    TABLE_WIDTH = 0.597     # m
+
+    for edge in edges_to_flip_around:
+        for source_coord in source_coords:
+            if edge == 1:
+                # Top edge of the table
+                new_coord = source_coord + np.array([0, 2 * (TABLE_WIDTH - source_coord[1])])
+                source_coords = np.vstack((source_coords, new_coord))
+                draw_actuator(new_coord)
+            elif edge == 2:
+                # Right edge of the table
+                new_coord = source_coord + np.array([2 * (TABLE_LENGTH - source_coord[0]), 0])
+                source_coords = np.vstack((source_coords, new_coord))
+                draw_actuator(new_coord)
+            elif edge == 3:
+                # Bottom edge of the table
+                new_coord = source_coord + np.array([0, -2 * source_coord[1]])
+                source_coords = np.vstack((source_coords, new_coord))
+                draw_actuator(new_coord)
+            elif edge == 4:
+                # Left edge of the table
+                new_coord = source_coord + np.array([-2 * source_coord[0], 0])
+                source_coords = np.vstack((source_coords, new_coord))
+                draw_actuator(new_coord)
+
+
+def flip_and_draw_sensors(sensor_coords,
+                          edges_to_flip_around):
+    """Draw the sensors in the flipped positions.
+    The table edges are numbered as:
+
+         _______1_______
+        |               |
+      4 |               | 2
+        |               |
+        |_______________|
+                3
+
+    """
+    TABLE_LENGTH = 0.716    # m
+    TABLE_WIDTH = 0.597     # m
+
+    for edge in edges_to_flip_around:
+        for sensor_coord in sensor_coords:
+            if edge == 1:
+                # Top edge of the table
+                new_coord = sensor_coord + np.array([0, 2 * (TABLE_WIDTH - sensor_coord[1])])
+                sensor_coords = np.vstack((sensor_coords, new_coord))
+                draw_sensor(new_coord)
+            elif edge == 2:
+                # Right edge of the table
+                new_coord = sensor_coord + np.array([2 * (TABLE_LENGTH - sensor_coord[0]), 0])
+                sensor_coords = np.vstack((sensor_coords, new_coord))
+                draw_sensor(new_coord)
+            elif edge == 3:
+                # Bottom edge of the table
+                new_coord = sensor_coord + np.array([0, -2 * sensor_coord[1]])
+                sensor_coords = np.vstack((sensor_coords, new_coord))
+                draw_sensor(new_coord)
+            elif edge == 4:
+                # Left edge of the table
+                new_coord = sensor_coord + np.array([-2 * sensor_coord[0], 0])
+                sensor_coords = np.vstack((sensor_coords, new_coord))
+                draw_sensor(new_coord)
+
+
+def plot_legend_without_duplicates():
+    """Avoid duplicate labels in the legend"""
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = OrderedDict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys())
 
 
 def draw_setup_1():
@@ -99,8 +184,40 @@ def draw_setup_1():
     plt.axis('scaled')
     plt.xlabel('x (m)')
     plt.ylabel('y (m)')
-    handles, labels = plt.gca().get_legend_handles_labels()
-    by_label = OrderedDict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys())
+    plot_legend_without_duplicates()
+
+    plt.show()
+
+
+def draw_a_setup():
+    TABLE_LENGTH = 0.716    # m
+    TABLE_WIDTH = 0.597     # m
+    ACTUATOR_COORD = np.array([TABLE_LENGTH / 6,
+                               TABLE_WIDTH / 2])
+    SENSOR_1_COORD = np.array([2 * TABLE_LENGTH / 3,
+                               5 * TABLE_WIDTH / 6])
+    SENSOR_2_COORD = np.array([2 * TABLE_LENGTH / 3,
+                               1 * TABLE_WIDTH / 3])
+
+    source_coords = np.array([ACTUATOR_COORD])
+    sensor_coords = np.array([SENSOR_1_COORD])
+
+    plt.axes()
+
+    draw_table()
+    draw_actuator(ACTUATOR_COORD)
+    # Draw each sensor_coord in sensor_coords
+    [draw_sensor(sensor_coord) for sensor_coord in sensor_coords]
+
+    EDGES_TO_FLIP_AROUND = np.array([1, 3])
+
+    flip_and_draw_sensors(sensor_coords, EDGES_TO_FLIP_AROUND)
+    flip_and_draw_sources(source_coords, EDGES_TO_FLIP_AROUND)
+    # [flip_and_draw_sources(source_coords, np.array([edge])) for edge in EDGES_TO_FLIP_AROUND]
+
+    plt.axis('scaled')
+    plt.xlabel('x (m)')
+    plt.ylabel('y (m)')
+    plot_legend_without_duplicates()
 
     plt.show()
