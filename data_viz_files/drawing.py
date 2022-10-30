@@ -3,16 +3,8 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from collections import OrderedDict
 
-
-class Table:
-    """Represents the table and its edges."""
-    LENGTH = 0.716    # m
-    WIDTH = 0.597     # m
-    # Enum for representing edges:
-    TOP_EDGE = 1
-    RIGHT_EDGE = 2
-    BOTTOM_EDGE = 3
-    LEFT_EDGE = 4
+from data_processing.detect_echoes import find_mirrored_source
+from Table import Table
 
 
 def draw_table(plot_lines=True):
@@ -120,8 +112,8 @@ def flip_and_draw_sources(source_coords: np.array,
                 draw_actuator(new_coord)
 
 
-def flip_and_draw_sensors(sensor_coords,
-                          edges_to_flip_around):
+def flip_and_draw_sensors(sensor_coords: np.array,
+                          edges_to_flip_around: np.array):
     """Draw the sensors in the flipped positions.
     The table edges are numbered as:
 
@@ -164,8 +156,8 @@ def draw_setup_1():
     plt.axes()
     draw_table()
 
-    actuator_coord = np.array([Table.LENGTH / 2, 1 * Table.WIDTH / 6])
-    draw_actuator(actuator_coord)
+    ACTUATOR_COORD = np.array([Table.LENGTH / 2, 1 * Table.WIDTH / 6])
+    draw_actuator(ACTUATOR_COORD)
 
     SENSOR_2_COORD = np.array([Table.LENGTH / 2, Table.WIDTH - 0.05])
     SENSOR_2_OFFSET = np.array([-0.08 / 2, -(np.sqrt(0.08 ** 2 - 0.04 ** 2))])
@@ -184,13 +176,13 @@ def draw_setup_1():
     plt.show()
 
 
-# def draw_a_setup():
-    ACTUATOR_COORD = np.array([Table.LENGTH / 6,
-                               Table.WIDTH / 2])
-    SENSOR_1_COORD = np.array([2 * Table.LENGTH / 3,
-                               5 * Table.WIDTH / 6])
-    SENSOR_2_COORD = np.array([2 * Table.LENGTH / 3,
-                               1 * Table.WIDTH / 3])
+def draw_a_setup():
+    ACTUATOR_COORD = np.array([1 / 6 * Table.LENGTH,
+                               1 / 2 * Table.WIDTH])
+    SENSOR_1_COORD = np.array([2 / 3 * Table.LENGTH,
+                               5 / 6 * Table.WIDTH])
+    SENSOR_2_COORD = np.array([2 / 3 * Table.LENGTH,
+                               1 / 3 * Table.WIDTH])
 
     source_coords = np.array([ACTUATOR_COORD])
     sensor_coords = np.array([SENSOR_1_COORD])
@@ -202,10 +194,14 @@ def draw_setup_1():
     # Draw each sensor_coord in sensor_coords
     [draw_sensor(sensor_coord) for sensor_coord in sensor_coords]
 
-    EDGES_TO_FLIP_AROUND = np.array([Table.TOP_EDGE, Table.BOTTOM_EDGE])
+    EDGES_TO_FLIP_AROUND = np.array([Table.LEFT_EDGE,
+                                     Table.BOTTOM_EDGE])
 
-    flip_and_draw_sensors(sensor_coords, EDGES_TO_FLIP_AROUND)
-    flip_and_draw_sources(source_coords, EDGES_TO_FLIP_AROUND)
+    mirrored_source_coord = find_mirrored_source(ACTUATOR_COORD, EDGES_TO_FLIP_AROUND)
+    draw_actuator(mirrored_source_coord)
+
+    # flip_and_draw_sources(source_coords, EDGES_TO_FLIP_AROUND)
+    # flip_and_draw_sensors(sensor_coords, EDGES_TO_FLIP_AROUND)
     # [flip_and_draw_sources(source_coords, np.array([edge])) for edge in EDGES_TO_FLIP_AROUND]
 
     plt.axis('scaled')

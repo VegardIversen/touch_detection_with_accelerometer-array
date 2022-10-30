@@ -1,10 +1,11 @@
-from time import time
 import numpy as np
 import scipy.signal as signal
 import matplotlib.pyplot as plt
+import pandas as pd
+
 from csv_to_df import csv_to_df
 from data_processing.preprocessing import filter_general, crop_data
-import pandas as pd
+from Table import Table
 
 
 def find_indices_of_peaks(sig_df, plot=False):
@@ -68,6 +69,28 @@ def get_expected_reflections_pos(speed, peak, Fs=150000):
     return n.tolist()
 
 
+def find_mirrored_source(actuator_coord: np.array,
+                         edges_to_bounce_on: np.array):
+    """Calculate the coordinate of the mirrored source
+    to be used to find the wave travel distance.
+    """
+    mirrored_source_coord = actuator_coord
+    for edge in edges_to_bounce_on:
+        if edge == Table.TOP_EDGE:
+            MIRRORED_SOURCE_OFFSET = np.array([0, 2 * (Table.WIDTH - actuator_coord[1])])
+            mirrored_source_coord = mirrored_source_coord + MIRRORED_SOURCE_OFFSET
+        elif edge == Table.RIGHT_EDGE:
+            MIRRORED_SOURCE_OFFSET = np.array([2 * (Table.LENGTH - actuator_coord[0]), 0])
+            mirrored_source_coord = mirrored_source_coord + MIRRORED_SOURCE_OFFSET
+        elif edge == Table.BOTTOM_EDGE:
+            MIRRORED_SOURCE_OFFSET = np.array([0, -2 * actuator_coord[1]])
+            mirrored_source_coord = mirrored_source_coord + MIRRORED_SOURCE_OFFSET
+        elif edge == Table.LEFT_EDGE:
+            MIRRORED_SOURCE_OFFSET = np.array([-2 * actuator_coord[0], 0])
+            mirrored_source_coord = mirrored_source_coord + MIRRORED_SOURCE_OFFSET
+    return mirrored_source_coord
+
+
 def get_mirrored_source_travel_distances(actuator_coord: np.array,
                                          sensor_coord: np.array):
     """Get the travel distance of a mirrored source.
@@ -76,8 +99,6 @@ def get_mirrored_source_travel_distances(actuator_coord: np.array,
     TODO:   Add secondary reflections and add option for outputting
             the n first reflections along with their travel paths.
     """
-    TABLE_LENGTH = 0.716    # m
-    TABLE_WIDTH = 0.597     # m
     # Collection of calcualted distances
     s_norms = pd.DataFrame()
 
@@ -86,13 +107,13 @@ def get_mirrored_source_travel_distances(actuator_coord: np.array,
     s_0_norm = np.linalg.norm(s_0)
 
     # Vector from actuator to edge:
-    d = actuator_coord - np.array([actuator_coord[0], TABLE_WIDTH])
+    d = actuator_coord - np.array([actuator_coord[0], Table.WIDTH])
     # Vector from mirrored source to sensor:
     s_1_norm = np.linalg.norm(2 * d + s_0)
     s_norms['s_1'] = [s_1_norm, d]
 
     # Use vector to different edge:
-    d = actuator_coord - np.array([TABLE_LENGTH, actuator_coord[1]])
+    d = actuator_coord - np.array([Table.LENGTH, actuator_coord[1]])
     # Vector from mirrored source to sensor:
     s_2_norm = np.linalg.norm(2 * d + s_0)
     s_norms['s_2'] = [s_2_norm, d]
