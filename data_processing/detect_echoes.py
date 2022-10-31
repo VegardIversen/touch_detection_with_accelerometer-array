@@ -64,9 +64,7 @@ def find_first_peak(sig_np, height):
     peak_index = peaks[0]
     return peak_index
 
-def get_expected_reflections_pos(speed, peak,Fs=150000):
-
-    s = [0.26, 0.337, 0.386, 0.41] 
+def get_expected_reflections_pos(speed, peak, s=[0.26, 0.337, 0.386, 0.41], Fs=150000):
     t = s/speed
     n = t*Fs + peak
     return n.tolist()

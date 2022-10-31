@@ -1,19 +1,23 @@
 from scipy import signal
 import pandas as pd
 
+import numpy as np
+from pathlib import Path
+
 """FILTERING"""
 
 
 def filter_general(sig, filtertype, cutoff_low=20000, cutoff_high=40000, fs=150000, order=8):
     """filtertype: 'highpass', 'lowpass' or 'bandpass"""
     if filtertype == 'highpass':
-        b, a = signal.butter(order, cutoff_low / (0.5 * fs), 'highpass')
+        sos = signal.butter(order, cutoff_low / (0.5 * fs), 'highpass', output='sos')
     elif filtertype == 'lowpass':
-        b, a = signal.butter(order, cutoff_high / (0.5 * fs), 'lowpass')
+        sos = signal.butter(order, cutoff_high / (0.5 * fs), 'lowpass',output='sos')
     elif filtertype == 'bandpass':
-        b, a = signal.butter(order, [cutoff_low / (0.5 * fs),
+        sos = signal.butter(order, [cutoff_low / (0.5 * fs),
                              cutoff_high / (0.5 * fs)],
-                             'bandpass')
+                             'bandpass',
+                             output='sos')
     else:
         raise ValueError('Filtertype not recognized')
 
@@ -21,12 +25,10 @@ def filter_general(sig, filtertype, cutoff_low=20000, cutoff_high=40000, fs=1500
     if isinstance(sig, pd.DataFrame):
         for channel in sig_filtered:
             # Probably a better way to do this than a double for loop
-            sig_filtered[channel] = signal.filtfilt(b,
-                                                    a,
+            sig_filtered[channel] = signal.sosfilt(sos,
                                                     sig[channel].values)
     else:
-        sig_filtered = signal.filtfilt(b,
-                                       a,
+        sig_filtered = signal.sosfilt(sos,
                                        sig)
 
 
@@ -52,6 +54,7 @@ def filter_notches(sig, freqs, sample_rate=150000):
 """CROPPING"""
 
 
+
 def crop_data(df, time_start=0, time_end=5, sample_rate=150000):
     """Crop data to the range given by the
     global variables CROP_START and CROP_END.
@@ -67,3 +70,33 @@ def crop_data_threshold(data, threshold=0.0006):
     else:
         data_cropped = data.loc[data > threshold]
     return data_cropped
+
+
+#create a function that takes in a dataframe and removes silence around the signal
+def remove_silence(df, threshold=0.0006):
+    df = df.loc[(df > threshold).any(axis=1)]
+    #reverse df
+    rev = df.iloc[::-1].reset_index(drop=True)
+    #remove silence from the end_fre
+    rev = rev.loc[(rev > threshold).any(axis=1)]
+    #reverse again
+    df_cleand = rev.iloc[::-1].reset_index(drop=True)
+    return df_cleand
+if __name__ == '__main__':
+    import matplotlib.pyplot as plt
+    ROOT_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
+    file_folder='div_files/setup3'
+    file_name='sign_integ_test_touchhold_fulldurr_150k_5s_setup3_1_v1'
+    file_path = ROOT_FOLDER + '\\' + file_folder + '\\' + file_name + '.csv'
+    channel_names = ['channel 1', 'channel 2', 'channel 3', 'WAVE_GEN']
+    test = pd.read_csv(filepath_or_buffer=file_path, names=channel_names)
+    test = test.drop(columns=['WAVE_GEN'])
+    test_removed_silence = remove_silence(test)
+    ch1 = test['channel 1'].to_numpy()
+    rev = test[::-1].reset_index(drop=True)
+    plt.subplot(211)
+    plt.plot(test_removed_silence)
+    plt.subplot(212)
+    plt.plot(test)
+    plt.show()
+ 

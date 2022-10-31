@@ -74,7 +74,7 @@ def plot_spectogram(df,
                     sample_rate=150000,
                     channel='channel 1',
                     freq_max=None):
-
+    vmin = 10*np.log10(np.max(df)) - 60
     if include_signal:
         time_axis = np.linspace(0, len(df) // sample_rate, num=len(df))
         ax1 = plt.subplot(211)
@@ -83,12 +83,12 @@ def plot_spectogram(df,
         plt.xlabel('Time [s]')
         plt.ylabel('Amplitude')
         ax2 = plt.subplot(212, sharex=ax1)
-        plt.specgram(df[channel], Fs=sample_rate)
+        plt.specgram(df[channel], Fs=sample_rate, vmin=vmin)
         plt.axis(ymax=freq_max)
         plt.xlabel('Time [s]')
         plt.ylabel('Frequency')
     else:
-        plt.specgram(df[channel], Fs=sample_rate)
+        plt.specgram(df[channel], Fs=sample_rate, vmin=vmin)
         plt.axis(ymax=freq_max)
         plt.xlabel('Time [s]')
         plt.ylabel('Frequency')
@@ -96,6 +96,8 @@ def plot_spectogram(df,
 
 
 def compare_signals(df1, df2,
+                    df1_name='signal 1',
+                    df2_name='signal 2',
                     sample_rate=150000,
                     freq_max=60000,
                     plot_diff=False,
@@ -105,11 +107,13 @@ def compare_signals(df1, df2,
     time signal, spectogram, fft and (optionally) difference signal
     """
     # Time signal 1
+    vmin1 = 0
+    vmin2 = 0
     time_axis = np.linspace(0, len(df1) / sample_rate, num=len(df1))
     ax1 = plt.subplot(231)
     plt.grid()
     plt.plot(time_axis, df1)
-    plt.title('Time signal 1')
+    plt.title(f'Time {df1_name}')
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
 
@@ -117,7 +121,7 @@ def compare_signals(df1, df2,
     plt.subplot(234, sharex=ax1, sharey=ax1)
     plt.grid()
     plt.plot(time_axis, df2)
-    plt.title('Time signal 2')
+    plt.title(f'Time {df2_name}')
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
 
@@ -125,7 +129,7 @@ def compare_signals(df1, df2,
     ax3 = plt.subplot(232, sharex=ax1)
     plt.specgram(df1, Fs=sample_rate)
     plt.axis(ymax=freq_max)
-    plt.title('Spectrogram of signal 1')
+    plt.title(f'Spectrogram of {df1_name}')
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
     plt.colorbar()
@@ -133,7 +137,7 @@ def compare_signals(df1, df2,
     # Spectrogram of signal 2
     plt.subplot(235, sharex=ax1, sharey=ax3)
     plt.specgram(df2, Fs=sample_rate)
-    plt.title('Spectrogram of signal 2')
+    plt.title(f'Spectrogram of {df2_name}')
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
     plt.colorbar()
@@ -146,7 +150,7 @@ def compare_signals(df1, df2,
     data_fft = np.fft.fftshift(data_fft)
     fftfreq = np.fft.fftshift(fftfreq)
     plt.grid()
-    plt.title('FFT of signal 1')
+    plt.title(f'FFT of {df1_name}')
     plt.xlabel("Frequency [Hz]")
     plt.ylabel("Amplitude [dB]")
     plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
@@ -161,7 +165,7 @@ def compare_signals(df1, df2,
     data_fft = np.fft.fftshift(data_fft)
     fftfreq = np.fft.fftshift(fftfreq)
     plt.grid()
-    plt.title('FFT of signal 2')
+    plt.title(f'FFT of {df2_name}')
     plt.xlabel("Frequency [Hz]")
     plt.ylabel("Amplitude [dB]")
     plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
