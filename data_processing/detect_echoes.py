@@ -5,7 +5,7 @@ import pandas as pd
 
 from csv_to_df import csv_to_df
 from data_processing.preprocessing import filter_general, crop_data
-from Table import Table
+from objects import MirroredSensor, MirroredSource, Table, Actuator, Sensor
 
 
 def find_indices_of_peaks(sig_df, plot=False):
@@ -69,26 +69,89 @@ def get_expected_reflections_pos(speed, peak, Fs=150000):
     return n.tolist()
 
 
-def find_mirrored_source(actuator_coord: np.array,
+def find_mirrored_source(actuator: Actuator,
                          edges_to_bounce_on: np.array):
     """Calculate the coordinate of the mirrored source
     to be used to find the wave travel distance.
     """
-    mirrored_source_coord = actuator_coord
+    mirrored_source = MirroredSource(actuator.coordinates)
     for edge in edges_to_bounce_on:
         if edge == Table.TOP_EDGE:
-            MIRRORED_SOURCE_OFFSET = np.array([0, 2 * (Table.WIDTH - actuator_coord[1])])
-            mirrored_source_coord = mirrored_source_coord + MIRRORED_SOURCE_OFFSET
+            MIRRORED_SOURCE_OFFSET = np.array([0, 2 * (Table.WIDTH - mirrored_source.y)])
+            mirrored_source.set_coordinates(mirrored_source.coordinates + MIRRORED_SOURCE_OFFSET)
         elif edge == Table.RIGHT_EDGE:
-            MIRRORED_SOURCE_OFFSET = np.array([2 * (Table.LENGTH - actuator_coord[0]), 0])
-            mirrored_source_coord = mirrored_source_coord + MIRRORED_SOURCE_OFFSET
+            MIRRORED_SOURCE_OFFSET = np.array([2 * (Table.LENGTH - mirrored_source.x), 0])
+            mirrored_source.set_coordinates(mirrored_source.coordinates + MIRRORED_SOURCE_OFFSET)
         elif edge == Table.BOTTOM_EDGE:
-            MIRRORED_SOURCE_OFFSET = np.array([0, -2 * actuator_coord[1]])
-            mirrored_source_coord = mirrored_source_coord + MIRRORED_SOURCE_OFFSET
+            MIRRORED_SOURCE_OFFSET = np.array([0, -2 * mirrored_source.y])
+            mirrored_source.set_coordinates( mirrored_source.coordinates + MIRRORED_SOURCE_OFFSET)
         elif edge == Table.LEFT_EDGE:
-            MIRRORED_SOURCE_OFFSET = np.array([-2 * actuator_coord[0], 0])
-            mirrored_source_coord = mirrored_source_coord + MIRRORED_SOURCE_OFFSET
-    return mirrored_source_coord
+            MIRRORED_SOURCE_OFFSET = np.array([-2 * mirrored_source.x, 0])
+            mirrored_source.set_coordinates(mirrored_source.coordinates + MIRRORED_SOURCE_OFFSET)
+    return mirrored_source
+
+
+def flip_sources(sources: np.array,
+                 edges_to_flip_around: np.array):
+    """Draw the sources in the flipped positions.
+    The table edges are numbered as:
+
+         _______1_______
+        |               |
+      4 |               | 2
+        |               |
+        |_______________|
+                3
+
+    """
+
+    for edge in edges_to_flip_around:
+        for source in sources:
+            new_source = MirroredSource(source.coordinates)
+            if edge == Table.TOP_EDGE:
+                new_source.set_coordinates(new_source.coordinates + np.array([0, 2 * (Table.WIDTH - new_source.y)]))
+                sources = np.append(sources, new_source)
+            elif edge == Table.RIGHT_EDGE:
+                new_source.set_coordinates(new_source.coordinates + np.array([2 * (Table.LENGTH - new_source.x), 0]))
+                sources = np.append(sources, new_source)
+            elif edge == Table.BOTTOM_EDGE:
+                new_source.set_coordinates(new_source.coordinates + np.array([0, -2 * new_source.y]))
+                sources = np.append(sources, new_source)
+            elif edge == Table.LEFT_EDGE:
+                new_source.set_coordinates(new_source.coordinates + np.array([-2 * new_source.x, 0]))
+                sources = np.append(sources, new_source)
+    return sources
+
+
+def flip_sensors(sensors: np.array,
+                 edges_to_flip_around: np.array):
+    """Draw the sensors in the flipped positions.
+    The table edges are numbered as:
+
+         _______1_______
+        |               |
+      4 |               | 2
+        |               |
+        |_______________|
+                3
+
+    """
+    for edge in edges_to_flip_around:
+        for sensor in sensors:
+            new_sensor = MirroredSensor(sensor.coordinates)
+            if edge == Table.TOP_EDGE:
+                new_sensor.set_coordinates(sensor.coordinates + np.array([0, 2 * (Table.WIDTH - sensor.y)]))
+                sensors = np.append(sensors, new_sensor)
+            elif edge == Table.RIGHT_EDGE:
+                new_sensor.set_coordinates(sensor.coordinates + np.array([2 * (Table.LENGTH - sensor.x), 0]))
+                sensors = np.append(sensors, new_sensor)
+            elif edge == Table.BOTTOM_EDGE:
+                new_sensor.set_coordinates(sensor.coordinates + np.array([0, -2 * sensor.y]))
+                sensors = np.append(sensors, new_sensor)
+            elif edge == Table.LEFT_EDGE:
+                new_sensor.set_coordinates(sensor.coordinates + np.array([-2 * sensor.x, 0]))
+                sensors = np.append(sensors, new_sensor)
+    return sensors
 
 
 def get_mirrored_source_travel_distances(actuator_coord: np.array,
