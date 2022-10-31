@@ -17,7 +17,7 @@ from data_processing.transfer_function import transfer_function
 import matplotlib.pyplot as plt
 from data_processing.signal_separation import signal_sep
 from csv_to_df import csv_to_df
-from Table import Table
+from objects import Table, Actuator, Sensor
 
 
 def main():
@@ -37,7 +37,7 @@ def main():
 
     chirp_meas_df = csv_to_df(file_folder='div_files',
                               file_name='chirp_test_fs_150000_t_max_2s_1000-40000hz_1vpp_1cyc_setup3_v2',
-                              channel_names=CHIRP_CHANNEL_NAMES,)
+                              channel_names=CHIRP_CHANNEL_NAMES)
 
     chirp = chirp_meas_df['chirp']
     chirp = crop_data(chirp)
