@@ -1,6 +1,3 @@
-from calendar import c
-from sys import orig_argv
-from turtle import color
 import scipy.signal as signal
 from scipy import interpolate
 import pandas as pd
