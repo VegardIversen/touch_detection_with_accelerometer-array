@@ -74,7 +74,7 @@ def plot_spectogram(df,
                     sample_rate=150000,
                     channel='channel 1',
                     freq_max=None):
-    vmin = 10*np.log10(np.max(df)) - 60
+    vmin = 10 * np.log10(np.max(df)) - 60
     if include_signal:
         time_axis = np.linspace(0, len(df) // sample_rate, num=len(df))
         ax1 = plt.subplot(211)
@@ -119,7 +119,7 @@ def compare_signals(df1, df2,
     # Time signal 1
     vmin1 = 0
     vmin2 = 0
-    time_axis = np.linspace(0, len(df1) / sample_rate, num=len(df1))
+    time_axis_1 = np.linspace(0, len(df1) / sample_rate, num=len(df1))
     ax1 = plt.subplot(231)
     plt.grid()
     plt.plot(time_axis_1, df1)
