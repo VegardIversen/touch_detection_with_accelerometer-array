@@ -74,9 +74,12 @@ def find_mirrored_source(actuator: Actuator,
     """Calculate the coordinate of the mirrored source
     to be used to find the wave travel distance.
     """
+    NO_REFLECTION = 0
     mirrored_source = MirroredSource(actuator.coordinates)
     for edge in edges_to_bounce_on:
-        if edge == Table.TOP_EDGE:
+        if edge == NO_REFLECTION:
+            continue
+        elif edge == Table.TOP_EDGE:
             MIRRORED_SOURCE_OFFSET = np.array([0, 2 * (Table.WIDTH - mirrored_source.y)])
             mirrored_source.set_coordinates(mirrored_source.coordinates + MIRRORED_SOURCE_OFFSET)
         elif edge == Table.RIGHT_EDGE:
@@ -154,8 +157,8 @@ def flip_sensors(sensors: np.array,
     return sensors
 
 
-def get_mirrored_source_travel_distances(actuator_coord: np.array,
-                                         sensor_coord: np.array):
+def get_travel_distances_firsts(actuator_coord: np.array,
+                                sensor_coord: np.array):
     """Get the travel distance of a mirrored source.
     See figure in "Predicting reflection times" on Notion.
     NOTE:   These are currently only for the four direct reflections.
@@ -163,7 +166,8 @@ def get_mirrored_source_travel_distances(actuator_coord: np.array,
             the n first reflections along with their travel paths.
     """
     # Collection of calcualted distances
-    s_norms = pd.DataFrame()
+    # s_norms = pd.DataFrame()
+    s_norms = np.array([])
 
     # Vector between actuator and sensor:
     s_0 = sensor_coord - actuator_coord
@@ -173,27 +177,68 @@ def get_mirrored_source_travel_distances(actuator_coord: np.array,
     d = actuator_coord - np.array([actuator_coord[0], Table.WIDTH])
     # Vector from mirrored source to sensor:
     s_1_norm = np.linalg.norm(2 * d + s_0)
-    s_norms['s_1'] = [s_1_norm, d]
+    # s_norms['s_1'] = [s_1_norm, d]
+    s_norms = np.append(s_norms, s_1_norm)
 
     # Use vector to different edge:
     d = actuator_coord - np.array([Table.LENGTH, actuator_coord[1]])
     # Vector from mirrored source to sensor:
     s_2_norm = np.linalg.norm(2 * d + s_0)
-    s_norms['s_2'] = [s_2_norm, d]
+    # s_norms['s_2'] = [s_2_norm, d]
+    s_norms = np.append(s_norms, s_2_norm)
 
     # Use vector to different edge:
     d = actuator_coord - np.array([actuator_coord[0], 0])
     # Vector from mirrored source to sensor:
     s_3_norm = np.linalg.norm(2 * d + s_0)
-    s_norms['s_3'] = [s_3_norm, d]
+    # s_norms['s_3'] = [s_3_norm, d]
+    s_norms = np.append(s_norms, s_3_norm)
 
     # Use vector to different edge:
     d = actuator_coord - np.array([0, actuator_coord[1]])
     # Vector from mirrored source to sensor:
     s_4_norm = np.linalg.norm(2 * d + s_0)
-    s_norms['s_4'] = [s_4_norm, d]
+    # s_norms['s_4'] = [s_4_norm, d]
+    s_norms = np.append(s_norms, s_4_norm)
 
     return s_norms
+
+
+def get_travel_distances(actuator: Actuator,
+                         sensor: Sensor):
+    """Get the travel distance from first and second reflections.
+    TODO:   Add logic for not calculating physically impossible reflections.
+            This not necessary for predicting WHEN the reflections will arrive,
+            but to visualise which reflections we are using.
+    """
+    travel_distances = np.array([])
+    # Direct travel distance:
+    direct_travel_distance = np.linalg.norm(actuator.coordinates - sensor.coordinates)
+    travel_distances = np.append(travel_distances, direct_travel_distance)
+
+    EDGES = np.array([1, 2, 3, 4])
+
+
+    edge_pairs = np.array([])
+    # Iterate thorugh all combinations of edges to reflect from
+    for edge_1 in range(0, EDGES.size + 1):
+        for edge_2 in range(0, EDGES.size + 1):
+            if edge_1 == edge_2:
+                # Can't reflect from the same edge twice
+                continue
+            elif edge_1 and not edge_2:
+                # To avoid repeating first reflection calculations
+                continue
+            mirrored_source = find_mirrored_source(actuator, np.array([edge_1, edge_2]))
+            distance_to_sensor = np.linalg.norm(mirrored_source.coordinates - sensor.coordinates)
+            if not edge_1:
+                print(f'\nReflecting from {edge_2}. Distance: {distance_to_sensor}')
+            else:
+                print(f'\nReflecting from {edge_1}, then {edge_2}. Distance: {distance_to_sensor}')
+            travel_distances = np.append(travel_distances, distance_to_sensor)
+            edge_pais = np.append(edge_pairs, np.array([edge_1, edge_2]))
+
+    return travel_distances
 
 
 if __name__ == '__main__':
