@@ -123,35 +123,25 @@ def draw_setup_1():
     plt.show()
 
 
-def draw_a_setup():
+def draw_a_setup(sources: np.ndarray, sensors: np.ndarray):
     table = Table()
 
-    actuator = Actuator(coordinates=np.array([1 / 6 * table.LENGTH,
-                                              1 / 2 * table.WIDTH]))
-    sensor_1 = Sensor(coordinates=np.array([2 / 3 * table.LENGTH,
-                                            5 / 6 * table.WIDTH]))
-    sensor_2 = Sensor(coordinates=np.array([2 / 3 * table.LENGTH,
-                                            1 / 3 * table.WIDTH]))
-
-    sources = np.array([actuator])
-    sensors = np.array([sensor_1])
-
-    EDGES_TO_FLIP_AROUND = np.array([table.LEFT_EDGE,
-                                     table.TOP_EDGE])
+    EDGES_TO_FLIP_AROUND = np.array([table.BOTTOM_EDGE,
+                                     table.LEFT_EDGE])
 
     mirrored_sources = np.array([])
-    mirrored_sources = np.append(mirrored_sources, find_mirrored_source(actuator, [edge for edge in EDGES_TO_FLIP_AROUND]))
+    mirrored_sources = np.append(mirrored_sources, find_mirrored_source(sources[0], [edge for edge in EDGES_TO_FLIP_AROUND]))
 
     plt.axes()
     table.draw()
-    actuator.draw()
+    # sources[0].draw()
     [mirrored_source.draw() for mirrored_source in mirrored_sources]
-    # sources = flip_sources(sources, EDGES_TO_FLIP_AROUND)
-    # sensors = flip_sensors(sensors, EDGES_TO_FLIP_AROUND)
+    sources = flip_sources(sources, EDGES_TO_FLIP_AROUND)
+    sensors = flip_sensors(sensors, EDGES_TO_FLIP_AROUND)
     [source.draw() for source in sources]
     [sensor.draw() for sensor in sensors]
-    line_mirr_source = plt.Line2D((mirrored_sources[0].x, sensor_1.x),
-                                  (mirrored_sources[0].y, sensor_1.y),
+    line_mirr_source = plt.Line2D((mirrored_sources[0].x, sensors[0].x),
+                                  (mirrored_sources[0].y, sensors[0].y),
                                   color='black',
                                   lw=0.75,
                                   linestyle='--',
