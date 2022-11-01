@@ -28,9 +28,9 @@ def main():
 
     draw_a_setup(np.array([actuator]), np.array([sensor]))
 
-    # Crop limits, in seconds, bing bing
-    TIME_START = 3.9932
-    TIME_END = 2.001
+    # Crop limits, in seconds
+    TIME_START = 0
+    TIME_END = 5
 
     CHIRP_CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3', 'chirp']
 
