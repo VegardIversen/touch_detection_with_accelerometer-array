@@ -8,35 +8,38 @@ from data_processing.preprocessing import filter_general, crop_data
 from objects import MirroredSensor, MirroredSource, Table, Actuator, Sensor
 
 
-def find_indices_of_peaks(sig_df, plot=False):
+def find_indices_of_peaks(sig_np, plot=False, hilbert=True):
     """Find the indices of the peaks in the signal."""
     peak_indices = pd.DataFrame(columns=['channel 1', 'channel 2', 'channel 3', 'chirp'])
 
-    for channel in sig_df:
-        # Find the peaks of the square of the signal
-        signal_sqr = np.power(sig_df[channel], 2)
-        peak_indices_sqr, _ = signal.find_peaks(signal_sqr, prominence=0.0000001) #, distance=0.01 * 150000)
+    # Find the peaks of the square of the signal
+    if not hilbert:
+        signal_sqr = np.power(sig_np, 2)
+        peak_indices, _ = signal.find_peaks(signal_sqr, prominence=0.00001, distance=0.01 * 150000)
+    else:
+    # Find the peaks of the Hilbert envelope of the signal
+        sig_np_filtered_hilbert = get_hilbert_envelope(sig_np)
+        peak_indices, _ = signal.find_peaks(sig_np_filtered_hilbert, prominence=0.001, distance=0.01 * 150000)
+    if peak_indices.size == 0:
+        print('No peaks found!')
 
-        # Find the peaks of the Hilbert envelope of the signal
-        sig_np_filtered_hilbert = get_hilbert_envelope(sig_df[channel])
-        peak_indices[channel], _ = signal.find_peaks(sig_df[channel])    #, prominence=0.001, distance=0.01 * 150000)
-        if peak_indices[channel].size == 0:
-            print('No peaks found!')
-
-        if plot:
-            time_axis = np.linspace(0, len(sig_df[channel]), num=len(sig_df[channel]))
-            fig, ax0 = plt.subplots(nrows=1)
-            # ax0.plot(time_axis, sig_np, label='signal')
-            # ax0.plot(time_axis / 150000, sig_np_filtered_hilbert, label='filtered')
+    if plot:
+        time_axis = np.linspace(0, len(sig_np), num=len(sig_np))
+        fig, ax0 = plt.subplots(nrows=1)
+        # ax0.plot(time_axis, sig_np, label='signal')
+        # ax0.plot(time_axis / 150000, sig_np_filtered_hilbert, label='filtered')
+        if not hilbert:
             ax0.plot(time_axis / 150000, signal_sqr, label='sqrd')
-            ax0.plot(time_axis[peak_indices_sqr] / 150000, signal_sqr[peak_indices_sqr], 'x', label='peaks')
+            ax0.plot(time_axis[peak_indices] / 150000, signal_sqr[peak_indices], 'x', label='peaks')
+
+        else:
             ax0.plot(time_axis / 150000, sig_np_filtered_hilbert, label='filtered hilbert')
             ax0.plot(time_axis[peak_indices] / 150000, sig_np_filtered_hilbert[peak_indices], 'x', label='peaks')
-            ax0.set_xlabel("Time [s]")
-            ax0.legend()
-            fig.tight_layout()
-            plt.grid()
-            plt.show()
+        ax0.set_xlabel("Time [s]")
+        ax0.legend()
+        fig.tight_layout()
+        plt.grid()
+        plt.show()
 
     return peak_indices
 
@@ -44,8 +47,9 @@ def find_indices_of_peaks(sig_df, plot=False):
 def get_hilbert_envelope(sig):
     """Get the Hilbert envelope for all channels in df"""
     sig_hilb = sig.copy()
-    if isinstance(sig, np.ndarray):
+    if isinstance(sig, np.ndarray) or isinstance(sig, pd.Series):
         sig_hilb = np.abs(signal.hilbert(sig))
+        return sig_hilb
     elif isinstance(sig, pd.DataFrame):
         for channel in sig_hilb:
             sig_hilb[channel] = np.abs(signal.hilbert(sig[channel]))
@@ -61,11 +65,9 @@ def find_first_peak(sig_np, height):
     peak_index = peaks[0]
     return peak_index
 
-
-def get_expected_reflections_pos(speed, peak, Fs=150000):
-    s = [0.26, 0.337, 0.386, 0.41]
-    t = s / speed
-    n = t * Fs + peak
+def get_expected_reflections_pos(speed, peak, s=[0.26, 0.337, 0.386, 0.41], Fs=150000):
+    t = s/speed
+    n = t*Fs + peak
     return n.tolist()
 
 

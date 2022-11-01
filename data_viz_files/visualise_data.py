@@ -8,7 +8,96 @@ from csv_to_df import csv_to_df
 from data_processing.preprocessing import crop_data
 
 
+def plot_fft(df, sample_rate=150000, window=False):
+    if isinstance(df, pd.DataFrame):
+        if window:
+            hamming_window = scipy.signal.hamming(len(df))
+            data_fft = scipy.fft.fft(df.values * hamming_window)
+        else:
+            data_fft = scipy.fft.fft(df.values, axis=0)
+    else:
+        if window:
+            hamming_window = scipy.signal.hamming(len(df))
+            data_fft = scipy.fft.fft(df * hamming_window)
+        else:
+            data_fft = scipy.fft.fft(df, axis=0)
+    fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / sample_rate)
+    plt.grid()
+    plt.title('fft of signal')
+    plt.xlabel("Frequency [hz]")
+    plt.ylabel("Amplitude")
+    plt.plot(np.fft.fftshift(fftfreq), 20 * np.log10(np.abs(np.fft.fftshift(data_fft))))
+    ax = plt.subplot(1, 1, 1)
+    # Only plot positive frequencies
+    ax.set_xlim(0)
+    plt.show()
+
+
+def plot_2fft(df1, df2, sample_rate=150000, window=False):
+    if window:
+        hamming_window1 = scipy.signal.hamming(len(df1))
+        data_fft1 = scipy.fft.fft(df1.values * hamming_window1, axis=0)
+        hamming_window2 = scipy.signal.hamming(len(df1))
+        data_fft2 = scipy.fft.fft(df2.values * hamming_window2, axis=0)
+    else:
+        data_fft1 = scipy.fft.fft(df1.values, axis=0)
+        data_fft2 = scipy.fft.fft(df2.values, axis=0)
+    fftfreq1 = scipy.fft.fftfreq(len(data_fft1),  1 / sample_rate)
+    fftfreq2 = scipy.fft.fftfreq(len(data_fft2),  1 / sample_rate)
+    plt.grid()
+    ax1 = plt.subplot(211)
+    plt.grid()
+    plt.title(f'fft of {df1.name}')
+    plt.xlabel("Frequency [hz]")
+    plt.ylabel("Amplitude")
+    plt.plot(np.fft.fftshift(fftfreq1), 20 * np.log10(np.abs(np.fft.fftshift(data_fft1))))
+    plt.subplot(212, sharex=ax1, sharey=ax1)
+    plt.title(f'fft of {df2.name}')
+    plt.xlabel("Frequency [hz]")
+    plt.ylabel("Amplitude")
+    plt.plot(np.fft.fftshift(fftfreq2), 20 * np.log10(np.abs(np.fft.fftshift(data_fft2))))
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_data(df, crop=True):
+    if crop:
+        df = crop_data(df)
+    df.plot()
+    plt.legend(df.columns)
+    plt.grid()
+    plt.show()
+
+
+def plot_spectogram(df,
+                    include_signal=True,
+                    sample_rate=150000,
+                    channel='channel 1',
+                    freq_max=None):
+    vmin = 10*np.log10(np.max(df)) - 60
+    if include_signal:
+        time_axis = np.linspace(0, len(df) // sample_rate, num=len(df))
+        ax1 = plt.subplot(211)
+        plt.grid()
+        plt.plot(time_axis, df[channel])
+        plt.xlabel('Time [s]')
+        plt.ylabel('Amplitude')
+        ax2 = plt.subplot(212, sharex=ax1)
+        plt.specgram(df[channel], Fs=sample_rate, vmin=vmin)
+        plt.axis(ymax=freq_max)
+        plt.xlabel('Time [s]')
+        plt.ylabel('Frequency')
+    else:
+        plt.specgram(df[channel], Fs=sample_rate, vmin=vmin)
+        plt.axis(ymax=freq_max)
+        plt.xlabel('Time [s]')
+        plt.ylabel('Frequency')
+    plt.show()
+
+
 def compare_signals(df1, df2,
+                    df1_name='signal 1',
+                    df2_name='signal 2',
                     sample_rate=150000,
                     freq_max=40000,
                     plot_diff=False,
@@ -28,7 +117,9 @@ def compare_signals(df1, df2,
         df2 = pd.DataFrame(df2)
 
     # Time signal 1
-    time_axis_1 = np.linspace(0, len(df1) / sample_rate, num=len(df1))
+    vmin1 = 0
+    vmin2 = 0
+    time_axis = np.linspace(0, len(df1) / sample_rate, num=len(df1))
     ax1 = plt.subplot(231)
     plt.grid()
     plt.plot(time_axis_1, df1)

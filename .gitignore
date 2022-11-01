@@ -60,5 +60,8 @@ touch/
 *.gif
 *.csv
 
+
 #folders
+
+.vscode/settings.json
 
