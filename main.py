@@ -11,7 +11,7 @@ from data_viz_files.visualise_data import compare_signals, plot_data_vs_noiseavg
 from data_viz_files.drawing import draw_a_setup, draw_setup_1
 from data_processing.noise import adaptive_filter_RLS, adaptive_filter_NLMS, noise_reduce_signal
 from data_processing.find_propagation_speed import find_propagation_speed, find_propagation_speed_plot
-from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_hilbert_envelope, get_expected_reflections_pos, get_mirrored_source_travel_distances
+from data_processing.detect_echoes import get_hilbert_envelope, get_travel_distances, get_travel_distances_firsts
 from data_processing.preprocessing import crop_data, crop_data_threshold, filter_general, filter_notches
 from data_processing.transfer_function import transfer_function
 import matplotlib.pyplot as plt
@@ -21,10 +21,12 @@ from objects import Table, Actuator, Sensor
 
 
 def main():
-    get_mirrored_source_travel_distances(actuator_coord=np.array([Table.LENGTH / 2, Table.WIDTH / 2]),
-                                         sensor_coord=np.array([Table.LENGTH / 2, Table.WIDTH / 2]))
+    actuator = Actuator(np.array([1 / 2 * Table.LENGTH, 1 / 3 * Table.WIDTH]))
+    sensor = Sensor(np.array([2 / 3 * Table.LENGTH, 2 / 3 * Table.WIDTH]))
+    distances_first = get_travel_distances_firsts(actuator.coordinates, sensor.coordinates)
+    distances_second = get_travel_distances(actuator, sensor)
 
-    draw_a_setup()
+    draw_a_setup(np.array([actuator]), np.array([sensor]))
 
     # Crop limits, in seconds
     TIME_START = 3.9932
