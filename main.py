@@ -28,7 +28,7 @@ def main():
 
     draw_a_setup(np.array([actuator]), np.array([sensor]))
 
-    # Crop limits, in seconds
+    # Crop limits, in seconds, bing bing
     TIME_START = 3.9932
     TIME_END = 2.001
 
