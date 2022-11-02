@@ -115,8 +115,6 @@ def compare_signals(df1, df2,
         df2 = pd.DataFrame(df2)
 
     # Time signal 1
-    vmin1 = 0
-    vmin2 = 0
     time_axis_1 = np.linspace(0, len(df1) / sample_rate, num=len(df1))
     ax1 = plt.subplot(231)
     plt.grid()
