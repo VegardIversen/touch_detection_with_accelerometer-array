@@ -96,8 +96,6 @@ def plot_spectogram(df,
 
 
 def compare_signals(df1, df2,
-                    df1_name='signal 1',
-                    df2_name='signal 2',
                     sample_rate=150000,
                     freq_max=40000,
                     plot_diff=False,
