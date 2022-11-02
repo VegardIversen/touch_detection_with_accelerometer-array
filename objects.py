@@ -84,7 +84,7 @@ class Sensor:
                             zorder=10)
         plt.gca().add_patch(sensor)
 
-    RADIUS = 0.01  # m
+    RADIUS = 0.007  # m
     # Colour settings for drawing
     FILL_COLOUR = '#AEAFA7'
     EDGE_COLOUR = 'dimgray'
@@ -119,7 +119,7 @@ class Actuator:
                               zorder=10)
         plt.gca().add_patch(actuator)
 
-    RADIUS = 0.01  # m
+    RADIUS = 0.007  # m
     # Colour settings for drawing
     FILL_COLOUR = '#D4434A'
     EDGE_COLOUR = 'dimgray'
