@@ -221,6 +221,7 @@ def get_travel_distances(actuator: Actuator,
     # Direct travel distance:
     direct_travel_distance = np.linalg.norm(actuator.coordinates - sensor.coordinates)
     travel_distances = np.append(travel_distances, direct_travel_distance)
+    print(f"\nDirect travel distance: {direct_travel_distance}")
 
     EDGES = np.array([1, 2, 3, 4])
     # Iterate thorugh all combinations of edges to reflect from
