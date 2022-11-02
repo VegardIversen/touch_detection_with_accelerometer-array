@@ -208,7 +208,8 @@ def get_travel_distances_firsts(actuator_coord: np.array,
 
 
 def get_travel_distances(actuator: Actuator,
-                         sensor: Sensor):
+                         sensor: Sensor,
+                         print_distances: bool = False):
     """Get the travel distance from first and second reflections.
     TODO:   Add logic for not calculating physically impossible reflections.
             This not necessary for predicting WHEN the reflections will arrive,
@@ -220,9 +221,6 @@ def get_travel_distances(actuator: Actuator,
     travel_distances = np.append(travel_distances, direct_travel_distance)
 
     EDGES = np.array([1, 2, 3, 4])
-
-
-    edge_pairs = np.array([])
     # Iterate thorugh all combinations of edges to reflect from
     for edge_1 in range(0, EDGES.size + 1):
         for edge_2 in range(0, EDGES.size + 1):
@@ -235,11 +233,12 @@ def get_travel_distances(actuator: Actuator,
             mirrored_source = find_mirrored_source(actuator, np.array([edge_1, edge_2]))
             distance_to_sensor = np.linalg.norm(mirrored_source.coordinates - sensor.coordinates)
             if not edge_1:
-                print(f'\nReflecting from {edge_2}. Distance: {distance_to_sensor}')
+                if print_distances:
+                    print(f'\nReflecting from {edge_2}. Distance: {distance_to_sensor}')
             else:
-                print(f'\nReflecting from {edge_1}, then {edge_2}. Distance: {distance_to_sensor}')
+                if print_distances:
+                    print(f'\nReflecting from {edge_1}, then {edge_2}. Distance: {distance_to_sensor}')
             travel_distances = np.append(travel_distances, distance_to_sensor)
-            edge_pais = np.append(edge_pairs, np.array([edge_1, edge_2]))
 
     return travel_distances
 
