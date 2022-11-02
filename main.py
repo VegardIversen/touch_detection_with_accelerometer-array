@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from data_viz_files.visualise_data import compare_signals, plot_data_vs_noiseavg
-from data_viz_files.drawing import draw_a_setup, draw_setup_1
+from data_viz_files.drawing import draw_a_setup, draw_setup_2
 from data_processing.noise import adaptive_filter_RLS, adaptive_filter_NLMS, noise_reduce_signal
 from data_processing.find_propagation_speed import find_propagation_speed, find_propagation_speed_plot
 from data_processing.detect_echoes import get_hilbert_envelope, get_travel_distances, get_travel_distances_firsts
@@ -36,7 +36,7 @@ def main():
     distances_first = get_travel_distances_firsts(actuator.coordinates, sensor.coordinates)
     distances_second = get_travel_distances(actuator, sensor)
 
-    draw_a_setup(np.array([actuator]), np.array([sensor]))
+    # draw_a_setup(np.array([actuator]), np.array([sensor]))
 
     # Crop limits, in seconds
     TIME_START = 0
@@ -45,7 +45,7 @@ def main():
     CHIRP_CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3', 'chirp']
 
     CROP = True
-    FILTER = False
+    FILTER = True
 
     chirp_meas_df = csv_to_df(file_folder='div_files',
                               file_name='chirp_test_fs_150000_t_max_2s_1000-40000hz_1vpp_1cyc_setup3_v2',
@@ -62,8 +62,8 @@ def main():
     if FILTER:
         chirp_meas_filt_df = filter_general(chirp_meas_df,
                                             filtertype='highpass',
-                                            cutoff_lowpass=100,
-                                            order=2)
+                                            cutoff_highpass=1000,
+                                            order=4)
     else:
         chirp_meas_filt_df = chirp_meas_df
 
@@ -82,7 +82,7 @@ def main():
 
     # peak_indices = find_indices_of_peaks(chirp_meas_hilbert_df)
 
-    compare_signals(chirp,
+    compare_signals(chirp_meas_df['channel 1'],
                     chirp_meas_filt_df['channel 1'],
                     plot_1_name='Chirp signal',
                     plot_2_name='Measured signal',
