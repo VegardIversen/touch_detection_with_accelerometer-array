@@ -95,7 +95,7 @@ def draw_arrow(start_coord, end_coord, subtract_length=0):
               length_includes_head=True)
 
 
-def draw_setup_1():
+def draw_setup_2():
     table = Table()
 
     actuator = Actuator(coordinates=np.array([1 / 2 * table.LENGTH,
@@ -121,6 +121,34 @@ def draw_setup_1():
     plot_legend_without_duplicates()
 
     plt.show()
+
+    return actuator, sensor_1, sensor_2, sensor_3
+
+
+def draw_setup_3_2():
+    table = Table()
+
+    sensor_1 = Sensor(coordinates=np.array([0.135, 0.305]))
+    sensor_2 = Sensor(sensor_1.coordinates + np.array([0.267, 0]))
+    sensor_3 = Sensor(sensor_2.coordinates + np.array([0.267, 0]))
+
+    actuator = Actuator(np.array([sensor_1.x / 2, sensor_1.y]))
+
+    plt.axes()
+    table.draw()
+    actuator.draw()
+    sensor_1.draw()
+    sensor_2.draw()
+    sensor_3.draw()
+
+    plt.axis('scaled')
+    plt.xlabel('x (m)')
+    plt.ylabel('y (m)')
+    plot_legend_without_duplicates()
+
+    plt.show()
+
+    return actuator, sensor_1, sensor_2, sensor_3
 
 
 def draw_a_setup(sources: np.ndarray, sensors: np.ndarray):
