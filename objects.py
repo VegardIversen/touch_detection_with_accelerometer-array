@@ -5,7 +5,8 @@ import matplotlib.patches as patches
 
 class Table:
     """Represents the table and its edges."""
-    LENGTH = 0.716    # m
+    # LENGTH = 0.716    # m -- This is probably wrong
+    LENGTH = 0.804
     WIDTH = 0.597     # m
     # Enum for representing edges:
     TOP_EDGE = 1
