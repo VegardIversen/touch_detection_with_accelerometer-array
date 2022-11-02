@@ -7,17 +7,24 @@ from pathlib import Path
 """FILTERING"""
 
 
-def filter_general(sig, filtertype, cutoff_lowpass=20000, cutoff_highpass=40000, fs=150000, order=8):
+def filter_general(sig, filtertype, cutoff_highpass=20000, cutoff_lowpass=40000, fs=150000, order=4):
     """filtertype: 'highpass', 'lowpass' or 'bandpass"""
     if filtertype == 'highpass':
-        sos = signal.butter(order, cutoff_low / (0.5 * fs), 'highpass', output='sos')
+        sos = signal.butter(order,
+                            cutoff_highpass / (0.5 * fs),
+                            'highpass',
+                            output='sos')
     elif filtertype == 'lowpass':
-        sos = signal.butter(order, cutoff_high / (0.5 * fs), 'lowpass',output='sos')
+        sos = signal.butter(order,
+                            cutoff_lowpass / (0.5 * fs),
+                            'lowpass',
+                            output='sos')
     elif filtertype == 'bandpass':
-        sos = signal.butter(order, [cutoff_low / (0.5 * fs),
-                             cutoff_high / (0.5 * fs)],
-                             'bandpass',
-                             output='sos')
+        sos = signal.butter(order,
+                            [cutoff_highpass / (0.5 * fs),
+                            cutoff_lowpass / (0.5 * fs)],
+                            'bandpass',
+                            output='sos')
     else:
         raise ValueError('Filtertype not recognized')
 
