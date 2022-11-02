@@ -13,7 +13,7 @@ class Table:
     RIGHT_EDGE = 2
     BOTTOM_EDGE = 3
     LEFT_EDGE = 4
-    # Color settings for drawing
+    # Colour settings for drawing
     SURFACE_COLOUR = '#fbe5b6'
     LINE_COLOUR = '#f0c18b'
 
