@@ -8,20 +8,21 @@ from data_processing.preprocessing import filter_general, crop_data
 from objects import MirroredSensor, MirroredSource, Table, Actuator, Sensor
 
 
-def find_indices_of_peaks(sig_np, plot=False, hilbert=True):
+def find_indices_of_peaks(sig_np, height, plot=False, hilbert=True):
     """Find the indices of the peaks in the signal."""
     peak_indices = pd.DataFrame(columns=['channel 1', 'channel 2', 'channel 3', 'chirp'])
 
-    # Find the peaks of the square of the signal
     if not hilbert:
+        # Find the peaks of the square of the signal
         signal_sqr = np.power(sig_np, 2)
-        peak_indices, _ = signal.find_peaks(signal_sqr, prominence=0.00001, distance=0.01 * 150000)
+        peak_indices, _ = signal.find_peaks(signal_sqr, height)
     else:
-    # Find the peaks of the Hilbert envelope of the signal
+        # Find the peaks of the Hilbert envelope of the signal
         sig_np_filtered_hilbert = get_hilbert_envelope(sig_np)
-        peak_indices, _ = signal.find_peaks(sig_np_filtered_hilbert, prominence=0.001, distance=0.01 * 150000)
+        peak_indices, _ = signal.find_peaks(sig_np_filtered_hilbert, height)
+
     if peak_indices.size == 0:
-        print('No peaks found!')
+        raise ValueError('No peaks found!')
 
     if plot:
         time_axis = np.linspace(0, len(sig_np), num=len(sig_np))
@@ -56,12 +57,13 @@ def get_hilbert_envelope(sig):
     return sig_hilb
 
 
-def find_first_peak(sig_np, height):
+def find_first_peak(sig_df, height):
     """Return the index of the first peak of sig_np"""
+    sig_np = sig_df.values
     peaks, _ = signal.find_peaks(sig_np, height)
     if peaks.size == 0:
-        # raise ValueError('No peaks found!')
-        return 0
+        raise ValueError('No peaks found!')
+        # return 0
     peak_index = peaks[0]
     return peak_index
 
