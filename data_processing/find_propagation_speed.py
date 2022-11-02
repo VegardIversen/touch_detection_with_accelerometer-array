@@ -27,17 +27,19 @@ def find_propagation_speed(df, ch1, ch2, sr=150000, distance=0.1):
 
     return propagation_speed
 
+
 def find_propagation_speed_with_delay(df, ch1, ch2, sr=150000, distance=0.1, hilbert=True):
-      if hilbert:
-            peak_indices_ch1 = find_indices_of_peaks(df[ch1].to_numpy(),hilbert=hilbert, plot=False)
-            peak_indices_ch2 = find_indices_of_peaks(df[ch2].to_numpy(), hilbert=hilbert, plot=False)
-      else:
-            peak_indices_ch1 = find_indices_of_peaks(df[ch1].to_numpy(),hilbert=hilbert, plot=False)
-            peak_indices_ch2 = find_indices_of_peaks(df[ch2].to_numpy(), hilbert=hilbert, plot=False)
-      diff = np.abs(peak_indices_ch1[0]-peak_indices_ch2[0])
-      time = diff/sr 
-      speed = distance/time
-      return speed
+    if hilbert:
+        peak_indices_ch1 = find_indices_of_peaks(df[ch1].to_numpy(), hilbert=hilbert, plot=False)
+        peak_indices_ch2 = find_indices_of_peaks(df[ch2].to_numpy(), hilbert=hilbert, plot=False)
+    else:
+        peak_indices_ch1 = find_indices_of_peaks(df[ch1].to_numpy(), hilbert=hilbert, plot=False)
+        peak_indices_ch2 = find_indices_of_peaks(df[ch2].to_numpy(), hilbert=hilbert, plot=False)
+    diff = np.abs(peak_indices_ch1[0] - peak_indices_ch2[0])
+    time = diff / sr
+    speed = distance / time
+    return speed
+
 
 def find_propagation_speed_plot(chirp_df,
                                 start_freq,
