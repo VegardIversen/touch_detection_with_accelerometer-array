@@ -15,26 +15,26 @@ def find_propagation_speed(df, ch1, ch2, sr=150000, distance=0.1):
     n = len(df['channel 1'])
 
     corr = signal.correlate(df[ch1], df[ch2], mode='same') \
-        / np.sqrt(signal.correlate(df[ch2], df[ch2], mode='same')[int(n / 2)]
-        * signal.correlate(df[ch1], df[ch1], mode='same')[int(n / 2)])
+           / np.sqrt(signal.correlate(df[ch2], df[ch2], mode='same')[int(n / 2)]
+           * signal.correlate(df[ch1], df[ch1], mode='same')[int(n / 2)])
 
     delay_arr = np.linspace(-0.5 * n / sr, 0.5 * n / sr, n)
     delay = delay_arr[np.argmax(corr)]
-    # print('\n' + 'The delay between ' + ch1 + ' and ' + ch2 + ' is ' + str(np.round(1000 * np.abs(delay), decimals=4)) + 'ms.')
+    print('\n' + f'The delay between {ch1} and {ch2} is {str(np.round(1000 * np.abs(delay), decimals=4))} ms.')
 
     propagation_speed = np.round(np.abs(distance / delay), decimals=2)
-    # print("\n" + "Propagation speed is", propagation_speed, "m/s \n")
+    print("\n" + f"Propagation speed is {propagation_speed} m/s \n")
 
     return propagation_speed
 
 
-def find_propagation_speed_with_delay(df, ch1, ch2, sr=150000, distance=0.1, hilbert=True):
+def find_propagation_speed_with_delay(df, ch1, ch2, height, sr=150000, distance=0.1, hilbert=True):
     if hilbert:
-        peak_indices_ch1 = find_indices_of_peaks(df[ch1].to_numpy(), hilbert=hilbert, plot=False)
-        peak_indices_ch2 = find_indices_of_peaks(df[ch2].to_numpy(), hilbert=hilbert, plot=False)
+        peak_indices_ch1 = find_indices_of_peaks(df[ch1].to_numpy(), height, hilbert=hilbert, plot=False)
+        peak_indices_ch2 = find_indices_of_peaks(df[ch2].to_numpy(), height, hilbert=hilbert, plot=False)
     else:
-        peak_indices_ch1 = find_indices_of_peaks(df[ch1].to_numpy(), hilbert=hilbert, plot=False)
-        peak_indices_ch2 = find_indices_of_peaks(df[ch2].to_numpy(), hilbert=hilbert, plot=False)
+        peak_indices_ch1 = find_indices_of_peaks(df[ch1].to_numpy(), height, hilbert=hilbert, plot=False)
+        peak_indices_ch2 = find_indices_of_peaks(df[ch2].to_numpy(), height, hilbert=hilbert, plot=False)
     diff = np.abs(peak_indices_ch1[0] - peak_indices_ch2[0])
     time = diff / sr
     speed = distance / time
