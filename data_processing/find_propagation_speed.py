@@ -1,29 +1,35 @@
 import numpy as np
 import scipy.signal as signal
+import matplotlib.pyplot as plt
+import pandas as pd
+
 from csv_to_df import csv_to_df
 from data_processing.preprocessing import filter_general
 from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_hilbert_envelope
-import matplotlib.pyplot as plt
 
 
-
-def find_propagation_speed(df, ch1, ch2, sr=150000, distance=0.1):
+def find_propagation_speed(df1, df2, distance, sr=150000):
     """Use the cross correlation between the two channels
     to find the propagation speed. Based on:
     https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
     """
-    n = len(df['channel 1'])
+    n = len(df1)
+    # Convert to df if np.array
+    if type(df1) == np.ndarray:
+        df1 = pd.DataFrame(df1)
+    if type(df2) == np.ndarray:
+        df2 = pd.DataFrame(df2)
 
-    corr = signal.correlate(df[ch1], df[ch2], mode='same') \
-           / np.sqrt(signal.correlate(df[ch2], df[ch2], mode='same')[int(n / 2)]
-           * signal.correlate(df[ch1], df[ch1], mode='same')[int(n / 2)])
+    corr = signal.correlate(df1, df2, mode='same') \
+           / np.sqrt(signal.correlate(df2, df2, mode='same')[int(n / 2)]
+           * signal.correlate(df1, df1, mode='same')[int(n / 2)])
 
     delay_arr = np.linspace(-0.5 * n / sr, 0.5 * n / sr, n)
     delay = delay_arr[np.argmax(corr)]
-    print('\n' + f'The delay between {ch1} and {ch2} is {str(np.round(1000 * np.abs(delay), decimals=4))} ms.')
+    # print('\n' + f'The delay between {df1} and {ch2} is {str(np.round(1000 * np.abs(delay), decimals=4))} ms.')
 
     propagation_speed = np.round(np.abs(distance / delay), decimals=2)
-    print("\n" + f"Propagation speed is {propagation_speed} m/s \n")
+    # print("\n" + f"Propagation speed is {propagation_speed} m/s \n")
 
     return propagation_speed
 
