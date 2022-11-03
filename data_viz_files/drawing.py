@@ -102,7 +102,8 @@ def draw_setup_2():
                                               1 / 6 * table.WIDTH]))
 
     sensor_2 = Sensor(coordinates=np.array([table.LENGTH / 2,
-                                            table.WIDTH - 0.05]))
+                                            table.WIDTH - 0.082]),
+                                            radius = 0.013)
     SENSOR_1_OFFSET = np.array([-0.08 / 2, -(np.sqrt(0.08 ** 2 - 0.04 ** 2))])
     SENSOR_3_OFFSET = np.array([0.08 / 2, -(np.sqrt(0.08 ** 2 - 0.04 ** 2))])
     sensor_1 = Sensor(coordinates=(sensor_2.coordinates + SENSOR_1_OFFSET))
@@ -199,7 +200,8 @@ def draw_a_setup(sources: np.ndarray, sensors: np.ndarray):
                                      table.LEFT_EDGE])
 
     mirrored_sources = np.array([])
-    mirrored_sources = np.append(mirrored_sources, find_mirrored_source(sources[0], [edge for edge in EDGES_TO_FLIP_AROUND]))
+    mirrored_sources = np.append(mirrored_sources,
+                                 find_mirrored_source(sources[0], [edge for edge in EDGES_TO_FLIP_AROUND]))
 
     plt.axes()
     table.draw()
