@@ -5,9 +5,8 @@ import matplotlib.patches as patches
 
 class Table:
     """Represents the table and its edges."""
-    # LENGTH = 0.716    # m -- This is probably wrong
-    LENGTH = 0.804
-    WIDTH = 0.597     # m
+    LENGTH = 0.80
+    WIDTH = 0.60     # m
     # Enum for representing edges:
     TOP_EDGE = 1
     RIGHT_EDGE = 2
@@ -64,10 +63,11 @@ class Sensor:
     NOTE:   Not sure just how to represent coordinates yet,
             or if get_/set_coordinates() are necessary.
     """
-    def __init__(self, coordinates: np.array):
+    def __init__(self, coordinates: np.array, radius: float = 0.007):
         self.coordinates = coordinates
         self.x = coordinates[0]
         self.y = coordinates[1]
+        self.radius = radius
 
     def set_coordinates(self, coordinates: np.array):
         self.coordinates = coordinates
@@ -77,14 +77,13 @@ class Sensor:
     def draw(self):
         """Draw the sensor."""
         sensor = plt.Circle(self.coordinates,
-                            radius=self.RADIUS,
+                            radius=self.radius,
                             fc=self.FILL_COLOUR,
                             ec=self.EDGE_COLOUR,
                             label='Sensor',
                             zorder=10)
         plt.gca().add_patch(sensor)
 
-    RADIUS = 0.007  # m
     # Colour settings for drawing
     FILL_COLOUR = '#AEAFA7'
     EDGE_COLOUR = 'dimgray'
@@ -119,7 +118,7 @@ class Actuator:
                               zorder=10)
         plt.gca().add_patch(actuator)
 
-    RADIUS = 0.007  # m
+    RADIUS = 0.01  # m
     # Colour settings for drawing
     FILL_COLOUR = '#D4434A'
     EDGE_COLOUR = 'dimgray'
@@ -153,7 +152,7 @@ class MirroredSensor(Sensor):
     def draw(self):
         """Draw the mirrored sensor."""
         mirrored_sensor = plt.Circle(self.coordinates,
-                                     radius=self.RADIUS,
+                                     radius=self.radius,
                                      fc=self.FILL_COLOUR,
                                      ec=self.EDGE_COLOUR,
                                      label='Mirrored sensor',
