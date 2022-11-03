@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from data_viz_files.visualise_data import compare_signals, plot_data_vs_noiseavg
-from data_viz_files.drawing import draw_a_setup, draw_setup_2, draw_setup_3_2, plot_legend_without_duplicates
+from data_viz_files.drawing import draw_a_setup, draw_setup_2, draw_setup_3_2, plot_legend_without_duplicates, draw_setup_ideal
 from data_processing.noise import adaptive_filter_RLS, adaptive_filter_NLMS, noise_reduce_signal
 from data_processing.find_propagation_speed import find_propagation_speed, find_propagation_speed_plot, find_propagation_speed_with_delay
 from data_processing.detect_echoes import find_first_peak, get_hilbert_envelope, get_travel_distances, get_travel_distances_firsts
@@ -41,8 +41,8 @@ def main():
     if FILTER:
         chirp_meas_filt_df = filter_general(chirp_meas_df,
                                             filtertype='bandpass',
-                                            cutoff_highpass=10000 * 0.9,
-                                            cutoff_lowpass=10000 * 1.1,
+                                            cutoff_highpass=20000,
+                                            cutoff_lowpass=40000,
                                             order=4)
     else:
         chirp_meas_filt_df = chirp_meas_df
@@ -55,11 +55,13 @@ def main():
                                             chirp_meas_filt_df['chirp'],
                                             mode='same')
 
+    """Generate Hilbert transforms"""
+    chirp_meas_hilbert_df = get_hilbert_envelope(chirp_meas_filt_df)
     compressed_hilbert_ch1 = get_hilbert_envelope(compressed_chirp_ch1)
     compressed_hilbert_ch2 = get_hilbert_envelope(compressed_chirp_ch2)
+
     original_len = len(chirp_meas_df['channel 1'])
 
-    chirp_meas_hilbert_df = get_hilbert_envelope(chirp_meas_filt_df)
 
     """Place sensors, actuator and find their wave arrival times"""
     actuator, sensor_1, sensor_2, sensor_3 = draw_setup_3_2()
@@ -93,7 +95,7 @@ def main():
         arrival_times_ch3 = np.append(arrival_times_ch3, d_3 / prop_speed)
 
     # Print the first peak of the chirp
-    print(f'First peak of the chirp: {chirp_meas_filt_df["chirp"].idxmax() * 1/SAMPLE_RATE}')
+    print(f'First peak of the chirp: {chirp_meas_filt_df["chirp"].idxmax() * 1 / SAMPLE_RATE}')
 
     """Plot the measured signals along with their hilbert envelopes"""
     time_axis = np.linspace(0, len(chirp_meas_df['channel 1']) / SAMPLE_RATE, len(chirp_meas_df['channel 1']))
@@ -131,9 +133,9 @@ def main():
     plt.title('Correlation between chirp and channel 1')
     plt.plot(time_axis_corr, compressed_chirp_ch1, label='Correlation')
     plt.plot(time_axis_corr, compressed_hilbert_ch1, label='Hilbert envelope')
-    plt.axvline(arrival_times_ch2[0] - 0.0008, linestyle='--', color='r', label='Direct wave')
-    [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times_ch2[1:5] - 0.0008)]
-    [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times_ch2[5:] - 0.0008)]
+    plt.axvline(arrival_times_ch2[0] + 0.001, linestyle='--', color='r', label='Direct wave')
+    [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times_ch2[1:5] + 0.001)]
+    [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times_ch2[5:] + 0.001)]
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
     plot_legend_without_duplicates()
@@ -147,9 +149,9 @@ def main():
     plt.title('Correlation between chirp and channel 2')
     plt.plot(time_axis_corr, compressed_chirp_ch2, label='Correlation')
     plt.plot(time_axis_corr, compressed_hilbert_ch2, label='Hilbert envelope')
-    plt.axvline(arrival_times_ch2[0] - 0.00035, linestyle='--', color='r', label='Direct wave')
-    [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times_ch2[1:5] - 0.00035)]
-    [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times_ch2[5:] - 0.00035)]
+    plt.axvline(arrival_times_ch2[0] + 0.0006, linestyle='--', color='r', label='Direct wave')
+    [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times_ch2[1:5] + 0.0006)]
+    [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times_ch2[5:] + 0.0006)]
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
     plot_legend_without_duplicates()
