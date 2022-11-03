@@ -80,7 +80,7 @@ def plot_legend_without_duplicates():
     """Avoid duplicate labels in the legend"""
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys())
+    plt.legend(by_label.values(), by_label.keys(), loc='upper right')
 
 
 def draw_arrow(start_coord, end_coord, subtract_length=0):
@@ -149,12 +149,11 @@ def draw_setup_3_2():
 
     plt.show()
 
-    return actuator, sensor_1, sensor_2, sensor_3
+    return actuator, np.array([sensor_1, sensor_2, sensor_3])
 
 
 def draw_setup_ideal():
     table = Table()
-
 
     sensor_2 = Sensor(coordinates=np.array([table.LENGTH / 2,
                                             table.WIDTH - 0.05]))
