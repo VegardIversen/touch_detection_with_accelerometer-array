@@ -129,7 +129,7 @@ def draw_setup_3_2():
     table = Table()
 
     sensor_1 = Sensor(coordinates=np.array([0.135, 0.305]))
-    sensor_2 = Sensor(sensor_1.coordinates + np.array([0.267, 0]))
+    sensor_2 = Sensor(sensor_1.coordinates + np.array([0.267, 0]), radius=0.013)
     sensor_3 = Sensor(sensor_2.coordinates + np.array([0.267, 0]))
 
     actuator = Actuator(np.array([sensor_1.x / 2, sensor_1.y]))
@@ -140,6 +140,47 @@ def draw_setup_3_2():
     sensor_1.draw()
     sensor_2.draw()
     sensor_3.draw()
+
+    plt.axis('scaled')
+    plt.xlabel('x (m)')
+    plt.ylabel('y (m)')
+    plot_legend_without_duplicates()
+
+    plt.show()
+
+    return actuator, sensor_1, sensor_2, sensor_3
+
+
+def draw_setup_ideal():
+    table = Table()
+
+
+    sensor_2 = Sensor(coordinates=np.array([table.LENGTH / 2,
+                                            table.WIDTH - 0.05]))
+    sensor_1 = Sensor(coordinates=(sensor_2.x - 0.02, sensor_2.y))
+    sensor_3 = Sensor(coordinates=(sensor_2.x + 0.02, sensor_2.y))
+    sensor_4 = Sensor(coordinates=(sensor_2.x - 0.02, sensor_2.y - 0.02))
+    sensor_5 = Sensor(coordinates=(sensor_2.x, sensor_2.y - 0.02))
+    sensor_6 = Sensor(coordinates=(sensor_2.x + 0.02, sensor_2.y - 0.02))
+    sensor_7 = Sensor(coordinates=(sensor_2.x - 0.02, sensor_2.y - 0.04))
+    sensor_8 = Sensor(coordinates=(sensor_2.x, sensor_2.y - 0.04))
+    sensor_9 = Sensor(coordinates=(sensor_2.x + 0.02, sensor_2.y - 0.04))
+
+    actuator = Actuator(coordinates=np.array([sensor_5.x - 0.10,
+                                              sensor_5.y]))
+
+    plt.axes()
+    table.draw()
+    actuator.draw()
+    sensor_2.draw()
+    sensor_1.draw()
+    sensor_3.draw()
+    sensor_4.draw()
+    sensor_5.draw()
+    sensor_6.draw()
+    sensor_7.draw()
+    sensor_8.draw()
+    sensor_9.draw()
 
     plt.axis('scaled')
     plt.xlabel('x (m)')
