@@ -162,53 +162,6 @@ def flip_sensors(sensors: np.array,
     return sensors
 
 
-def get_travel_distances_firsts(actuator_coord: np.array,
-                                sensor_coord: np.array):
-    """Get the travel distance of a mirrored source.
-    See figure in "Predicting reflection times" on Notion.
-    NOTE:   These are currently only for the four direct reflections.
-    TODO:   Add secondary reflections and add option for outputting
-            the n first reflections along with their travel paths.
-    """
-    # Collection of calcualted distances
-    # s_norms = pd.DataFrame()
-    s_norms = np.array([])
-
-    # Vector between actuator and sensor:
-    s_0 = sensor_coord - actuator_coord
-    s_0_norm = np.linalg.norm(s_0)
-
-    # Vector from actuator to edge:
-    d = actuator_coord - np.array([actuator_coord[0], Table.WIDTH])
-    # Vector from mirrored source to sensor:
-    s_1_norm = np.linalg.norm(2 * d + s_0)
-    # s_norms['s_1'] = [s_1_norm, d]
-    s_norms = np.append(s_norms, s_1_norm)
-
-    # Use vector to different edge:
-    d = actuator_coord - np.array([Table.LENGTH, actuator_coord[1]])
-    # Vector from mirrored source to sensor:
-    s_2_norm = np.linalg.norm(2 * d + s_0)
-    # s_norms['s_2'] = [s_2_norm, d]
-    s_norms = np.append(s_norms, s_2_norm)
-
-    # Use vector to different edge:
-    d = actuator_coord - np.array([actuator_coord[0], 0])
-    # Vector from mirrored source to sensor:
-    s_3_norm = np.linalg.norm(2 * d + s_0)
-    # s_norms['s_3'] = [s_3_norm, d]
-    s_norms = np.append(s_norms, s_3_norm)
-
-    # Use vector to different edge:
-    d = actuator_coord - np.array([0, actuator_coord[1]])
-    # Vector from mirrored source to sensor:
-    s_4_norm = np.linalg.norm(2 * d + s_0)
-    # s_norms['s_4'] = [s_4_norm, d]
-    s_norms = np.append(s_norms, s_4_norm)
-
-    return s_norms
-
-
 def get_travel_distances(actuator: Actuator,
                          sensor: Sensor,
                          print_distances: bool = False):
