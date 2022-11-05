@@ -133,7 +133,7 @@ def remove_silence(df, threshold=0.0006):
 """Compressing chirps"""
 
 
-def compress_chirp(measurements: pd.DataFrame):
+def compress_chirp(measurements: pd.DataFrame, custom_chirp: np.ndarray):
     """Compresses a chirp with cross correlation."""
     compressed_chirp = measurements.copy()
     for channel in measurements:

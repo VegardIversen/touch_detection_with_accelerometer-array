@@ -77,7 +77,7 @@ def get_expected_reflections_pos(speed, peak, s=[0.26, 0.337, 0.386, 0.41]):
 
 
 def find_mirrored_source(actuator: Actuator,
-                         edges_to_bounce_on: np.array):
+                         edges_to_bounce_on: np.ndarray):
     """Calculate the coordinate of the mirrored source
     to be used to find the wave travel distance.
     """
@@ -101,8 +101,8 @@ def find_mirrored_source(actuator: Actuator,
     return mirrored_source
 
 
-def flip_sources(sources: np.array,
-                 edges_to_flip_around: np.array):
+def flip_sources(sources: np.ndarray,
+                 edges_to_flip_around: np.ndarray):
     """Draw the sources in the flipped positions.
     The table edges are numbered as:
 
@@ -133,8 +133,8 @@ def flip_sources(sources: np.array,
     return sources
 
 
-def flip_sensors(sensors: np.array,
-                 edges_to_flip_around: np.array):
+def flip_sensors(sensors: np.ndarray,
+                 edges_to_flip_around: np.ndarray):
     """Draw the sensors in the flipped positions.
     The table edges are numbered as:
 
