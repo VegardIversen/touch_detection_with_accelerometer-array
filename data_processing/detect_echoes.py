@@ -167,9 +167,9 @@ def flip_sensors(sensors: np.ndarray,
 def get_travel_times(actuator: Actuator,
                      sensor: Sensor,
                      prop_speed: float,
-                     ms: bool=False,
-                     print_info: bool=False,
-                     relative_first_reflection: bool=True):
+                     ms: bool = False,
+                     print_info: bool = False,
+                     relative_first_reflection: bool = True):
     """Get the travel distance from first and second reflections.
     TODO:   Add logic for not calculating physically impossible reflections.
             This not necessary for predicting WHEN the reflections will arrive,
@@ -200,20 +200,23 @@ def get_travel_times(actuator: Actuator,
                 continue
             mirrored_source = find_mirrored_source(actuator, np.array([edge_1, edge_2]))
             distance_to_sensor = np.linalg.norm(mirrored_source.coordinates - sensor.coordinates)
-            time_to_sensors = distance_to_sensor / prop_speed
             if relative_first_reflection:
-                time_to_sensors -= arrival_times[0]
+                distance_to_sensor -= direct_travel_distance
+            time_to_sensors = distance_to_sensor / prop_speed
             if not edge_1:
                 if print_info:
-                    print(f'\nReflecting from {edge_2}. \t Distance: {np.round(distance_to_sensor, 5)} m, \t time: {np.round(time_to_sensors, 6)} s')
+                    print(f'\nReflecting from {edge_2}: \t Distance: {np.round(distance_to_sensor, 5)} m \t Time: {np.round(time_to_sensors, 6)} s')
             else:
                 if print_info:
-                    print(f'\nReflecting from {edge_1}, then {edge_2}. \t Distance: {np.round(distance_to_sensor, 5)} m, \t time: {np.round(time_to_sensors, 6)} s')
+                    print(f'\nReflecting from {edge_1}, then {edge_2}: \t Distance: {np.round(distance_to_sensor, 5)} m \t Time: {np.round(time_to_sensors, 6)} s')
             travel_distances = np.append(travel_distances, distance_to_sensor)
             arrival_times = np.append(arrival_times, time_to_sensors)
 
     if ms:
         arrival_times *= 1000
+    if relative_first_reflection:
+        travel_distances[0] = 0
+        arrival_times[0] = 0
 
     return arrival_times, travel_distances
 
