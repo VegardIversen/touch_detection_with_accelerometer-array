@@ -136,10 +136,16 @@ def remove_silence(df, threshold=0.0006):
 def compress_chirp(measurements: pd.DataFrame, custom_chirp: np.ndarray):
     """Compresses a chirp with cross correlation."""
     compressed_chirp = measurements.copy()
-    for channel in measurements:
-        compressed_chirp[channel] = signal.correlate(measurements[channel],
-                                                     measurements['chirp'],
-                                                     mode='same')
+    if 'chirp' in measurements.columns:
+        for channel in measurements:
+            compressed_chirp[channel] = signal.correlate(measurements[channel],
+                                                         measurements['chirp'],
+                                                         mode='same')
+    else:
+        for channel in measurements:
+            compressed_chirp[channel] = signal.correlate(measurements[channel],
+                                                         custom_chirp,
+                                                         mode='same')
     return compressed_chirp
 
 
