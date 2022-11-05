@@ -99,14 +99,7 @@ def crop_data(sig, time_start=None, time_end=None, threshold=0):
         if isinstance(sig, np.ndarray):
             data_cropped = sig[int(time_start * SAMPLE_RATE):int(time_end * SAMPLE_RATE)]
         else:
-            # """Convert sig dataframe to numpy array"""
-            # sig = sig.to_numpy()
-            data_cropped = sig[int(time_start * SAMPLE_RATE):int(time_end * SAMPLE_RATE)]
-            # """Convert back to dataframe"""
-            # data_cropped = pd.DataFrame(data_cropped, columns=CHIRP_CHANNEL_NAMES)
-            # data_cropped = sig.loc[time_start * SAMPLE_RATE:time_end * SAMPLE_RATE]
-            # data_cropped = sig.truncate(before=(time_start * SAMPLE_RATE),
-            #                             after=(time_end * SAMPLE_RATE))
+            data_cropped = sig.loc[time_start * SAMPLE_RATE:time_end * SAMPLE_RATE]
     elif not (time_start or time_start == 0) and not time_end:
         if isinstance(sig, pd.DataFrame):
             data_cropped = sig.loc[(sig > threshold).any(axis=1)]
