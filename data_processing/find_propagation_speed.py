@@ -10,32 +10,6 @@ from data_processing.preprocessing import filter_general
 from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_hilbert_envelope
 
 
-def find_propagation_speed(df1, df2, distance):
-    """Use the cross correlation between the two channels
-    to find the propagation speed. Based on:
-    https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
-    """
-    n = len(df1)
-    # Convert to df if np.array
-    if type(df1) == np.ndarray:
-        df1 = pd.DataFrame(df1)
-    if type(df2) == np.ndarray:
-        df2 = pd.DataFrame(df2)
-
-    corr = signal.correlate(df1, df2, mode='same') \
-           / np.sqrt(signal.correlate(df2, df2, mode='same')[int(n / 2)]
-           * signal.correlate(df1, df1, mode='same')[int(n / 2)])
-
-    delay_arr = np.linspace(-0.5 * n / SAMPLE_RATE, 0.5 * n / SAMPLE_RATE, n)
-    delay = delay_arr[np.argmax(corr)]
-    # print('\n' + f'The delay between {df1} and {ch2} is {str(np.round(1000 * np.abs(delay), decimals=4))} ms.')
-
-    propagation_speed = np.round(np.abs(distance / delay), decimals=2)
-    # print("\n" + f"Propagation speed is {propagation_speed} m/SAMPLE_RATE \n")
-
-    return propagation_speed
-
-
 def find_propagation_speed_with_delay(df, ch1, ch2, height, distance=0.1, hilbert=True):
     if hilbert:
         peak_indices_ch1 = find_indices_of_peaks(df[ch1].to_numpy(), height, hilbert=hilbert, plot=False)
