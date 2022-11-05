@@ -96,13 +96,15 @@ def plot_spectogram(df,
     plt.show()
 
 
-def compare_signals(df1, df2,
+def compare_signals(df1, df2, df3,
                     freq_max=40000,
+                    nfft=256,
                     plot_diff=False,
                     save=False,
                     filename='compared_signal.png',
                     plot_1_name='signal 1',
                     plot_2_name='signal 2',
+                    plot_3_name='signal 3',
                     sync_time=False):
     """Visually compare two signals, by plotting:
     time signal, spectogram, fft and (optionally) difference signal
@@ -110,13 +112,16 @@ def compare_signals(df1, df2,
 
     """Change numpy array to dataframe if needed"""
     if isinstance(df1, np.ndarray):
-        df1 = pd.DataFrame(df1)
+        df1 = pd.DataFrame(df1, columns=['channel 1'])
     if isinstance(df2, np.ndarray):
-        df2 = pd.DataFrame(df2)
+        df2 = pd.DataFrame(df2, columns=['channel 2'])
+    if isinstance(df3, np.ndarray):
+        df3_df = pd.DataFrame(df3, columns=['channel 3'])
+        df3 = df3_df['channel 3']
 
     """Time signal 1"""
     time_axis_1 = np.linspace(0, len(df1) / SAMPLE_RATE, num=len(df1))
-    ax1 = plt.subplot(231)
+    ax1 = plt.subplot(331)
     plt.grid()
     plt.plot(time_axis_1, df1)
     plt.title(f'{plot_1_name}, time signal')
@@ -126,19 +131,32 @@ def compare_signals(df1, df2,
     """Time signal 2"""
     time_axis_2 = np.linspace(0, len(df2) / SAMPLE_RATE, num=len(df2))
     if sync_time:
-        ax2 = plt.subplot(234, sharex=ax1)
+        ax2 = plt.subplot(334, sharex=ax1)
     else:
-        ax2 = plt.subplot(234)
+        ax2 = plt.subplot(334)
     plt.grid()
     plt.plot(time_axis_2, df2)
     plt.title(f'{plot_2_name}, time signal')
     plt.xlabel('Time [s]')
     plt.ylabel('Amplitude [V]')
 
+    """Time signal 3"""
+    time_axis_3 = np.linspace(0, len(df3) / SAMPLE_RATE, num=len(df3))
+    if sync_time:
+        ax3 = plt.subplot(337, sharex=ax1)
+    else:
+        ax3 = plt.subplot(337)
+    plt.grid()
+    plt.plot(time_axis_3, df3)
+    plt.title(f'{plot_3_name}, time signal')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Amplitude [V]')
+
     """Spectrogram of signal 1"""
-    vmin = 10 * np.log10(np.max(df)) - 60
-    ax3 = plt.subplot(232, sharex=ax1)
-    plt.specgram(df1, Fs=SAMPLE_RATE, vmin=vmin)
+    dynamic_range_db = 60
+    vmin = 10 * np.log10(np.max(df1)) - dynamic_range_db
+    ax3 = plt.subplot(332, sharex=ax1)
+    plt.specgram(df1, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2), vmin=vmin)
     plt.axis(ymax=freq_max)
     plt.title(f'{plot_1_name}, spectrogram')
     plt.xlabel('Time [s]')
@@ -146,16 +164,25 @@ def compare_signals(df1, df2,
     plt.colorbar()
 
     """Spectrogram of signal 2"""
-    plt.subplot(235, sharex=ax2, sharey=ax3)
-    plt.specgram(df2, Fs=SAMPLE_RATE, vmin=vmin)
+    plt.subplot(335, sharex=ax2, sharey=ax3)
+    plt.specgram(df2, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2), vmin=vmin, )
     plt.axis(ymax=freq_max)
     plt.title(f'{plot_2_name}, spectrogram')
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
     plt.colorbar()
 
+    """Spectrogram of signal 3"""
+    plt.subplot(338, sharex=ax3, sharey=ax3)
+    plt.specgram(df3, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2), vmin=vmin)
+    plt.axis(ymax=freq_max)
+    plt.title(f'{plot_3_name}, spectrogram')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Frequency [Hz]')
+    plt.colorbar()
+
     """FFT of signal 1"""
-    ax5 = plt.subplot(233)
+    ax5 = plt.subplot(333)
     ax5.set_xlim(left=0, right=freq_max)
     data_fft = scipy.fft.fft(df1.values, axis=0)
     fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / SAMPLE_RATE)
@@ -171,13 +198,25 @@ def compare_signals(df1, df2,
     # plt.plot(fftfreq, (np.angle( data_fft_phase, deg=True)))
 
     """FFT of signal 2"""
-    plt.subplot(236, sharex=ax5, sharey=ax5)
+    plt.subplot(336, sharex=ax5, sharey=ax5)
     data_fft = scipy.fft.fft(df2.values, axis=0)
     fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / SAMPLE_RATE)
     data_fft = np.fft.fftshift(data_fft)
     fftfreq = np.fft.fftshift(fftfreq)
     plt.grid()
     plt.title(f'{plot_2_name}, FFT')
+    plt.xlabel("Frequency [Hz]")
+    plt.ylabel("Amplitude [dB]")
+    plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
+
+    """FFT of signal 3"""
+    plt.subplot(339, sharex=ax5, sharey=ax5)
+    data_fft = scipy.fft.fft(df3.values, axis=0)
+    fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / SAMPLE_RATE)
+    data_fft = np.fft.fftshift(data_fft)
+    fftfreq = np.fft.fftshift(fftfreq)
+    plt.grid()
+    plt.title(f'{plot_3_name}, FFT')
     plt.xlabel("Frequency [Hz]")
     plt.ylabel("Amplitude [dB]")
     plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
