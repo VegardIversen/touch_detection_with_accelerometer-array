@@ -1,3 +1,7 @@
+"""Objects such as the table, acutators and sensors have their own class.
+TODO:   - Give actuators and sensors a name, e.g. 'channel 1' or 'sensor 1'
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
