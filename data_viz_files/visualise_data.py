@@ -102,9 +102,9 @@ def compare_signals(df1, df2, df3,
                     plot_diff=False,
                     save=False,
                     filename='compared_signal.png',
-                    plot_1_name='signal 1',
-                    plot_2_name='signal 2',
-                    plot_3_name='signal 3',
+                    plot_1_name='Signal 1',
+                    plot_2_name='Signal 2',
+                    plot_3_name='Signal 3',
                     sync_time=False):
     """Visually compare two signals, by plotting:
     time signal, spectogram, fft and (optionally) difference signal

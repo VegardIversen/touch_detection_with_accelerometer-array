@@ -172,8 +172,8 @@ def get_travel_times(actuator: Actuator,
                      relative_first_reflection: bool = True):
     """Get the travel distance from first and second reflections.
     TODO:   Add logic for not calculating physically impossible reflections.
-            This not necessary for predicting WHEN the reflections will arrive,
-            but to visualise which reflections we are using.
+            This is not necessary for predicting WHEN the reflections will arrive,
+            but to visualise which reflections we are seeing.
     """
     arrival_times = np.array([])
     travel_distances = np.array([])
