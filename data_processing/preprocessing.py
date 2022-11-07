@@ -6,6 +6,8 @@ from pathlib import Path
 from constants import *
 
 
+import matplotlib.pyplot as plt
+import os
 """FILTERING"""
 
 
@@ -222,5 +224,66 @@ def compress_chirp(measurements: pd.DataFrame, custom_chirp: np.ndarray):
     return compressed_chirp
 
 
+def inspect_touch_pulse(folder, length_of_touch, threshold=0.0007,
+                        channel_names=['channel 1', 'channel 2', 'channel 3', 'WAVE_GEN'],
+                        plot=True, number_of_channels=3, sample_rate=150000, plot_mean_only=False):
+    
+    data_sum = pd.DataFrame(columns=['channel 1', 'channel 2', 'channel 3'])
+    data_sum_fft = pd.DataFrame(columns=['channel 1', 'channel 2', 'channel 3'])
+    colors = ['red', 'blue', 'green']
+    n_files = 0
+    ymin=0
+    ymax=0
+    if plot:
+    
+        fig, axs = plt.subplots(nrows=number_of_channels, ncols=1, sharex=True, sharey=True)
+    if isinstance(folder, str):
+        for f in os.listdir(folder):
+
+            if f.endswith(".csv"):
+                print(f)
+                file_path = os.path.join(folder, f)
+                df = pd.read_csv(file_path, names=channel_names )
+                if len(df.columns) > 3:
+                    df = df.drop(columns=['WAVE_GEN'], axis=1)
+                for idx, channel in enumerate(df.columns):
+                    start_index = get_first_index_above_threshold(df[channel], threshold)
+                    end_index = start_index + length_of_touch
+                    data = df[channel][start_index:end_index].values
+                    window = np.hamming(length_of_touch)
+                    data = data * window
+                    data_pad = np.pad(data, ((150000 - len(data))//2, (150000 - len(data))//2), 'constant', constant_values=(0, 0))
+                    #print(f'data max: {np.max(data_pad)} for file: {f} on channel: {channel}')
+                    if ymin>np.min(data):
+                        ymin=np.min(data)
+                    if ymax<np.max(data):
+                        ymax=np.max(data)
+                    if plot and not plot_mean_only:
+                        plt.subplot(number_of_channels, 1, idx + 1)
+                        axs[idx].plot(data, color=colors[idx])   
+                    if data_sum[channel].empty or data_sum[channel].isnull().values.any():
+                        data_sum[channel] = data
+                    else: 
+                        data_sum[channel] = data_sum[channel].add(data)
+                    if np.isnan(data).any():
+                        print('nan')
+                    
+            n_files += 1
+        data_mean = data_sum/n_files
+        #print(data_mean.min().min())
+        ymin=data_mean.min().min()
+        ymax=data_mean.max().max()
+        print(f'ymin: {ymin}, ymax: {ymax}')
+        if plot:
+            for idx, channel in enumerate(data_mean.columns):
+                axs[idx].set_title(f'{channel}, with threshold {threshold} and n_samples {length_of_touch}')
+                axs[idx].plot(data_mean[channel],'--', color='black', label='mean')
+                axs[idx].legend()
+                axs[idx].set_ylim(ymin, ymax)
+                
+            plt.tight_layout()
+            plt.show()
+
+    #elif isinstance(folder, pathlib):
 if __name__ == '__main__':
     pass

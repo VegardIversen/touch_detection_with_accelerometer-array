@@ -9,7 +9,7 @@ from data_viz_files.visualise_data import compare_signals, plot_data_vs_noiseavg
 from data_processing.noise import adaptive_filter_RLS, adaptive_filter_NLMS, noise_reduce_signal
 from data_processing.find_propagation_speed import find_propagation_speed, find_propagation_speed_plot, find_propagation_speed_with_delay
 from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_hilbert_envelope, get_expected_reflections_pos
-from data_processing.preprocessing import crop_data, crop_data_threshold, filter_general, filter_notches, cut_out_signal, get_envelope, signal_to_db, match_signals, fft, ifft, get_phase
+from data_processing.preprocessing import crop_data, crop_data_threshold, filter_general, filter_notches, cut_out_signal, get_envelope, signal_to_db, match_signals, fft, ifft, get_phase, get_first_index_above_threshold, inspect_touch_pulse
 from data_processing.transfer_function import transfer_function
 import matplotlib.pyplot as plt
 from data_processing.signal_separation import signal_sep
