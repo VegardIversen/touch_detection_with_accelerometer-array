@@ -1,9 +1,10 @@
+import numpy as np
 import pandas as pd
 from pathlib import Path
 from sys import platform
 
 
-def csv_to_df(file_folder, file_name, channel_names=['channel 1', 'channel 2', 'channel 3']):
+def csv_to_df(file_folder: str, file_name: str, channel_names: np.ndarray):
     """Returns a DataFrame from a .csv file.
     Set channel_names to None to return a
     DataFrame with the default column names.
