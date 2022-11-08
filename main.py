@@ -1,10 +1,10 @@
 import numpy as np
-import pandas as pd
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 
 from objects import Table, Actuator, Sensor
-from setups import Setup2, Setup3_2, Setup3_4, Setup6
+from setups import Setup2, Setup3_2, Setup3_4, Setup4_5, Setup6, Setup7
+
 from constants import SAMPLE_RATE, CHANNEL_NAMES, CHIRP_CHANNEL_NAMES
 
 from csv_to_df import csv_to_df
@@ -20,12 +20,12 @@ def main():
     TIME_START = 0.75724  # s
     TIME_END = TIME_START + 0.010  # s
     FILTER = True
-    BANDWIDTH = np.array([200, 40000])  # Should be between ~200 Hz and 40 kHz
-    SETUP = Setup3_2()
+    BANDWIDTH = np.array([19900, 20100])  # Should be between ~200 Hz and 40 kHz
+    SETUP = Setup3_4()
 
     """Open file"""
-    measurements = csv_to_df(file_folder='div_files',
-                             file_name='chirp_test_fs_150000_t_max_2s_1000-40000hz_1vpp_1cyc_setup3_v1',
+    measurements = csv_to_df(file_folder='div_files\\setup3',
+                             file_name='sign_integ_test_chirp2_150k_5s_setup3_4_v1',
                              channel_names=CHIRP_CHANNEL_NAMES)
 
     """Preprocessing"""
@@ -51,9 +51,7 @@ def main():
     SETUP.draw()
 
     """Calculate wave propagation speed"""
-    prop_speed = SETUP.get_propagation_speed(measurements_comp['Sensor 1'],
-                                             measurements_comp['Sensor 2'])
-    # prop_speed *= 3.5
+    prop_speed = SETUP.get_propagation_speed(measurements_comp)
     print(f'Prop speed: {prop_speed}')
 
     """Calculate wave arrival times"""
@@ -70,10 +68,10 @@ def main():
     arrival_times = np.reshape(arrival_times, (len(SETUP.sensors), len(arrival_times) // len(SETUP.sensors)))
 
     """Plot the measurements"""
-    compare_signals(measurements_comp['Sensor 1'],
-                    measurements_comp['Sensor 2'],
-                    measurements_comp['Sensor 3'],
-                    freq_max=BANDWIDTH[1],
+    compare_signals(measurements_filt['Sensor 1'],
+                    measurements_filt['Sensor 2'],
+                    measurements_filt['Sensor 3'],
+                    freq_max=BANDWIDTH[1] + 20000,
                     nfft=16,
                     plot_1_name=SETUP.sensors[0].name,
                     plot_2_name=SETUP.sensors[1].name,
@@ -82,12 +80,13 @@ def main():
 
     """Plot the spectrograms along with lines for expected reflections"""
     dynamic_range_db = 60
-    vmin = 10 * np.log10(np.max(measurements_comp['Sensor 1'])) - dynamic_range_db
+    vmin = 10 * np.log10(np.max(measurements_filt['Sensor 1'])) - dynamic_range_db
+    arrival_times += 2.5
     for i, sensor in enumerate(SETUP.sensors):
         plt.subplot(311 + i, sharex=plt.gca())
         plt.title(f'Correlation between chirp and {sensor}')
-        plt.specgram(measurements_comp[str(sensor)], Fs=SAMPLE_RATE, NFFT=16, noverlap=(16 // 2), vmin=vmin)
-        plt.axis(ymax=BANDWIDTH[1])
+        plt.specgram(measurements_filt[sensor.name], Fs=SAMPLE_RATE, NFFT=16, noverlap=(16 // 2), vmin=vmin)
+        plt.axis(ymax=BANDWIDTH[1] + 20000)
         plt.title('Spectrogram')
         plt.xlabel('Time [s]')
         plt.ylabel('Frequency [Hz]')
@@ -98,21 +97,22 @@ def main():
         plt.xlabel('Time [ms]')
         plt.ylabel('Frequency [Hz]')
         plot_legend_without_duplicates()
+    arrival_times -= 2.5
     plt.subplots_adjust(hspace=0.5)
     plt.show()
 
     """Plot the correlation between the chirp signal and the measured signal"""
     # time_axis_corr = np.linspace(-1000 * len(measurements_comp) / SAMPLE_RATE,
-    time_axis_corr = np.linspace(0,
+    time_axis_corr = np.linspace(-1000 * len(measurements_comp) / SAMPLE_RATE,
                                  1000 * len(measurements_comp) / SAMPLE_RATE,
                                  (len(measurements_comp)))
 
     arrival_times *= 1000   # Convert to ms
     for i, sensor in enumerate(SETUP.sensors):
         plt.subplot(311 + i, sharex=plt.gca())
-        plt.title(f'Correlation between chirp and {sensor}')
-        plt.plot(time_axis_corr, measurements_comp[str(sensor)], label='Correlation')
-        plt.plot(time_axis_corr, measurements_comp_hilb[str(sensor)], label='Hilbert envelope')
+        plt.title(f'Correlation between {SETUP.actuators[0]} and {sensor}')
+        plt.plot(time_axis_corr, measurements_comp[sensor.name], label='Correlation')
+        plt.plot(time_axis_corr, measurements_comp_hilb[sensor.name], label='Hilbert envelope')
         plt.axvline(arrival_times[i][0], linestyle='--', color='r', label='Direct wave')
         [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])]
         [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[i][5:])]
