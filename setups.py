@@ -39,20 +39,17 @@ class Setup2(Setup):
     """Sensors in an 8 cm edge triangle in C2"""
     actuators = np.empty(shape=1, dtype=Actuator)
     sensors = np.empty(shape=3, dtype=Sensor)
-
-    def __init__(self):
-        self.actuators[0] = Actuator(coordinates=np.array([1 / 2 * self.table.LENGTH,
-                                                           1 / 9 * self.table.WIDTH]))
-        self.sensors[0] = Sensor(coordinates=np.array([self.table.LENGTH / 2,
-                                                       self.table.WIDTH - 0.082]),
-                                 name='Sensor 2')
-        SENSOR_1_OFFSET = np.array([-0.08 / 2, -(np.sqrt(0.08 ** 2 - 0.04 ** 2))])
-        self.sensors[1] = Sensor(coordinates=(self.sensors[0].coordinates + SENSOR_1_OFFSET),
-                                 name='Sensor 1')
-        SENSOR_3_OFFSET = np.array([0.08 / 2, -(np.sqrt(0.08 ** 2 - 0.04 ** 2))])
-        self.sensors[2] = Sensor(coordinates=(self.sensors[0].coordinates + SENSOR_3_OFFSET),
-                                 name='Sensor 3')
-
+    actuators[0] = Actuator(coordinates=np.array([1 / 2 * Table.LENGTH,
+                                                  1 / 9 * Table.WIDTH]))
+    sensors[1] = Sensor(coordinates=np.array([Table.LENGTH / 2,
+                                              Table.WIDTH - 0.082]),
+                        name='Sensor 2')
+    SENSOR_1_OFFSET = np.array([-0.08 / 2, -(np.sqrt(0.08 ** 2 - 0.04 ** 2))])
+    sensors[0] = Sensor(coordinates=(sensors[1].coordinates + SENSOR_1_OFFSET),
+                        name='Sensor 1')
+    SENSOR_3_OFFSET = np.array([0.08 / 2, -(np.sqrt(0.08 ** 2 - 0.04 ** 2))])
+    sensors[2] = Sensor(coordinates=(sensors[1].coordinates + SENSOR_3_OFFSET),
+                        name='Sensor 3')
 
     def get_propagation_speed(self, df1: pd.DataFrame, df2: pd.DataFrame):
         """Use the cross correlation between the two channels
