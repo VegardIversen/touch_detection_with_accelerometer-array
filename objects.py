@@ -21,16 +21,17 @@ class Table:
     SURFACE_COLOUR = '#fbe5b6'
     LINE_COLOUR = '#f0c18b'
 
-    def print_edges(self, edges):
-        """Print the name of an edge."""
-        if edges == self.TOP_EDGE:
-            print('Top edge')
-        elif edges == self.RIGHT_EDGE:
-            print('Right edge')
-        elif edges == self.BOTTOM_EDGE:
-            print('Bottom edge')
-        elif edges == self.LEFT_EDGE:
-            print('Left edge')
+    def __init__(self):
+        """Table locations, in the middle of each block"""
+        A1 = np.array([1 / 6 * self.LENGTH, 1 / 6 * self.WIDTH])
+        A2 = np.array([3 / 6 * self.LENGTH, 1 / 6 * self.WIDTH])
+        A3 = np.array([5 / 6 * self.LENGTH, 1 / 6 * self.WIDTH])
+        B1 = np.array([1 / 6 * self.LENGTH, 3 / 6 * self.WIDTH])
+        B2 = np.array([3 / 6 * self.LENGTH, 3 / 6 * self.WIDTH])
+        B3 = np.array([5 / 6 * self.LENGTH, 3 / 6 * self.WIDTH])
+        C1 = np.array([1 / 6 * self.LENGTH, 5 / 6 * self.WIDTH])
+        C2 = np.array([3 / 6 * self.LENGTH, 5 / 6 * self.WIDTH])
+        C3 = np.array([5 / 6 * self.LENGTH, 5 / 6 * self.WIDTH])
 
     def draw(self):
         """Draw the table."""
