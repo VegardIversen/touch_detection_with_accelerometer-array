@@ -73,6 +73,10 @@ class Sensor:
         self.x = coordinates[0]
         self.y = coordinates[1]
         self.name = name
+        if name == 'Sensor 2':
+            self.radius = 0.0065
+        else:
+            self.radius = 0.0035
 
     def set_coordinates(self, coordinates: np.ndarray):
         self.coordinates = coordinates
@@ -124,10 +128,7 @@ class Actuator:
                               zorder=10)
         plt.gca().add_patch(actuator)
 
-    RADIUS = 0.01  # m
-    """Colour settings for drawing"""
-    FILL_COLOUR = '#D4434A'
-    EDGE_COLOUR = 'dimgray'
+    RADIUS = 0.005  # m
 
 
 class MirroredSource(Actuator):
