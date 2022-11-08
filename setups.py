@@ -40,21 +40,23 @@ class Setup:
 
 
 class Setup2(Setup):
-    def __init__(self):
-        self.actuator = Actuator(coordinates=np.array([1 / 2 * self.table.LENGTH,
-                                                       1 / 9 * self.table.WIDTH]))
-        self.actuators = np.append(self.actuators, self.actuator)
+    """Sensors in an 8 cm edge triangle in C2"""
+    actuators = np.empty(shape=1, dtype=Actuator)
+    sensors = np.empty(shape=3, dtype=Sensor)
 
-        self.sensor_2 = Sensor(coordinates=np.array([self.table.LENGTH / 2,
-                                                     self.table.WIDTH - 0.082]),
-                               radius=0.013)
+    def __init__(self):
+        self.actuators[0] = Actuator(coordinates=np.array([1 / 2 * self.table.LENGTH,
+                                                           1 / 9 * self.table.WIDTH]))
+        self.sensors[0] = Sensor(coordinates=np.array([self.table.LENGTH / 2,
+                                                       self.table.WIDTH - 0.082]),
+                                 name='Sensor 2')
         SENSOR_1_OFFSET = np.array([-0.08 / 2, -(np.sqrt(0.08 ** 2 - 0.04 ** 2))])
+        self.sensors[1] = Sensor(coordinates=(self.sensors[0].coordinates + SENSOR_1_OFFSET),
+                                 name='Sensor 1')
         SENSOR_3_OFFSET = np.array([0.08 / 2, -(np.sqrt(0.08 ** 2 - 0.04 ** 2))])
-        self.sensor_1 = Sensor((self.sensor_2.coordinates + SENSOR_1_OFFSET))
-        self.sensor_3 = Sensor((self.sensor_2.coordinates + SENSOR_3_OFFSET))
-        self.sensors = np.append(self.sensors, self.sensor_1)
-        self.sensors = np.append(self.sensors, self.sensor_2)
-        self.sensors = np.append(self.sensors, self.sensor_3)
+        self.sensors[2] = Sensor(coordinates=(self.sensors[0].coordinates + SENSOR_3_OFFSET),
+                                 name='Sensor 3')
+
 
     def get_propagation_speed(self, df1: pd.DataFrame, df2: pd.DataFrame):
         """Use the cross correlation between the two channels
@@ -80,15 +82,19 @@ class Setup2(Setup):
 
 
 class Setup3_2(Setup):
+    """Sensors in a straight line across the full table"""
+    actuators = np.empty(shape=1, dtype=Actuator)
+    sensors = np.empty(shape=3, dtype=Sensor)
+
     def __init__(self):
-        self.sensor_1 = Sensor(coordinates=np.array([0.135, 0.305]))
-        self.sensor_2 = Sensor(self.sensor_1.coordinates + np.array([0.267, 0]), radius=0.013)
-        self.sensor_3 = Sensor(self.sensor_2.coordinates + np.array([0.267, 0]))
-        self.sensors = np.append(self.sensors, self.sensor_1)
-        self.sensors = np.append(self.sensors, self.sensor_2)
-        self.sensors = np.append(self.sensors, self.sensor_3)
-        self.actuator = Actuator(np.array([self.sensor_1.x / 2, self.sensor_1.y]))
-        self.actuators = np.append(self.actuators, self.actuator)
+        self.sensors[0] = Sensor(coordinates=np.array([0.135, 0.305]),
+                                 name='Sensor 1')
+        self.sensors[1] = Sensor(coordinates=(self.sensors[0].coordinates + np.array([0.267, 0])),
+                                 name='Sensor 2')
+        self.sensors[2] = Sensor(self.sensors[1].coordinates + np.array([0.267, 0]),
+                                 name='Sensor 3')
+        self.actuators[0] = Actuator(np.array([self.sensors[0].x / 2,
+                                               self.sensors[0].y]))
 
 
 class Setup3_4(Setup3_2):
@@ -104,10 +110,11 @@ class Setup3_4(Setup3_2):
 
 class Setup6(Setup):
     def __init__(self):
-        self.actuator = Actuator(coordinates=np.array([self.table.LENGTH / 2, self.table.WIDTH / 2]))
-        self.actuators = np.append(self.actuators, self.actuator)
-        self.sensor_1 = Sensor(coordinates=np.array([0.489, 0.242]))
-        self.sensors = np.append(self.sensors, self.sensor_1)
+        self.actuators[0] = Actuator(coordinates=np.array([self.table.LENGTH / 2,
+                                                           self.table.WIDTH / 2]),
+                                     name='Actuator')
+        self.sensors[0] = Sensor(coordinates=np.array([0.489, 0.242]),
+                                 name='Sensor 1')
 
 
     def get_propagation_speed(self, df1: pd.DataFrame, df2: pd.DataFrame):
@@ -128,6 +135,6 @@ class Setup6(Setup):
 
         delay_arr = np.linspace(-0.5 * n / SAMPLE_RATE, 0.5 * n / SAMPLE_RATE, n)
         delay = delay_arr[np.argmax(corr)]
-        distance = np.linalg.norm(self.actuator.coordinates - self.sensor_1.coordinates)
+        distance = np.linalg.norm(self.actuators[0].coordinates - self.sensors[0].coordinates)
         propagation_speed = np.abs(distance / delay)
         return propagation_speed
