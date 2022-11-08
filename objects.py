@@ -19,17 +19,16 @@ class Table:
     SURFACE_COLOUR = '#fbe5b6'
     LINE_COLOUR = '#f0c18b'
 
-    def __init__(self):
-        """Table locations, in the middle of each block"""
-        A1 = np.array([1 / 6 * self.LENGTH, 1 / 6 * self.WIDTH])
-        A2 = np.array([3 / 6 * self.LENGTH, 1 / 6 * self.WIDTH])
-        A3 = np.array([5 / 6 * self.LENGTH, 1 / 6 * self.WIDTH])
-        B1 = np.array([1 / 6 * self.LENGTH, 3 / 6 * self.WIDTH])
-        B2 = np.array([3 / 6 * self.LENGTH, 3 / 6 * self.WIDTH])
-        B3 = np.array([5 / 6 * self.LENGTH, 3 / 6 * self.WIDTH])
-        C1 = np.array([1 / 6 * self.LENGTH, 5 / 6 * self.WIDTH])
-        C2 = np.array([3 / 6 * self.LENGTH, 5 / 6 * self.WIDTH])
-        C3 = np.array([5 / 6 * self.LENGTH, 5 / 6 * self.WIDTH])
+    """Table locations, in the middle of each block"""
+    A1 = np.array([1 / 6 * LENGTH, 1 / 6 * WIDTH])
+    A2 = np.array([3 / 6 * LENGTH, 1 / 6 * WIDTH])
+    A3 = np.array([5 / 6 * LENGTH, 1 / 6 * WIDTH])
+    B1 = np.array([1 / 6 * LENGTH, 3 / 6 * WIDTH])
+    B2 = np.array([3 / 6 * LENGTH, 3 / 6 * WIDTH])
+    B3 = np.array([5 / 6 * LENGTH, 3 / 6 * WIDTH])
+    C1 = np.array([1 / 6 * LENGTH, 5 / 6 * WIDTH])
+    C2 = np.array([3 / 6 * LENGTH, 5 / 6 * WIDTH])
+    C3 = np.array([5 / 6 * LENGTH, 5 / 6 * WIDTH])
 
     def draw(self):
         "Draw the table with the real dimensions, including the lines."
