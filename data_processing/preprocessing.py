@@ -40,7 +40,6 @@ def filter_general(sig, filtertype, cutoff_highpass=20000, cutoff_lowpass=40000,
                                       sig)
 
     return sig_filtered
-
 def cut_out_signal(df, rate, threshold):
     """
     Inputs audio data in the form of a numpy array. Converts to pandas series
@@ -106,8 +105,8 @@ def filter_notches(sig, freqs):
 # function that returns the fft of a signal
 def fft(signal, sample_rate=150000, shift=True):
     """Returns the fft of a signal"""
-    fft = np.fft.fft(signal)
-    freq = np.fft.fftfreq(signal.size, 1/sample_rate)
+    fft = np.fft.fft(signal, n=len(signal)*100)
+    freq = np.fft.fftfreq(signal.size*100, 1/sample_rate)
     if shift:
         fft = np.fft.fftshift(fft)
         freq = np.fft.fftshift(freq)
