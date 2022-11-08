@@ -41,6 +41,52 @@ def filter_general(sig, filtertype, cutoff_highpass=20000, cutoff_lowpass=40000,
 
     return sig_filtered
 
+def cut_out_signal(df, rate, threshold):
+    """
+    Inputs audio data in the form of a numpy array. Converts to pandas series
+    to find the rolling average and apply the absolute value to the signal at all points.
+    
+    Additionally takes in the sample rate and threshold (amplitude). Data below the threshold
+    will be filtered out. This is useful for filtering out environmental noise from recordings. 
+    """
+    mask = []
+    signal = df.apply(np.abs) # Convert to series to find rolling average and apply absolute value to the signal at all points. 
+    signal_mean = signal.rolling(window = int(rate/50), min_periods = 1, center = True).mean() # Take the rolling average of the series within our specified window.
+    
+    for mean in signal_mean:
+        if mean > threshold:
+            mask.append(True)
+        else:
+            mask.append(False)
+    mask_arr = np.array(mask)
+    signal_focusing = df.loc[mask_arr]
+    return signal_focusing #, mask_arr
+
+def shift_signal(signal, index):
+    return np.roll(signal, -index)
+
+def get_first_index_above_threshold(signal, threshold):
+    return signal[signal > threshold].index[0]
+
+def match_signals(sig1, sig2, threshold=0.001):
+    """Match the signals by shifting the second signal
+    until the two signals have the same amplitude at the
+    first point above the threshold.
+    """
+    # Find the first index above the threshold for each signal
+    index1 = get_first_index_above_threshold(sig1, threshold)
+    index2 = get_first_index_above_threshold(sig2, threshold)
+    print('hello')
+    print(f'First index above threshold for signal 1: {index1}')
+    # Shift the second signal to match the first
+    sig2_shifted = shift_signal(sig2, index2 - index1)
+
+    return sig1, sig2_shifted
+
+def get_envelope(df, window_size=300): #300 gives pretty detailed env, 500 gives more rough env
+    upper_env = df.rolling(window=window_size).max().shift(int(-window_size/2))
+    lower_env = df.rolling(window=window_size).min().shift(int(-window_size/2))
+    return upper_env, lower_env
 
 def filter_notches(sig, freqs):
     """Input an array of frequencies <freqs> to filter out
@@ -57,6 +103,22 @@ def filter_notches(sig, freqs):
     return sig_filtered
 
 
+# function that returns the fft of a signal
+def fft(signal, sample_rate=150000, shift=True):
+    """Returns the fft of a signal"""
+    fft = np.fft.fft(signal)
+    freq = np.fft.fftfreq(signal.size, 1/sample_rate)
+    if shift:
+        fft = np.fft.fftshift(fft)
+        freq = np.fft.fftshift(freq)
+    return fft, freq
+
+#function that returns the inverse fft of a signal
+def ifft(fft, sample_rate=150000):
+    """Returns the inverse fft of a signal"""
+    ifft = np.fft.ifft(fft)
+    return ifft
+    
 """CROPPING"""
 
 
@@ -117,7 +179,19 @@ def crop_data_threshold(data, threshold=0.0006):
         data_cropped = data.loc[data > threshold]
     return data_cropped
 
+def subtract_signals_from_eachother(df1, df2):
+    """Subtracts two signals from eachother"""
+    df_cut1 = cut_out_signal(df1, 150000, 0.0006)
+    df_cut2 = cut_out_signal(df2, 150000, 0.0006)
 
+    df_sub = df1 - df2
+    return df_sub
+
+def signal_to_db(df):
+    """Converts a signal to decibels"""
+    df_db = 20 * np.log10(df)
+    return df_db
+#create a function that takes in a dataframe and removes silence around the signal
 def remove_silence(df, threshold=0.0006):
     """Takes in a dataframe and removes silence around the signal"""
     df = df.loc[(df > threshold).any(axis=1)]

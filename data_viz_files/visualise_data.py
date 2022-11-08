@@ -10,14 +10,16 @@ from csv_to_df import csv_to_df
 from data_processing.preprocessing import crop_data
 
 
-def plot_fft(df, window=False):
-    if isinstance(df, pd.DataFrame):
+def plot_fft(df, sample_rate=150000, window=False):
+    if isinstance(df, pd.DataFrame) or isinstance(df, pd.Series):
+        print('dataframe')
         if window:
             hamming_window = scipy.signal.hamming(len(df))
             data_fft = scipy.fft.fft(df.values * hamming_window)
         else:
             data_fft = scipy.fft.fft(df.values, axis=0)
-    else:
+    else: 
+        print('else')
         if window:
             hamming_window = scipy.signal.hamming(len(df))
             data_fft = scipy.fft.fft(df * hamming_window)
@@ -54,6 +56,7 @@ def plot_2fft(df1, df2, window=False):
     plt.ylabel("Amplitude")
     plt.plot(np.fft.fftshift(fftfreq1), 20 * np.log10(np.abs(np.fft.fftshift(data_fft1))))
     plt.subplot(212, sharex=ax1, sharey=ax1)
+    plt.grid()
     plt.title(f'fft of {df2.name}')
     plt.xlabel("Frequency [hz]")
     plt.ylabel("Amplitude")
