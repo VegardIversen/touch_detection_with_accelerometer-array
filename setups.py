@@ -3,23 +3,19 @@ TODO:   - Add remaining setups.
         - Expand propagation speed function to use all options
           for better estimation.
 """
-
 import numpy as np
 import pandas as pd
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 
 from constants import SAMPLE_RATE
-from objects import MirroredSensor, MirroredSource, Table, Actuator, Sensor
+from objects import Table, Actuator, Sensor
 
 from data_viz_files.drawing import plot_legend_without_duplicates
-from data_processing.detect_echoes import find_mirrored_source, flip_sensors, flip_sources
 
 
 class Setup:
     table = Table()
-    actuators = np.array([])
-    sensors = np.array([])
 
     def __init__(self):
         raise NotImplementedError("Setup version needs to be specified, e.g. Setup2")
@@ -76,7 +72,7 @@ class Setup2(Setup):
 
         delay_arr = np.linspace(-0.5 * n / SAMPLE_RATE, 0.5 * n / SAMPLE_RATE, n)
         delay = delay_arr[np.argmax(corr)]
-        distance = np.abs(self.sensor_1.y - self.sensor_2.y)
+        distance = np.abs(self.actuators[0].y - self.sensors[1].y)
         propagation_speed = np.round(np.abs(distance / delay), decimals=2)
         return propagation_speed
 
@@ -119,17 +115,62 @@ class Setup3_2(Setup):
         return propagation_speed
 
 class Setup3_4(Setup3_2):
+    """Sensor 3 even closer to the edge of the table"""
     def __init__(self):
         super().__init__()
-        """Exact location of the actuator is not remembered,
-        but it is one of these two.
-        """
-        # self.actuator.set_coordinates(np.array([0.01, self.actuator.y]))
-        self.sensor_3.set_coordinates(np.array([self.table.LENGTH - 0.009,
-                                                self.sensor_3.y]))
+        self.sensors[2].set_coordinates(np.array([self.table.LENGTH - 0.009,
+                                                  self.sensors[2].y]))
 
+
+class Setup4_5(Setup2):
+   def __init__(self):
+        self.actuators[0].set_coordinates(Table.C1)
 
 class Setup6(Setup):
+    """Actuator in the middle of the table, sensor
+    placed approx. 16 cm towardds one of the corners
+    """
+    actuators = np.empty(shape=1, dtype=Actuator)
+    sensors = np.empty(shape=1, dtype=Sensor)
+
+    def __init__(self):
+        self.actuators[0] = Actuator(coordinates=np.array([self.table.LENGTH / 2,
+                                                           self.table.WIDTH / 2]),
+                                     name='Actuator')
+        self.sensors[0] = Sensor(coordinates=np.array([0.489, 0.242]),
+                                 name='Sensor 1')
+
+
+    def get_propagation_speed(self, df1: pd.DataFrame, df2: pd.DataFrame):
+        """Use the cross correlation between the two channels
+        to find the propagation speed. Based on:
+        https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
+        """
+        n = len(df1)
+        """Convert to df if np.ndarray"""
+        if type(df1) == np.ndarray:
+            df1 = pd.DataFrame(df1)
+        if type(df2) == np.ndarray:
+            df2 = pd.DataFrame(df2)
+
+        corr = signal.correlate(df1, df2, mode='same') \
+               / np.sqrt(signal.correlate(df2, df2, mode='same')[int(n / 2)]
+               * signal.correlate(df1, df1, mode='same')[int(n / 2)])
+
+        delay_arr = np.linspace(-0.5 * n / SAMPLE_RATE, 0.5 * n / SAMPLE_RATE, n)
+        delay = delay_arr[np.argmax(corr)]
+        distance = np.linalg.norm(self.actuators[0].coordinates - self.sensors[0].coordinates)
+        propagation_speed = np.abs(distance / delay)
+        return propagation_speed
+
+
+class Setup7(Setup):
+    """Sensors in a straight line instead of a triangle in C2,
+    actuator placed in front of the sensors
+    """
+    actuators = np.empty(shape=1, dtype=Actuator)
+    sensors = np.empty(shape=3, dtype=Sensor)
+
     def __init__(self):
         self.actuators[0] = Actuator(coordinates=np.array([self.table.LENGTH / 2,
                                                            self.table.WIDTH / 2]),
