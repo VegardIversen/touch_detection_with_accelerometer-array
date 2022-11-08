@@ -78,6 +78,41 @@ class Setup2(Setup):
         propagation_speed = np.round(np.abs(distance / delay), decimals=2)
         return propagation_speed
 
+class Setup3(Setup):
+    def __init__(self):
+        self.sensor_3 = Sensor(coordinates=np.array([self.table.WIDTH - 0.212, 0.235]))
+        self.sensor_1 = Sensor(self.sensor_3.coordinates + np.array([-0.101, 0.008]))
+        self.actuator = Actuator(np.array([self.sensor_1.x - 0.10, 0.248]))
+        self.sensor_2 = Sensor(np.array([self.actuator.x, self.actuator.y + self.actuator.RADIUS + 0.013/2]), radius=0.013/2)
+        self.sensors = np.append(self.sensors, self.sensor_1)
+        self.sensors = np.append(self.sensors, self.sensor_2)
+        self.sensors = np.append(self.sensors, self.sensor_3)
+        self.actuators = np.append(self.actuators, self.actuator)
+    
+    def get_propagation_speed(self, df1: pd.DataFrame, df2: pd.DataFrame):
+        """Use the cross correlation between the two channels
+        to find the propagation speed. Based on:
+        https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
+        """
+        n = len(df1)
+        """Convert to df if np.ndarray"""
+        if type(df1) == np.ndarray:
+            df1 = pd.DataFrame(df1)
+        if type(df2) == np.ndarray:
+            df2 = pd.DataFrame(df2)
+
+        corr = signal.correlate(df1, df2, mode='same') \
+               / np.sqrt(signal.correlate(df2, df2, mode='same')[int(n / 2)]
+               * signal.correlate(df1, df1, mode='same')[int(n / 2)])
+
+        delay_arr = np.linspace(-0.5 * n / SAMPLE_RATE, 0.5 * n / SAMPLE_RATE, n)
+        delay = delay_arr[np.argmax(corr)]
+        #distance = np.linalg.norm(self.actuator.coordinates - self.sensor_1.coordinates)
+        distance = np.linalg.norm(self.sensor_1.coordinates - self.sensor_3.coordinates)
+        propagation_speed = np.abs(distance / delay)
+        return propagation_speed
+
+
 
 class Setup3_2(Setup):
     def __init__(self):

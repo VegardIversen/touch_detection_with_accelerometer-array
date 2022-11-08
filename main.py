@@ -5,12 +5,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from objects import Table, Actuator, Sensor
-from setups import Setup2, Setup3_2, Setup3_4, Setup6
+from setups import Setup2, Setup3, Setup3_2, Setup3_4, Setup6
 from constants import SAMPLE_RATE, CHANNEL_NAMES, CHIRP_CHANNEL_NAMES
 
 from csv_to_df import csv_to_df
 from data_viz_files.visualise_data import compare_signals
-from data_processing.preprocessing import crop_data, filter_general, compress_chirp
+from data_processing.preprocessing import crop_data, filter_general, compress_chirp, get_phase_of_compressed_signal
 from data_processing.detect_echoes import find_first_peak, get_hilbert_envelope, get_travel_times
 from data_processing.find_propagation_speed import find_propagation_speed_with_delay
 from data_viz_files.drawing import plot_legend_without_duplicates
@@ -18,18 +18,17 @@ from data_viz_files.drawing import plot_legend_without_duplicates
 
 def main():
     """CONFIG"""
-    CROP = True
+    CROP = False
     TIME_START = 0.75724  # s
     TIME_END = TIME_START + 0.010  # s
-    FILTER = True
+    FILTER = False
     BANDWIDTH = np.array([200, 40000])
-    SETUP = Setup2()
+    SETUP = Setup3_4()
 
     """Open file"""
-    measurements = csv_to_df(file_folder='holdfinger_test_active_setup2_5',
-                             file_name='active_plate_no_activity_sinus_2khz_10vpp_burstP_1s_cyccount_1_startphase0_150kzsample_5s',
-                             channel_names=CHANNEL_NAMES)
-
+    measurements = csv_to_df(file_folder='div_files/setup3',
+                             file_name='sign_integ_test_chirp2_150k_5s_setup3_4_v1',
+                             channel_names=CHIRP_CHANNEL_NAMES)
     """Preprocessing"""
     if CROP:
         measurements = crop_data(measurements, TIME_START, TIME_END)
@@ -43,10 +42,11 @@ def main():
         measurements_filt = measurements
 
     """Compress chirp signals"""
-    t = np.linspace(0, 0.0005, int(0.0005 * SAMPLE_RATE))
-    burst = np.sin(2 * np.pi * 2000 * t)
-    measurements_comp = compress_chirp(measurements_filt, custom_chirp=burst)
-
+    print(np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_2.coordinates))
+    measurements_comp = compress_chirp(measurements_filt, custom_chirp=None)
+    get_phase_of_compressed_signal(measurements_comp,threshold=13, ch2='channel 2', distance=np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_2.coordinates), n_pi=4)
+    #get_phase_of_compressed_signal(measurements_comp,threshold=13, ch1='channel 2', ch2='channel 3', distance=np.linalg.norm(SETUP.sensor_2.coordinates-SETUP.sensor_3.coordinates))
+    #get_phase_of_compressed_signal(measurements_comp,threshold=13,ch2='channel 3', distance=np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_3.coordinates))
     """Generate Hilbert transforms"""
     measurements_hilb = get_hilbert_envelope(measurements_filt)
     measurements_comp_hilb = get_hilbert_envelope(measurements_comp)

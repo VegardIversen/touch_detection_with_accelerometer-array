@@ -68,7 +68,7 @@ class Sensor:
     NOTE:   Not sure just how to represent coordinates yet,
             or if get_/set_coordinates() are necessary.
     """
-    def __init__(self, coordinates: np.ndarray, radius: float = 0.007):
+    def __init__(self, coordinates: np.ndarray, radius: float = 0.007/2):
         self.coordinates = coordinates
         self.x = coordinates[0]
         self.y = coordinates[1]
@@ -123,7 +123,7 @@ class Actuator:
                               zorder=10)
         plt.gca().add_patch(actuator)
 
-    RADIUS = 0.01  # m
+    RADIUS = 0.01/2  # m
     """Colour settings for drawing"""
     FILL_COLOUR = '#D4434A'
     EDGE_COLOUR = 'dimgray'
