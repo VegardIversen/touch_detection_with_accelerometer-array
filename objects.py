@@ -99,6 +99,8 @@ class Actuator:
     NOTE:   Not sure just how to represent coordinates yet,
             or if get_/set_coordinates() are necessary.
     """
+    RADIUS = 0.005  # m
+
     def __init__(self, coordinates: np.ndarray, name: str = 'Actuator'):
         self.coordinates = coordinates
         self.x = coordinates[0]
@@ -124,7 +126,9 @@ class Actuator:
                               zorder=10)
         plt.gca().add_patch(actuator)
 
-    RADIUS = 0.005  # m
+    def __str__(self):
+        return self.name
+
 
 
 class MirroredSource(Actuator):
