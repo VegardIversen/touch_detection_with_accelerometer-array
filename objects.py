@@ -68,11 +68,11 @@ class Sensor:
     NOTE:   Not sure just how to represent coordinates yet,
             or if get_/set_coordinates() are necessary.
     """
-    def __init__(self, coordinates: np.ndarray, radius: float = 0.007):
+    def __init__(self, coordinates: np.ndarray, name: str):
         self.coordinates = coordinates
         self.x = coordinates[0]
         self.y = coordinates[1]
-        self.radius = radius
+        self.name = name
 
     def set_coordinates(self, coordinates: np.ndarray):
         self.coordinates = coordinates
@@ -89,9 +89,9 @@ class Sensor:
                             zorder=10)
         plt.gca().add_patch(sensor)
 
-    """Colour settings for drawing"""
-    FILL_COLOUR = '#AEAFA7'
-    EDGE_COLOUR = 'dimgray'
+    def __str__(self):
+        return self.name
+
 
 
 class Actuator:
@@ -103,6 +103,7 @@ class Actuator:
         self.coordinates = coordinates
         self.x = coordinates[0]
         self.y = coordinates[1]
+        self.name = name
 
     def copy(self):
         """Define a function to copy the actuator."""
@@ -160,7 +161,7 @@ class MirroredSensor(Sensor):
                                      radius=self.radius,
                                      fc=self.FILL_COLOUR,
                                      ec=self.EDGE_COLOUR,
-                                     label='Mirrored sensor',
+                                     label=f'Mirrored {self.name}',
                                      zorder=10)
         plt.gca().add_patch(mirrored_sensor)
 
