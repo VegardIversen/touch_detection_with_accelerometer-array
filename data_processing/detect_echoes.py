@@ -1,18 +1,17 @@
 import numpy as np
+import pandas as pd
 import scipy.signal as signal
 import matplotlib.pyplot as plt
-import pandas as pd
 
-from objects import MirroredSensor, MirroredSource, Table, Actuator, Sensor
 from constants import *
+from objects import MirroredSensor, MirroredSource, Table, Actuator, Sensor
 
 from csv_to_df import csv_to_df
-from data_processing.preprocessing import filter_general, crop_data
 
 
 def find_indices_of_peaks(sig_np, height, plot=False, hilbert=True):
     """Find the indices of the peaks in the signal."""
-    peak_indices = pd.DataFrame(columns=['channel 1', 'channel 2', 'channel 3', 'chirp'])
+    peak_indices = pd.DataFrame(columns=['Sensor 1', 'Sensor 2', 'Sensor 3', 'Actuator'])
 
     if not hilbert:
         # Find the peaks of the square of the signal

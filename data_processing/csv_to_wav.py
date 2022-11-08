@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy 
+import numpy
 from scipy.io import wavfile
 from pathlib import Path
 
@@ -7,7 +7,7 @@ from pathlib import Path
 data_folder = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
 output = data_folder + '\\noise_test_veg_gudsong_5s_samplerate_150khz.wav'
 file_path = data_folder + '\\div_files\\noise_test_veg_gudsong_5s_samplerate_150khz.csv'
-A1 = pd.read_csv(file_path, delimiter=',', names=['channel 1', 'channel 2', 'channel 3'])
+A1 = pd.read_csv(file_path, delimiter=',', names=['Sensor 1', 'Sensor 2', 'Sensor 3'])
 data = A1.to_numpy()
 SAMPLE_RATE = 150000
 

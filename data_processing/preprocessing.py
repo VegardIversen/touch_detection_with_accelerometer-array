@@ -1,15 +1,18 @@
-from scipy import signal
-import pandas as pd
 import numpy as np
-from pathlib import Path
+import pandas as pd
+from scipy import signal
 
-from constants import *
+from constants import SAMPLE_RATE
 
 
 """FILTERING"""
 
 
-def filter_general(sig, filtertype, cutoff_highpass=20000, cutoff_lowpass=40000, order=4):
+def filter_general(sig: pd.DataFrame or np.ndarray,
+                   filtertype: str,
+                   cutoff_highpass: int,
+                   cutoff_lowpass: int,
+                   order: int = 4):
     """filtertype: 'highpass', 'lowpass' or 'bandpass"""
     if filtertype == 'highpass':
         sos = signal.butter(order,
@@ -91,7 +94,7 @@ def crop_data(sig, time_start=None, time_end=None, threshold=0):
     """
     # Some logic for assuming cropping type and length
     if (time_start or time_start == 0) and not time_end:
-        time_end = len(sig) / sample_rate
+        time_end = len(sig) / SAMPLE_RATE
     elif time_end and not (time_start or time_start == 0):
         time_start = 0
 
@@ -136,10 +139,10 @@ def remove_silence(df, threshold=0.0006):
 def compress_chirp(measurements: pd.DataFrame, custom_chirp: np.ndarray):
     """Compresses a chirp with cross correlation."""
     compressed_chirp = measurements.copy()
-    if 'chirp' in measurements.columns:
+    if 'Actuator' in measurements.columns:
         for channel in measurements:
             compressed_chirp[channel] = signal.correlate(measurements[channel],
-                                                         measurements['chirp'],
+                                                         measurements['Actuator'],
                                                          mode='same')
     else:
         for channel in measurements:

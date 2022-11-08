@@ -9,7 +9,7 @@ import noisereduce as nr
 DATA_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\noise_tests\\'
 SAMPLE_RATE = 150000     # Hz
 DATA_DELIMITER = ","
-CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3']
+CHANNEL_NAMES = ['Sensor 1', 'Sensor 2', 'Sensor 3']
 FILES = Path(DATA_FOLDER).rglob('*.csv')
 OUTPUT_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\base_data\\df_average_noise.csv'
 Path(OUTPUT_FOLDER).parent.mkdir(parents=True, exist_ok=True)
@@ -64,5 +64,5 @@ if __name__ == '__main__':
     #SetNoiseAvg()
     noise = pd.read_csv(OUTPUT_FOLDER, delimiter=DATA_DELIMITER)
     data = pd.read_csv(f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\first_test_touch_passive_setup2\\touch_test_passive_setup2_place_A1_center_v1.csv', delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
-    #adaptive_filter_RLS(data['channel 1'])
-    #noise_reduce_signal(data['channel 1'], noise['channel 1'])
+    #adaptive_filter_RLS(data['Sensor 1'])
+    #noise_reduce_signal(data['Sensor 1'], noise['Sensor 1'])

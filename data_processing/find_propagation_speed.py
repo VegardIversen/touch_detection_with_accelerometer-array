@@ -39,8 +39,8 @@ def find_propagation_speed_plot(chirp_df,
                                   cutoff_highpass=freq * 1.1,
                                   order=4)
         freq_prop_speed = find_propagation_speed(df=chirp_bp,
-                                                 ch1='channel 1',
-                                                 ch2='channel 3')
+                                                 ch1='Sensor 1',
+                                                 ch2='Sensor 3')
         frequencies = np.append(frequencies, freq)
         freq_speeds = np.append(freq_speeds, freq_prop_speed)
         chirp_bps = np.append(chirp_bps, chirp_bp)

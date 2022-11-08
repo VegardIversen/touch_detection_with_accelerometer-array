@@ -16,7 +16,7 @@ CROP_BEFORE = 80000     # samples
 CROP_AFTER = 120000     # samples
 
 DATA_DELIMITER = ","
-CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3']
+CHANNEL_NAMES = ['Sensor 1', 'Sensor 2', 'Sensor 3']
 DIRECTION_CHECK = {
                     'A1': range(190,260), 'A2': range(250,290), 'A3': range(280,350),
                     'B1': range(180,250), 'B2': range(250,290), 'B3': range(290,350),
@@ -35,7 +35,7 @@ def CropData(data):
 
 
 def CropRegion(data):
-    mask = data['channel 1'].gt(0.1)
+    mask = data['Sensor 1'].gt(0.1)
     rgns = mask.diff().fillna(True).cumsum()
     gb = data[mask].groupby(rgns)
     gb.plot()
@@ -63,7 +63,7 @@ def LoadData(file_loc=OUTPUT_FOLDER):
     return loaded_dict
 
 
-def FindTouchPosition(file, crop=True, direction_check=True, channel='channel 1'):
+def FindTouchPosition(file, crop=True, direction_check=True, channel='Sensor 1'):
     test_data = pd.read_csv(file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
     #CropRegion(test_data)
     highest_score = 0

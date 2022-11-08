@@ -73,7 +73,7 @@ def plot_data(df, crop=True):
 
 def plot_spectogram(df,
                     include_signal=True,
-                    channel='channel 1',
+                    channel='Sensor 1',
                     freq_max=None):
     vmin = 10 * np.log10(np.max(df)) - 60
     if include_signal:
@@ -96,28 +96,30 @@ def plot_spectogram(df,
     plt.show()
 
 
-def compare_signals(df1, df2, df3,
-                    freq_max=40000,
-                    nfft=256,
-                    plot_diff=False,
-                    save=False,
-                    filename='compared_signal.png',
-                    plot_1_name='Signal 1',
-                    plot_2_name='Signal 2',
-                    plot_3_name='Signal 3',
-                    sync_time=False):
+def compare_signals(df1: pd.DataFrame or np.ndarray,
+                    df2: pd.DataFrame or np.ndarray,
+                    df3: pd.DataFrame or np.ndarray,
+                    freq_max: int = 40000,
+                    nfft: int = 256,
+                    plot_diff: bool = False,
+                    save: bool = False,
+                    filename: str = 'compared_signal.png',
+                    plot_1_name: str = 'Sensor 1',
+                    plot_2_name: str = 'Sensor 2',
+                    plot_3_name: str = 'Sensor 3',
+                    sync_time: bool = False):
     """Visually compare two signals, by plotting:
     time signal, spectogram, fft and (optionally) difference signal
     """
 
     """Change numpy array to dataframe if needed"""
     if isinstance(df1, np.ndarray):
-        df1 = pd.DataFrame(df1, columns=['channel 1'])
+        df1 = pd.DataFrame(df1, columns=['Sensor 1'])
     if isinstance(df2, np.ndarray):
-        df2 = pd.DataFrame(df2, columns=['channel 2'])
+        df2 = pd.DataFrame(df2, columns=['Sensor 2'])
     if isinstance(df3, np.ndarray):
-        df3_df = pd.DataFrame(df3, columns=['channel 3'])
-        df3 = df3_df['channel 3']
+        df3_df = pd.DataFrame(df3, columns=['Sensor 3'])
+        df3 = df3_df['Sensor 3']
 
     """Time signal 1"""
     time_axis_1 = np.linspace(0, len(df1) / SAMPLE_RATE, num=len(df1))
@@ -272,7 +274,7 @@ def compare_signals(df1, df2, df3,
         plt.show()
 
 
-def plot_data_vs_noiseavg(df, channel='channel 1'):
+def plot_data_vs_noiseavg(df, channel='Sensor 1'):
     """Plot data vs noise average
     Input:  df with all channels or channel specified by argument
     Output: Plot of data vs noise average
@@ -282,7 +284,7 @@ def plot_data_vs_noiseavg(df, channel='channel 1'):
     compare_signals(df[channel], noise_df[channel])
 
 
-def plot_data_subtracted_noise(df, channel='channel 1'):
+def plot_data_subtracted_noise(df, channel='Sensor 1'):
     """Plot data subtracted by noise average
     Input:  df with all channels or channel specified by argument
     Output: Plot of data subtracted by noise average
@@ -293,7 +295,7 @@ def plot_data_subtracted_noise(df, channel='channel 1'):
     compare_signals(df[channel], df_sub_noise[channel])
 
 
-def plot_data_sub_ffts(df, channel='channel 1'):
+def plot_data_sub_ffts(df, channel='Sensor 1'):
     """Plot data subtracted by noise average FFT
     Input:  df with all channels or channel specified by argument
     Output: Plot of data subtracted by noise average
@@ -304,7 +306,7 @@ def plot_data_sub_ffts(df, channel='channel 1'):
     df_fft = scipy.fft.fft(df.values, axis=0)
     df_fft_sub_noise_fft = df_fft - noise_df_fft
     df_sub_noise = pd.DataFrame(scipy.fft.ifft(df_fft_sub_noise_fft),
-                                columns=['channel 1', 'channel 2', 'channel 3'])
+                                columns=['Sensor 1', 'Sensor 2', 'Sensor 3'])
     ax1 = plt.subplot(311)
     fftfreq_data = scipy.fft.fftfreq(len(df_fft),  1 / SAMPLE_RATE)
     data_fft = np.fft.fftshift(df_fft)
