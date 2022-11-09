@@ -9,8 +9,8 @@ from setups import Setup2, Setup3_2, Setup3_4, Setup4_5, Setup6, Setup7
 from constants import SAMPLE_RATE, CHANNEL_NAMES, CHIRP_CHANNEL_NAMES
 
 from csv_to_df import csv_to_df
-from data_viz_files.visualise_data import compare_signals
 from data_viz_files.drawing import plot_legend_without_duplicates
+from data_viz_files.visualise_data import compare_signals, specgram_with_lines
 from data_processing.preprocessing import crop_data, filter_general, compress_chirp
 from data_processing.detect_echoes import find_first_peak, get_hilbert_envelope, get_travel_times
 
@@ -18,10 +18,10 @@ from data_processing.detect_echoes import find_first_peak, get_hilbert_envelope,
 def main():
     """CONFIG"""
     CROP = False
-    TIME_START = 0.6  # s
+    TIME_START = 0.2  # s
     TIME_END = 5  # s
     FILTER = False
-    BANDWIDTH = np.array([200, 40000])  # Should be between ~200 Hz and 40 kHz
+    BANDWIDTH = (200, 40000)  # Should be between ~200 Hz and 40 kHz
     SETUP = Setup7()
 
     """Open file"""
@@ -41,14 +41,16 @@ def main():
     else:
         measurements_filt = measurements
 
-    # SHIFT_BY = int(TIME_START * SAMPLE_RATE)
-    # for channel in measurements_filt:
-    #     measurements_filt[channel] = np.roll(measurements_filt[channel],
-    #                                          -SHIFT_BY)
-    #     measurements_filt[channel][-SHIFT_BY:] = 0
     """Compress chirp signals"""
     measurements_comp = compress_chirp(measurements_filt, custom_chirp=None)
-    "Separate the channels into arrays of length 18750 samples"
+
+    SHIFT_BY = int(TIME_START * SAMPLE_RATE)
+    # Could consider using a windows also/instead
+    for channel in measurements_filt:
+        measurements_comp[channel] = np.roll(measurements_comp[channel],
+                                             -SHIFT_BY)
+        measurements_comp[channel][-SHIFT_BY:] = 0
+    "Separate the channels into arrays of length 125 ms"
     measurements_comp_split = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES)
     for channel in measurements:
         measurements_comp_split[channel] = np.split(measurements_comp[channel], 40)
@@ -57,7 +59,7 @@ def main():
     measurements_hilb = get_hilbert_envelope(measurements_filt)
     measurements_comp_hilb = get_hilbert_envelope(measurements_comp)
 
-    """Place setup objects"""
+    """Draw setup"""
     SETUP.draw()
 
     """Calculate wave propagation speed"""
@@ -78,56 +80,42 @@ def main():
     arrival_times = np.reshape(arrival_times, (len(SETUP.sensors), len(arrival_times) // len(SETUP.sensors)))
 
     """Plot the measurements"""
-    compare_signals([measurements_comp['Sensor 1'],
-                     measurements_comp['Sensor 2'],
-                     measurements_comp['Actuator']],
+    fig, axs = plt.subplots(nrows=3, ncols=3)
+    compare_signals(fig, axs,
+                    [measurements_comp_split['Sensor 1'][0],
+                     measurements_comp_split['Sensor 2'][0],
+                     measurements_comp_split['Sensor 3'][0]],
                     freq_max=BANDWIDTH[1] + 20000,
                     nfft=256)
-
-    """Plot the spectrograms along with lines for expected reflections"""
-    arrival_times += 2.5
-    for i, sensor in enumerate(SETUP.sensors):
-        plt.subplot(311 + i, sharex=plt.gca())
-        plt.title(f'Correlation between chirp and {sensor}')
-        spec = plt.specgram(measurements_comp[sensor.name], Fs=SAMPLE_RATE, NFFT=16, noverlap=(16 // 2))
-        plt.clim(10 * np.log10(np.max(spec[0])) - 60, 10 * np.log10(np.max(spec[0])))
-        plt.axis(ymax=BANDWIDTH[1] + 20000)
-        plt.title('Spectrogram')
-        plt.xlabel('Time [s]')
-        plt.ylabel('Frequency [Hz]')
-        plt.colorbar()
-        plt.axvline(arrival_times[i][0], linestyle='--', color='r', label='Direct wave')
-        [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])]
-        [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[i][5:])]
-        plt.xlabel('Time [ms]')
-        plt.ylabel('Frequency [Hz]')
-        plot_legend_without_duplicates()
-    arrival_times -= 2.5
-    plt.subplots_adjust(hspace=0.5)
     plt.show()
 
-    """Plot the correlation between the chirp signal and the measured signal"""
-    # time_axis_corr = np.linspace(-1000 * len(measurements_comp) / SAMPLE_RATE,
-    time_axis_corr = np.linspace(-1000 * len(measurements_comp) / SAMPLE_RATE,
-                                 1000 * len(measurements_comp) / SAMPLE_RATE,
-                                 (len(measurements_comp)))
+    """TODO: Make up for drift in signal generator"""
+    # object_1 = SETUP.sensors[0]
+    # object_2 = SETUP.sensors[0]
+    # delays = np.array([])
+    # for chirp in range(len(measurements_comp_split['Sensor 1'])):
+    #     n = len(measurements_comp_split[object_1.name][0])
+    #     corr = signal.correlate(measurements_comp_split[object_1.name][0], measurements_comp_split[object_2.name][chirp], mode='same') \
+    #          / np.sqrt(signal.correlate(measurements_comp_split[object_2.name][chirp], measurements_comp_split[object_2.name][chirp], mode='same')[int(n / 2)]
+    #          * signal.correlate(measurements_comp_split[object_1.name][0], measurements_comp_split[object_1.name][0], mode='same')[int(n / 2)])
+    #     delay_arr = np.linspace(-0.5 * n / SAMPLE_RATE, 0.5 * n / SAMPLE_RATE, n)
+    #     delay = delay_arr[np.argmax(corr)]
+    #     delays = np.append(delays, delay)
 
-    arrival_times *= 1000   # Convert to ms
-    for i, sensor in enumerate(SETUP.sensors):
-        plt.subplot(311 + i, sharex=plt.gca())
-        plt.title(f'Correlation between {SETUP.actuators[0]} and {sensor}')
-        plt.plot(time_axis_corr, measurements_comp[sensor.name], label='Correlation')
-        plt.plot(time_axis_corr, measurements_comp_hilb[sensor.name], label='Hilbert envelope')
-        plt.axvline(arrival_times[i][0], linestyle='--', color='r', label='Direct wave')
-        [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])]
-        [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[i][5:])]
-        plt.xlabel('Time [ms]')
-        plt.ylabel('Amplitude [V]')
-        plot_legend_without_duplicates()
-        plt.grid()
-    plt.subplots_adjust(hspace=0.5)
+
+    # measurements_comp_split['Sensor 1'] = np.roll(measurements_comp_split['Sensor 1'], (np.rint(delays * SAMPLE_RATE)).astype(int))
+
+
+
+    fig, axs = plt.subplots(nrows=3, ncols=3)
+    for chirp in range(len(measurements_comp_split['Sensor 1'])):
+        compare_signals(fig, axs,
+                        [measurements_comp_split['Sensor 1'][chirp],
+                         measurements_comp_split['Sensor 2'][chirp],
+                         measurements_comp_split['Sensor 3'][chirp]],
+                        freq_max=BANDWIDTH[1] + 20000,
+                        nfft=256)
     plt.show()
-    arrival_times /= 1000   # Convert back to s
 
 
 if __name__ == '__main__':

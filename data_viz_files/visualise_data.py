@@ -4,9 +4,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from constants import *
+from setups import Setup
 
 from csv_to_df import csv_to_df
 from data_processing.preprocessing import crop_data
+from data_processing.detect_echoes import get_hilbert_envelope
+from data_viz_files.drawing import plot_legend_without_duplicates
 
 
 def plot_fft(df, window=False):
@@ -95,13 +98,13 @@ def plot_spectogram(df,
     plt.show()
 
 
-def compare_signals(data: list,
+def compare_signals(fig, axs,
+                    data: list,
                     freq_max: int = 40000,
                     nfft: int = 256):
     """Visually compare two signals, by plotting:
     time signal, spectogram, fft and (optionally) difference signal
     """
-    fig, axs = plt.subplots(nrows=3, ncols=3)
     for i, channel in enumerate(data):
         """Time signal"""
         time_axis = np.linspace(0, len(data[i]) / SAMPLE_RATE, num=len(data[i]))
@@ -144,6 +147,55 @@ def compare_signals(data: list,
     plt.subplots_adjust(left=0.06, right=0.985,
                         top=0.97, bottom=0.06,
                         hspace=0.3, wspace=0.2)
+    # plt.show()
+
+
+def specgram_with_lines(setup, measurements_comp, arrival_times, bandwidth):
+    """Plot the spectrograms along with lines for expected reflections"""
+    for i, sensor in enumerate(setup.sensors):
+        plt.subplot(311 + i, sharex=plt.gca())
+        plt.title(f'Correlation between chirp and {sensor}')
+        spec = plt.specgram(measurements_comp[sensor.name], Fs=SAMPLE_RATE, NFFT=16, noverlap=(16 // 2))
+        plt.clim(10 * np.log10(np.max(spec[0])) - 60, 10 * np.log10(np.max(spec[0])))
+        plt.axis(ymax=bandwidth[1] + 20000)
+        plt.title('Spectrogram')
+        plt.xlabel('Time [s]')
+        plt.ylabel('Frequency [Hz]')
+        plt.colorbar()
+        plt.axvline(arrival_times[i][0], linestyle='--', color='r', label='Direct wave')
+        [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])]
+        [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[i][5:])]
+        plt.xlabel('Time [ms]')
+        plt.ylabel('Frequency [Hz]')
+        plot_legend_without_duplicates()
+    plt.subplots_adjust(hspace=0.5)
+    # plt.show()
+
+
+def envelopes_with_lines(setup: Setup,
+                         measurements_comp: pd.DataFrame,
+                         arrival_times: np.ndarray,
+                         bandwidth: tuple):
+    """Plot the correlation between the chirp signal and the measured signal"""
+    # time_axis_corr = np.linspace(-1000 * len(measurements_comp) / SAMPLE_RATE,
+    time_axis_corr = np.linspace(-1000 * len(measurements_comp) / SAMPLE_RATE,
+                                 1000 * len(measurements_comp) / SAMPLE_RATE,
+                                 (len(measurements_comp)))
+    measurements_comp_hilb = get_hilbert_envelope(measurements_comp)
+
+    for i, sensor in enumerate(setup.sensors):
+        plt.subplot(311 + i, sharex=plt.gca())
+        plt.title(f'Correlation between {setup.actuators[0]} and {sensor}')
+        plt.plot(time_axis_corr, measurements_comp[sensor.name], label='Correlation')
+        plt.plot(time_axis_corr, measurements_comp_hilb[sensor.name], label='Hilbert envelope')
+        plt.axvline(arrival_times[i][0], linestyle='--', color='r', label='Direct wave')
+        [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])]
+        [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[i][5:])]
+        plt.xlabel('Time [ms]')
+        plt.ylabel('Amplitude [V]')
+        plot_legend_without_duplicates()
+        plt.grid()
+    plt.subplots_adjust(hspace=0.5)
     plt.show()
 
 
