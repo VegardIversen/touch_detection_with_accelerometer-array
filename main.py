@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 
@@ -17,8 +18,8 @@ from data_processing.detect_echoes import find_first_peak, get_hilbert_envelope,
 def main():
     """CONFIG"""
     CROP = False
-    TIME_START = 0.75724  # s
-    TIME_END = TIME_START + 0.010  # s
+    TIME_START = 0.6  # s
+    TIME_END = 5  # s
     FILTER = False
     BANDWIDTH = np.array([200, 40000])  # Should be between ~200 Hz and 40 kHz
     SETUP = Setup7()
@@ -40,8 +41,17 @@ def main():
     else:
         measurements_filt = measurements
 
+    # SHIFT_BY = int(TIME_START * SAMPLE_RATE)
+    # for channel in measurements_filt:
+    #     measurements_filt[channel] = np.roll(measurements_filt[channel],
+    #                                          -SHIFT_BY)
+    #     measurements_filt[channel][-SHIFT_BY:] = 0
     """Compress chirp signals"""
     measurements_comp = compress_chirp(measurements_filt, custom_chirp=None)
+    "Separate the channels into arrays of length 18750 samples"
+    measurements_comp_split = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES)
+    for channel in measurements:
+        measurements_comp_split[channel] = np.split(measurements_comp[channel], 40)
 
     """Generate Hilbert transforms"""
     measurements_hilb = get_hilbert_envelope(measurements_filt)
@@ -52,7 +62,7 @@ def main():
 
     """Calculate wave propagation speed"""
     prop_speed = SETUP.get_propagation_speed(measurements_comp)
-    print(f'Prop speed: {prop_speed}')
+    print(f'Propagation speed: {prop_speed}')
 
     """Calculate wave arrival times"""
     arrival_times = np.array([])
@@ -68,24 +78,19 @@ def main():
     arrival_times = np.reshape(arrival_times, (len(SETUP.sensors), len(arrival_times) // len(SETUP.sensors)))
 
     """Plot the measurements"""
-    compare_signals(measurements_comp['Sensor 1'],
-                    measurements_comp['Sensor 2'],
-                    measurements_comp['Sensor 3'],
+    compare_signals([measurements_comp['Sensor 1'],
+                     measurements_comp['Sensor 2'],
+                     measurements_comp['Actuator']],
                     freq_max=BANDWIDTH[1] + 20000,
-                    nfft=16,
-                    plot_1_name=SETUP.sensors[0].name,
-                    plot_2_name=SETUP.sensors[1].name,
-                    plot_3_name=SETUP.sensors[2].name,
-                    sync_time=True)
+                    nfft=256)
 
     """Plot the spectrograms along with lines for expected reflections"""
-    dynamic_range_db = 60
-    vmin = 10 * np.log10(np.max(measurements_filt['Sensor 1'])) - dynamic_range_db
     arrival_times += 2.5
     for i, sensor in enumerate(SETUP.sensors):
         plt.subplot(311 + i, sharex=plt.gca())
         plt.title(f'Correlation between chirp and {sensor}')
-        plt.specgram(measurements_filt[sensor.name], Fs=SAMPLE_RATE, NFFT=16, noverlap=(16 // 2), vmin=vmin)
+        spec = plt.specgram(measurements_comp[sensor.name], Fs=SAMPLE_RATE, NFFT=16, noverlap=(16 // 2))
+        plt.clim(10 * np.log10(np.max(spec[0])) - 60, 10 * np.log10(np.max(spec[0])))
         plt.axis(ymax=BANDWIDTH[1] + 20000)
         plt.title('Spectrogram')
         plt.xlabel('Time [s]')
