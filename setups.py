@@ -209,7 +209,7 @@ class Setup7(Setup):
         """
         object_1 = self.sensors[0]
         object_2 = self.sensors[1]
-        n = len(measurements[object_1])
+        n = len(measurements[object_1.name])
         corr = signal.correlate(measurements[object_1.name], measurements[object_2.name], mode='same') \
                / np.sqrt(signal.correlate(measurements[object_2.name], measurements[object_2.name], mode='same')[int(n / 2)]
                * signal.correlate(measurements[object_1.name], measurements[object_1.name], mode='same')[int(n / 2)])
