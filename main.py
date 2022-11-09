@@ -19,13 +19,13 @@ def main():
     CROP = False
     TIME_START = 0.75724  # s
     TIME_END = TIME_START + 0.010  # s
-    FILTER = True
-    BANDWIDTH = np.array([19900, 20100])  # Should be between ~200 Hz and 40 kHz
-    SETUP = Setup3_4()
+    FILTER = False
+    BANDWIDTH = np.array([200, 40000])  # Should be between ~200 Hz and 40 kHz
+    SETUP = Setup7()
 
     """Open file"""
-    measurements = csv_to_df(file_folder='div_files\\setup3',
-                             file_name='sign_integ_test_chirp2_150k_5s_setup3_4_v1',
+    measurements = csv_to_df(file_folder='setup7',
+                             file_name='notouchThenHoldB2_20to40khz_125ms_10vpp_v1',
                              channel_names=CHIRP_CHANNEL_NAMES)
 
     """Preprocessing"""
@@ -68,9 +68,9 @@ def main():
     arrival_times = np.reshape(arrival_times, (len(SETUP.sensors), len(arrival_times) // len(SETUP.sensors)))
 
     """Plot the measurements"""
-    compare_signals(measurements_filt['Sensor 1'],
-                    measurements_filt['Sensor 2'],
-                    measurements_filt['Sensor 3'],
+    compare_signals(measurements_comp['Sensor 1'],
+                    measurements_comp['Sensor 2'],
+                    measurements_comp['Sensor 3'],
                     freq_max=BANDWIDTH[1] + 20000,
                     nfft=16,
                     plot_1_name=SETUP.sensors[0].name,
