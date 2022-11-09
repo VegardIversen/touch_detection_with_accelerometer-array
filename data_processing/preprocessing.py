@@ -288,16 +288,32 @@ def inspect_touch_pulse(folder, length_of_touch, threshold=0.0007,
 
 "Get phase of compressed signal"
 
-def get_phase_of_compressed_signal(compressed_signal,ch1='channel 1', ch2='channel 3', distance=0.1, threshold=2.0, duration_cut=55, n_pi=0):
+def get_phase_of_compressed_signal(compressed_signal,ch1='channel 1', ch2='channel 3', distance=0.1, threshold=2.0, duration_cut=55, n_pi=0, detrend=True):
     """Get phase of compressed signal"""
+    if detrend:
+        compressed_signal[ch1] = signal.detrend(compressed_signal[ch1])
+        compressed_signal[ch2] = signal.detrend(compressed_signal[ch2])
+        
     start_index_ch1 = get_first_index_above_threshold(compressed_signal[ch1], threshold)
     end_index_ch1 = start_index_ch1 + duration_cut
     start_index_ch2 = get_first_index_above_threshold(compressed_signal[ch2], threshold)
     end_index_ch2 = start_index_ch2 + duration_cut
+    print(f'start_index_ch1: {start_index_ch1}, end_index_ch1: {end_index_ch1}')
+    print(f'start_index_ch2: {start_index_ch2}, end_index_ch2: {end_index_ch2}')
+    plt.plot(compressed_signal[ch1])
+    plt.plot(compressed_signal[ch2])
+    plt.show()
     #zero pad signal but keep time position
-    cut_ch1 = compressed_signal[ch1][start_index_ch1:end_index_ch1].values
-    cut_ch2 = compressed_signal[ch2][start_index_ch2:end_index_ch2].values
-    
+    if detrend:
+        cut_ch1 = compressed_signal[ch1][start_index_ch1:end_index_ch1]
+        cut_ch2 = compressed_signal[ch2][start_index_ch2:end_index_ch2]
+    else:
+        cut_ch1 = compressed_signal[ch1][start_index_ch1:end_index_ch1]
+        cut_ch2 = compressed_signal[ch2][start_index_ch2:end_index_ch2]
+
+    #plt.plot(cut_ch1)
+    plt.plot(cut_ch1)
+    plt.show()
     #add window to signal
     window = np.hamming(duration_cut)
     cut_ch1_win = cut_ch1 * window

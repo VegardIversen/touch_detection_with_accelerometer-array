@@ -44,7 +44,7 @@ def main():
     """Compress chirp signals"""
     print(np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_2.coordinates))
     measurements_comp = compress_chirp(measurements_filt, custom_chirp=None)
-    get_phase_of_compressed_signal(measurements_comp,threshold=13, ch2='channel 2', distance=np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_2.coordinates), n_pi=4)
+    get_phase_of_compressed_signal(measurements_comp,threshold=4, ch2='channel 2', distance=np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_2.coordinates), n_pi=4)
     #get_phase_of_compressed_signal(measurements_comp,threshold=13, ch1='channel 2', ch2='channel 3', distance=np.linalg.norm(SETUP.sensor_2.coordinates-SETUP.sensor_3.coordinates))
     #get_phase_of_compressed_signal(measurements_comp,threshold=13,ch2='channel 3', distance=np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_3.coordinates))
     """Generate Hilbert transforms"""
