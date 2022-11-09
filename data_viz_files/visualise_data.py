@@ -155,10 +155,9 @@ def compare_signals(df1: pd.DataFrame or np.ndarray,
     plt.ylabel('Amplitude [V]')
 
     """Spectrogram of signal 1"""
-    dynamic_range_db = 60
-    vmin = 10 * np.log10(np.max(df1)) - dynamic_range_db
     ax3 = plt.subplot(332, sharex=ax1)
-    plt.specgram(df1, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2), vmin=vmin)
+    spec = plt.specgram(df1, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2))
+    plt.clim(10 * np.log10(np.max(spec[0])) - 60, 10 * np.log10(np.max(spec[0])))
     plt.axis(ymax=freq_max)
     plt.title(f'{plot_1_name}, spectrogram')
     plt.xlabel('Time [s]')
@@ -167,7 +166,8 @@ def compare_signals(df1: pd.DataFrame or np.ndarray,
 
     """Spectrogram of signal 2"""
     plt.subplot(335, sharex=ax2, sharey=ax3)
-    plt.specgram(df2, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2), vmin=vmin, )
+    spec = plt.specgram(df2, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2))
+    plt.clim(10 * np.log10(np.max(spec[0])) - 60, 10 * np.log10(np.max(spec[0])))
     plt.axis(ymax=freq_max)
     plt.title(f'{plot_2_name}, spectrogram')
     plt.xlabel('Time [s]')
@@ -176,7 +176,8 @@ def compare_signals(df1: pd.DataFrame or np.ndarray,
 
     """Spectrogram of signal 3"""
     plt.subplot(338, sharex=ax3, sharey=ax3)
-    plt.specgram(df3, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2), vmin=vmin)
+    spec = plt.specgram(df3, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2))
+    plt.clim(10 * np.log10(np.max(spec[0])) - 60, 10 * np.log10(np.max(spec[0])))
     plt.axis(ymax=freq_max)
     plt.title(f'{plot_3_name}, spectrogram')
     plt.xlabel('Time [s]')
