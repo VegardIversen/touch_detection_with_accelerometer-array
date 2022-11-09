@@ -1,5 +1,4 @@
-from cgi import print_arguments
-from turtle import color
+
 import scipy.signal as signal
 from scipy import interpolate
 import pandas as pd
