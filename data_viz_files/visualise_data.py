@@ -97,12 +97,10 @@ def plot_spectogram(df,
 
 def compare_signals(data: list,
                     freq_max: int = 40000,
-                    nfft: int = 256,
-                    plot_diff: bool = False):
+                    nfft: int = 256):
     """Visually compare two signals, by plotting:
     time signal, spectogram, fft and (optionally) difference signal
     """
-    # Make an axis to be used by the fft
     fig, axs = plt.subplots(nrows=3, ncols=3)
     for i, channel in enumerate(data):
         """Time signal"""
@@ -117,7 +115,7 @@ def compare_signals(data: list,
 
         """Spectrogram"""
         spec = axs[i, 1].specgram(data[i], Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2))
-        cb = fig.colorbar(spec[3], ax=axs[i, 1])
+        fig.colorbar(spec[3], ax=axs[i, 1])
         spec[3].set_clim(10 * np.log10(np.max(spec[0])) - 60, 10 * np.log10(np.max(spec[0])))
         axs[i, 1].sharex(axs[0, 0])
         axs[i, 1].axis(ymax=freq_max)
@@ -147,46 +145,6 @@ def compare_signals(data: list,
                         top=0.97, bottom=0.06,
                         hspace=0.3, wspace=0.2)
     plt.show()
-
-    """Plot difference between signals
-    NOTE:   Be careful if using on two different measurements,
-            as the time axis might be different
-    """
-    if plot_diff:
-        """Time signal difference"""
-        signal_diff = np.abs(data[i] - df2)
-        ax1 = plt.subplot(311)
-        plt.grid()
-        plt.plot(time_axis, signal_diff)
-        plt.title('Difference between signals 1 and 2')
-        plt.xlabel('Time [s]')
-        plt.ylabel('Amplitude [V]')
-
-        """Spectogram of signal difference"""
-        ax2 = plt.subplot(312, sharex=ax1)
-        plt.specgram(signal_diff, Fs=SAMPLE_RATE)
-        plt.axis(ymax=freq_max)
-        plt.title('Spectrogram of the difference between signals 1 and 2')
-        plt.xlabel('Time [s]')
-        plt.ylabel('Frequency [Hz]')
-
-        """FFT of signal difference"""
-        ax5 = plt.subplot(313)
-        ax5.set_xlim(left=0, right=freq_max)
-        data_fft = scipy.fft.fft(signal_diff.values, axis=0)
-        fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / SAMPLE_RATE)
-        data_fft = np.fft.fftshift(data_fft)
-        fftfreq = np.fft.fftshift(fftfreq)
-        plt.grid()
-        plt.title('FFT of the difference between signals 1 and 2')
-        plt.xlabel("Frequency [Hz]")
-        plt.ylabel("Amplitude [dB]")
-        plt.plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
-
-        # plt.subplots_adjust(left=0.06, right=0.985,
-        #                     top=0.97, bottom=0.06,
-        #                     hspace=0.3, wspace=0.2)
-        plt.show()
 
 
 def plot_data_vs_noiseavg(df, channel='Sensor 1'):
