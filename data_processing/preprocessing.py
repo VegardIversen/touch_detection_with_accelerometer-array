@@ -285,5 +285,54 @@ def inspect_touch_pulse(folder, length_of_touch, threshold=0.0007,
             plt.show()
 
     #elif isinstance(folder, pathlib):
+
+"Get phase of compressed signal"
+
+def get_phase_of_compressed_signal(compressed_signal,ch1='channel 1', ch2='channel 3', distance=0.1, threshold=2.0, duration_cut=55, n_pi=0):
+    """Get phase of compressed signal"""
+    start_index_ch1 = get_first_index_above_threshold(compressed_signal[ch1], threshold)
+    end_index_ch1 = start_index_ch1 + duration_cut
+    start_index_ch2 = get_first_index_above_threshold(compressed_signal[ch2], threshold)
+    end_index_ch2 = start_index_ch2 + duration_cut
+    #zero pad signal but keep time position
+    cut_ch1 = compressed_signal[ch1][start_index_ch1:end_index_ch1].values
+    cut_ch2 = compressed_signal[ch2][start_index_ch2:end_index_ch2].values
+    
+    #add window to signal
+    window = np.hamming(duration_cut)
+    cut_ch1_win = cut_ch1 * window
+    cut_ch2_win = cut_ch2 * window
+    s1t = np.zeros(len(compressed_signal[ch1]))
+    s1t[start_index_ch1:end_index_ch1] = cut_ch1_win
+    s2t = np.zeros(len(compressed_signal[ch2]))
+    s2t[start_index_ch2:end_index_ch2] = cut_ch2_win
+    S1f = np.fft.fft(s1t)
+    S2f = np.fft.fft(s2t)
+    freq = np.fft.fftfreq(len(s1t), 1/150000)
+    freq_cut = freq[(freq>1000) & (freq<40000)]
+    #n_pi = 2
+    phase0 = np.unwrap(np.angle(S2f/S1f)) +n_pi*np.pi
+    phase1 = np.unwrap(np.angle(S2f/S1f))+n_pi*np.pi
+    phase2 = np.unwrap(np.angle(S2f/S1f))-n_pi*np.pi
+    phase3 = np.unwrap(np.angle(S2f/S1f))+3*n_pi*np.pi
+    print(phase0[(freq>0) & (freq<40000)].shape)
+    vph = (np.power(2*np.pi*freq_cut,2)*distance-2*np.pi*distance)/phase0[(freq>1000) & (freq<40000)]
+    v_ph1 = -2*np.pi*freq_cut*distance/(phase0[(freq>1000) & (freq<40000)])
+    v_ph2 = -2*np.pi*freq_cut*distance/(phase1[(freq>1000) & (freq<40000)])
+    v_ph3 = -2*np.pi*freq_cut*distance/(phase2[(freq>1000) & (freq<40000)])
+    v_ph4 = -2*np.pi*freq_cut*distance/(phase3[(freq>1000) & (freq<40000)])
+    plt.plot(freq_cut, v_ph1, label='0 pi')
+    #plt.plot(freq_cut, v_ph2, label='2 pi')
+    #plt.plot(freq_cut, v_ph3, label='-2 pi')
+    #plt.plot(freq_cut, v_ph4, label='4 pi')
+    #plt.plot(freq, phase0, label='phase')
+    #plt.plot(freq[freq>0], phase1[freq>0], label='phase1')
+    #plt.plot(freq[freq>0], phase2[freq>0], label='phase2')
+    #plt.plot(freq[freq>0], phase3[freq>0], label='phase3')
+    plt.ylabel('velocity (m/s)')
+    plt.xlabel('frequency (Hz)')
+    plt.legend()
+    plt.show()
+    return phase0
 if __name__ == '__main__':
     pass
