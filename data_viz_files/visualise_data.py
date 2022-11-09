@@ -4,10 +4,13 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import scipy
 from scipy import signal
+import os
+import seaborn as sb
+sb.set_theme(style="darkgrid")
 
 from constants import *
 from csv_to_df import csv_to_df
-from data_processing.preprocessing import crop_data
+from data_processing.preprocessing import crop_data, get_phase_and_vph_of_compressed_signal, filter_general, compress_chirp
 
 
 def plot_fft(df, sample_rate=150000, window=False):
@@ -356,6 +359,79 @@ def set_fontsizes():
     plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
     plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
+def plot_vphs(
+            folder, 
+            setup, 
+            threshold1, 
+            threshold2,
+            ch1='channel 1',
+            ch2='channel 2',
+            bandwidth=None
+            ):
+
+    SETUP = setup
+    files = {}
+    
+    print(folder)
+    if isinstance(folder, str):
+        for file in os.listdir(ROOT_FOLDER+folder):
+            if file.endswith('.csv'):
+                print(file)
+                measurements = csv_to_df(
+                                        file_folder=folder,
+                                        file_name=file[:-4],
+                                        channel_names=SETUP.get_channel_names()
+                                        )
+                if bandwidth is not None:
+                    measurements_filt = filter_general(
+                                                        measurements,
+                                                        filtertype='highpass',
+                                                        cutoff_highpass=bandwidth[0],
+                                                        # cutoff_lowpass=BANDWIDTH[1],
+                                                        order=4)
+                else:
+                    measurements_filt = measurements
+                measurements_filt_comp = compress_chirp(measurements_filt, custom_chirp=None)
+                if ch1 == 'channel 1':
+                    sens1_d = SETUP.sensor_1.coordinates
+                if ch2 == 'channel 2':
+                    sens2_d = SETUP.sensor_2.coordinates
+                if ch1 == 'channel 2':
+                    sens1_d = SETUP.sensor_2.coordinates
+                if ch2 == 'channel 1':
+                    sens2_d = SETUP.sensor_1.coordinates
+                if ch2 == 'channel 3':
+                    sens2_d = SETUP.sensor_3.coordinates
+                if ch1 == 'channel 3':
+                    sens1_d = SETUP.sensor_3.coordinates
+                print(f'distance is: {np.linalg.norm(sens1_d - sens2_d)}')
+                phase, vph = get_phase_and_vph_of_compressed_signal(
+                                                                    measurements_filt_comp,
+                                                                    ch1=ch1,
+                                                                    ch2=ch2,
+                                                                    bandwidth=bandwidth,
+                                                                    distance=np.linalg.norm(sens1_d-sens2_d),
+                                                                    threshold1=threshold1,
+                                                                    threshold2=threshold2)
+                files[file[:-4]] = vph
+        freq = np.fft.fftfreq(len(files[file[:-4]]), 1/SAMPLE_RATE)
+        freq_cut = freq[(freq>bandwidth[0]) & (freq<bandwidth[1])]
+        files['freq'] = freq_cut
+        print(len(files['freq']))
+        print(len(files[file[:-4]]))
+        df = pd.DataFrame.from_dict(files)
+        print('hello')
+        dfm = df.melt('freq', var_name='files', value_name='vph')
+        sb.lineplot(data=dfm, x='freq', y='vph', hue='files')
+        plt.show()
+        
+                
+                
+                
+
+
+                
 
 
 if __name__ == '__main__':

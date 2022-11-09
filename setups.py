@@ -56,6 +56,9 @@ class Setup2(Setup):
         self.sensors = np.append(self.sensors, self.sensor_2)
         self.sensors = np.append(self.sensors, self.sensor_3)
 
+    def get_channel_names(self):
+        return ['channel 1', 'channel 2', 'channel 3']
+
     def get_propagation_speed(self, df1: pd.DataFrame, df2: pd.DataFrame):
         """Use the cross correlation between the two channels
         to find the propagation speed. Based on:
@@ -88,6 +91,9 @@ class Setup3(Setup):
         self.sensors = np.append(self.sensors, self.sensor_2)
         self.sensors = np.append(self.sensors, self.sensor_3)
         self.actuators = np.append(self.actuators, self.actuator)
+    
+    def get_channel_names(self):
+        return ['channel 1', 'channel 2', 'channel 3', 'wave_gen']
     
     def get_propagation_speed(self, df1: pd.DataFrame, df2: pd.DataFrame):
         """Use the cross correlation between the two channels
@@ -124,6 +130,9 @@ class Setup3_2(Setup):
         self.sensors = np.append(self.sensors, self.sensor_3)
         self.actuator = Actuator(np.array([self.sensor_1.x / 2, self.sensor_1.y]))
         self.actuators = np.append(self.actuators, self.actuator)
+        
+    def get_channel_names(self):
+        return ['channel 1', 'channel 2', 'channel 3', 'wave_gen']
 
 
 class Setup3_4(Setup3_2):

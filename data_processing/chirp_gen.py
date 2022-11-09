@@ -4,9 +4,9 @@ import pandas as pd
 import numpy as np
 
 Fs = 150000
-freq_start = 30000
-freq_stop = 30000
-t_max = 0.00024
+freq_start = 500
+freq_stop = 40000
+t_max = 2
 print(t_max*Fs)
 scale = 'linear'
 t = np.linspace(0,t_max, int(t_max*Fs))

@@ -122,6 +122,18 @@ def ifft(fft, sample_rate=150000):
     
 """CROPPING"""
 
+def manual_cut_signal(signal):
+    print('Find start of cut')
+    plt.plot(signal)
+    plt.show()
+    start = int(input('Start: '))
+    print('Find end of cut')
+    plt.plot(signal)
+    plt.show()
+    end = int(input('End: '))
+    print(f'Start: {start}, End: {end}')
+    return start, end
+
 
 def cut_out_signal(df, rate, threshold):
     """
@@ -135,7 +147,7 @@ def cut_out_signal(df, rate, threshold):
     """Convert to series to find rolling average and apply absolute value to the signal at all points."""
     signal = df.apply(np.abs)
     """Take the rolling average of the series within our specified window."""
-    signal_mean = signal.rolling(window = int(rate / 50), min_periods=1, center=True).mean()
+    signal_mean = signal.rolling(window = int(rate / 1000), min_periods=1, center=True).mean()
 
     for mean in signal_mean:
         if mean > threshold:
@@ -144,7 +156,7 @@ def cut_out_signal(df, rate, threshold):
             mask.append(False)
     mask_arr = np.array(mask)
     signal_focusing = df.loc[mask_arr]
-    return signal_focusing  # , mask_arr
+    return signal_focusing, mask_arr
 
 
 def crop_data(sig, time_start=None, time_end=None, threshold=0):
@@ -211,10 +223,10 @@ def remove_silence(df, threshold=0.0006):
 def compress_chirp(measurements: pd.DataFrame, custom_chirp: np.ndarray):
     """Compresses a chirp with cross correlation."""
     compressed_chirp = measurements.copy()
-    if 'chirp' in measurements.columns:
+    if 'wave_gen' in measurements.columns:
         for channel in measurements:
             compressed_chirp[channel] = signal.correlate(measurements[channel],
-                                                         measurements['chirp'],
+                                                         measurements['wave_gen'],
                                                          mode='same')
     else:
         for channel in measurements:
@@ -288,67 +300,103 @@ def inspect_touch_pulse(folder, length_of_touch, threshold=0.0007,
 
 "Get phase of compressed signal"
 
-def get_phase_of_compressed_signal(compressed_signal,ch1='channel 1', ch2='channel 3', distance=0.1, threshold=2.0, duration_cut=55, n_pi=0, detrend=True):
+def get_phase_and_vph_of_compressed_signal(
+                                        compressed_signal,ch1='channel 1',
+                                        ch2='channel 3',
+                                        distance=0.1, 
+                                        threshold=2.0,
+                                        bandwidth=None,
+                                        threshold1=None, 
+                                        threshold2=None, 
+                                        duration_cut=55, 
+                                        n_pi=0, 
+                                        detrend=False, 
+                                        set_thresh_man=False, 
+                                        plot=False):
     """Get phase of compressed signal"""
     if detrend:
         compressed_signal[ch1] = signal.detrend(compressed_signal[ch1])
         compressed_signal[ch2] = signal.detrend(compressed_signal[ch2])
-        
-    start_index_ch1 = get_first_index_above_threshold(compressed_signal[ch1], threshold)
+    if threshold1 is None:
+        threshold1 = threshold
+    if threshold2 is None:
+        threshold2 = threshold
+    if set_thresh_man:
+        print(f'set threshold manually for {ch1}')
+        plt.plot(compressed_signal[ch1], label='ch1')
+        plt.legend()
+        plt.show()
+        threshold1 = float(input('threshold: '))
+        print(f'set threshold manually for {ch2}')
+        plt.plot(compressed_signal[ch2], label='ch2')
+        plt.legend()
+        plt.show()
+        threshold2 = float(input('threshold: '))
+    start_index_ch1 = get_first_index_above_threshold(compressed_signal[ch1], threshold1)
     end_index_ch1 = start_index_ch1 + duration_cut
-    start_index_ch2 = get_first_index_above_threshold(compressed_signal[ch2], threshold)
+    start_index_ch2 = get_first_index_above_threshold(compressed_signal[ch2], threshold2)
     end_index_ch2 = start_index_ch2 + duration_cut
-    print(f'start_index_ch1: {start_index_ch1}, end_index_ch1: {end_index_ch1}')
-    print(f'start_index_ch2: {start_index_ch2}, end_index_ch2: {end_index_ch2}')
-    plt.plot(compressed_signal[ch1])
-    plt.plot(compressed_signal[ch2])
-    plt.show()
+    if set_thresh_man:
+        print(f'start_index_ch1: {start_index_ch1}, end_index_ch1: {end_index_ch1}')
+        print(f'start_index_ch2: {start_index_ch2}, end_index_ch2: {end_index_ch2}')
+    
     #zero pad signal but keep time position
-    if detrend:
-        cut_ch1 = compressed_signal[ch1][start_index_ch1:end_index_ch1]
-        cut_ch2 = compressed_signal[ch2][start_index_ch2:end_index_ch2]
-    else:
-        cut_ch1 = compressed_signal[ch1][start_index_ch1:end_index_ch1]
-        cut_ch2 = compressed_signal[ch2][start_index_ch2:end_index_ch2]
 
-    #plt.plot(cut_ch1)
-    plt.plot(cut_ch1)
-    plt.show()
+    cut_ch1 = compressed_signal[ch1][start_index_ch1:end_index_ch1]
+    cut_ch2 = compressed_signal[ch2][start_index_ch2:end_index_ch2]
+
     #add window to signal
     window = np.hamming(duration_cut)
     cut_ch1_win = cut_ch1 * window
     cut_ch2_win = cut_ch2 * window
+    if set_thresh_man:
+        plt.plot(cut_ch1_win, label='ch1')
+        plt.plot(cut_ch2_win, label='ch2')
+        plt.legend()
+        plt.show()
     s1t = np.zeros(len(compressed_signal[ch1]))
     s1t[start_index_ch1:end_index_ch1] = cut_ch1_win
     s2t = np.zeros(len(compressed_signal[ch2]))
     s2t[start_index_ch2:end_index_ch2] = cut_ch2_win
     S1f = np.fft.fft(s1t)
     S2f = np.fft.fft(s2t)
-    freq = np.fft.fftfreq(len(s1t), 1/150000)
-    freq_cut = freq[(freq>1000) & (freq<40000)]
-    #n_pi = 2
-    phase0 = np.unwrap(np.angle(S2f/S1f)) +n_pi*np.pi
-    phase1 = np.unwrap(np.angle(S2f/S1f))+n_pi*np.pi
-    phase2 = np.unwrap(np.angle(S2f/S1f))-n_pi*np.pi
-    phase3 = np.unwrap(np.angle(S2f/S1f))+3*n_pi*np.pi
-    print(phase0[(freq>0) & (freq<40000)].shape)
-    vph = (np.power(2*np.pi*freq_cut,2)*distance-2*np.pi*distance)/phase0[(freq>1000) & (freq<40000)]
-    v_ph1 = -2*np.pi*freq_cut*distance/(phase0[(freq>1000) & (freq<40000)])
-    v_ph2 = -2*np.pi*freq_cut*distance/(phase1[(freq>1000) & (freq<40000)])
-    v_ph3 = -2*np.pi*freq_cut*distance/(phase2[(freq>1000) & (freq<40000)])
-    v_ph4 = -2*np.pi*freq_cut*distance/(phase3[(freq>1000) & (freq<40000)])
-    plt.plot(freq_cut, v_ph1, label='0 pi')
-    #plt.plot(freq_cut, v_ph2, label='2 pi')
-    #plt.plot(freq_cut, v_ph3, label='-2 pi')
-    #plt.plot(freq_cut, v_ph4, label='4 pi')
-    #plt.plot(freq, phase0, label='phase')
-    #plt.plot(freq[freq>0], phase1[freq>0], label='phase1')
-    #plt.plot(freq[freq>0], phase2[freq>0], label='phase2')
-    #plt.plot(freq[freq>0], phase3[freq>0], label='phase3')
-    plt.ylabel('velocity (m/s)')
-    plt.xlabel('frequency (Hz)')
-    plt.legend()
-    plt.show()
-    return phase0
+    freq = np.fft.fftfreq(len(s1t), 1/SAMPLE_RATE)
+    
+    if bandwidth is not None:
+        freq_cut = freq[(freq>bandwidth[0]) & (freq<bandwidth[1])]
+        phase = np.unwrap(np.angle(S2f/S1f)) +n_pi*np.pi
+        v_ph = -2*np.pi*freq_cut*distance/(phase[(freq>bandwidth[0]) & (freq<bandwidth[1])])
+        #time_delay = -phase[(freq>bandwidth[0]) & (freq<bandwidth[1])]/(2*np.pi*freq_cut)
+        group_delay = -np.diff(phase[(freq>bandwidth[0]) & (freq<bandwidth[1])])/(2*np.pi*np.diff(freq_cut))
+    else:
+        phase = np.unwrap(np.angle(S2f/S1f)) +n_pi*np.pi
+        v_ph = -2*np.pi*freq*distance/(phase)
+        #time_delay = -phase/(2*np.pi*freq)
+        group_delay = -np.diff(phase)/(2*np.pi*np.diff(freq))
+    if plot:
+        plt.plot(freq, phase)
+        plt.ylabel(ylabel='phase')
+        plt.xlabel(xlabel='frequency')
+        plt.show()
+        plt.plot(freq_cut, v_ph, label='phase velocity')
+        plt.ylabel('velocity (m/s)')
+        plt.xlabel('frequency (Hz)')
+        plt.legend()
+        plt.show()
+        # plt.plot(freq_cut, time_delay)
+        # plt.ylabel('time delay (s)')
+        # plt.xlabel('frequency (Hz)')
+        # plt.title('phase time delay')
+        # plt.show()
+        # plt.plot(freq_cut[:-1], group_delay)
+        # plt.ylabel('time delay (s)')
+        # plt.xlabel('frequency (Hz)')
+        # plt.title('group time delay')
+        # plt.show()
+    return phase, v_ph
+
+
+
+
 if __name__ == '__main__':
     pass

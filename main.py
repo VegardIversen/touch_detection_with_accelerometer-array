@@ -9,8 +9,8 @@ from setups import Setup2, Setup3, Setup3_2, Setup3_4, Setup6
 from constants import SAMPLE_RATE, CHANNEL_NAMES, CHIRP_CHANNEL_NAMES
 
 from csv_to_df import csv_to_df
-from data_viz_files.visualise_data import compare_signals
-from data_processing.preprocessing import crop_data, filter_general, compress_chirp, get_phase_of_compressed_signal
+from data_viz_files.visualise_data import compare_signals, plot_vphs
+from data_processing.preprocessing import crop_data, filter_general, compress_chirp, get_phase_and_vph_of_compressed_signal,cut_out_signal, manual_cut_signal
 from data_processing.detect_echoes import find_first_peak, get_hilbert_envelope, get_travel_times
 from data_processing.find_propagation_speed import find_propagation_speed_with_delay
 from data_viz_files.drawing import plot_legend_without_duplicates
@@ -21,13 +21,13 @@ def main():
     CROP = False
     TIME_START = 0.75724  # s
     TIME_END = TIME_START + 0.010  # s
-    FILTER = False
-    BANDWIDTH = np.array([200, 40000])
-    SETUP = Setup3_4()
+    FILTER = True
+    BANDWIDTH = np.array([100, 40000])
+    SETUP = Setup3()
 
     """Open file"""
-    measurements = csv_to_df(file_folder='div_files/setup3',
-                             file_name='sign_integ_test_chirp2_150k_5s_setup3_4_v1',
+    measurements = csv_to_df(file_folder='prop_speed_files/setup3_0',
+                             file_name='prop_speed_chirp3_setup3_0_v6',
                              channel_names=CHIRP_CHANNEL_NAMES)
     """Preprocessing"""
     if CROP:
@@ -42,15 +42,32 @@ def main():
         measurements_filt = measurements
 
     """Compress chirp signals"""
-    print(np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_2.coordinates))
-    measurements_comp = compress_chirp(measurements_filt, custom_chirp=None)
-    get_phase_of_compressed_signal(measurements_comp,threshold=4, ch2='channel 2', distance=np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_2.coordinates), n_pi=4)
-    #get_phase_of_compressed_signal(measurements_comp,threshold=13, ch1='channel 2', ch2='channel 3', distance=np.linalg.norm(SETUP.sensor_2.coordinates-SETUP.sensor_3.coordinates))
-    #get_phase_of_compressed_signal(measurements_comp,threshold=13,ch2='channel 3', distance=np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_3.coordinates))
+    #print(np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_3.coordinates))
+    #measurements_comp = compress_chirp(measurements_filt, custom_chirp=None)
+    #get_phase_and_vph_of_compressed_signal(measurements_comp,threshold=1, ch2='channel 2', distance=np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_2.coordinates), set_thresh_man=True)
+    #get_phase_and_vph_of_compressed_signal(measurements_comp,threshold=1, ch1='channel 2', ch2='channel 3', distance=np.linalg.norm(SETUP.sensor_2.coordinates-SETUP.sensor_3.coordinates), set_thresh_man=True)
+    #compare_signals(measurements_comp['channel 1'], measurements_comp['channel 2'], measurements_comp['channel 3'])
+    #get_phase_and_vph_of_compressed_signal(measurements_comp,threshold=13,ch2='channel 3', distance=np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_3.coordinates), set_thresh_man=True, plot=True)
     """Generate Hilbert transforms"""
-    measurements_hilb = get_hilbert_envelope(measurements_filt)
-    measurements_comp_hilb = get_hilbert_envelope(measurements_comp)
+    plot_vphs('prop_speed_files\\setup3_0', Setup3(), bandwidth=BANDWIDTH, threshold1=400, threshold2=400, ch2='channel 3')
+    #measurements_hilb = get_hilbert_envelope(measurements_filt)
 
+    #measurements_comp_hilb = get_hilbert_envelope(measurements_comp)
+    # start, end = manual_cut_signal(measurements_comp_hilb['channel 1'])
+    # plt.plot(measurements_comp_hilb['channel 1'][start:end])
+    # plt.show()
+    # #zero pad the signal
+    # measurements_comp_hilb_zero_pad = np.zeros(len(measurements_comp_hilb['channel 1']))
+    # measurements_comp_hilb_zero_pad[start:end] = measurements_comp_hilb['channel 1'][start:end]
+    # #find the mass centrum of measurements_comp_hilb whichs is the expected value of measurements_comp_hilb
+    # expected_value = (1/len(measurements_comp_hilb_zero_pad) )*np.sum(measurements_comp_hilb_zero_pad*np.arange(0,len(measurements_comp_hilb_zero_pad)))
+    # print(expected_value)
+    # #plot expected value on measurements_comp_hilb['channel 1']
+    # plt.plot(measurements_comp_hilb['channel 1'])
+    # plt.plot(int(expected_value),measurements_comp_hilb['channel 1'][int(expected_value)],'ro')
+    # plt.show()
+    exit()
+    
     """Place setup objects"""
     SETUP.draw()
     actuator, sensors = SETUP.get_objects()
