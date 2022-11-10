@@ -109,7 +109,6 @@ def compare_signals(fig, axs,
     time signal, spectogram, fft and (optionally) difference signal
     """
     for i, channel in enumerate(data):
-        # Convert np.array to pd.Series
         if isinstance(data[i], np.ndarray):
             data[i] = pd.Series(data[i], name='Sensor ' + str(i + 1))
         """Time signal"""
@@ -129,7 +128,7 @@ def compare_signals(fig, axs,
                                   Fs=SAMPLE_RATE,
                                   NFFT=nfft,
                                   noverlap=(nfft // 2))
-        fig.colorbar(spec[3], ax=axs[i, 1])
+        # fig.colorbar(spec[3], ax=axs[i, 1])
         spec[3].set_clim(10 * np.log10(np.max(spec[0])) - 60,
                          10 * np.log10(np.max(spec[0])))
         axs[i, 1].sharex(axs[0, 0])
@@ -177,7 +176,7 @@ def specgram_with_lines(setup, measurements_comp, arrival_times, bandwidth):
         plt.title('Spectrogram')
         plt.xlabel('Time [s]')
         plt.ylabel('Frequency [Hz]')
-        plt.colorbar()
+        # plt.colorbar()
         plt.axvline(arrival_times[i][0],
                     linestyle='--',
                     color='r',
