@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from constants import *
 from setups import Setup
+from constants import SAMPLE_RATE
 
 from csv_to_df import csv_to_df
 from data_processing.preprocessing import crop_data
@@ -30,7 +30,8 @@ def plot_fft(df, window=False):
     plt.title('fft of signal')
     plt.xlabel("Frequency [hz]")
     plt.ylabel("Amplitude")
-    plt.plot(np.fft.fftshift(fftfreq), 20 * np.log10(np.abs(np.fft.fftshift(data_fft))))
+    plt.plot(np.fft.fftshift(fftfreq),
+             20 * np.log10(np.abs(np.fft.fftshift(data_fft))))
     ax = plt.subplot(1, 1, 1)
     # Only plot positive frequencies
     ax.set_xlim(0)
@@ -54,12 +55,14 @@ def plot_2fft(df1, df2, window=False):
     plt.title(f'fft of {df1.name}')
     plt.xlabel("Frequency [hz]")
     plt.ylabel("Amplitude")
-    plt.plot(np.fft.fftshift(fftfreq1), 20 * np.log10(np.abs(np.fft.fftshift(data_fft1))))
+    plt.plot(np.fft.fftshift(fftfreq1),
+             20 * np.log10(np.abs(np.fft.fftshift(data_fft1))))
     plt.subplot(212, sharex=ax1, sharey=ax1)
     plt.title(f'fft of {df2.name}')
     plt.xlabel("Frequency [hz]")
     plt.ylabel("Amplitude")
-    plt.plot(np.fft.fftshift(fftfreq2), 20 * np.log10(np.abs(np.fft.fftshift(data_fft2))))
+    plt.plot(np.fft.fftshift(fftfreq2),
+             20 * np.log10(np.abs(np.fft.fftshift(data_fft2))))
     plt.tight_layout()
     plt.show()
 
@@ -85,7 +88,7 @@ def plot_spectogram(df,
         plt.plot(time_axis, df[channel])
         plt.xlabel('Time [s]')
         plt.ylabel('Amplitude')
-        ax2 = plt.subplot(212, sharex=ax1)
+        plt.subplot(212, sharex=ax1)
         plt.specgram(df[channel], vmin=vmin)
         plt.axis(ymax=freq_max)
         plt.xlabel('Time [s]')
@@ -106,23 +109,32 @@ def compare_signals(fig, axs,
     time signal, spectogram, fft and (optionally) difference signal
     """
     for i, channel in enumerate(data):
+        # Convert np.array to pd.Series
+        if isinstance(data[i], np.ndarray):
+            data[i] = pd.Series(data[i], name='Sensor ' + str(i + 1))
         """Time signal"""
-        time_axis = np.linspace(0, len(data[i]) / SAMPLE_RATE, num=len(data[i]))
+        time_axis = np.linspace(start=0,
+                                stop=len(data[i]) / SAMPLE_RATE,
+                                num=len(data[i]))
         axs[i, 0].sharex(axs[0, 0])
         axs[i, 0].grid()
         axs[i, 0].plot(time_axis, data[i])
-        axs[i, 0].set_title(f'{channel.name}, time signal')
+        axs[i, 0].set_title(f'{data[i].name}, time signal')
         axs[i, 0].set_xlabel('Time [s]')
         axs[i, 0].set_ylabel('Amplitude [V]')
         axs[i, 0].plot()
 
         """Spectrogram"""
-        spec = axs[i, 1].specgram(data[i], Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2))
+        spec = axs[i, 1].specgram(data[i],
+                                  Fs=SAMPLE_RATE,
+                                  NFFT=nfft,
+                                  noverlap=(nfft // 2))
         fig.colorbar(spec[3], ax=axs[i, 1])
-        spec[3].set_clim(10 * np.log10(np.max(spec[0])) - 60, 10 * np.log10(np.max(spec[0])))
+        spec[3].set_clim(10 * np.log10(np.max(spec[0])) - 60,
+                         10 * np.log10(np.max(spec[0])))
         axs[i, 1].sharex(axs[0, 0])
         axs[i, 1].axis(ymax=freq_max)
-        axs[i, 1].set_title(f'{channel.name}, spectrogram')
+        axs[i, 1].set_title(f'{data[i].name}, spectrogram')
         axs[i, 1].set_xlabel('Time [s]')
         axs[i, 1].set_ylabel('Frequency [Hz]')
         axs[i, 1].plot(sharex=axs[0, 0])
@@ -135,7 +147,7 @@ def compare_signals(fig, axs,
         fftfreq = np.fft.fftshift(fftfreq)[len(data[i]) // 2:]
         axs[i, 2].sharex(axs[0, 2])
         axs[i, 2].grid()
-        axs[i, 2].set_title(f'{channel.name}, FFT')
+        axs[i, 2].set_title(f'{data[i].name}, FFT')
         axs[i, 2].set_xlabel("Frequency [Hz]")
         axs[i, 2].set_ylabel("Amplitude [dB]")
         axs[i, 2].plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
@@ -155,16 +167,31 @@ def specgram_with_lines(setup, measurements_comp, arrival_times, bandwidth):
     for i, sensor in enumerate(setup.sensors):
         plt.subplot(311 + i, sharex=plt.gca())
         plt.title(f'Correlation between chirp and {sensor}')
-        spec = plt.specgram(measurements_comp[sensor.name], Fs=SAMPLE_RATE, NFFT=16, noverlap=(16 // 2))
-        plt.clim(10 * np.log10(np.max(spec[0])) - 60, 10 * np.log10(np.max(spec[0])))
+        spec = plt.specgram(measurements_comp[sensor.name],
+                            Fs=SAMPLE_RATE,
+                            NFFT=16,
+                            noverlap=(16 // 2))
+        plt.clim(10 * np.log10(np.max(spec[0])) - 60,
+                 10 * np.log10(np.max(spec[0])))
         plt.axis(ymax=bandwidth[1] + 20000)
         plt.title('Spectrogram')
         plt.xlabel('Time [s]')
         plt.ylabel('Frequency [Hz]')
         plt.colorbar()
-        plt.axvline(arrival_times[i][0], linestyle='--', color='r', label='Direct wave')
-        [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])]
-        [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[i][5:])]
+        plt.axvline(arrival_times[i][0],
+                    linestyle='--',
+                    color='r',
+                    label='Direct wave')
+        [plt.axvline(line,
+                     linestyle='--',
+                     color='g',
+                     label='1st reflections')
+         for line in (arrival_times[i][1:5])]
+        [plt.axvline(line,
+                     linestyle='--',
+                     color='purple',
+                     label='2nd reflections')
+         for line in (arrival_times[i][5:])]
         plt.xlabel('Time [ms]')
         plt.ylabel('Frequency [Hz]')
         plot_legend_without_duplicates()
@@ -177,7 +204,6 @@ def envelopes_with_lines(setup: Setup,
                          arrival_times: np.ndarray,
                          bandwidth: tuple):
     """Plot the correlation between the chirp signal and the measured signal"""
-    # time_axis_corr = np.linspace(-1000 * len(measurements_comp) / SAMPLE_RATE,
     time_axis_corr = np.linspace(-1000 * len(measurements_comp) / SAMPLE_RATE,
                                  1000 * len(measurements_comp) / SAMPLE_RATE,
                                  (len(measurements_comp)))
@@ -186,11 +212,26 @@ def envelopes_with_lines(setup: Setup,
     for i, sensor in enumerate(setup.sensors):
         plt.subplot(311 + i, sharex=plt.gca())
         plt.title(f'Correlation between {setup.actuators[0]} and {sensor}')
-        plt.plot(time_axis_corr, measurements_comp[sensor.name], label='Correlation')
-        plt.plot(time_axis_corr, measurements_comp_hilb[sensor.name], label='Hilbert envelope')
-        plt.axvline(arrival_times[i][0], linestyle='--', color='r', label='Direct wave')
-        [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])]
-        [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[i][5:])]
+        plt.plot(time_axis_corr,
+                 measurements_comp[sensor.name],
+                 label='Correlation')
+        plt.plot(time_axis_corr,
+                 measurements_comp_hilb[sensor.name],
+                 label='Hilbert envelope')
+        plt.axvline(arrival_times[i][0],
+                    linestyle='--',
+                    color='r',
+                    label='Direct wave')
+        [plt.axvline(line,
+                     linestyle='--',
+                     color='g',
+                     label='1st reflections')
+         for line in (arrival_times[i][1:5])]
+        [plt.axvline(line,
+                     linestyle='--',
+                     color='purple',
+                     label='2nd reflections')
+         for line in (arrival_times[i][5:])]
         plt.xlabel('Time [ms]')
         plt.ylabel('Amplitude [V]')
         plot_legend_without_duplicates()
@@ -230,8 +271,6 @@ def plot_data_sub_ffts(df, channel='Sensor 1'):
     noise_df_fft = scipy.fft.fft(noise_df.values, axis=0)
     df_fft = scipy.fft.fft(df.values, axis=0)
     df_fft_sub_noise_fft = df_fft - noise_df_fft
-    df_sub_noise = pd.DataFrame(scipy.fft.ifft(df_fft_sub_noise_fft),
-                                columns=['Sensor 1', 'Sensor 2', 'Sensor 3'])
     ax1 = plt.subplot(311)
     fftfreq_data = scipy.fft.fftfreq(len(df_fft),  1 / SAMPLE_RATE)
     data_fft = np.fft.fftshift(df_fft)
@@ -253,7 +292,8 @@ def plot_data_sub_ffts(df, channel='Sensor 1'):
     plt.plot(fftfreq_data_noise, 20 * np.log10(np.abs(data_noise_fft)))
 
     plt.subplot(313, sharey=ax1, sharex=ax1)
-    fftfreq_data_sub_noise = scipy.fft.fftfreq(len(df_fft_sub_noise_fft),  1 / SAMPLE_RATE)
+    fftfreq_data_sub_noise = scipy.fft.fftfreq(len(df_fft_sub_noise_fft),
+                                               1 / SAMPLE_RATE)
     data_sub_noise_fft = np.fft.fftshift(df_fft_sub_noise_fft)
     fftfreq_data_sub_noise = np.fft.fftshift(fftfreq_data_sub_noise)
     plt.grid()
