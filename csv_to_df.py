@@ -17,7 +17,6 @@ def csv_to_df(file_folder: str, file_name: str, channel_names: np.ndarray):
         file_path = f'{ROOT_FOLDER}\\{file_folder}\\{file_name}.csv'
 
     df = pd.read_csv(filepath_or_buffer=file_path, names=channel_names)
-    print('\n' + f'Creating DataFrame from file folder "{file_folder}" and file name "{file_name}' + '\n')
 
     return df
 
