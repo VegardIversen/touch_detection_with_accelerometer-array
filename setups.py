@@ -16,9 +16,11 @@ from data_viz_files.drawing import plot_legend_without_duplicates
 
 class Setup:
     table = Table()
+    actuators: np.ndarray
+    sensors: np.ndarray
 
     def __init__(self):
-        raise NotImplementedError("Setup version needs to be specified, e.g. Setup2")
+        raise NameError("Setup version needs to be specified")
 
     def draw(self):
         plt.axes()
@@ -63,11 +65,13 @@ class Setup2(Setup):
         if type(df2) == np.ndarray:
             df2 = pd.DataFrame(df2)
 
-        corr = signal.correlate(df1, df2, mode='same') \
-               / np.sqrt(signal.correlate(df2, df2, mode='same')[int(n / 2)]
-               * signal.correlate(df1, df1, mode='same')[int(n / 2)])
+        corr = signal.correlate(df1, df2, mode='same') / \
+            np.sqrt(signal.correlate(df2, df2, mode='same')[int(n / 2)] *
+                    signal.correlate(df1, df1, mode='same')[int(n / 2)])
 
-        delay_arr = np.linspace(-0.5 * n / SAMPLE_RATE, 0.5 * n / SAMPLE_RATE, n)
+        delay_arr = np.linspace(start=-0.5 * n / SAMPLE_RATE,
+                                stop=0.5 * n / SAMPLE_RATE,
+                                num=n)
         delay = delay_arr[np.argmax(corr)]
         distance = np.abs(self.actuators[0].y - self.sensors[1].y)
         propagation_speed = np.round(np.abs(distance / delay), decimals=2)
@@ -82,9 +86,11 @@ class Setup3_2(Setup):
     def __init__(self):
         self.sensors[0] = Sensor(coordinates=np.array([0.135, 0.305]),
                                  name='Sensor 1')
-        self.sensors[1] = Sensor(coordinates=(self.sensors[0].coordinates + np.array([0.267, 0])),
+        self.sensors[1] = Sensor(coordinates=(self.sensors[0].coordinates +
+                                              np.array([0.267, 0])),
                                  name='Sensor 2')
-        self.sensors[2] = Sensor(self.sensors[1].coordinates + np.array([0.267, 0]),
+        self.sensors[2] = Sensor(self.sensors[1].coordinates +
+                                 np.array([0.267, 0]),
                                  name='Sensor 3')
         self.actuators[0] = Actuator(np.array([self.sensors[0].x / 2,
                                                self.sensors[0].y]))
@@ -95,17 +101,12 @@ class Setup3_2(Setup):
         https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
         """
         n = len(measurements[self.sensors[0].name])
-        corr = (signal.correlate(measurements[self.sensors[0].name],
-                                 measurements[self.sensors[1].name],
-                                 mode='same')
-             / np.sqrt(signal.correlate(measurements[self.sensors[1].name],
-                                        measurements[self.sensors[1].name],
-                                        mode='same')[int(n / 2)]
-             * signal.correlate(measurements[self.sensors[0].name],
-                                measurements[self.sensors[0].name],
-                                mode='same')[int(n / 2)]))
-
-        delay_arr = np.linspace(-0.5 * n / SAMPLE_RATE, 0.5 * n / SAMPLE_RATE, n)
+        corr = signal.correlate(measurements[self.sensors[0].name],
+                                measurements[self.sensors[1].name],
+                                mode='same')
+        delay_arr = np.linspace(start=-0.5 * n / SAMPLE_RATE,
+                                stop=0.5 * n / SAMPLE_RATE,
+                                num=n)
         delay = delay_arr[np.argmax(corr)]
         distance = np.abs(self.sensors[0].x - self.sensors[1].x)
         propagation_speed = np.round(np.abs(distance / delay), decimals=2)
@@ -133,11 +134,12 @@ class Setup4_5(Setup2):
         object_1 = self.actuators[0]
         object_2 = self.sensors[0]
         n = len(measurements[object_1.name])
-        corr = signal.correlate(measurements[object_1.name], measurements[object_2.name], mode='same') \
-             / np.sqrt(signal.correlate(measurements[object_2.name], measurements[object_2.name], mode='same')[int(n / 2)]
-             * signal.correlate(measurements[object_1.name], measurements[object_1.name], mode='same')[int(n / 2)])
-
-        delay_arr = np.linspace(-0.5 * n / SAMPLE_RATE, 0.5 * n / SAMPLE_RATE, n)
+        corr = signal.correlate(measurements[object_1.name],
+                                measurements[object_2.name],
+                                mode='same')
+        delay_arr = np.linspace(start=-0.5 * n / SAMPLE_RATE,
+                                stop=0.5 * n / SAMPLE_RATE,
+                                num=n)
         delay = delay_arr[np.argmax(corr)]
         distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
         propagation_speed = np.round(np.abs(distance / delay), decimals=2)
@@ -150,14 +152,14 @@ class Setup6(Setup):
     """
     actuators = np.empty(shape=1, dtype=Actuator)
     sensors = np.empty(shape=1, dtype=Sensor)
+    actuators[0] = Actuator(coordinates=np.array([Table.LENGTH / 2,
+                                                  Table.WIDTH / 2]),
+                            name='Actuator')
+    sensors[0] = Sensor(coordinates=np.array([0.489, 0.242]),
+                        name='Sensor 1')
 
     def __init__(self):
-        self.actuators[0] = Actuator(coordinates=np.array([self.table.LENGTH / 2,
-                                                           self.table.WIDTH / 2]),
-                                     name='Actuator')
-        self.sensors[0] = Sensor(coordinates=np.array([0.489, 0.242]),
-                                 name='Sensor 1')
-
+        pass
 
     def get_propagation_speed(self, measurements: pd.DataFrame):
         """Use the cross correlation between the two channels
@@ -168,19 +170,15 @@ class Setup6(Setup):
         object_1 = self.actuators[0]
         object_2 = self.sensors[0]
         n = len(measurements[object_1.name])
-        """Convert to df if np.ndarray"""
-        if type(measurements[object_1.name]) == np.ndarray:
-            measurements[object_1.name] = pd.DataFrame(measurements[object_1.name])
-        if type(measurements[object_2.name]) == np.ndarray:
-            measurements[object_2.name] = pd.DataFrame(measurements[object_2.name])
-
-        corr = signal.correlate(measurements[object_1.name], measurements[object_2.name], mode='same') \
-               / np.sqrt(signal.correlate(measurements[object_2.name], measurements[object_2.name], mode='same')[int(n / 2)]
-               * signal.correlate(measurements[object_1.name], measurements[object_1.name], mode='same')[int(n / 2)])
-
-        delay_arr = np.linspace(-0.5 * n / SAMPLE_RATE, 0.5 * n / SAMPLE_RATE, n)
+        corr = signal.correlate(measurements[object_1.name],
+                                measurements[object_2.name],
+                                mode='same')
+        delay_arr = np.linspace(start=-0.5 * n / SAMPLE_RATE,
+                                stop=0.5 * n / SAMPLE_RATE,
+                                num=n)
         delay = delay_arr[np.argmax(corr)]
-        distance = np.linalg.norm(self.actuators[0].coordinates - self.sensors[0].coordinates)
+        distance = np.linalg.norm(object_1.coordinates -
+                                  object_2.coordinates)
         propagation_speed = np.abs(distance / delay)
         return propagation_speed
 
@@ -191,16 +189,17 @@ class Setup7(Setup):
     """
     actuators = np.empty(shape=1, dtype=Actuator)
     sensors = np.empty(shape=3, dtype=Sensor)
+    actuators[0] = Actuator(coordinates=(np.array([1 / 3 * Table.LENGTH,
+                                                   5 / 6 * Table.WIDTH])))
+    sensors[0] = Sensor(coordinates=(Table.C2 + np.array([-0.035, 0])),
+                        name='Sensor 1')
+    sensors[1] = Sensor(coordinates=Table.C2,
+                        name='Sensor 2')
+    sensors[2] = Sensor(coordinates=(Table.C2 + np.array([0.03, 0])),
+                        name='Sensor 3')
 
     def __init__(self):
-        self.actuators[0] = Actuator(coordinates=(np.array([1 / 3 * Table.LENGTH, 5 / 6 * Table.WIDTH])))
-        self.sensors[0] = Sensor(coordinates=(Table.C2 + np.array([-0.035, 0])),
-                                 name='Sensor 1')
-        self.sensors[1] = Sensor(coordinates=Table.C2,
-                                 name='Sensor 2')
-        self.sensors[2] = Sensor(coordinates=(Table.C2 + np.array([0.03, 0])),
-                                 name='Sensor 3')
-
+        pass
 
     def get_propagation_speed(self, measurements: pd.DataFrame):
         """Use the cross correlation between the two channels
@@ -208,13 +207,15 @@ class Setup7(Setup):
         https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
         """
         object_1 = self.sensors[0]
-        object_2 = self.sensors[1]
+        object_2 = self.sensors[2]
         n = len(measurements[object_1.name])
-        corr = signal.correlate(measurements[object_1.name], measurements[object_2.name], mode='same') \
-               / np.sqrt(signal.correlate(measurements[object_2.name], measurements[object_2.name], mode='same')[int(n / 2)]
-               * signal.correlate(measurements[object_1.name], measurements[object_1.name], mode='same')[int(n / 2)])
-        delay_arr = np.linspace(-0.5 * n / SAMPLE_RATE, 0.5 * n / SAMPLE_RATE, n)
+        corr = signal.correlate(measurements[object_1.name],
+                                measurements[object_2.name],
+                                mode='same')
+        delay_arr = np.linspace(start=-0.5 * n / SAMPLE_RATE,
+                                stop=0.5 * n / SAMPLE_RATE,
+                                num=n)
         delay = delay_arr[np.argmax(corr)]
-        distance = np.linalg.norm(self.sensors[0].coordinates - self.sensors[2].coordinates)
+        distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
         propagation_speed = np.abs(distance / delay)
         return propagation_speed
