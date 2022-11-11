@@ -10,8 +10,8 @@ from constants import SAMPLE_RATE
 
 def filter_general(sig: pd.DataFrame or np.ndarray,
                    filtertype: str,
-                   cutoff_highpass: int,
-                   cutoff_lowpass: int,
+                   cutoff_highpass: int = 50,
+                   cutoff_lowpass: int = 40000,
                    order: int = 4):
     """filtertype: 'highpass', 'lowpass' or 'bandpass"""
     if filtertype == 'highpass':
