@@ -9,6 +9,7 @@ from setups import Setup7
 from constants import SAMPLE_RATE, CHIRP_CHANNEL_NAMES
 
 from csv_to_df import csv_to_df
+from data_processing.detect_echoes import get_hilbert_envelope
 from data_viz_files.visualise_data import compare_signals
 from data_processing.preprocessing import (crop_data,
                                            filter_general,
@@ -56,7 +57,7 @@ def main():
     """Compress chirp signals"""
     measurements_comp = compress_chirp(measurements_filt, custom_chirp=None)
 
-    """Shift to make up for the drift in the signal generator"""
+    """Shift to align chirps better with their time intervals"""
     SHIFT_BY = int(TIME_START * SAMPLE_RATE)
     for chan in measurements_filt:
         measurements_comp[chan] = np.roll(measurements_comp[chan],
@@ -67,7 +68,6 @@ def main():
     for chan in measurements:
         measurements_split[chan] = np.split(measurements_comp[chan],
                                             indices_or_sections=40)
-
 
     """Generate Hilbert transforms"""
     # measurements_hilb = get_hilbert_envelope(measurements_filt)
@@ -81,7 +81,7 @@ def main():
 
     """Calculate wave propagation speed"""
     prop_speed = SETUP.get_propagation_speed(measurements_comp)
-    print(f'Propagation speed: {prop_speed}')
+    print(f'Propagation speed: {np.round(prop_speed, 2)} m/s')
 
     """Calculate wave arrival times"""
     arrival_times = np.array([])
@@ -122,8 +122,10 @@ def main():
             SHIFT_BY = (np.rint(delay)).astype(int)
             measurements_split.at[chirp, chan] = np.roll(measurements_split.at[chirp, chan],
                                                          SHIFT_BY)
+            # measurements_split[chan][chirp][-SHIFT_BY:] = 0
             measurements_split.at[chirp, chan] = normalize(measurements_split.at[chirp, chan], 0, 1)
             measurements_split.at[chirp, chan] = signal.detrend(measurements_split.at[chirp, chan])
+            # measurements_split.at[chirp, chan] = np.abs(signal.hilbert(measurements_split.at[chirp, chan]))
 
     """Find the average waveforms"""
     avg_waveforms_1 = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES,
@@ -134,7 +136,17 @@ def main():
                                    data=np.empty((1, 4), np.ndarray))
     for chan in avg_waveforms_2:
         avg_waveforms_2.at[0, chan] = np.empty(18750)
+
     for chan in measurements_comp:
+        chirps = np.empty((len(measurements_split[chan]) // 3, 18750))
+        for chirp in range(len(measurements_split[chan]) // 3):
+            chirps[chirp] = measurements_split.at[chirp, chan]
+        avg_waveforms_1.at[0, chan] = np.mean(chirps, axis=0)
+        chirps = np.empty((len(measurements_split[chan]) // 3, 18750))
+        for i, chirp in enumerate(range(2 * len(measurements_split[chan]) // 3,
+                                        len(measurements_split[chan]) - 1)):
+            chirps[i] = measurements_split.at[chirp, chan]
+        avg_waveforms_2.at[0, chan] = np.mean(chirps, axis=0)
 
     """Stop runtime timer before plotting"""
     stop = timeit.default_timer()
@@ -144,9 +156,15 @@ def main():
     fig, axs = plt.subplots(nrows=3, ncols=3)
     for chirp in range(len(measurements_split['Sensor 1']) - 1):
         compare_signals(fig, axs,
-                        [avg_waveforms_2.at[0, 'Sensor 1'] - avg_waveforms_1.at[0, 'Sensor 1'],
-                         avg_waveforms_2.at[0, 'Sensor 2'] - avg_waveforms_1.at[0, 'Sensor 2'],
-                         avg_waveforms_2.at[0, 'Sensor 3'] - avg_waveforms_1.at[0, 'Sensor 3']],
+                        [avg_waveforms_1['Sensor 1'][0],
+                         avg_waveforms_1['Sensor 2'][0],
+                         avg_waveforms_1['Sensor 3'][0]],
+                        freq_max=BANDWIDTH[1] + 20000,
+                        nfft=16)
+        compare_signals(fig, axs,
+                        [avg_waveforms_2['Sensor 1'][0],
+                         avg_waveforms_2['Sensor 2'][0],
+                         avg_waveforms_2['Sensor 3'][0]],
                         freq_max=BANDWIDTH[1] + 20000,
                         nfft=16)
     # time_axis = np.linspace(start=0,
@@ -157,10 +175,14 @@ def main():
     #                    avg_waveforms_1.at[0, avg_waveforms_1.columns[i]],
     #                    color='black',
     #                    linestyle='--')
+    #     axs[i, 0].plot(time_axis,
+    #                    avg_waveforms_2.at[0, avg_waveforms_1.columns[i]],
+    #                    color='gray',
+    #                    linestyle='--')
     plt.show()
 
     """Plot individual waveforms, their average and the diff"""
-    for chirp in range(len(avg_waveforms_2['Sensor 1'])):
+    for chirp in range(0):
         fig, axs = plt.subplots(nrows=3, ncols=3)
         compare_signals(fig, axs,
                         [avg_waveforms_2['Sensor 1'][chirp] - avg_waveforms_1['Sensor 1'][0],
