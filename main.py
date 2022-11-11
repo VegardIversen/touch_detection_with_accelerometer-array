@@ -1,3 +1,4 @@
+import timeit
 import numpy as np
 import pandas as pd
 import scipy.signal as signal
@@ -75,6 +76,9 @@ def main():
     """Draw setup"""
     SETUP.draw()
 
+    """Start a runtime timer after setup is drawn"""
+    start = timeit.default_timer()
+
     """Calculate wave propagation speed"""
     prop_speed = SETUP.get_propagation_speed(measurements_comp)
     print(f'Propagation speed: {prop_speed}')
@@ -131,17 +135,10 @@ def main():
     for chan in avg_waveforms_2:
         avg_waveforms_2.at[0, chan] = np.empty(18750)
     for chan in measurements_comp:
-        for n in range(len(measurements_split[chan][chirp])):
-            avg_buf = np.array([])
-            for chirp in range(len(measurements_split[chan]) // 3):
-                # Trippel for-loop, baby
-                avg_buf = np.append(avg_buf, [measurements_split.at[chirp, chan][n]])
-            avg_waveforms_1.at[0, chan][n] = np.mean(avg_buf)
-            avg_buf = np.array([])
-            for chirp in range(2 * len(measurements_split[chan]) // 3,
-                               len(measurements_split[chan]) - 1):
-                avg_buf = np.append(avg_buf, [measurements_split.at[chirp, chan][n]])
-            avg_waveforms_2.at[0, chan][n] = np.mean(avg_buf)
+
+    """Stop runtime timer before plotting"""
+    stop = timeit.default_timer()
+    print(f'\nRuntime: {np.round(stop - start, 2)} s')
 
     """Plot the average waveforms"""
     fig, axs = plt.subplots(nrows=3, ncols=3)
