@@ -23,8 +23,8 @@ def avg_waveform(measurements: pd.DataFrame,
 
 
 def normalize(data: np.ndarray or pd.DataFrame,
-              min: float,
-              max: float) -> np.ndarray or pd.DataFrame:
+              min: float = 0,
+              max: float = 1) -> np.ndarray or pd.DataFrame:
     """Normalize array to be between t_min and t_max"""
     if isinstance(data, pd.DataFrame):
         for chan in data:
