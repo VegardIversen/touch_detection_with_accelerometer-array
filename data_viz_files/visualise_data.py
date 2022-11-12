@@ -15,7 +15,8 @@ from data_viz_files.drawing import plot_legend_without_duplicates
 def compare_signals(fig, axs,
                     data: list,
                     freq_max: int = 40000,
-                    nfft: int = 256):
+                    nfft: int = 256,
+                    dynamic_range_db: int = 60):
     """Visually compare two signals, by plotting:
     time signal, spectogram, fft and (optionally) difference signal
     """
@@ -41,7 +42,7 @@ def compare_signals(fig, axs,
                                   NFFT=nfft,
                                   noverlap=(nfft // 2))
         # fig.colorbar(spec[3], ax=axs[i, 1])
-        spec[3].set_clim(10 * np.log10(np.max(spec[0])) - 60,
+        spec[3].set_clim(10 * np.log10(np.max(spec[0])) - dynamic_range_db,
                          10 * np.log10(np.max(spec[0])))
         axs[i, 1].sharex(axs[0, 0])
         axs[i, 1].sharey(axs[0, 1])
