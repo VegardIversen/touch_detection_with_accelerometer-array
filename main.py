@@ -9,6 +9,7 @@ from setups import Setup7
 from constants import SAMPLE_RATE, CHIRP_CHANNEL_NAMES
 
 from csv_to_df import csv_to_df
+from data_processing.processing import avg_waveform, normalize
 from data_processing.detect_echoes import get_hilbert_envelope
 from data_viz_files.visualise_data import compare_signals
 from data_processing.preprocessing import (crop_data,
@@ -27,16 +28,6 @@ def main():
     TIME_END = 5  # s
     FILTER = False
     BANDWIDTH = (15000, 40000)
-
-    def normalize(arr, t_min, t_max):
-        """Normalize array to be between t_min and t_max"""
-        arr = arr - np.min(arr)
-        if np.max(arr) == 0:
-            raise ValueError('Array is all zeros')
-        arr = arr / np.max(arr)
-        arr = arr * (t_max - t_min)
-        arr = arr + t_min
-        return arr
 
     """Open file"""
     measurements = csv_to_df(file_folder=FILE_FOLDER,
@@ -122,31 +113,20 @@ def main():
             SHIFT_BY = (np.rint(delay)).astype(int)
             measurements_split.at[chirp, chan] = np.roll(measurements_split.at[chirp, chan],
                                                          SHIFT_BY)
-            # measurements_split[chan][chirp][-SHIFT_BY:] = 0
+            # measurements_split[chan][chirp][-SHIFT_BY:] = 0   # Doesn't work for some reason
             measurements_split.at[chirp, chan] = normalize(measurements_split.at[chirp, chan], 0, 1)
-            measurements_split.at[chirp, chan] = signal.detrend(measurements_split.at[chirp, chan])
-            # measurements_split.at[chirp, chan] = np.abs(signal.hilbert(measurements_split.at[chirp, chan]))
 
     """Find the average waveforms"""
-    avg_waveforms_1 = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES,
-                                   data=np.empty((1, 4), np.ndarray))
-    for chan in avg_waveforms_1:
-        avg_waveforms_1.at[0, chan] = np.empty(18750)
-    avg_waveforms_2 = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES,
-                                   data=np.empty((1, 4), np.ndarray))
-    for chan in avg_waveforms_2:
-        avg_waveforms_2.at[0, chan] = np.empty(18750)
-
-    for chan in measurements_comp:
-        chirps = np.empty((len(measurements_split[chan]) // 3, 18750))
-        for chirp in range(len(measurements_split[chan]) // 3):
-            chirps[chirp] = measurements_split.at[chirp, chan]
-        avg_waveforms_1.at[0, chan] = np.mean(chirps, axis=0)
-        chirps = np.empty((len(measurements_split[chan]) // 3, 18750))
-        for i, chirp in enumerate(range(2 * len(measurements_split[chan]) // 3,
-                                        len(measurements_split[chan]) - 1)):
-            chirps[i] = measurements_split.at[chirp, chan]
-        avg_waveforms_2.at[0, chan] = np.mean(chirps, axis=0)
+    chirp_range = [0,
+                   len(measurements_split['Sensor 1']) // 2]
+    avg_waveforms_1 = avg_waveform(measurements_split,
+                                   chirp_range)
+    chirp_range = [len(measurements_split['Sensor 1']) // 2,
+                   len(measurements_split['Sensor 1']) - 1]
+    avg_waveforms_2 = avg_waveform(measurements_split,
+                                   chirp_range)
+    avg_waveforms_1 = normalize(avg_waveforms_1, 0, 1)
+    avg_waveforms_2 = normalize(avg_waveforms_2, 0, 1)
 
     """Stop runtime timer before plotting"""
     stop = timeit.default_timer()
@@ -182,12 +162,24 @@ def main():
     plt.show()
 
     """Plot individual waveforms, their average and the diff"""
-    for chirp in range(0):
+    for chirp in range(1):
         fig, axs = plt.subplots(nrows=3, ncols=3)
         compare_signals(fig, axs,
-                        [avg_waveforms_2['Sensor 1'][chirp] - avg_waveforms_1['Sensor 1'][0],
-                         avg_waveforms_2['Sensor 2'][chirp] - avg_waveforms_1['Sensor 2'][0],
-                         avg_waveforms_2['Sensor 3'][chirp] - avg_waveforms_1['Sensor 3'][0]],
+                        [avg_waveforms_1['Sensor 1'][chirp],
+                         avg_waveforms_1['Sensor 2'][chirp],
+                         avg_waveforms_1['Sensor 3'][chirp]],
+                         freq_max=BANDWIDTH[1] + 20000,
+                         nfft=16)
+        compare_signals(fig, axs,
+                        [avg_waveforms_2['Sensor 1'][chirp],
+                         avg_waveforms_2['Sensor 2'][chirp],
+                         avg_waveforms_2['Sensor 3'][chirp]],
+                         freq_max=BANDWIDTH[1] + 20000,
+                         nfft=16)
+        compare_signals(fig, axs,
+                        [np.abs(signal.hilbert(avg_waveforms_2['Sensor 1'][chirp] - avg_waveforms_1['Sensor 1'][0])),
+                         np.abs(signal.hilbert(avg_waveforms_2['Sensor 2'][chirp] - avg_waveforms_1['Sensor 2'][0])),
+                         np.abs(signal.hilbert(avg_waveforms_2['Sensor 3'][chirp] - avg_waveforms_1['Sensor 3'][0]))],
                         freq_max=BANDWIDTH[1] + 20000,
                         nfft=16)
         axs[0, 0].axvline(np.argmax(measurements_split['Sensor 1'][chirp]) / SAMPLE_RATE + (0.411909 / prop_speed),
