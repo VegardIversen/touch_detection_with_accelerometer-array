@@ -45,7 +45,8 @@ def filter_general(sig: pd.DataFrame or np.ndarray,
     return sig_filtered
 
 
-def compress_chirp(measurements: pd.DataFrame, custom_chirp: np.ndarray):
+def compress_chirp(measurements: pd.DataFrame,
+                   custom_chirp: np.ndarray = None):
     """Compresses a chirp with cross correlation."""
     compressed_chirp = measurements.copy()
     if 'Actuator' in measurements.columns:
