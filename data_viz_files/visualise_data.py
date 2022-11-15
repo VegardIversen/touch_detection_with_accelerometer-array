@@ -6,7 +6,7 @@ import scipy
 from scipy import signal
 import os
 import seaborn as sb
-sb.set_theme(style="darkgrid")
+#sb.set_theme(style="darkgrid")
 
 from constants import *
 from csv_to_df import csv_to_df
@@ -33,7 +33,9 @@ def plot_fft(df, sample_rate=150000, window=False):
     plt.title('fft of signal')
     plt.xlabel("Frequency [hz]")
     plt.ylabel("Amplitude")
+    print(df.head)
     plt.plot(np.fft.fftshift(fftfreq), 20 * np.log10(np.abs(np.fft.fftshift(data_fft))))
+    plt.legend(df.columns)
     ax = plt.subplot(1, 1, 1)
     # Only plot positive frequencies
     ax.set_xlim(0)
@@ -367,7 +369,9 @@ def plot_vphs(
             threshold2,
             ch1='channel 1',
             ch2='channel 2',
-            bandwidth=None
+            bandwidth=None,
+            multichannel=False,
+            show=False
             ):
 
     SETUP = setup
@@ -383,6 +387,9 @@ def plot_vphs(
                                         file_name=file[:-4],
                                         channel_names=SETUP.get_channel_names()
                                         )
+                
+                plt.show()
+                freq = np.fft.fftfreq(len(measurements), 1/SAMPLE_RATE)
                 if bandwidth is not None:
                     measurements_filt = filter_general(
                                                         measurements,
@@ -390,41 +397,85 @@ def plot_vphs(
                                                         cutoff_highpass=bandwidth[0],
                                                         # cutoff_lowpass=BANDWIDTH[1],
                                                         order=4)
+                    files['freq'] = freq[(freq>bandwidth[0]) & (freq<bandwidth[1])]
                 else:
                     measurements_filt = measurements
+                    files['freq'] = freq
                 measurements_filt_comp = compress_chirp(measurements_filt, custom_chirp=None)
-                if ch1 == 'channel 1':
-                    sens1_d = SETUP.sensor_1.coordinates
-                if ch2 == 'channel 2':
-                    sens2_d = SETUP.sensor_2.coordinates
-                if ch1 == 'channel 2':
-                    sens1_d = SETUP.sensor_2.coordinates
-                if ch2 == 'channel 1':
-                    sens2_d = SETUP.sensor_1.coordinates
-                if ch2 == 'channel 3':
-                    sens2_d = SETUP.sensor_3.coordinates
-                if ch1 == 'channel 3':
-                    sens1_d = SETUP.sensor_3.coordinates
-                print(f'distance is: {np.linalg.norm(sens1_d - sens2_d)}')
-                phase, vph = get_phase_and_vph_of_compressed_signal(
-                                                                    measurements_filt_comp,
-                                                                    ch1=ch1,
-                                                                    ch2=ch2,
-                                                                    bandwidth=bandwidth,
-                                                                    distance=np.linalg.norm(sens1_d-sens2_d),
-                                                                    threshold1=threshold1,
-                                                                    threshold2=threshold2)
-                files[file[:-4]] = vph
-        freq = np.fft.fftfreq(len(files[file[:-4]]), 1/SAMPLE_RATE)
-        freq_cut = freq[(freq>bandwidth[0]) & (freq<bandwidth[1])]
-        files['freq'] = freq_cut
-        print(len(files['freq']))
-        print(len(files[file[:-4]]))
+                if multichannel:
+                    print('multichannel')
+                    phase1, vph1, _ = get_phase_and_vph_of_compressed_signal(
+                                                                        measurements_filt_comp,
+                                                                        ch1='channel 1',
+                                                                        ch2='channel 2',
+                                                                        bandwidth=bandwidth,
+                                                                        distance=np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_2.coordinates),
+                                                                        threshold1=threshold1,
+                                                                        threshold2=threshold2,
+                                                            )
+                    phase2, vph2, _ = get_phase_and_vph_of_compressed_signal(
+                                                                        measurements_filt_comp,
+                                                                        ch1='channel 2',
+                                                                        ch2='channel 3',
+                                                                        bandwidth=bandwidth,
+                                                                        distance=np.linalg.norm(SETUP.sensor_2.coordinates-SETUP.sensor_3.coordinates),
+                                                                        threshold1=threshold1,
+                                                                        threshold2=threshold2)
+                    phase3, vph3, _ = get_phase_and_vph_of_compressed_signal(
+                                                                        measurements_filt_comp,
+                                                                        ch1='channel 1',
+                                                                        ch2='channel 3',
+                                                                        bandwidth=bandwidth,
+                                                                        distance=np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_3.coordinates),
+                                                                        threshold1=threshold1,
+                                                                        threshold2=threshold2)
+                    if vph1.min() < 0:
+                        print(f'vp1 < 0 for file {file} and channel {ch1}')
+                        vph1 = vph1*-1
+                    if vph2.min() < 0:
+                        print(f'vp2 < 0 for file {file} and channel {ch2}')
+                        vph2 = vph2*-1
+                    if vph3.min() < 0:
+                        print(f'vp3 < 0 for file {file} and channel {ch2}')
+                        vph3 = vph3*-1
+                    files[file[:-4] + '_ch1_ch2'] = vph1
+                    files[file[:-4] + '_ch2_ch3'] = vph2
+                    files[file[:-4] + '_ch1_ch3'] = vph3
+
+
+                else:
+                    if ch1 == 'channel 1':
+                        sens1_d = SETUP.sensor_1.coordinates
+                    if ch2 == 'channel 2':
+                        sens2_d = SETUP.sensor_2.coordinates
+                    if ch1 == 'channel 2':
+                        sens1_d = SETUP.sensor_2.coordinates
+                    if ch2 == 'channel 1':
+                        sens2_d = SETUP.sensor_1.coordinates
+                    if ch2 == 'channel 3':
+                        sens2_d = SETUP.sensor_3.coordinates
+                    if ch1 == 'channel 3':
+                        sens1_d = SETUP.sensor_3.coordinates
+                    print(f'distance is: {np.linalg.norm(sens1_d - sens2_d)}')
+                    phase, vph, _ = get_phase_and_vph_of_compressed_signal(
+                                                                        measurements_filt_comp,
+                                                                        ch1=ch1,
+                                                                        ch2=ch2,
+                                                                        bandwidth=bandwidth,
+                                                                        distance=np.linalg.norm(sens1_d-sens2_d),
+                                                                        threshold1=threshold1,
+                                                                        threshold2=threshold2)
+                    name = file[:-4] + f'_{ch1}_{ch2}'
+                    if vph.min() < 0:
+                        print(f'vp < 0 for file {file} and channel {ch1}')
+                        vph = vph*-1
+                    files[name] = vph
         df = pd.DataFrame.from_dict(files)
-        print('hello')
         dfm = df.melt('freq', var_name='files', value_name='vph')
-        sb.lineplot(data=dfm, x='freq', y='vph', hue='files')
-        plt.show()
+        #plot = sb.lineplot(data=dfm, x='freq', y='vph', hue='files')
+        if show:
+            plt.show()
+        return dfm
         
                 
                 

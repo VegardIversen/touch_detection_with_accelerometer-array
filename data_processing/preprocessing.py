@@ -312,7 +312,8 @@ def get_phase_and_vph_of_compressed_signal(
                                         n_pi=0, 
                                         detrend=False, 
                                         set_thresh_man=False, 
-                                        plot=False):
+                                        plot=False,
+                                        plot_cut=True):
     """Get phase of compressed signal"""
     if detrend:
         compressed_signal[ch1] = signal.detrend(compressed_signal[ch1])
@@ -344,12 +345,15 @@ def get_phase_and_vph_of_compressed_signal(
 
     cut_ch1 = compressed_signal[ch1][start_index_ch1:end_index_ch1]
     cut_ch2 = compressed_signal[ch2][start_index_ch2:end_index_ch2]
-
     #add window to signal
     window = np.hamming(duration_cut)
     cut_ch1_win = cut_ch1 * window
     cut_ch2_win = cut_ch2 * window
-    if set_thresh_man:
+    # plt.plot(cut_ch1_win, label='ch1')
+    # plt.plot(cut_ch2_win*10, label='ch2')
+    # plt.legend()
+    # plt.show()
+    if set_thresh_man or plot_cut:
         plt.plot(cut_ch1_win, label='ch1')
         plt.plot(cut_ch2_win, label='ch2')
         plt.legend()
@@ -365,9 +369,11 @@ def get_phase_and_vph_of_compressed_signal(
     if bandwidth is not None:
         freq_cut = freq[(freq>bandwidth[0]) & (freq<bandwidth[1])]
         phase = np.unwrap(np.angle(S2f/S1f)) +n_pi*np.pi
-        v_ph = -2*np.pi*freq_cut*distance/(phase[(freq>bandwidth[0]) & (freq<bandwidth[1])])
+        phase_cut = phase[(freq>bandwidth[0]) & (freq<bandwidth[1])]
+        v_ph = -2*np.pi*freq_cut*distance/(phase_cut)
         #time_delay = -phase[(freq>bandwidth[0]) & (freq<bandwidth[1])]/(2*np.pi*freq_cut)
-        group_delay = -np.diff(phase[(freq>bandwidth[0]) & (freq<bandwidth[1])])/(2*np.pi*np.diff(freq_cut))
+        group_delay = -np.diff(phase_cut)/(2*np.pi*np.diff(freq_cut))
+        
     else:
         phase = np.unwrap(np.angle(S2f/S1f)) +n_pi*np.pi
         v_ph = -2*np.pi*freq*distance/(phase)
@@ -393,8 +399,50 @@ def get_phase_and_vph_of_compressed_signal(
         # plt.xlabel('frequency (Hz)')
         # plt.title('group time delay')
         # plt.show()
-    return phase, v_ph
+    if bandwidth is not None:
+        return phase_cut, v_ph, freq_cut
+    else:
+        return phase, v_ph, freq
+    
 
+def compress_single_touch(sig, set_threshold_man=False, threshold=None,n_sampl=None, plot=False):
+    """Compress signal to touch"""
+    if set_threshold_man:
+        if n_sampl is not None:
+            plt.plot(sig)
+            plt.title('set threshold manually')
+            plt.show()
+            threshold = float(input('threshold: '))
+            start_index = get_first_index_above_threshold(sig, threshold)
+            end_index = start_index + n_sampl
+            direct_signal = sig[start_index:end_index]
+        else:
+            start, end = manual_cut_signal(sig)
+            direct_signal = sig[start:end]
+    else:
+        if threshold is None or n_sampl is None:
+            print('set threshold manually and define the number of samples')
+            return -1
+        else:
+            start_index = get_first_index_above_threshold(sig, threshold)
+            end_index = start_index + n_sampl
+            direct_signal = sig[start_index:end_index]
+    compressed = signal.correlate(sig, direct_signal, mode='same')
+    if plot:
+        plt.plot(compressed)
+        plt.show()
+    return compressed
+
+def compress_df_touch(df, set_threshold_man=False, threshold=None,n_sampl=None, plot=False):
+    """Compress signal to touch"""
+    if len(df.columns) > 3:
+        print('removing wavegen column')
+        df = df.drop(columns=['wave_gen'], axis=1)
+    df_compressed = df.copy()
+    for col in df.columns:
+        df_compressed[col] = compress_single_touch(sig=df[col], set_threshold_man=set_threshold_man, threshold=threshold, n_sampl=n_sampl, plot=plot)
+    return df_compressed
+        
 
 
 

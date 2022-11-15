@@ -81,6 +81,9 @@ class Setup2(Setup):
         propagation_speed = np.round(np.abs(distance / delay), decimals=2)
         return propagation_speed
 
+    def set_propagation_speed(self, speed):
+        self.propagation_speed = speed
+
 class Setup3(Setup):
     def __init__(self):
         self.sensor_3 = Sensor(coordinates=np.array([self.table.WIDTH - 0.212, 0.235]))
@@ -118,6 +121,9 @@ class Setup3(Setup):
         propagation_speed = np.abs(distance / delay)
         return propagation_speed
 
+    def set_propagation_speed(self, speed):
+        self.propagation_speed = speed
+
 
 
 class Setup3_2(Setup):
@@ -133,6 +139,9 @@ class Setup3_2(Setup):
         
     def get_channel_names(self):
         return ['channel 1', 'channel 2', 'channel 3', 'wave_gen']
+    
+    def set_propagation_speed(self, speed):
+        self.propagation_speed = speed
 
 
 class Setup3_4(Setup3_2):
@@ -175,3 +184,6 @@ class Setup6(Setup):
         distance = np.linalg.norm(self.actuator.coordinates - self.sensor_1.coordinates)
         propagation_speed = np.abs(distance / delay)
         return propagation_speed
+
+    def set_propagation_speed(self, speed):
+        self.propagation_speed = speed
