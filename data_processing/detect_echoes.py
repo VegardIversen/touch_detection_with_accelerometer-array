@@ -183,10 +183,11 @@ def get_travel_times(actuator: Actuator,
     travel_distances = np.append(travel_distances, direct_travel_distance)
     direct_travel_time = direct_travel_distance / prop_speed
     arrival_times = np.append(arrival_times, direct_travel_time)
-
     if print_info and not relative_first_reflection:
         print(f"\nDirect travel distance: {np.round(direct_travel_distance, 5)} m")
         print(f"\nDirect travel time: {np.round(direct_travel_time, 6)} s")
+        print(f"travel_distances: {travel_distances}")
+        print(f"arrival_times: {arrival_times}")
 
     EDGES = np.array([1, 2, 3, 4])
     # Iterate thorugh all combinations of edges to reflect from

@@ -33,7 +33,6 @@ def plot_fft(df, sample_rate=150000, window=False):
     plt.title('fft of signal')
     plt.xlabel("Frequency [hz]")
     plt.ylabel("Amplitude")
-    print(df.head)
     plt.plot(np.fft.fftshift(fftfreq), 20 * np.log10(np.abs(np.fft.fftshift(data_fft))))
     plt.legend(df.columns)
     ax = plt.subplot(1, 1, 1)
