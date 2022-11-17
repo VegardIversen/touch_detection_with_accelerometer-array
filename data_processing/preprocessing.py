@@ -110,10 +110,12 @@ def cut_out_signal(df, rate, threshold):
     return signal_focusing  # , mask_arr
 
 
-def crop_data(sig, time_start=None, time_end=None, threshold=0):
+def crop_data(sig: pd.DataFrame or np.ndarray,
+              time_start: float = None,
+              time_end: float = None,
+              threshold: float = 0):
     """Crop either DataFrame input, pandas series or a numpy array input.
-    NOTE:   Vegard will fix this to work properly,
-            but could use some logic from here.
+    NOTE:   Not really finished testing yet.
     """
     # Some logic for assuming cropping type and length
     if (time_start or time_start == 0) and not time_end:
