@@ -16,7 +16,7 @@ def compare_signals(fig, axs,
                     data: list,
                     freq_max: int = 40000,
                     nfft: int = 256,
-                    dynamic_range_db: int = 60):
+                    log_time_signal: bool = False,):
     """Visually compare two signals, by plotting:
     time signal, spectogram, fft and (optionally) difference signal
     """
@@ -30,7 +30,11 @@ def compare_signals(fig, axs,
         axs[i, 0].sharex(axs[0, 0])
         axs[i, 0].sharey(axs[0, 0])
         axs[i, 0].grid()
-        axs[i, 0].plot(time_axis, data[i])
+        if log_time_signal:
+            axs[i, 0].plot(time_axis, 10 * np.log10(data[i]))
+            axs[i, 0].set_ylim(bottom=np.max(10 * np.log10(data[i])) - 60)
+        else:
+            axs[i, 0].plot(time_axis, data[i])
         axs[i, 0].set_title(f'{data[i].name}, time signal')
         axs[i, 0].set_xlabel('Time [s]')
         axs[i, 0].set_ylabel('Amplitude [V]')
