@@ -22,6 +22,23 @@ def avg_waveform(measurements: pd.DataFrame,
     return avg_waveforms
 
 
+def var_waveform(measurements: pd.DataFrame,
+                 chirp_range: list) -> pd.DataFrame:
+    """Find the variance of the waveforms"""
+    var_waveforms = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES,
+                                 data=np.empty((1, 4), np.ndarray))
+    for chan in var_waveforms:
+        var_waveforms.at[0, chan] = np.empty(measurements.at[0, chan].size)
+
+    for chan in measurements:
+        chirps = np.empty((chirp_range[1], measurements.at[0, chan].size))
+        for i, chirp in enumerate(range(chirp_range[0], chirp_range[1])):
+            chirps[i] = measurements.at[chirp, chan]
+        var_waveforms.at[0, chan] = np.var(chirps, axis=0)
+
+    return var_waveforms
+
+
 def normalize(data: np.ndarray or pd.DataFrame,
               min: float = 0,
               max: float = 1) -> np.ndarray or pd.DataFrame:
