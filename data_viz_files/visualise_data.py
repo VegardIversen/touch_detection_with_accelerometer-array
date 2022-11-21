@@ -10,19 +10,23 @@ from csv_to_df import csv_to_df
 from data_processing.preprocessing import crop_data
 from data_processing.detect_echoes import get_hilbert_envelope
 from data_viz_files.drawing import plot_legend_without_duplicates
+from data_processing.processing import avg_waveform, var_waveform
 
 
 def compare_signals(fig, axs,
                     data: list,
                     freq_max: int = 40000,
                     nfft: int = 256,
-                    log_time_signal: bool = False,):
+                    dynamic_range_db: int = 60,
+                    log_time_signal: bool = False):
     """Visually compare two signals, by plotting:
     time signal, spectogram, fft and (optionally) difference signal
     """
     for i, channel in enumerate(data):
+        """Convert to pd.Series if necessary"""
         if isinstance(data[i], np.ndarray):
             data[i] = pd.Series(data[i], name='Sensor ' + str(i + 1))
+
         """Time signal"""
         time_axis = np.linspace(start=0,
                                 stop=len(data[i]) / SAMPLE_RATE,
@@ -78,6 +82,37 @@ def compare_signals(fig, axs,
                         top=0.97, bottom=0.06,
                         hspace=0.3, wspace=0.2)
     # plt.show()
+
+
+def wave_statistics(fig, axs, data: pd.DataFrame):
+    """Plot average and variance of waveform.
+    TODO:   Use confidence interval instead of variance?
+    """
+    chirp_range = [0,
+                   len(data['Sensor 1']) - 1]
+    avg = avg_waveform(data, chirp_range)
+    var = var_waveform(data, chirp_range)
+    time_axis = np.linspace(start=0,
+                            stop=len(data['Sensor 1'][0]) / SAMPLE_RATE,
+                            num=len(data['Sensor 1'][0]))
+
+    fig.suptitle('Wave statistics')
+    for i, chan in enumerate(data.columns[:3]):
+        axs[i].plot(time_axis, avg[chan][0], label='Average')
+        axs[i].plot(time_axis,
+                    avg[chan][0] + var[chan][0],
+                    label='Average + variance',
+                    linestyle='--',
+                    color='orange')
+        axs[i].plot(time_axis,
+                    avg[chan][0] - var[chan][0],
+                    label='Average - variance',
+                    linestyle='--',
+                    color='orange')
+        axs[i].set_title(chan)
+        axs[i].set_xlabel('Time [s]')
+        axs[i].legend()
+        axs[i].grid()
 
 
 def plot_fft(df, window=False):
