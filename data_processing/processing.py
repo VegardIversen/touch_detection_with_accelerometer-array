@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import scipy.signal as signal
+from scipy import interpolate
 
 from constants import CHIRP_CHANNEL_NAMES
 
@@ -55,3 +56,35 @@ def normalize(data: np.ndarray or pd.DataFrame,
         data = data + min
         data = signal.detrend(data)
     return data
+
+
+def interpolate_waveform(waveform: np.ndarray,
+                         new_length: int) -> np.ndarray:
+    """Interpolate waveform to have new_length"""
+    old_length = len(waveform)
+    x = np.linspace(0, old_length, old_length)
+    new_x = np.linspace(0, old_length, new_length)
+    return interpolate.interp1d(x, waveform)(new_x)
+
+
+def correct_drift(data_split: pd.DataFrame,
+                  data_to_sync_with: pd.DataFrame,
+                  n_interp: int) -> pd.DataFrame:
+    for chan in data_split:
+        for chirp in range(len(data_split['Sensor 1'])):
+            """Interpolate the signals for better resolution and drift correction"""
+            data_split.at[chirp, chan] = interpolate_waveform(data_split.at[chirp, chan],
+                                                              new_length=n_interp)
+            corr = signal.correlate(data_to_sync_with[chan][0],
+                                    data_split[chan][chirp],
+                                    mode='same')
+            delay_arr = np.linspace(start=-0.5 * n_interp,
+                                    stop=0.5 * n_interp,
+                                    num=n_interp)
+            delay = delay_arr[np.argmax(corr)]
+            SHIFT_BY = (np.rint(delay)).astype(int)
+            data_split.at[chirp, chan] = np.roll(data_split.at[chirp, chan],
+                                                 SHIFT_BY)
+            # measurements_split[chan][chirp][-SHIFT_BY:] = 0   # Doesn't work for some reason
+            data_split.at[chirp, chan] = normalize(data_split.at[chirp, chan], 0, 1)
+    return data_split
