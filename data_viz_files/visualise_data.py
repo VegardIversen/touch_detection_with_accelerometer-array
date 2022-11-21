@@ -7,11 +7,14 @@ from scipy import signal
 import os
 import seaborn as sb
 #sb.set_theme(style="darkgrid")
-
+from matplotlib.widgets import Slider, Button
 from constants import *
 from csv_to_df import csv_to_df
 from data_processing.preprocessing import crop_data, get_phase_and_vph_of_compressed_signal, filter_general, compress_chirp
-
+from data_processing.detect_echoes import get_travel_times, get_hilbert_envelope
+from objects import Table, Actuator, Sensor
+from setups import Setup2, Setup3, Setup3_2, Setup3_4, Setup6
+from data_viz_files.drawing import ax_legend_without_duplicates
 
 def plot_fft(df, sample_rate=150000, window=False):
     if isinstance(df, pd.DataFrame) or isinstance(df, pd.Series):
@@ -161,9 +164,13 @@ def compare_signals(df1, df2, df3,
 
     """Spectrogram of signal 1"""
     dynamic_range_db = 60
-    vmin = 10 * np.log10(np.max(df1)) - dynamic_range_db
+    #vmin = 10 * np.log10(np.max(df1)) - dynamic_range_db
+    c_min1 = np.min(10*np.log10(df1))
+    c_max1 = np.max(10*np.log10(df1))
     ax3 = plt.subplot(332, sharex=ax1)
-    plt.specgram(df1, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2), vmin=vmin)
+    #plt.specgram(df1, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2), vmin=vmin)
+    plt.specgram(df1, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2))
+    plt.clim(-80, -140)
     plt.axis(ymax=freq_max)
     plt.title(f'{plot_1_name}, spectrogram')
     plt.xlabel('Time [s]')
@@ -171,17 +178,26 @@ def compare_signals(df1, df2, df3,
     plt.colorbar()
 
     """Spectrogram of signal 2"""
+    c_min2 = np.min(10*np.log10(df2))
+    c_max2 = np.max(10*np.log10(df2))
     plt.subplot(335, sharex=ax2, sharey=ax3)
-    plt.specgram(df2, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2), vmin=vmin, )
+    #plt.specgram(df2, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2), vmin=vmin, )
+    plt.specgram(df1, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2))
+    plt.clim(-80, -140)
     plt.axis(ymax=freq_max)
+    
     plt.title(f'{plot_2_name}, spectrogram')
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
     plt.colorbar()
 
     """Spectrogram of signal 3"""
+    c_min3 = np.min(10*np.log10(df3))
+    c_max3 = np.max(10*np.log10(df3))
     plt.subplot(338, sharex=ax3, sharey=ax3)
-    plt.specgram(df3, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2), vmin=vmin)
+    #plt.specgram(df3, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2), vmin=vmin)
+    plt.specgram(df1, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2))
+    plt.clim(-80, -140)
     plt.axis(ymax=freq_max)
     plt.title(f'{plot_3_name}, spectrogram')
     plt.xlabel('Time [s]')
@@ -477,9 +493,127 @@ def plot_vphs(
         return dfm
         
                 
-                
-                
+def plot_plate_speed_sliders_book():
+    freqency = np.fft.fftfreq(750000, 1/SAMPLE_RATE)
+    E = 3.8*10**9 #Pa
+    rho_start = 650 #kg/m^3
+    init_rho = 725
+    rho_end = 800 #kg/m^3
+    Poisson = 0.2
+    #plate thickness
+    h = 0.02 #m
+    #loss factor
+    eta_start = 10 * 10**(-3)
+    eta_end = 30 * 10**(-3)
+    h=0.02
+    def f(freq,h, rho, Poisson,E):
+        return np.sqrt(1.8*np.sqrt(E/(rho*(1-Poisson**2)))*h*freq)
+    fig, ax = plt.subplots()
+    line, = ax.plot(freqency[freqency>0], f(freqency[freqency>0], h, init_rho, Poisson, E), lw=2, label='spoon')
+    line2, = ax.plot(freqency[freqency>0], f(freqency[freqency>0], h, 550, 0.4, 9.5*10**9), lw=2, label='furugran')
+    fig.subplots_adjust(bottom=0.3)
+    ax.set_xlabel('Frequency [Hz]')
+    ax.set_ylabel('Phase velocity [m/s]')
+    
 
+    # adjust the main plot to make room for the sliders
+
+    #create a slider for the rho value in the range of rho start to rho end
+    rho_slider_spoon_ax  = fig.add_axes([0.25, 0.15, 0.65, 0.03])
+
+    rho_slider_spoon = Slider(rho_slider_spoon_ax, 'rho spoon', rho_start, rho_end, valinit=init_rho)
+    rho_slider_furugran_ax = fig.add_axes([0.25, 0.1, 0.65, 0.03])
+    
+    rho_slider_furugran = Slider(rho_slider_furugran_ax, 'rho furugran', 400, 700, valinit=550)
+    #create slider for E value in the range of E start to E end
+    E_slider_ax  = fig.add_axes([0.25, 0.05, 0.65, 0.03])
+    E_slider_furugran = Slider(E_slider_ax, 'E furugran', 7*10**9, 12*10**9, valinit=9.5*10**9)
+    #update the graph when the slider is changed
+    def update(val):
+        line.set_ydata(f(freqency[freqency>0], h, rho_slider_spoon.val, Poisson, E))
+
+        line2.set_ydata(f(freqency[freqency>0], h, rho_slider_furugran.val, 0.4, E_slider_furugran.val))
+        fig.canvas.draw_idle()
+    
+    #register the update function with the slider
+    rho_slider_spoon.on_changed(update)
+    E_slider_furugran.on_changed(update)
+    rho_slider_furugran.on_changed(update)
+    fig.legend()
+    plt.grid()
+    plt.show()
+                
+def plot_estimated_reflections_with_sliders(setup, measurements_comp):
+    
+    setup.draw()
+    actuator, sensors = setup.get_objects()
+    fig, ax = plt.subplots(3, 1)
+    fig.subplots_adjust(bottom=0.1)
+    measurements_comp_hilb = get_hilbert_envelope(measurements_comp)
+    # """Calculate wave propagation speed"""
+    # prop_speed = SETUP.get_propagation_speed(measurements_comp['channel 1'],
+    #                                          measurements_comp['channel 2'])
+    # prop_speed *= 1.3
+    #print(f'Prop speed: {prop_speed}')
+    #SETUP.set_propagation_speed(avg_vph)
+    
+    #prop_speed = SETUP.propagation_speed
+    prop_speed = 603.1585605364801
+    print(f'Prop speed: {prop_speed}')
+    propspeed_slider_ax  = fig.add_axes([0.25, 0.005, 0.65, 0.03])
+    propspeed_slider = Slider(propspeed_slider_ax, 'propegation speed', 1, 3000, valinit=600)
+    """Calculate wave arrival times"""
+    def get_arrivl_times(sensors, actuator, prop_speed):
+        arrival_times = np.array([])
+        for sensor in sensors:
+            time, _ = get_travel_times(actuator[0],
+                                    sensor,
+                                    prop_speed,
+                                    ms=False,
+                                    print_info=False,
+                                    relative_first_reflection=False)
+            time = time + 2.5
+            arrival_times = np.append(arrival_times, time)
+        """Reshape arrival_times to a 2D array with len(sensor) rows"""
+        arrival_times = np.reshape(arrival_times, (len(sensors), len(arrival_times) // len(sensors)))
+        arrival_times *= 1000   # Convert to ms
+        return arrival_times
+    time_axis_corr = np.linspace(0,
+                                 1000 * len(measurements_comp) / SAMPLE_RATE,
+                                 (len(measurements_comp)))
+    arrival_times = get_arrivl_times(sensors, actuator, prop_speed)
+    firstref_arr = []
+    secondref_arr = []
+    first_arrival_arr = []
+    for i, sensor in enumerate(sensors):
+        ax[i].set_title('Correlation between chirp and channel ' + str(i + 1))
+        ax[i].plot(time_axis_corr, measurements_comp['channel ' + str(i + 1)], label='Correlation')
+        ax[i].plot(time_axis_corr, measurements_comp_hilb['channel ' + str(i + 1)], label='Hilbert envelope')
+        first_arrival = ax[i].axvline(arrival_times[i][0], linestyle='--', color='r', label='Direct wave')
+        firstref = [ax[i].axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])]
+        secondref = [ax[i].axvline(line, linestyle='--', color='purple', label='2nd reflections')  for line in (arrival_times[i][5:])]
+        first_arrival_arr.append(first_arrival)
+        firstref_arr.append(firstref)
+        secondref_arr.append(secondref)
+        ax[i].set_xlabel('Time [ms]')
+        ax[i].set_ylabel('Amplitude [V]')
+        ax_legend_without_duplicates(ax[i])
+        ax[i].grid()
+
+    def update(val):
+        arrival_times = get_arrivl_times(sensors, actuator, propspeed_slider.val)
+        for i in range(len(sensors)):
+            first_arrival_arr[i].set_xdata(arrival_times[i][0])
+            for idx, line1 in enumerate(arrival_times[i][1:5]):
+                firstref_arr[i][idx].set_xdata(line1)
+            for jdx, line2 in enumerate(arrival_times[i][5:]):
+                secondref_arr[i][jdx].set_xdata(line2)
+                
+        fig.canvas.draw_idle()
+
+    propspeed_slider.on_changed(update)
+    plt.tight_layout(pad=0.02)
+    plt.show()
 
                 
 
