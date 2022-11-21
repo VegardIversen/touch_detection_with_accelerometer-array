@@ -11,10 +11,10 @@ def avg_waveform(measurements: pd.DataFrame,
     avg_waveforms = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES,
                                  data=np.empty((1, 4), np.ndarray))
     for chan in avg_waveforms:
-        avg_waveforms.at[0, chan] = np.empty(18750)
+        avg_waveforms.at[0, chan] = np.empty(measurements.at[0, chan].size)
 
     for chan in measurements:
-        chirps = np.empty((chirp_range[1], 18750))
+        chirps = np.empty((chirp_range[1], measurements.at[0, chan].size))
         for i, chirp in enumerate(range(chirp_range[0], chirp_range[1])):
             chirps[i] = measurements.at[chirp, chan]
         avg_waveforms.at[0, chan] = np.mean(chirps, axis=0)
