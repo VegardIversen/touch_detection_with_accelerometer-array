@@ -78,6 +78,43 @@ class Setup2(Setup):
         return propagation_speed
 
 
+class Setup3(Setup):
+    actuators = np.empty(shape=1, dtype=Actuator)
+    sensors = np.empty(shape=3, dtype=Sensor)
+    sensors[2] = Sensor(coordinates=np.array([Table.WIDTH - 0.212, 0.235]),
+                        name='Sensor 3')
+    sensors[0] = Sensor(sensors[2].coordinates + np.array([-0.101, 0.008]),
+                        name='Sensor 1')
+    actuators[0] = Actuator(np.array([sensors[0].x - 0.10, 0.248]))
+    sensors[1] = Sensor(np.array([actuators[0].x, actuators[0].y +
+                                  actuators[0].RADIUS + 0.013 / 2]),
+                        name='Sensor 2')
+
+    def __init__(self):
+        pass
+
+    def get_propagation_speed(self, df1: pd.DataFrame, df2: pd.DataFrame):
+        """Use the cross correlation between the two channels
+        to find the propagation speed. Based on:
+        https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
+        """
+        n = len(df1)
+        """Convert to df if np.ndarray"""
+        if type(df1) == np.ndarray:
+            df1 = pd.DataFrame(df1)
+        if type(df2) == np.ndarray:
+            df2 = pd.DataFrame(df2)
+
+        corr = signal.correlate(df1, df2, mode='same')
+
+        delay_arr = np.linspace(-0.5 * n / SAMPLE_RATE, 0.5 * n / SAMPLE_RATE, n)
+        delay = delay_arr[np.argmax(corr)]
+        #distance = np.linalg.norm(self.actuator.coordinates - self.sensor_1.coordinates)
+        distance = np.linalg.norm(self.sensor_1.coordinates - self.sensor_3.coordinates)
+        propagation_speed = np.abs(distance / delay)
+        return propagation_speed
+
+
 class Setup3_2(Setup):
     """Sensors in a straight line across the full table"""
     actuators = np.empty(shape=1, dtype=Actuator)
