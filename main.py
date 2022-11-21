@@ -42,7 +42,8 @@ def main():
     compare_signals(measurements['channel 1'],measurements['channel 2'],measurements['channel 3'])
     
     time = np.linspace(0, len(df1) / SAMPLE_RATE, num=len(df1))
-    plot_fft(df1)
+    #plot_fft(df1)
+    
     # plt.plot(time, df1)
     # plt.ylabel(ylabel='Amplitude')
     # plt.xlabel(xlabel='Time [s]')
@@ -64,6 +65,7 @@ def main():
     """Compress chirp signals"""
     #print(np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_3.coordinates))
     measurements_comp = compress_chirp(measurements_filt, custom_chirp=None)
+
     #measurements_comp = compress_df_touch(measurements_filt, set_threshold_man=True, n_sampl=20)
     # plt.plot(measurements_comp['channel 1'], label='ch1')
     # plt.plot(measurements_comp['channel 2'], label='ch2')
