@@ -53,6 +53,9 @@ class Setup2(Setup):
     sensors[2] = Sensor(coordinates=(sensors[1].coordinates + SENSOR_3_OFFSET),
                         name='Sensor 3')
 
+    def __init__(self):
+        pass
+
     def get_propagation_speed(self, df1: pd.DataFrame, df2: pd.DataFrame):
         """Use the cross correlation between the two channels
         to find the propagation speed. Based on:
