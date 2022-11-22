@@ -85,6 +85,5 @@ def correct_drift(data_split: pd.DataFrame,
             SHIFT_BY = (np.rint(delay)).astype(int)
             data_split.at[chirp, chan] = np.roll(data_split.at[chirp, chan],
                                                  SHIFT_BY)
-            # measurements_split[chan][chirp][-SHIFT_BY:] = 0   # Doesn't work for some reason
             data_split.at[chirp, chan] = normalize(data_split.at[chirp, chan], 0, 1)
     return data_split
