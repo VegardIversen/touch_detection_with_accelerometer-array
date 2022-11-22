@@ -17,7 +17,7 @@ from data_processing.processing import (avg_waveform,
                                         normalize,
                                         var_waveform,
                                         correct_drift)
-from data_viz_files.visualise_data import compare_signals, wave_statistics
+from data_viz_files.visualise_data import compare_signals, wave_statistics, set_fontsizes
 from objects import Table
 from setups import Setup7
 
@@ -25,8 +25,7 @@ from setups import Setup7
 def main():
     """CONFIG"""
     FILE_FOLDER = 'setup7'
-    FILE_NAME_1 = 'notouchThenHoldB2_20to40khz_125ms_10vpp_v1'
-    FILE_NAME_2 = 'holdB1_20to40khz_125ms_10vpp_v1'
+    FILE_NAME = 'notouchThenHoldB2_20to40khz_125ms_10vpp_v1'
     SETUP = Setup7()
     CROP = False
     TIME_START = 0.03  # s
@@ -34,54 +33,49 @@ def main():
     FILTER = False
     BANDWIDTH = (200, 40000)
 
+    set_fontsizes()
+
     """Open file"""
-    measurements_1 = csv_to_df(file_folder=FILE_FOLDER,
-                               file_name=FILE_NAME_1,
-                               channel_names=CHIRP_CHANNEL_NAMES)
-    measurements_2 = csv_to_df(file_folder=FILE_FOLDER,
-                               file_name=FILE_NAME_2,
-                               channel_names=CHIRP_CHANNEL_NAMES)
+    measurements = csv_to_df(file_folder=FILE_FOLDER,
+                             file_name=FILE_NAME,
+                             channel_names=CHIRP_CHANNEL_NAMES)
 
     """Preprocessing"""
     if CROP:
-        measurements_1 = crop_data(measurements_1, TIME_START, TIME_END)
-        measurements_2 = crop_data(measurements_2, TIME_START, TIME_END)
+        measurements = crop_data(measurements, TIME_START, TIME_END)
     if FILTER:
-        measurements_filt_1 = filter_general(measurements_1,
-                                             filtertype='bandpass',
-                                             cutoff_highpass=BANDWIDTH[0],
-                                             order=4)
-        measurements_filt_2 = filter_general(measurements_2,
-                                             filtertype='bandpass',
-                                             cutoff_highpass=BANDWIDTH[0],
-                                             order=4)
-    else:
-        measurements_filt_1 = measurements_1
-        measurements_filt_2 = measurements_2
+        measurements = filter_general(measurements,
+                                      filtertype='bandpass',
+                                      cutoff_highpass=BANDWIDTH[0],
+                                      order=4)
+
+    """Plot raw signal"""
+    time_axis = np.linspace(start=0,
+                            stop=1000 * len(measurements) / SAMPLE_RATE,
+                            num=len(measurements))
+    plt.suptitle('Raw signal')
+    plt.title('Chirp from 20 khz to 40 kHz in 125 ms')
+    plt.plot(time_axis, 1000 * measurements['Sensor 1'], label='Sensor 1')
+    plt.xlabel('Time (ms)')
+    plt.ylabel('Amplitude (mV)')
+    plt.legend()
+    plt.grid()
+    plt.show()
 
     """Compress chirp signals"""
-    measurements_comp_1 = compress_chirp(measurements_filt_1)
-    measurements_comp_2 = compress_chirp(measurements_filt_2)
+    measurements = compress_chirp(measurements)
 
     """Shift to align chirps better with their time intervals"""
     SHIFT_BY = int(TIME_START * SAMPLE_RATE)
-    for chan in measurements_comp_1:
-        measurements_comp_1[chan] = np.roll(measurements_comp_1[chan],
-                                            -SHIFT_BY)
-        measurements_comp_1[chan][-SHIFT_BY:] = 0
-    for chan in measurements_comp_2:
-        measurements_comp_2[chan] = np.roll(measurements_comp_2[chan],
-                                            -SHIFT_BY)
-        measurements_comp_2[chan][-SHIFT_BY:] = 0
+    for chan in measurements:
+        measurements[chan] = np.roll(measurements[chan],
+                                     -SHIFT_BY)
+        measurements[chan][-SHIFT_BY:] = 0
 
     "Separate the channels into arrays of length 125 ms"
     measurements_split_1 = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES)
     for chan in measurements_split_1:
-        measurements_split_1[chan] = np.split(measurements_comp_1[chan],
-                                              indices_or_sections=40)
-    measurements_split_2 = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES)
-    for chan in measurements_split_2:
-        measurements_split_2[chan] = np.split(measurements_comp_2[chan],
+        measurements_split_1[chan] = np.split(measurements[chan],
                                               indices_or_sections=40)
 
     """Draw setup"""
@@ -91,21 +85,18 @@ def main():
     start = timeit.default_timer()
 
     """Calculate wave propagation speed"""
-    prop_speed_1 = SETUP.get_propagation_speed(measurements_comp_1)
-    # prop_speed_1 *= 1.3
+    prop_speed = SETUP.get_propagation_speed(measurements)
     ANGLE_B1_SENSOR_2 = np.sin((Table.C2[0] - Table.B1[0]) /
-                        np.linalg.norm(Table.B1 - Table.C2))
-    ANNGLE_B1_SENSOR_3 = np.sin((Table.C2[0] + 0.013 - Table.B1[0]) /
-                         np.linalg.norm(Table.B1 - (Table.C2 + 0.013)))
-    print(f'Propagation speed 1: {np.round(prop_speed_1, 2)} m/s.')
-    print(f'Angle B1 sensor 2: {np.round(np.arcsin(ANGLE_B1_SENSOR_2), 4)} rad.')
-    print(f'Angle B1 sensor 3: {np.round(np.arcsin(ANNGLE_B1_SENSOR_3), 4)} rad.')
-    print(f'Propagation speed B1 sensor 2 v_x: {np.round(prop_speed_1 * ANGLE_B1_SENSOR_2, 2)} m/s.')
-    print(f'Propagation speed B1 sensor 3 v_x: {np.round(prop_speed_1 * ANNGLE_B1_SENSOR_3, 2)} m/s.')
-    print(f'Peaks should appear with {0.013 / (prop_speed_1 * ANGLE_B1_SENSOR_2) * 1000} ms spacing.')
-    print(f'Peaks should appear with {0.013 / (prop_speed_1 * ANNGLE_B1_SENSOR_3) * 1000} ms spacing.')
-    prop_speed_2 = SETUP.get_propagation_speed(measurements_comp_2)
-    print(f'Propagation speed 2: {np.round(prop_speed_2, 2)} m/s')
+                               np.linalg.norm(Table.B1 - Table.C2))
+    ANGLE_B1_SENSOR_3 = np.sin((Table.C2[0] + 0.013 - Table.B1[0]) /
+                                np.linalg.norm(Table.B1 - (Table.C2 + 0.013)))
+    print(f'Propagation speed: {np.round(prop_speed, 2)} m/s.')
+    # print(f'Angle B1 sensor 2: {np.round(np.arcsin(ANGLE_B1_SENSOR_2), 4)} rad.')
+    # print(f'Angle B1 sensor 3: {np.round(np.arcsin(ANGLE_B1_SENSOR_3), 4)} rad.')
+    # print(f'Propagation speed B1 sensor 2 v_x: {np.round(prop_speed_1 * ANGLE_B1_SENSOR_2, 2)} m/s.')
+    # print(f'Propagation speed B1 sensor 3 v_x: {np.round(prop_speed_1 * ANGLE_B1_SENSOR_3, 2)} m/s.')
+    # print(f'Peaks should appear with {0.013 / (prop_speed_1 * ANGLE_B1_SENSOR_2) * 1000} ms spacing.')
+    # print(f'Peaks should appear with {0.013 / (prop_speed_1 * ANGLE_B1_SENSOR_3) * 1000} ms spacing.')
 
     """Calculate wave arrival times"""
     # arrival_times = np.array([])
@@ -143,9 +134,6 @@ def main():
 
     """Make up for drift in signal generator"""
     measurements_split_1 = correct_drift(measurements_split_1,
-                                         data_to_sync_with=measurements_split_1,
-                                         n_interp=10 * len(measurements_split_1['Sensor 1'][0]))
-    measurements_split_2 = correct_drift(measurements_split_2,
                                          data_to_sync_with=measurements_split_1,
                                          n_interp=10 * len(measurements_split_1['Sensor 1'][0]))
 
@@ -278,7 +266,7 @@ def main():
         axs[0].axis(ymax=50000)
         axs[0].set_xlim(0.09126, 0.09207)
         axs[0].axvline(np.argmax(measurements_split_1['Sensor 1'][i]) /
-                       SAMPLE_RATE + np.abs((0.1203333 - 0.563398) / prop_speed_1),
+                       SAMPLE_RATE + np.abs((0.1203333 - 0.563398) / prop_speed),
                        color='red',
                        linestyle='--')
         spec = axs[1].specgram(measurements_split_1['Sensor 2'][i] - measurements_split_1['Sensor 2'][i - 1],
@@ -292,7 +280,7 @@ def main():
         axs[1].axis(ymax=50000)
         axs[1].set_xlim(0.09126, 0.09207)
         axs[1].axvline(np.argmax(measurements_split_1['Sensor 2'][i]) /
-                       SAMPLE_RATE + np.abs((0.133333 - 0.573703) / prop_speed_1),
+                       SAMPLE_RATE + np.abs((0.133333 - 0.573703) / prop_speed),
                        color='red',
                        linestyle='--')
         spec = axs[2].specgram(measurements_split_1['Sensor 3'][i] - measurements_split_1['Sensor 3'][i - 1],
@@ -306,7 +294,7 @@ def main():
         axs[2].axis(ymax=50000)
         axs[2].set_xlim(0.09126, 0.09207)
         axs[2].axvline(np.argmax(measurements_split_1['Sensor 3'][i]) /
-                       SAMPLE_RATE + np.abs((0.146333 - 0.584192) / prop_speed_1),
+                       SAMPLE_RATE + np.abs((0.146333 - 0.584192) / prop_speed),
                        color='red',
                        linestyle='--')
         manager = plt.get_current_fig_manager()
