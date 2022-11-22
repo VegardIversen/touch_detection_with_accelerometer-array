@@ -50,13 +50,23 @@ def main():
     time_axis = np.linspace(start=0,
                             stop=1000 * len(measurements) / SAMPLE_RATE,
                             num=len(measurements))
-    plt.suptitle('Raw signal')
-    plt.title('Chirp from 20 khz to 40 kHz in 125 ms')
-    plt.plot(time_axis, 1000 * measurements['Sensor 1'], label='Sensor 1')
-    plt.xlabel('Time (ms)')
-    plt.ylabel('Amplitude (mV)')
-    plt.legend()
-    plt.grid()
+    fig, axs = plt.subplots(nrows=1, ncols=2)
+    plt.suptitle('Chirp from 20 khz to 40 kHz in 125 ms')
+    axs[0].plot(time_axis, 1000 * measurements['Sensor 1'], label='Sensor 1')
+    axs[0].set_xlabel('Time (ms)')
+    axs[0].set_ylabel('Amplitude (mV)')
+    axs[0].legend()
+    axs[0].grid()
+    """FFT of raw signal"""
+    freq_axis, fft = signal.welch(measurements['Sensor 1'],
+                                  fs=SAMPLE_RATE,
+                                  nperseg=2**12)
+    axs[1].plot(freq_axis / 1000, 10 * np.log10(fft), label='Sensor 1')
+    axs[1].set_xlabel('Frequency (kHz)')
+    axs[1].set_ylabel('Amplitude (dB)')
+    axs[1].legend()
+    axs[1].grid()
+    plt.tight_layout()
     plt.show()
 
 
