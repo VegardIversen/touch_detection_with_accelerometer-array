@@ -351,9 +351,9 @@ def plot_data_sub_ffts(df, channel='Sensor 1'):
 
 
 def set_fontsizes():
-    SMALL_SIZE = 15
-    MEDIUM_SIZE = 20
-    BIGGER_SIZE = 25
+    SMALL_SIZE = 12
+    MEDIUM_SIZE = 15
+    BIGGER_SIZE = 20
 
     plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
     plt.rc('axes', titlesize=MEDIUM_SIZE)     # fontsize of the axes title
