@@ -74,7 +74,7 @@ def correct_drift(data_split: pd.DataFrame,
         for chirp in range(len(data_split['Sensor 1'])):
             """Interpolate the signals for better resolution and drift correction"""
             data_split.at[chirp, chan] = interpolate_waveform(data_split.at[chirp, chan],
-                                                              new_length=n_interp)
+                                                        new_length=n_interp)
             corr = signal.correlate(data_to_sync_with[chan][0],
                                     data_split[chan][chirp],
                                     mode='same')
