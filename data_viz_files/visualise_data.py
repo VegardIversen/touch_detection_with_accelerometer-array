@@ -15,7 +15,7 @@ from data_processing.processing import avg_waveform, var_waveform
 
 def compare_signals(fig, axs,
                     data: list,
-                    freq_max: int = 40000,
+                    freq_max: int = 60000,
                     nfft: int = 256,
                     dynamic_range_db: int = 60,
                     log_time_signal: bool = False):
@@ -32,7 +32,7 @@ def compare_signals(fig, axs,
                                 stop=len(data[i]) / SAMPLE_RATE,
                                 num=len(data[i]))
         axs[i, 0].sharex(axs[0, 0])
-        axs[i, 0].sharey(axs[0, 0])
+        # axs[i, 0].sharey(axs[0, 0])
         axs[i, 0].grid()
         if log_time_signal:
             axs[i, 0].plot(time_axis, 10 * np.log10(data[i]))
@@ -49,7 +49,7 @@ def compare_signals(fig, axs,
                                   Fs=SAMPLE_RATE,
                                   NFFT=nfft,
                                   noverlap=(nfft // 2))
-        # fig.colorbar(spec[3], ax=axs[i, 1])
+        fig.colorbar(spec[3], ax=axs[i, 1])
         spec[3].set_clim(10 * np.log10(np.max(spec[0])) - dynamic_range_db,
                          10 * np.log10(np.max(spec[0])))
         axs[i, 1].sharex(axs[0, 0])
@@ -72,7 +72,7 @@ def compare_signals(fig, axs,
         axs[i, 2].set_title(f'{data[i].name}, FFT')
         axs[i, 2].set_xlabel("Frequency [Hz]")
         axs[i, 2].set_ylabel("Amplitude [dB]")
-        axs[i, 2].plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
+        axs[i, 2].plot(fftfreq, 10 * np.log10(np.abs(data_fft)))
         # data_fft_phase = data_fft
         # data_fft_phase[data_fft_phase < 0.1] = 0
         # plt.plot(fftfreq, (np.angle( data_fft_phase, deg=True)))
