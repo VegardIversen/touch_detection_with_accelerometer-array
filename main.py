@@ -46,8 +46,8 @@ def main():
                              time_start=TIME_START,
                              time_end=TIME_END)
 
-# """Compress chirp"""
-# measurements = compress_chirp(measurements)
+    """Compress chirp"""
+    measurements = compress_chirp(measurements)
 
     """Compare signals"""
     fig, axs = plt.subplots(nrows=2, ncols=3)
