@@ -15,7 +15,7 @@ from data_processing.processing import avg_waveform, var_waveform
 
 def compare_signals(fig, axs,
                     data: list,
-                    freq_max: int = 40000,
+                    freq_max: int = 60000,
                     nfft: int = 256,
                     dynamic_range_db: int = 60,
                     log_time_signal: bool = False):
