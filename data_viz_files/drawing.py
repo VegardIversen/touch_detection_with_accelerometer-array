@@ -14,6 +14,13 @@ def plot_legend_without_duplicates():
     plt.legend(by_label.values(), by_label.keys(), loc='upper right')
 
 
+def plot_legend_without_duplicates_ax(ax):
+    """Avoid duplicate labels in the legend"""
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = OrderedDict(zip(labels, handles))
+    ax.legend(by_label.values(), by_label.keys(), loc='upper right')
+
+
 def draw_setup_ideal():
     table = Table()
 
