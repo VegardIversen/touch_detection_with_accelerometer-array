@@ -18,7 +18,8 @@ def compare_signals(fig, axs,
                     freq_max: int = 60000,
                     nfft: int = 256,
                     dynamic_range_db: int = 60,
-                    log_time_signal: bool = False):
+                    log_time_signal: bool = False,
+                    sharey: bool = False):
     """Visually compare two signals, by plotting:
     time signal, spectogram, fft and (optionally) difference signal
     """
@@ -32,7 +33,8 @@ def compare_signals(fig, axs,
                                 stop=len(data[i]) / SAMPLE_RATE,
                                 num=len(data[i]))
         axs[i, 0].sharex(axs[0, 0])
-        axs[i, 0].sharey(axs[0, 0])
+        if sharey:
+            axs[i, 0].sharey(axs[0, 0])
         axs[i, 0].grid()
         if log_time_signal:
             axs[i, 0].plot(time_axis, 10 * np.log10(data[i]))
@@ -49,7 +51,6 @@ def compare_signals(fig, axs,
                                   Fs=SAMPLE_RATE,
                                   NFFT=nfft,
                                   noverlap=(nfft // 2))
-        # fig.colorbar(spec[3], ax=axs[i, 1])
         spec[3].set_clim(10 * np.log10(np.max(spec[0])) - dynamic_range_db,
                          10 * np.log10(np.max(spec[0])))
         axs[i, 1].sharex(axs[0, 0])
@@ -67,7 +68,8 @@ def compare_signals(fig, axs,
         data_fft = np.fft.fftshift(data_fft)[len(data[i]) // 2:]
         fftfreq = np.fft.fftshift(fftfreq)[len(data[i]) // 2:]
         axs[i, 2].sharex(axs[0, 2])
-        axs[i, 2].sharey(axs[0, 2])
+        if sharey:
+            axs[i, 2].sharey(axs[0, 2])
         axs[i, 2].grid()
         axs[i, 2].set_title(f'{data[i].name}, FFT')
         axs[i, 2].set_xlabel("Frequency [Hz]")
@@ -362,6 +364,15 @@ def set_fontsizes():
     plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
     plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
+
+def set_window_size():
+    """Set window size"""
+    # Get screen size
+    screen_size = plt.rcParams['figure.figsize']
+    # Set window size
+    plt.rcParams['figure.figsize'] = [screen_size[0] * 1.5,
+                                      screen_size[1] * 1.5]
 
 
 if __name__ == '__main__':
