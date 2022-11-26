@@ -96,24 +96,22 @@ class Setup3(Setup):
     def __init__(self):
         pass
 
-    def get_propagation_speed(self, df1: pd.DataFrame, df2: pd.DataFrame):
+    def get_propagation_speed(self, measurements: pd.DataFrame):
         """Use the cross correlation between the two channels
         to find the propagation speed. Based on:
         https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
         """
-        n = len(df1)
-        """Convert to df if np.ndarray"""
-        if type(df1) == np.ndarray:
-            df1 = pd.DataFrame(df1)
-        if type(df2) == np.ndarray:
-            df2 = pd.DataFrame(df2)
-
-        corr = signal.correlate(df1, df2, mode='same')
-
-        delay_arr = np.linspace(-0.5 * n / SAMPLE_RATE, 0.5 * n / SAMPLE_RATE, n)
+        object_1 = self.sensors[0]
+        object_2 = self.sensors[2]
+        n = len(measurements[object_1.name])
+        corr = signal.correlate(measurements[object_1.name],
+                                measurements[object_2.name],
+                                mode='same')
+        delay_arr = np.linspace(start=-0.5 * n / SAMPLE_RATE,
+                                stop=0.5 * n / SAMPLE_RATE,
+                                num=n)
         delay = delay_arr[np.argmax(corr)]
-        #distance = np.linalg.norm(self.actuator.coordinates - self.sensor_1.coordinates)
-        distance = np.linalg.norm(self.sensor_1.coordinates - self.sensor_3.coordinates)
+        distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
         propagation_speed = np.abs(distance / delay)
         return propagation_speed
 
