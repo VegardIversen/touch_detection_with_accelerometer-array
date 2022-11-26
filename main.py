@@ -200,18 +200,18 @@ def main():
     """Plot a waveforms"""
     fig, axs = plt.subplots(nrows=3, ncols=3)
     compare_signals(fig, axs,
-                    [measurements_split['Sensor 1'][1],
-                     measurements_split['Sensor 2'][1],
-                     measurements_split['Sensor 3'][1]],
+                    [measurements_split['Sensor 1'][1][0:int(0.0715 * SAMPLE_RATE)],
+                     measurements_split['Sensor 2'][1][0:int(0.0715 * SAMPLE_RATE)],
+                     measurements_split['Sensor 3'][1][0:int(0.0715 * SAMPLE_RATE)]],
                     nfft=16,
                     dynamic_range_db=20)
     """Plot the Hilert transforms"""
-    time_axis = np.linspace(start=0,
-                            stop=len(measurements_split['Sensor 1'][1]) / SAMPLE_RATE,
-                            num=len(measurements_split['Sensor 1'][1]))
-    axs[0, 0].plot(time_axis, np.abs(signal.hilbert(measurements_split['Sensor 1'][1])))
-    axs[1, 0].plot(time_axis, np.abs(signal.hilbert(measurements_split['Sensor 2'][1])))
-    axs[2, 0].plot(time_axis, np.abs(signal.hilbert(measurements_split['Sensor 3'][1])))
+    # time_axis = np.linspace(start=0,
+    #                         stop=len(measurements_split['Sensor 1'][1]) / SAMPLE_RATE,
+    #                         num=len(measurements_split['Sensor 1'][1]))
+    # axs[0, 0].plot(time_axis, np.abs(signal.hilbert(measurements_split['Sensor 1'][1])))
+    # axs[1, 0].plot(time_axis, np.abs(signal.hilbert(measurements_split['Sensor 2'][1])))
+    # axs[2, 0].plot(time_axis, np.abs(signal.hilbert(measurements_split['Sensor 3'][1])))
     """Plot the expected arrival times"""
     arrival_times += len(measurements_split['Sensor 1'][1]) / (2 * SAMPLE_RATE) + 0.00895
     for i in range(3):
