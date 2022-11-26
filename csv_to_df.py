@@ -4,7 +4,12 @@ from pathlib import Path
 from sys import platform
 
 
-def csv_to_df(file_folder: str, file_name: str, channel_names: np.ndarray):
+def csv_to_df(file_folder: str,
+              file_name: str,
+              channel_names: np.ndarray = np.array(['Sensor 1',
+                                                    'Sensor 2',
+                                                    'Sensor 3',
+                                                    'Actuator'])):
     """Returns a DataFrame from a .csv file.
     Set channel_names to None to return a
     DataFrame with the default column names.
@@ -17,6 +22,11 @@ def csv_to_df(file_folder: str, file_name: str, channel_names: np.ndarray):
         file_path = f'{ROOT_FOLDER}\\{file_folder}\\{file_name}.csv'
 
     df = pd.read_csv(filepath_or_buffer=file_path, names=channel_names)
+
+    """Move 'Actuator' column to the front of the DataFrame"""
+    cols = df.columns.tolist()
+    cols = cols[-1:] + cols[:-1]
+    df = df[cols]
 
     return df
 
