@@ -48,7 +48,6 @@ def normalize(data: np.ndarray or pd.DataFrame,
         for chan in data:
             data.at[0, chan] = normalize(data.at[0, chan], min, max)
             data.at[0, chan] = signal.detrend(data.at[0, chan])
-
     else:
         data = data - np.min(data)
         if np.max(data) != 0:
@@ -62,31 +61,30 @@ def normalize(data: np.ndarray or pd.DataFrame,
     return data
 
 
-def interpolate_waveform(waveform: np.ndarray,
-                         new_length: int) -> np.ndarray:
+def interpolate_waveform(measurements: pd.DataFrame,
+                         new_length: int) -> pd.DataFrame:
     """Interpolate waveform to have new_length with numpy"""
-    old_length = waveform.size
-    x = np.linspace(0, old_length, old_length)
-    f = interpolate.interp1d(x, waveform)
-    x_new = np.linspace(0, old_length, new_length)
-    waveform = f(x_new)
-    return waveform
+    measurements_interp = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES,
+                                       data=np.empty((new_length, 4), np.ndarray))
+    for chan in measurements:
+        old_length = measurements[chan].size
+        x = np.linspace(0, old_length, old_length)
+        f = interpolate.interp1d(x, measurements[chan], kind='cubic')
+        x_new = np.linspace(0, old_length, new_length)
+        measurements_interp[chan] = f(x_new)
+    return measurements_interp
 
 
 def correct_drift(data_split: pd.DataFrame,
-                  data_to_sync_with: pd.DataFrame,
-                  n_interp: int) -> pd.DataFrame:
+                  data_to_sync_with: pd.DataFrame) -> pd.DataFrame:
     for chan in data_split:
         for chirp in range(len(data_split['Sensor 1'])):
-            """Interpolate the signals for better resolution and drift correction"""
-            data_split.at[chirp, chan] = interpolate_waveform(data_split.at[chirp, chan],
-                                                              new_length=n_interp)
             corr = signal.correlate(data_to_sync_with[chan][0],
                                     data_split[chan][chirp],
                                     mode='same')
-            delay_arr = np.linspace(start=-0.5 * n_interp,
-                                    stop=0.5 * n_interp,
-                                    num=n_interp)
+            delay_arr = np.linspace(start=-0.5 * len(corr),
+                                    stop=0.5 * len(corr),
+                                    num=len(corr))
             delay = delay_arr[np.argmax(corr)]
             SHIFT_BY = (np.rint(delay)).astype(int)
             data_split.at[chirp, chan] = np.roll(data_split.at[chirp, chan],
