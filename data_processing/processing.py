@@ -51,7 +51,11 @@ def normalize(data: np.ndarray or pd.DataFrame,
 
     else:
         data = data - np.min(data)
-        data = data / np.max(data)
+        if np.max(data) != 0:
+            data = data / np.max(data)
+        else:
+            data = np.zeros(data.size)
+            return data
         data = data * (max - min)
         data = data + min
         data = signal.detrend(data)
