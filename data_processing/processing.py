@@ -60,11 +60,13 @@ def normalize(data: np.ndarray or pd.DataFrame,
 
 def interpolate_waveform(waveform: np.ndarray,
                          new_length: int) -> np.ndarray:
-    """Interpolate waveform to have new_length"""
-    old_length = len(waveform)
+    """Interpolate waveform to have new_length with numpy"""
+    old_length = waveform.size
     x = np.linspace(0, old_length, old_length)
-    new_x = np.linspace(0, old_length, new_length)
-    return interpolate.interp1d(x, waveform)(new_x)
+    f = interpolate.interp1d(x, waveform)
+    x_new = np.linspace(0, old_length, new_length)
+    waveform = f(x_new)
+    return waveform
 
 
 def correct_drift(data_split: pd.DataFrame,
@@ -74,7 +76,7 @@ def correct_drift(data_split: pd.DataFrame,
         for chirp in range(len(data_split['Sensor 1'])):
             """Interpolate the signals for better resolution and drift correction"""
             data_split.at[chirp, chan] = interpolate_waveform(data_split.at[chirp, chan],
-                                                        new_length=n_interp)
+                                                              new_length=n_interp)
             corr = signal.correlate(data_to_sync_with[chan][0],
                                     data_split[chan][chirp],
                                     mode='same')
