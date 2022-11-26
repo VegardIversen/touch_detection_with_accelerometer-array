@@ -117,95 +117,6 @@ def wave_statistics(fig, axs, data: pd.DataFrame):
         axs[i].grid()
 
 
-def plot_fft(df, window=False):
-    if isinstance(df, pd.DataFrame):
-        if window:
-            hamming_window = scipy.signal.hamming(len(df))
-            data_fft = scipy.fft.fft(df.values * hamming_window)
-        else:
-            data_fft = scipy.fft.fft(df.values, axis=0)
-    else:
-        if window:
-            hamming_window = scipy.signal.hamming(len(df))
-            data_fft = scipy.fft.fft(df * hamming_window)
-        else:
-            data_fft = scipy.fft.fft(df, axis=0)
-    fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / SAMPLE_RATE)
-    plt.grid()
-    plt.title('fft of signal')
-    plt.xlabel("Frequency [hz]")
-    plt.ylabel("Amplitude")
-    plt.plot(np.fft.fftshift(fftfreq),
-             20 * np.log10(np.abs(np.fft.fftshift(data_fft))))
-    ax = plt.subplot(1, 1, 1)
-    # Only plot positive frequencies
-    ax.set_xlim(0)
-    plt.show()
-
-
-def plot_2fft(df1, df2, window=False):
-    if window:
-        hamming_window1 = scipy.signal.hamming(len(df1))
-        data_fft1 = scipy.fft.fft(df1.values * hamming_window1, axis=0)
-        hamming_window2 = scipy.signal.hamming(len(df1))
-        data_fft2 = scipy.fft.fft(df2.values * hamming_window2, axis=0)
-    else:
-        data_fft1 = scipy.fft.fft(df1.values, axis=0)
-        data_fft2 = scipy.fft.fft(df2.values, axis=0)
-    fftfreq1 = scipy.fft.fftfreq(len(data_fft1),  1 / SAMPLE_RATE)
-    fftfreq2 = scipy.fft.fftfreq(len(data_fft2),  1 / SAMPLE_RATE)
-    plt.grid()
-    ax1 = plt.subplot(211)
-    plt.grid()
-    plt.title(f'fft of {df1.name}')
-    plt.xlabel("Frequency [hz]")
-    plt.ylabel("Amplitude")
-    plt.plot(np.fft.fftshift(fftfreq1),
-             20 * np.log10(np.abs(np.fft.fftshift(data_fft1))))
-    plt.subplot(212, sharex=ax1, sharey=ax1)
-    plt.title(f'fft of {df2.name}')
-    plt.xlabel("Frequency [hz]")
-    plt.ylabel("Amplitude")
-    plt.plot(np.fft.fftshift(fftfreq2),
-             20 * np.log10(np.abs(np.fft.fftshift(data_fft2))))
-    plt.tight_layout()
-    plt.show()
-
-
-def plot_data(df, crop=True):
-    if crop:
-        df = crop_data(df)
-    df.plot()
-    plt.legend(df.columns)
-    plt.grid()
-    plt.show()
-
-
-def plot_spectogram(df,
-                    include_signal=True,
-                    channel='Sensor 1',
-                    freq_max=None):
-    vmin = 10 * np.log10(np.max(df)) - 100
-    if include_signal:
-        time_axis = np.linspace(0, len(df) // SAMPLE_RATE, num=len(df))
-        ax1 = plt.subplot(211)
-        plt.grid()
-        plt.plot(time_axis, df[channel])
-        plt.xlabel('Time [s]')
-        plt.ylabel('Amplitude')
-        plt.subplot(212, sharex=ax1)
-        plt.specgram(df[channel], vmin=vmin)
-        plt.axis(ymax=freq_max)
-        plt.xlabel('Time [s]')
-        plt.ylabel('Frequency')
-    else:
-        plt.specgram(df[channel], vmin=vmin)
-        plt.axis(ymax=freq_max)
-        plt.xlabel('Time [s]')
-        plt.ylabel('Frequency')
-    plt.show()
-
-
 def specgram_with_lines(setup, measurements_comp, arrival_times, bandwidth):
     """Plot the spectrograms along with lines for expected reflections"""
     for i, sensor in enumerate(setup.sensors):
@@ -244,20 +155,19 @@ def specgram_with_lines(setup, measurements_comp, arrival_times, bandwidth):
 
 
 def envelopes_with_lines(setup: Setup,
-                         measurements_comp: pd.DataFrame,
-                         arrival_times: np.ndarray,
-                         bandwidth: tuple):
+                         measurements: pd.DataFrame,
+                         arrival_times: np.ndarray):
     """Plot the correlation between the chirp signal and the measured signal"""
-    time_axis_corr = np.linspace(-1000 * len(measurements_comp) / SAMPLE_RATE,
-                                 1000 * len(measurements_comp) / SAMPLE_RATE,
-                                 (len(measurements_comp)))
-    measurements_comp_hilb = get_hilbert_envelope(measurements_comp)
+    time_axis_corr = np.linspace(-1000 * len(measurements) / SAMPLE_RATE,
+                                 1000 * len(measurements) / SAMPLE_RATE,
+                                 (len(measurements)))
+    measurements_comp_hilb = get_hilbert_envelope(measurements)
 
     for i, sensor in enumerate(setup.sensors):
         plt.subplot(311 + i, sharex=plt.gca())
         plt.title(f'Correlation between {setup.actuators[0]} and {sensor}')
         plt.plot(time_axis_corr,
-                 measurements_comp[sensor.name],
+                 measurements[sensor.name],
                  label='Correlation')
         plt.plot(time_axis_corr,
                  measurements_comp_hilb[sensor.name],
@@ -282,74 +192,6 @@ def envelopes_with_lines(setup: Setup,
         plt.grid()
     plt.subplots_adjust(hspace=0.5)
     plt.show()
-
-
-def plot_data_vs_noiseavg(df, channel='Sensor 1'):
-    """Plot data vs noise average
-    Input:  df with all channels or channel specified by argument
-    Output: Plot of data vs noise average
-    """
-    noise_df = csv_to_df(file_folder='base_data',
-                         file_name='df_average_noise')
-    compare_signals(df[channel], noise_df[channel])
-
-
-def plot_data_subtracted_noise(df, channel='Sensor 1'):
-    """Plot data subtracted by noise average
-    Input:  df with all channels or channel specified by argument
-    Output: Plot of data subtracted by noise average
-    """
-    noise_df = csv_to_df(file_folder='base_data',
-                         file_name='df_average_noise')
-    df_sub_noise = noise_df - df
-    compare_signals(df[channel], df_sub_noise[channel])
-
-
-def plot_data_sub_ffts(df, channel='Sensor 1'):
-    """Plot data subtracted by noise average FFT
-    Input:  df with all channels or channel specified by argument
-    Output: Plot of data subtracted by noise average
-    """
-    noise_df = csv_to_df(file_folder='base_data',
-                         file_name='df_average_noise')
-    noise_df_fft = scipy.fft.fft(noise_df.values, axis=0)
-    df_fft = scipy.fft.fft(df.values, axis=0)
-    df_fft_sub_noise_fft = df_fft - noise_df_fft
-    ax1 = plt.subplot(311)
-    fftfreq_data = scipy.fft.fftfreq(len(df_fft),  1 / SAMPLE_RATE)
-    data_fft = np.fft.fftshift(df_fft)
-    fftfreq_data = np.fft.fftshift(fftfreq_data)
-    plt.grid()
-    plt.title('data')
-    plt.xlabel("Frequency [Hz]")
-    plt.ylabel("Amplitude [dB]")
-    plt.plot(fftfreq_data, 20 * np.log10(np.abs(data_fft)))
-
-    plt.subplot(312, sharey=ax1, sharex=ax1)
-    fftfreq_data_noise = scipy.fft.fftfreq(len(noise_df_fft),  1 / SAMPLE_RATE)
-    data_noise_fft = np.fft.fftshift(noise_df_fft)
-    fftfreq_data_noise = np.fft.fftshift(fftfreq_data_noise)
-    plt.grid()
-    plt.title('noise')
-    plt.xlabel("Frequency [Hz]")
-    plt.ylabel("Amplitude [dB]")
-    plt.plot(fftfreq_data_noise, 20 * np.log10(np.abs(data_noise_fft)))
-
-    plt.subplot(313, sharey=ax1, sharex=ax1)
-    fftfreq_data_sub_noise = scipy.fft.fftfreq(len(df_fft_sub_noise_fft),
-                                               1 / SAMPLE_RATE)
-    data_sub_noise_fft = np.fft.fftshift(df_fft_sub_noise_fft)
-    fftfreq_data_sub_noise = np.fft.fftshift(fftfreq_data_sub_noise)
-    plt.grid()
-    plt.title('data-noise')
-    plt.xlabel("Frequency [Hz]")
-    plt.ylabel("Amplitude [dB]")
-    plt.plot(fftfreq_data_sub_noise, 20 * np.log10(np.abs(data_sub_noise_fft)))
-
-    plt.tight_layout()
-    plt.show()
-    # print(df_sub_noise.head())
-    # compare_signals(df[channel], noise_df[channel])
 
 
 def set_fontsizes():
