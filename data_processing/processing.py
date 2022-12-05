@@ -40,13 +40,11 @@ def var_waveform(measurements: pd.DataFrame,
     return var_waveforms
 
 
-def normalize(data: np.ndarray or pd.DataFrame,
-              min: float = 0,
-              max: float = 1) -> np.ndarray or pd.DataFrame:
+def normalize(data: np.ndarray or pd.DataFrame) -> np.ndarray or pd.DataFrame:
     """Normalize array to be between t_min and t_max"""
     if isinstance(data, pd.DataFrame):
         for chan in data:
-            data.at[0, chan] = normalize(data.at[0, chan], min, max)
+            data.at[0, chan] = normalize(data.at[0, chan])
             data.at[0, chan] = signal.detrend(data.at[0, chan])
     else:
         data = data - np.min(data)
@@ -55,8 +53,6 @@ def normalize(data: np.ndarray or pd.DataFrame,
         else:
             data = np.zeros(data.size)
             return data
-        data = data * (max - min)
-        data = data + min
         data = signal.detrend(data)
     return data
 
@@ -77,6 +73,9 @@ def interpolate_waveform(measurements: pd.DataFrame,
 
 def correct_drift(data_split: pd.DataFrame,
                   data_to_sync_with: pd.DataFrame) -> pd.DataFrame:
+    """Align each chrip in a recording better when split into equal lengths.
+    NOTE:   Also normalizes output and crops each chirp for faster processing.
+    """
     for chan in data_split:
         for chirp in range(len(data_split['Sensor 1'])):
             corr = signal.correlate(data_to_sync_with[chan][0],
@@ -89,5 +88,5 @@ def correct_drift(data_split: pd.DataFrame,
             SHIFT_BY = (np.rint(delay)).astype(int)
             data_split.at[chirp, chan] = np.roll(data_split.at[chirp, chan],
                                                  SHIFT_BY)
-            data_split.at[chirp, chan] = normalize(data_split.at[chirp, chan], 0, 1)
+            data_split.at[chirp, chan] = normalize(data_split.at[chirp, chan])
     return data_split
