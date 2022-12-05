@@ -20,7 +20,7 @@ def find_indices_of_peaks(sig_np, height, plot=False, hilbert=True):
         peak_indices, _ = signal.find_peaks(signal_sqr, height)
     else:
         # Find the peaks of the Hilbert envelope of the signal
-        sig_np_filtered_hilbert = get_hilbert_envelope(sig_np)
+        sig_np_filtered_hilbert = get_hilbert(sig_np)
         peak_indices, _ = signal.find_peaks(sig_np_filtered_hilbert, height)
 
     if peak_indices.size == 0:
@@ -53,7 +53,7 @@ def find_indices_of_peaks(sig_np, height, plot=False, hilbert=True):
     return peak_indices
 
 
-def get_hilbert_envelope(sig: pd.DataFrame or pd.Series or np.ndarray):
+def get_hilbert(sig: pd.DataFrame or pd.Series or np.ndarray):
     """Get the Hilbert envelope for all channels in df"""
     sig_hilb = sig.copy()
     if isinstance(sig, np.ndarray) or isinstance(sig, pd.Series):

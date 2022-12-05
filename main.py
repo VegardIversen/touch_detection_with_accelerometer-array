@@ -7,7 +7,7 @@ import scipy.signal as signal
 
 from constants import CHIRP_CHANNEL_NAMES, SAMPLE_RATE
 from csv_to_df import csv_to_df
-from data_processing.detect_echoes import (get_hilbert_envelope,
+from data_processing.detect_echoes import (get_hilbert,
                                            get_travel_times)
 from data_processing.preprocessing import (compress_chirp,
                                            crop_data,

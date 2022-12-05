@@ -8,7 +8,7 @@ from constants import SAMPLE_RATE
 
 from csv_to_df import csv_to_df
 from data_processing.preprocessing import crop_data
-from data_processing.detect_echoes import get_hilbert_envelope
+from data_processing.detect_echoes import get_hilbert
 from data_viz_files.drawing import plot_legend_without_duplicates
 from data_processing.processing import avg_waveform, var_waveform
 
@@ -161,7 +161,7 @@ def envelopes_with_lines(setup: Setup,
     time_axis_corr = np.linspace(-1000 * len(measurements) / SAMPLE_RATE,
                                  1000 * len(measurements) / SAMPLE_RATE,
                                  (len(measurements)))
-    measurements_comp_hilb = get_hilbert_envelope(measurements)
+    measurements_comp_hilb = get_hilbert(measurements)
 
     for i, sensor in enumerate(setup.sensors):
         plt.subplot(311 + i, sharex=plt.gca())
