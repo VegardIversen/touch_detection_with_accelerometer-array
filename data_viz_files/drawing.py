@@ -3,15 +3,20 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from collections import OrderedDict
 
-from data_processing.detect_echoes import find_mirrored_source, flip_sensors, flip_sources
+from data_processing.detect_echoes import (find_mirrored_source,
+                                           flip_sensors,
+                                           flip_sources)
 from objects import MirroredSensor, MirroredSource, Table, Actuator, Sensor
 
 
-def plot_legend_without_duplicates():
+def plot_legend_without_duplicates(placement: str = None):
     """Avoid duplicate labels in the legend"""
     handles, labels = plt.gca().get_legend_handles_labels()
     by_label = OrderedDict(zip(labels, handles))
-    plt.legend(by_label.values(), by_label.keys(), loc='upper right')
+    if placement:
+        plt.legend(by_label.values(), by_label.keys(), loc=placement)
+    else:
+        plt.legend(by_label.values(), by_label.keys())
 
 
 def plot_legend_without_duplicates_ax(ax):
@@ -78,7 +83,7 @@ def draw_a_setup(sources: np.ndarray, sensors: np.ndarray):
     sources = flip_sources(sources, EDGES_TO_FLIP_AROUND)
     sensors = flip_sensors(sensors, EDGES_TO_FLIP_AROUND)
     [source.draw() for source in sources]
-    [sensor.draw() for sensor in sensors]
+    [sensor.draw() for sensor in sensors[0:1]]
     line_mirr_source = plt.Line2D((mirrored_sources[0].x, sensors[0].x),
                                   (mirrored_sources[0].y, sensors[0].y),
                                   color='black',
@@ -91,7 +96,8 @@ def draw_a_setup(sources: np.ndarray, sensors: np.ndarray):
     plt.axis('scaled')
     plt.xlabel('x (m)')
     plt.ylabel('y (m)')
-    plt.title(f'Visualising a mirrored source\nfor bouncing on edges: {EDGES_TO_FLIP_AROUND}')
+    # plt.title(f'Visualising a mirrored source\nfor bouncing on edges: {EDGES_TO_FLIP_AROUND}')
+    plt.title(f'Visualising a mirrored source\nfor bouncing on edges: bottom and left side')
     plot_legend_without_duplicates()
 
     plt.show()

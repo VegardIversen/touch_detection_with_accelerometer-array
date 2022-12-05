@@ -166,7 +166,7 @@ def flip_sensors(sensors: np.ndarray,
     """
     for edge in edges_to_flip_around:
         for sensor in sensors:
-            new_sensor = MirroredSensor(sensor.coordinates)
+            new_sensor = MirroredSensor(sensor.coordinates, sensor.name)
             if edge == Table.TOP_EDGE:
                 new_sensor.set_coordinates(sensor.coordinates +
                                            np.array([0, 2 * (Table.WIDTH -
