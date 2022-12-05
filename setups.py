@@ -31,7 +31,7 @@ class Setup:
         plt.xlabel('x (m)')
         plt.ylabel('y (m)')
         plot_legend_without_duplicates()
-        plt.show()
+        # plt.show()
 
     def get_objects(self):
         return self.actuators, self.sensors
@@ -139,8 +139,8 @@ class Setup3_2(Setup):
         https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
         """
         n = len(measurements[self.sensors[0].name])
-        corr = signal.correlate(measurements[self.sensors[0].name],
-                                measurements[self.sensors[1].name],
+        corr = signal.correlate(measurements[self.sensors[1].name],
+                                measurements[self.sensors[0].name],
                                 mode='same')
         delay_arr = np.linspace(start=-0.5 * n / SAMPLE_RATE,
                                 stop=0.5 * n / SAMPLE_RATE,
