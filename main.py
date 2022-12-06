@@ -23,11 +23,10 @@ from data_viz_files.visualise_data import (compare_signals,
                                            envelopes_with_lines)
 from objects import Table, Actuator, Sensor
 from setups import Setup3_2
-from data_viz_files.drawing import draw_a_setup
+
 
 def main():
-    """CONFIG
-    NOTE:   Set SETUP in setups.py"""
+    """CONFIG"""
     FILE_FOLDER = 'div_files/setup3'
     FILE_NAME = 'sign_integ_test_chirp1_150k_5s_setup3_2_v1'
     SETUP = Setup3_2()
