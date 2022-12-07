@@ -3,7 +3,7 @@ import pandas as pd
 import scipy.signal as signal
 from scipy import interpolate
 
-from constants import CHIRP_CHANNEL_NAMES
+from constants import CHIRP_CHANNEL_NAMES, INTERPOLATION_FACTOR
 
 
 def avg_waveform(measurements: pd.DataFrame,
@@ -40,52 +40,53 @@ def var_waveform(measurements: pd.DataFrame,
     return var_waveforms
 
 
-def normalize(data: np.ndarray or pd.DataFrame,
-              min: float = 0,
-              max: float = 1) -> np.ndarray or pd.DataFrame:
+def normalize(data: np.ndarray or pd.DataFrame) -> np.ndarray or pd.DataFrame:
     """Normalize array to be between t_min and t_max"""
     if isinstance(data, pd.DataFrame):
         for chan in data:
-            data.at[0, chan] = normalize(data.at[0, chan], min, max)
+            data.at[0, chan] = normalize(data.at[0, chan])
             data.at[0, chan] = signal.detrend(data.at[0, chan])
-
     else:
         data = data - np.min(data)
-        data = data / np.max(data)
-        data = data * (max - min)
-        data = data + min
+        if np.max(data) != 0:
+            data = data / np.max(data)
+        else:
+            data = np.zeros(data.size)
+            return data
         data = signal.detrend(data)
     return data
 
 
-def interpolate_waveform(waveform: np.ndarray,
-                         new_length: int) -> np.ndarray:
+def interpolate_waveform(measurements: pd.DataFrame) -> pd.DataFrame:
     """Interpolate waveform to have new_length with numpy"""
-    old_length = waveform.size
-    x = np.linspace(0, old_length, old_length)
-    f = interpolate.interp1d(x, waveform)
-    x_new = np.linspace(0, old_length, new_length)
-    waveform = f(x_new)
-    return waveform
+    new_length = measurements.shape[0] * INTERPOLATION_FACTOR
+    measurements_interp = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES,
+                                       data=np.empty((new_length, measurements.shape[1]), np.ndarray))
+    for chan in measurements:
+        old_length = measurements[chan].size
+        x = np.linspace(0, old_length, old_length)
+        f = interpolate.interp1d(x, measurements[chan], kind='cubic')
+        x_new = np.linspace(0, old_length, new_length)
+        measurements_interp[chan] = f(x_new)
+    return measurements_interp
 
 
 def correct_drift(data_split: pd.DataFrame,
-                  data_to_sync_with: pd.DataFrame,
-                  n_interp: int) -> pd.DataFrame:
+                  data_to_sync_with: pd.DataFrame) -> pd.DataFrame:
+    """Align each chrip in a recording better when split into equal lengths.
+    NOTE:   Also normalizes output and crops each chirp for faster processing.
+    """
     for chan in data_split:
         for chirp in range(len(data_split['Sensor 1'])):
-            """Interpolate the signals for better resolution and drift correction"""
-            data_split.at[chirp, chan] = interpolate_waveform(data_split.at[chirp, chan],
-                                                              new_length=n_interp)
             corr = signal.correlate(data_to_sync_with[chan][0],
                                     data_split[chan][chirp],
                                     mode='same')
-            delay_arr = np.linspace(start=-0.5 * n_interp,
-                                    stop=0.5 * n_interp,
-                                    num=n_interp)
+            delay_arr = np.linspace(start=-0.5 * len(corr),
+                                    stop=0.5 * len(corr),
+                                    num=len(corr))
             delay = delay_arr[np.argmax(corr)]
             SHIFT_BY = (np.rint(delay)).astype(int)
             data_split.at[chirp, chan] = np.roll(data_split.at[chirp, chan],
                                                  SHIFT_BY)
-            data_split.at[chirp, chan] = normalize(data_split.at[chirp, chan], 0, 1)
+            data_split.at[chirp, chan] = normalize(data_split.at[chirp, chan])
     return data_split

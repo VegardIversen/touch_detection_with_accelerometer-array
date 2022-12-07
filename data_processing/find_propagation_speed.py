@@ -7,7 +7,7 @@ from constants import *
 
 from csv_to_df import csv_to_df
 from data_processing.preprocessing import filter_general
-from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_hilbert_envelope
+from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_hilbert
 
 
 def find_propagation_speed_with_delay(df, ch1, ch2, height, distance=0.1, hilbert=True):

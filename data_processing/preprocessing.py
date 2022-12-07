@@ -148,16 +148,19 @@ def crop_data_threshold(data, threshold=0.0006):
     return data_cropped
 
 
-def remove_silence(df, threshold=0.0006):
-    """Takes in a dataframe and removes silence around the signal"""
-    df = df.loc[(df > threshold).any(axis=1)]
-    """Reverse df"""
-    rev = df.iloc[::-1].reset_index(drop=True)
-    """Remove silence from the end_fre"""
-    rev = rev.loc[(rev > threshold).any(axis=1)]
-    """Reverse again"""
-    df_cleand = rev.iloc[::-1].reset_index(drop=True)
-    return df_cleand
+def silence_to_zero(measurements: pd.DataFrame,
+                    length_of_signal_seconds: float,
+                    threshold: float):
+    """Takes in a dataframe and set silence around the signal to zero"""
+    """Find the index of the beginning of the signal"""
+    signal_start_samples = measurements.loc[(np.abs(measurements) > threshold).any(axis=1)].index[0]
+    """Set everything before the signal to zero"""
+    measurements.loc[:signal_start_samples] = 0
+    """Set everything after signal_start + length_of_signal to zero"""
+    length_of_signal_samples = length_of_signal_seconds * SAMPLE_RATE
+    measurements.loc[(signal_start_samples + length_of_signal_samples):] = 0
+    signal_start_seconds = signal_start_samples / SAMPLE_RATE
+    return measurements, signal_start_seconds
 
 
 if __name__ == '__main__':
