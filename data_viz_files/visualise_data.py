@@ -53,6 +53,7 @@ def compare_signals(fig, axs,
                                   noverlap=(nfft // 2))
         spec[3].set_clim(10 * np.log10(np.max(spec[0])) - dynamic_range_db,
                          10 * np.log10(np.max(spec[0])))
+        fig.colorbar(spec[3], ax=axs[i, 1])
         axs[i, 1].sharex(axs[0, 0])
         axs[i, 1].sharey(axs[0, 1])
         axs[i, 1].axis(ymax=freq_max)
