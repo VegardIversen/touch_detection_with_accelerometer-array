@@ -15,11 +15,13 @@ from data_processing.processing import avg_waveform, var_waveform
 
 def compare_signals(fig, axs,
                     data: list,
-                    freq_max: int = 60000,
+                    freq_max: int = 50000,
                     nfft: int = 256,
                     dynamic_range_db: int = 60,
                     log_time_signal: bool = False,
-                    sharey: bool = False):
+                    sharey: bool = False,
+                    signal_start_seconds: int = 0,
+                    signal_length_seconds: int = 5):
     """Visually compare two signals, by plotting:
     time signal, spectogram, fft and (optionally) difference signal
     """
@@ -42,6 +44,8 @@ def compare_signals(fig, axs,
         else:
             axs[i, 0].plot(time_axis, data[i])
         axs[i, 0].set_title(f'{data[i].name}, time signal')
+        axs[i, 0].set_xlim(left=signal_start_seconds,
+                           right=(signal_start_seconds + signal_length_seconds))
         axs[i, 0].set_xlabel('Time [s]')
         axs[i, 0].set_ylabel('Amplitude [V]')
         axs[i, 0].plot()
@@ -83,7 +87,7 @@ def compare_signals(fig, axs,
     """Adjust to look nice in fullscreen view"""
     plt.subplots_adjust(left=0.06, right=0.985,
                         top=0.97, bottom=0.06,
-                        hspace=0.3, wspace=0.2)
+                        hspace=0.348, wspace=0.2)
     # plt.show()
 
 
