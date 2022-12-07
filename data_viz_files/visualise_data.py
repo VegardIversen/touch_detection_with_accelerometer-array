@@ -20,6 +20,7 @@ def compare_signals(fig, axs,
                     dynamic_range_db: int = 60,
                     log_time_signal: bool = False,
                     sharey: bool = False,
+                    plots_to_plot: list = ['time', 'spectrogram', 'fft'],
                     signal_start_seconds: int = 0,
                     signal_length_seconds: int = 5):
     """Visually compare two signals, by plotting:
@@ -30,64 +31,79 @@ def compare_signals(fig, axs,
         if isinstance(data[i], np.ndarray):
             data[i] = pd.Series(data[i], name='Sensor ' + str(i + 1))
 
-        """Time signal"""
-        time_axis = np.linspace(start=0,
-                                stop=len(data[i]) / SAMPLE_RATE,
-                                num=len(data[i]))
-        axs[i, 0].sharex(axs[0, 0])
-        if sharey:
-            axs[i, 0].sharey(axs[0, 0])
-        axs[i, 0].grid()
-        if log_time_signal:
-            axs[i, 0].plot(time_axis, 10 * np.log10(data[i]))
-            axs[i, 0].set_ylim(bottom=np.max(10 * np.log10(data[i])) - 60)
-        else:
-            axs[i, 0].plot(time_axis, data[i])
-        axs[i, 0].set_title(f'{data[i].name}, time signal')
-        axs[i, 0].set_xlim(left=signal_start_seconds,
-                           right=(signal_start_seconds + signal_length_seconds))
-        axs[i, 0].set_xlabel('Time [s]')
-        axs[i, 0].set_ylabel('Amplitude [V]')
-        axs[i, 0].plot()
+        if 'time' in plots_to_plot:
+            time_axis = np.linspace(start=0,
+                                    stop=len(data[i]) / SAMPLE_RATE,
+                                    num=len(data[i]))
+            axs[i, 0].sharex(axs[0, 0])
+            if sharey:
+                axs[i, 0].sharey(axs[0, 0])
+            axs[i, 0].grid()
+            if log_time_signal:
+                axs[i, 0].plot(time_axis, 10 * np.log10(data[i]))
+                axs[i, 0].set_ylim(bottom=np.max(10 * np.log10(data[i])) - 60)
+            else:
+                axs[i, 0].plot(time_axis, data[i])
+            axs[i, 0].set_title(f'{data[i].name}, time signal')
+            axs[i, 0].set_xlim(left=signal_start_seconds,
+                               right=(signal_start_seconds + signal_length_seconds))
+            axs[len(data) - 1, 0].set_xlabel('Time [s]')
+            axs[i, 0].set_ylabel('Amplitude [V]')
+            axs[i, 0].plot()
 
-        """Spectrogram"""
-        spec = axs[i, 1].specgram(data[i],
-                                  Fs=SAMPLE_RATE,
-                                  NFFT=nfft,
-                                  noverlap=(nfft // 2))
-        spec[3].set_clim(10 * np.log10(np.max(spec[0])) - dynamic_range_db,
-                         10 * np.log10(np.max(spec[0])))
-        fig.colorbar(spec[3], ax=axs[i, 1])
-        axs[i, 1].sharex(axs[0, 0])
-        axs[i, 1].sharey(axs[0, 1])
-        axs[i, 1].axis(ymax=freq_max)
-        axs[i, 1].set_title(f'{data[i].name}, spectrogram')
-        axs[i, 1].set_xlabel('Time [s]')
-        axs[i, 1].set_ylabel('Frequency [Hz]')
-        axs[i, 1].plot(sharex=axs[0, 0])
+        if 'spectrogram' in plots_to_plot:
+            """Some logic for correct indexing of the axs array"""
+            if 'time' in plots_to_plot:
+                axs_index = 1
+            else:
+                axs_index = 0
+            spec = axs[i, axs_index].specgram(data[i],
+                                              Fs=SAMPLE_RATE,
+                                              NFFT=nfft,
+                                              noverlap=(nfft // 2))
+            spec[3].set_clim(10 * np.log10(np.max(spec[0])) - dynamic_range_db,
+                             10 * np.log10(np.max(spec[0])))
+            fig.colorbar(spec[3], ax=axs[i, axs_index])
+            axs[i, axs_index].sharex(axs[0, 0])
+            axs[i, axs_index].sharey(axs[0, axs_index])
+            axs[i, axs_index].axis(ymax=freq_max)
+            axs[i, axs_index].set_title(f'{data[i].name}, spectrogram')
+            axs[i, axs_index].set_xlim(left=signal_start_seconds,
+                                       right=(signal_start_seconds +
+                                              signal_length_seconds))
+            axs[len(data) - 1, axs_index].set_xlabel('Time [s]')
+            axs[i, axs_index].set_ylabel('Frequency [Hz]')
+            axs[i, axs_index].plot(sharex=axs[0, 0])
 
-        """FFT"""
-        axs[i, 2].set_xlim(left=0, right=freq_max)
-        data_fft = scipy.fft.fft(data[i].values, axis=0)
-        fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / SAMPLE_RATE)
-        data_fft = np.fft.fftshift(data_fft)[len(data[i]) // 2:]
-        fftfreq = np.fft.fftshift(fftfreq)[len(data[i]) // 2:]
-        axs[i, 2].sharex(axs[0, 2])
-        if sharey:
-            axs[i, 2].sharey(axs[0, 2])
-        axs[i, 2].grid()
-        axs[i, 2].set_title(f'{data[i].name}, FFT')
-        axs[i, 2].set_xlabel("Frequency [Hz]")
-        axs[i, 2].set_ylabel("Amplitude [dB]")
-        axs[i, 2].plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
-        # data_fft_phase = data_fft
-        # data_fft_phase[data_fft_phase < 0.1] = 0
-        # plt.plot(fftfreq, (np.angle( data_fft_phase, deg=True)))
+        if 'fft' in plots_to_plot:
+            """Some logic for correct indexing of the axs array"""
+            if ('time' in plots_to_plot) and ('spectrogram' in plots_to_plot):
+                axs_index = 2
+            elif ('time' in plots_to_plot) ^ ('spectrogram' in plots_to_plot):
+                axs_index = 1
+            else:
+                axs_index = 0
+            axs[i, axs_index].set_xlim(left=0, right=freq_max)
+            data_fft = scipy.fft.fft(data[i].values, axis=0)
+            fftfreq = scipy.fft.fftfreq(len(data_fft),  1 / SAMPLE_RATE)
+            data_fft = np.fft.fftshift(data_fft)[len(data[i]) // 2:]
+            fftfreq = np.fft.fftshift(fftfreq)[len(data[i]) // 2:]
+            axs[i, axs_index].sharex(axs[0, axs_index])
+            if sharey:
+                axs[i, axs_index].sharey(axs[0, axs_index])
+            axs[i, axs_index].grid()
+            axs[i, axs_index].set_title(f'{data[i].name}, FFT')
+            axs[len(data) - 1, axs_index].set_xlabel("Frequency [Hz]")
+            axs[i, axs_index].set_ylabel("Amplitude [dB]")
+            axs[i, axs_index].plot(fftfreq, 20 * np.log10(np.abs(data_fft)))
+            # data_fft_phase = data_fft
+            # data_fft_phase[data_fft_phase < 0.1] = 0
+            # plt.plot(fftfreq, (np.angle( data_fft_phase, deg=True)))
 
     """Adjust to look nice in fullscreen view"""
-    plt.subplots_adjust(left=0.06, right=0.985,
-                        top=0.97, bottom=0.06,
-                        hspace=0.348, wspace=0.2)
+    plt.subplots_adjust(left=0.125, right=0.98,
+                        top=0.96, bottom=0.064,
+                        hspace=0.28, wspace=0.2)
     # plt.show()
 
 
