@@ -148,9 +148,9 @@ def crop_data_threshold(data, threshold=0.0006):
     return data_cropped
 
 
-def silence_to_zero(measurements: pd.DataFrame,
-                    length_of_signal_seconds: float,
-                    threshold: float):
+def zero_all_but_signal(measurements: pd.DataFrame,
+                        length_of_signal_seconds: float,
+                        threshold: float):
     """Takes in a dataframe and set silence around the signal to zero"""
     """Find the index of the beginning of the signal"""
     signal_start_samples = measurements.loc[(np.abs(measurements) > threshold).any(axis=1)].index[0]
