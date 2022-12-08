@@ -151,6 +151,14 @@ class Setup3_2(Setup):
         return propagation_speed
 
 
+class Setup3_2_without_sensor2(Setup3_2):
+    sensors = np.empty(shape=2, dtype=Sensor)
+    sensors[0] = Sensor(coordinates=np.array([0.135, 0.305]),
+                        name='Sensor 1')
+    sensors[1] = Sensor(sensors[0].coordinates + np.array([2 * 0.267, 0]),
+                        name='Sensor 3')
+
+
 class Setup3_4(Setup3_2):
     """Sensor 3 even closer to the edge of the table"""
     def __init__(self):
