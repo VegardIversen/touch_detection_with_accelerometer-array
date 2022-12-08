@@ -124,14 +124,6 @@ def compare_signals(fig, axs,
                                        top=120)
             axs[i, axs_index].plot(fftfreq, data_fft_dB)
 
-    """Use scientific notation"""
-    # for ax in axs.flat:
-    #     ax.ticklabel_format(axis='y', style='sci', scilimits=(-2, 2))
-    """Adjust to look nice in fullscreen view"""
-    plt.subplots_adjust(left=0.12, right=0.99,
-                        top=0.955, bottom=0.07,
-                        hspace=0.28, wspace=0.2)
-
 
 def wave_statistics(fig, axs, data: pd.DataFrame):
     """Plot average and variance of waveform.
