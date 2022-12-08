@@ -3,7 +3,7 @@ import pandas as pd
 import scipy.signal as signal
 from scipy import interpolate
 
-from constants import CHIRP_CHANNEL_NAMES
+from constants import CHIRP_CHANNEL_NAMES, INTERPOLATION_FACTOR
 
 
 def avg_waveform(measurements: pd.DataFrame,
@@ -57,11 +57,11 @@ def normalize(data: np.ndarray or pd.DataFrame) -> np.ndarray or pd.DataFrame:
     return data
 
 
-def interpolate_waveform(measurements: pd.DataFrame,
-                         new_length: int) -> pd.DataFrame:
+def interpolate_waveform(measurements: pd.DataFrame) -> pd.DataFrame:
     """Interpolate waveform to have new_length with numpy"""
+    new_length = measurements.shape[0] * INTERPOLATION_FACTOR
     measurements_interp = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES,
-                                       data=np.empty((new_length, 4), np.ndarray))
+                                       data=np.empty((new_length, measurements.shape[1]), np.ndarray))
     for chan in measurements:
         old_length = measurements[chan].size
         x = np.linspace(0, old_length, old_length)

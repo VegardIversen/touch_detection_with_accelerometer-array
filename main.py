@@ -5,13 +5,14 @@ import numpy as np
 import pandas as pd
 import scipy.signal as signal
 
-from constants import CHIRP_CHANNEL_NAMES, SAMPLE_RATE, INTERP_FACTOR
+from constants import CHIRP_CHANNEL_NAMES, SAMPLE_RATE, INTERPOLATION_FACTOR
 from csv_to_df import csv_to_df
 from data_processing.detect_echoes import (get_hilbert,
                                            get_travel_times)
 from data_processing.preprocessing import (compress_chirp,
                                            crop_data,
-                                           filter_general)
+                                           filter_general,
+                                           silence_to_zero)
 from data_processing.processing import (avg_waveform,
                                         interpolate_waveform,
                                         normalize,
@@ -27,14 +28,9 @@ from setups import Setup3_2
 
 def main():
     """CONFIG"""
-    FILE_FOLDER = 'div_files/setup3'
-    FILE_NAME = 'sign_integ_test_chirp1_150k_5s_setup3_2_v1'
+    FILE_FOLDER = 'prop_speed_files/setup3_2'
+    FILE_NAME = 'prop_speed_chirp3_setup3_2_v1'
     SETUP = Setup3_2()
-    CROP = False
-    TIME_START = 1.5   # s
-    TIME_END = 2.1  # s
-    FILTER = False
-    BANDWIDTH = (0, 60000)
 
     """Pyplot adjustments"""
     set_fontsizes()
@@ -46,48 +42,38 @@ def main():
     measurements = csv_to_df(file_folder=FILE_FOLDER,
                              file_name=FILE_NAME)
 
+    """Delete sensor 2 as it doesn't have the required bandwidth"""
+    measurements = measurements.drop(['Sensor 2'], axis='columns')
+    CHIRP_CHANNEL_NAMES.remove('Sensor 2')
+
     """Interpolate waveforms"""
-    measurements = interpolate_waveform(measurements,
-                                        INTERP_FACTOR * measurements['Actuator'].size)
+    measurements = interpolate_waveform(measurements)
 
-    """Calculate wave propagation speed"""
-    prop_speed = SETUP.get_propagation_speed(measurements)
-    print(f'Propagation speed: {np.round(prop_speed, 2)} m/s.')
+    """Set everything but the signal to zero"""
+    signal_length_seconds = 2 + 0.05  # Length of chirp + time for sensor 3 to die down
+    threshold = 0.001  # Determine empirically
+    measurements, signal_start_seconds = silence_to_zero(measurements,
+                                                         signal_length_seconds,
+                                                         threshold)
 
-    """Calculate wave arrival times"""
-    arrival_times = np.array([])
-    for sensor in SETUP.sensors:
-        time, _ = get_travel_times(SETUP.actuators[0],
-                                   sensor,
-                                   prop_speed,
-                                   ms=False,
-                                   print_info=True,
-                                   relative_first_reflection=True)
-        arrival_times = np.append(arrival_times, time)
-
-    """Plot the signal in fullscreen"""
-    fig, axs = plt.subplots(nrows=3, ncols=3, figsize=(16, 9))
-    compare_signals(fig, axs,
-                    [measurements['Sensor 1'],
-                     measurements['Sensor 2'],
-                     measurements['Sensor 3']],
-                     nfft = 1024)
-    # plt.show()
-
-    """Plot the correlation between sensor 1 and sensor 2"""
-    fig, axs = plt.subplots(nrows=3, ncols=3, figsize=(16, 9))
-    compare_signals(fig, axs,
-                    [get_hilbert(measurements['Sensor 1']),
-                     get_hilbert(measurements['Sensor 2']),
-                     get_hilbert(signal.correlate(measurements['Sensor 2'],
-                                                  measurements['Sensor 1'],
-                                                  mode='same'))],
-                    nfft=1024)
-    plt.show()
-
-
-    """Compress chirp signals"""
+    """Compress chirps"""
     measurements = compress_chirp(measurements)
+    COMPRESSED = True
+
+    """Plot the measurements"""
+    plots_to_plot = ['time']
+    fig, axs = plt.subplots(nrows=measurements.shape[1],
+                            ncols=len(plots_to_plot),
+                            figsize=(8, 9),
+                            squeeze=False)
+    compare_signals(fig, axs,
+                    [measurements[channel] for channel in measurements],
+                    nfft=1024,
+                    signal_start_seconds=signal_start_seconds,
+                    signal_length_seconds=signal_length_seconds,
+                    plots_to_plot=plots_to_plot,
+                    compressed_chirps=COMPRESSED)
+    plt.show()
 
 
 if __name__ == '__main__':
