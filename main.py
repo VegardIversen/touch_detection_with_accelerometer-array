@@ -12,7 +12,7 @@ from data_processing.detect_echoes import (get_hilbert,
 from data_processing.preprocessing import (compress_chirp,
                                            crop_data,
                                            filter_general,
-                                           silence_to_zero)
+                                           zero_all_but_signal)
 from data_processing.processing import (avg_waveform,
                                         interpolate_waveform,
                                         normalize,
@@ -52,9 +52,9 @@ def main():
     """Set everything but the signal to zero"""
     signal_length_seconds = 2 + 0.05  # Length of chirp + time for sensor 3 to die down
     threshold = 0.001  # Determine empirically
-    measurements, signal_start_seconds = silence_to_zero(measurements,
-                                                         signal_length_seconds,
-                                                         threshold)
+    measurements, signal_start_seconds = zero_all_but_signal(measurements,
+                                                             signal_length_seconds,
+                                                             threshold)
 
     """Plot the raw measurements"""
     plots_to_plot = ['time']
