@@ -121,17 +121,17 @@ class Setup3_2(Setup):
     actuators = np.empty(shape=1, dtype=Actuator)
     sensors = np.empty(shape=3, dtype=Sensor)
 
+    sensors[0] = Sensor(coordinates=np.array([0.135, 0.305]),
+                        name='Sensor 1')
+    sensors[1] = Sensor(coordinates=(sensors[0].coordinates + np.array([0.267, 0])),
+                        name='Sensor 2')
+    sensors[2] = Sensor(sensors[1].coordinates + np.array([0.267, 0]),
+                        name='Sensor 3')
+    actuators[0] = Actuator(np.array([sensors[0].x / 2,
+                                      sensors[0].y]))
+
     def __init__(self):
-        self.sensors[0] = Sensor(coordinates=np.array([0.135, 0.305]),
-                                 name='Sensor 1')
-        self.sensors[1] = Sensor(coordinates=(self.sensors[0].coordinates +
-                                              np.array([0.267, 0])),
-                                 name='Sensor 2')
-        self.sensors[2] = Sensor(self.sensors[1].coordinates +
-                                 np.array([0.267, 0]),
-                                 name='Sensor 3')
-        self.actuators[0] = Actuator(np.array([self.sensors[0].x / 2,
-                                               self.sensors[0].y]))
+        pass
 
     def get_propagation_speed(self, measurements: pd.DataFrame):
         """Use the cross correlation between the two channels
