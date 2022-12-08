@@ -148,19 +148,20 @@ def crop_data_threshold(data, threshold=0.0006):
     return data_cropped
 
 
-def zero_all_but_signal(measurements: pd.DataFrame,
-                        length_of_signal_seconds: float,
-                        threshold: float):
+def window_signals(signals: pd.DataFrame,
+                   length_of_signal_seconds: float,
+                   threshold: float):
     """Takes in a dataframe and set silence around the signal to zero"""
     """Find the index of the beginning of the signal"""
-    signal_start_samples = measurements.loc[(np.abs(measurements) > threshold).any(axis=1)].index[0]
+    signal_start_samples = signals.loc[(np.abs(signals) >
+                                        threshold).any(axis=1)].index[0]
     """Set everything before the signal to zero"""
-    measurements.loc[:signal_start_samples] = 0
+    signals.loc[:signal_start_samples] = 0
     """Set everything after signal_start + length_of_signal to zero"""
     length_of_signal_samples = length_of_signal_seconds * SAMPLE_RATE
-    measurements.loc[(signal_start_samples + length_of_signal_samples):] = 0
+    signals.loc[(signal_start_samples + length_of_signal_samples):] = 0
     signal_start_seconds = signal_start_samples / SAMPLE_RATE
-    return measurements, signal_start_seconds
+    return signals, signal_start_seconds
 
 
 if __name__ == '__main__':

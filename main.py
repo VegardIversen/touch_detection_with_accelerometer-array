@@ -52,9 +52,9 @@ def main():
     """Set everything but the signal to zero"""
     signal_length_seconds = 2 + 0.05  # Length of chirp + time for sensor 3 to die down
     threshold = 0.001  # Determine empirically
-    measurements, signal_start_seconds = zero_all_but_signal(measurements,
-                                                             signal_length_seconds,
-                                                             threshold)
+    measurements, signal_start_seconds = window_signals(measurements,
+                                                        signal_length_seconds,
+                                                        threshold)
 
     """Compress chirps"""
     measurements = compress_chirp(measurements)
