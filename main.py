@@ -56,7 +56,11 @@ def main():
                                                          signal_length_seconds,
                                                          threshold)
 
-    """Plot the raw measurements"""
+    """Compress chirps"""
+    measurements = compress_chirp(measurements)
+    COMPRESSED = True
+
+    """Plot the measurements"""
     plots_to_plot = ['time']
     fig, axs = plt.subplots(nrows=measurements.shape[1],
                             ncols=len(plots_to_plot),
@@ -67,7 +71,8 @@ def main():
                     nfft=1024,
                     signal_start_seconds=signal_start_seconds,
                     signal_length_seconds=signal_length_seconds,
-                    plots_to_plot=plots_to_plot)
+                    plots_to_plot=plots_to_plot,
+                    compressed_chirps=COMPRESSED)
     plt.show()
 
 
