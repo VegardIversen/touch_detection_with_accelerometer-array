@@ -22,8 +22,8 @@ def compare_signals(fig, axs,
                     sharey: bool = False,
                     plots_to_plot: list = ['time', 'spectrogram', 'fft'],
                     compressed_chirps: bool = False,
-                    signal_start_seconds: int = 0,
-                    signal_length_seconds: int = 5):
+                    signal_start_seconds: float = 0,
+                    signal_length_seconds: float = 5):
     """Visually compare two signals, by plotting:
     time signal, spectogram, and fft.
     NOTE:   ['time', 'spectrogram', 'fft'] has to be in this order,
