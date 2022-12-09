@@ -25,7 +25,8 @@ from data_processing.processing import (avg_waveform,
                                         correct_drift)
 from data_visualization.visualize_data import (compare_signals,
                                                wave_statistics,
-                                               envelopes_with_lines)
+                                               envelopes_with_lines,
+                                               subplots_adjust)
 from setups import (Setup,
                     Setup3_2_without_sensor2,
                     Setup7)
@@ -85,9 +86,6 @@ def plot_time_signals_setup3_2(measurements: pd.DataFrame,
                                signal_length_seconds: float) -> None:
     """SETTINGS FOR PLOTTING"""
     plots_to_plot = ['time']
-    subplots_adjust = {'left': 0.125, 'right': 0.965,
-                       'top': 0.955, 'bottom': 0.07,
-                       'hspace': 0.28, 'wspace': 0.2}
 
     """Plot the raw measurements"""
     fig, axs = plt.subplots(nrows=measurements.shape[1],
@@ -102,12 +100,7 @@ def plot_time_signals_setup3_2(measurements: pd.DataFrame,
                     compressed_chirps=False)
 
     """Adjust for correct spacing in plot"""
-    plt.subplots_adjust(left=subplots_adjust['left'],
-                        right=subplots_adjust['right'],
-                        top=subplots_adjust['top'],
-                        bottom=subplots_adjust['bottom'],
-                        hspace=subplots_adjust['hspace'],
-                        wspace=subplots_adjust['wspace'])
+    subplots_adjust('time', rows=3, columns=1)
 
     """Compress chirps"""
     measurements = compress_chirp(measurements)
@@ -129,12 +122,7 @@ def plot_time_signals_setup3_2(measurements: pd.DataFrame,
         ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
 
     """Adjust for correct spacing in plot"""
-    plt.subplots_adjust(left=subplots_adjust['left'],
-                        right=subplots_adjust['right'],
-                        top=subplots_adjust['top'],
-                        bottom=subplots_adjust['bottom'],
-                        hspace=subplots_adjust['hspace'],
-                        wspace=subplots_adjust['wspace'])
+    subplots_adjust('time', rows=3, columns=1)
 
 
 def plot_spectrogram_signals_setup3_2(measurements: pd.DataFrame,
@@ -143,9 +131,6 @@ def plot_spectrogram_signals_setup3_2(measurements: pd.DataFrame,
     """SETTINGS FOR PLOTTING"""
     NFFT = 1024
     plots_to_plot = ['spectrogram']
-    subplots_adjust = {'left': 0.125, 'right': 1.05,
-                       'top': 0.955, 'bottom': 0.07,
-                       'hspace': 0.28, 'wspace': 0.2}
 
     """Plot the raw measurements"""
     fig, axs = plt.subplots(nrows=measurements.shape[1],
@@ -161,12 +146,7 @@ def plot_spectrogram_signals_setup3_2(measurements: pd.DataFrame,
                     compressed_chirps=False)
 
     """Adjust for correct spacing in plot"""
-    plt.subplots_adjust(left=subplots_adjust['left'],
-                        right=subplots_adjust['right'],
-                        top=subplots_adjust['top'],
-                        bottom=subplots_adjust['bottom'],
-                        hspace=subplots_adjust['hspace'],
-                        wspace=subplots_adjust['wspace'])
+    subplots_adjust('spectrogram', rows=3, columns=1)
 
     """Compress chirps"""
     measurements = compress_chirp(measurements)
@@ -185,12 +165,7 @@ def plot_spectrogram_signals_setup3_2(measurements: pd.DataFrame,
                     compressed_chirps=True)
 
     """Adjust for correct spacing in plot"""
-    plt.subplots_adjust(left=subplots_adjust['left'],
-                        right=subplots_adjust['right'],
-                        top=subplots_adjust['top'],
-                        bottom=subplots_adjust['bottom'],
-                        hspace=subplots_adjust['hspace'],
-                        wspace=subplots_adjust['wspace'])
+    subplots_adjust('spectrogram', rows=3, columns=1)
 
 
 def plot_fft_signals_setup_3_2(measurements: pd.DataFrame,
@@ -198,9 +173,6 @@ def plot_fft_signals_setup_3_2(measurements: pd.DataFrame,
                                signal_length_seconds: float) -> None:
     """SETTINGS FOR PLOTTING"""
     plots_to_plot = ['fft']
-    subplots_adjust = {'left': 0.125, 'right': 0.95,
-                       'top': 0.955, 'bottom': 0.07,
-                       'hspace': 0.28, 'wspace': 0.2}
 
     """Plot the raw measurements"""
     fig, axs = plt.subplots(nrows=measurements.shape[1],
@@ -215,12 +187,7 @@ def plot_fft_signals_setup_3_2(measurements: pd.DataFrame,
                     compressed_chirps=False)
 
     """Adjust for correct spacing in plot"""
-    plt.subplots_adjust(left=subplots_adjust['left'],
-                        right=subplots_adjust['right'],
-                        top=subplots_adjust['top'],
-                        bottom=subplots_adjust['bottom'],
-                        hspace=subplots_adjust['hspace'],
-                        wspace=subplots_adjust['wspace'])
+    subplots_adjust('fft', rows=3, columns=1)
 
     """Limit y axis"""
     for ax in axs.flatten():
@@ -242,12 +209,7 @@ def plot_fft_signals_setup_3_2(measurements: pd.DataFrame,
                     compressed_chirps=True)
 
     """Adjust for correct spacing in plot"""
-    plt.subplots_adjust(left=subplots_adjust['left'],
-                        right=subplots_adjust['right'],
-                        top=subplots_adjust['top'],
-                        bottom=subplots_adjust['bottom'],
-                        hspace=subplots_adjust['hspace'],
-                        wspace=subplots_adjust['wspace'])
+    subplots_adjust('fft', rows=3, columns=1)
 
     """Limit y axis"""
     for ax in axs.flatten():
@@ -303,6 +265,9 @@ def plot_raw_time_signal_setup7(measurements: pd.DataFrame):
     ax.set_ylabel('Amplitude (mV)')
     ax.legend()
     ax.grid()
+
+    """Adjust for correct spacing in plot"""
+    subplots_adjust('time', rows=1, columns=1)
 
 
 if __name__ == '__main__':

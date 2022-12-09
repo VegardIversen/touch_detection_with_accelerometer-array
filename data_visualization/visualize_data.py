@@ -237,7 +237,6 @@ def set_fontsizes():
     SMALL_SIZE = 12
     MEDIUM_SIZE = 15
     BIGGER_SIZE = 20
-
     plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
     plt.rc('axes', titlesize=MEDIUM_SIZE)     # fontsize of the axes title
     plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
@@ -247,13 +246,28 @@ def set_fontsizes():
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 
-def set_window_size():
-    """Set window size"""
-    # Get screen size
-    screen_size = plt.rcParams['figure.figsize']
-    # Set window size
-    plt.rcParams['figure.figsize'] = [screen_size[0] * 1.5,
-                                      screen_size[1] * 1.5]
+def subplots_adjust(signal_type: str, rows: int, columns: int):
+    """Adjust the subplots for the 1 column plots.
+    Insert this function before starting a new subplot
+    or before the plt.show() function.
+    Choose between signal_type: ['time', 'spectrogram', 'fft'].
+    """
+    if signal_type == 'time' and rows == 1 and columns == 1:
+        plt.subplots_adjust(left=0.12, right=0.99,
+                            top=0.9, bottom=0.2,
+                            hspace=0.28, wspace=0.2)
+    elif signal_type == 'time' and rows == 3 and columns == 1:
+        plt.subplots_adjust(left=0.125, right=0.965,
+                            top=0.955, bottom=0.07,
+                            hspace=0.28, wspace=0.2)
+    elif signal_type == 'spectrogram' and rows == 3 and columns == 1:
+        plt.subplots_adjust(left=0.125, right=1.05,
+                            top=0.955, bottom=0.07,
+                            hspace=0.28, wspace=0.2)
+    elif signal_type == 'fft' and rows == 3 and columns == 1:
+        plt.subplots_adjust(left=0.125, right=0.95,
+                            top=0.955, bottom=0.07,
+                            hspace=0.28, wspace=0.2)
 
 
 if __name__ == '__main__':
