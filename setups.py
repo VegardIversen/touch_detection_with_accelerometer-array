@@ -8,10 +8,10 @@ import pandas as pd
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 
-from constants import SAMPLE_RATE
+from global_constants import SAMPLE_RATE
 from objects import Table, Actuator, Sensor
 
-from data_viz_files.drawing import plot_legend_without_duplicates
+from data_visualization.drawing import plot_legend_without_duplicates
 
 
 class Setup:

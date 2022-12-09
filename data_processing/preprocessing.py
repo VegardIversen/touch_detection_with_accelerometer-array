@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy import signal
 
-from constants import SAMPLE_RATE
+from global_constants import SAMPLE_RATE
 
 
 """FILTERING"""
@@ -117,12 +117,11 @@ def crop_data(sig: pd.DataFrame or np.ndarray,
     """Crop either DataFrame input, pandas series or a numpy array input.
     NOTE:   Not really finished testing yet.
     """
-    # Some logic for assuming cropping type and length
+    """Some logic for assuming cropping type and length"""
     if (time_start or time_start == 0) and not time_end:
         time_end = len(sig) / SAMPLE_RATE
     elif time_end and not (time_start or time_start == 0):
         time_start = 0
-
     if (time_start or time_start == 0) and time_end:
         if isinstance(sig, np.ndarray):
             data_cropped = sig[int(time_start * SAMPLE_RATE):

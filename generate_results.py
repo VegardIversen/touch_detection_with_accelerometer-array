@@ -23,10 +23,9 @@ from data_processing.processing import (avg_waveform,
                                         normalize,
                                         var_waveform,
                                         correct_drift)
-from data_viz_files.visualise_data import (compare_signals,
-                                           wave_statistics,
-                                           set_fontsizes,
-                                           envelopes_with_lines)
+from data_visualization.visualize_data import (compare_signals,
+                                               wave_statistics,
+                                               envelopes_with_lines)
 from setups import (Setup,
                     Setup3_2_without_sensor2,
                     Setup7)
@@ -58,9 +57,6 @@ def results_setup3_2():
     SETUP = Setup3_2_without_sensor2()
     """Draw setup"""
     SETUP.draw()
-
-    """Pyplot adjustments"""
-    set_fontsizes()
 
     """Interpolate waveforms"""
     measurements = interpolate_waveform(measurements)
@@ -276,7 +272,6 @@ def results_setup7():
     TIME_START = 0.114  # s
     TIME_END = 0.246  # s
 
-    set_fontsizes()
 
     SETUP.draw()
 

@@ -3,7 +3,7 @@ import pandas as pd
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 
-from constants import SAMPLE_RATE
+from global_constants import SAMPLE_RATE
 from objects import MirroredSensor, MirroredSource, Table, Actuator, Sensor
 
 

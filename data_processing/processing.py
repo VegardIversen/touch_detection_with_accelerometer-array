@@ -3,7 +3,7 @@ import pandas as pd
 import scipy.signal as signal
 from scipy import interpolate
 
-from constants import CHIRP_CHANNEL_NAMES, INTERPOLATION_FACTOR
+from global_constants import CHIRP_CHANNEL_NAMES, INTERPOLATION_FACTOR
 
 
 def avg_waveform(measurements: pd.DataFrame,

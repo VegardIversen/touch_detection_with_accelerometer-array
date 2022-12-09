@@ -4,12 +4,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from setups import Setup
-from constants import SAMPLE_RATE
+from global_constants import SAMPLE_RATE
 
 from csv_to_df import csv_to_df
 from data_processing.preprocessing import crop_data
 from data_processing.detect_echoes import get_hilbert
-from data_viz_files.drawing import plot_legend_without_duplicates
+from data_visualization.drawing import plot_legend_without_duplicates
 from data_processing.processing import avg_waveform, var_waveform
 
 
