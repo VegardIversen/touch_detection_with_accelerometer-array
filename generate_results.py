@@ -285,6 +285,54 @@ def transfer_function_setup3_2(measurements: pd.DataFrame,
     axs[1, 0].plot(fft_frequencies, simulated_phase_velocities)
     axs[1, 0].legend(['Measured', 'Simulated'])
 
+
+
+def find_and_plot_power_loss(measurements: pd.DataFrame,
+                             signal_start_seconds: float,
+                             signal_length_seconds: float,
+                             SETUP: Setup):
+    """Find the power of the signal with RMS"""
+    signal_rms = np.sqrt(np.mean(measurements ** 2))
+    signal_power = signal_rms ** 2
+    power_loss_sensor1_to_sensor_3 = signal_power[2] / signal_power[0]
+    power_loss_sensor1_to_sensor_3_dB = to_dB(power_loss_sensor1_to_sensor_3)
+    print(f'Power loss sensor 1 to sensor 3: {power_loss_sensor1_to_sensor_3_dB} dB')
+
+    """Compress chirps"""
+    measurements = compress_chirp(measurements)
+
+    """Plot the measurements"""
+    plots_to_plot = ['fft']
+    fig, axs = plt.subplots(nrows=1,
+                            ncols=len(plots_to_plot),
+                            figsize=FIGSIZE_ONE_SIGNAL,
+                            squeeze=False)
+    compare_signals(fig, axs,
+                    [measurements['Sensor 1']],
+                    signal_start_seconds=signal_start_seconds,
+                    signal_length_seconds=signal_length_seconds,
+                    plots_to_plot=plots_to_plot,
+                    compressed_chirps=True)
+    compare_signals(fig, axs,
+                    [measurements['Sensor 3']],
+                    signal_start_seconds=signal_start_seconds,
+                    signal_length_seconds=signal_length_seconds,
+                    plots_to_plot=plots_to_plot,
+                    compressed_chirps=True)
+    for ax in axs.flatten():
+        ax.grid()
+    distance_between_sensors = np.linalg.norm(SETUP.sensors[2].coordinates -
+                                              SETUP.sensors[0].coordinates)
+    axs[0, 0].set_title('FFT of sensor 1 and sensor 3, ' +
+                        f'{distance_between_sensors} meters apart')
+    axs[0, 0].legend(['Sensor 1', 'Sensor 3'])
+    axs[0, 0].set_ylim(bottom=-25, top=80)
+
+    """Adjust for correct spacing in plot"""
+    subplots_adjust('fft', rows=1, columns=1)
+
+
+
 """Setup 7"""
 
 
