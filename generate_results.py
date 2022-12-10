@@ -348,9 +348,8 @@ def results_setup7():
     FILE_FOLDER = 'setup7'
     FILE_NAME = 'notouchThenHoldB2_20to40khz_125ms_10vpp_v1'
     SETUP = Setup7()
-    TIME_START = 0.114  # s
-    TIME_END = 0.246  # s
-
+    TIME_START = 0.114 + 0.0036  # s
+    TIME_END = 0.246 - 0.0035  # s
 
     SETUP.draw()
 
@@ -359,10 +358,13 @@ def results_setup7():
                              file_name=FILE_NAME,
                              channel_names=CHIRP_CHANNEL_NAMES)
 
+    """Interpolate waveforms"""
+    measurements = interpolate_waveform(measurements)
+
     """Crop data"""
-    # measurements = crop_data(measurements,
-    #                          time_start=TIME_START,
-    #                          time_end=TIME_END)
+    measurements = crop_data(measurements,
+                             time_start=TIME_START,
+                             time_end=TIME_END)
 
     plot_raw_time_signal_setup7(measurements)
     plt.show()
@@ -377,7 +379,7 @@ def plot_raw_time_signal_setup7(measurements: pd.DataFrame):
                            ncols=1,
                            figsize=FIGSIZE_ONE_SIGNAL)
     ax.set_title('Chirp from 20 khz to 40 kHz in 125 ms')
-    ax.plot(time_axis, 1000 * measurements['Sensor 1'], label='Sensor 1')
+    ax.plot(time_axis, measurements['Sensor 1'], label='Sensor 1')
     ax.set_xlabel('Time (ms)')
     ax.set_ylabel('Amplitude (mV)')
     ax.legend()
