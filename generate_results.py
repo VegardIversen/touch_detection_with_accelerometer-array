@@ -3,6 +3,7 @@ This will be a collection of functions that will be called
 and print and plot different results with a common configuration.
 """
 import scipy
+import scipy.signal as signal
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -12,6 +13,7 @@ from global_constants import (CHIRP_CHANNEL_NAMES,
                               FIGSIZE_ONE_SIGNAL,
                               FIGSIZE_ONE_COLUMN)
 from csv_to_df import csv_to_df
+from simulations import phase_velocities_chipboard
 from data_processing.detect_echoes import (get_hilbert,
                                            get_travel_times)
 from data_processing.preprocessing import (compress_chirp,
@@ -29,7 +31,7 @@ from data_visualization.visualize_data import (compare_signals,
                                                envelopes_with_lines,
                                                subplots_adjust)
 from setups import (Setup,
-                    Setup3_2_without_sensor2,
+                    Setup3_2,
                     Setup7)
 
 
@@ -52,11 +54,11 @@ def results_setup3_2():
                              file_name=FILE_NAME)
 
     """Delete sensor 2 as it doesn't have the required bandwidth"""
-    measurements = measurements.drop(['Sensor 2'], axis='columns')
-    CHIRP_CHANNEL_NAMES.remove('Sensor 2')
+    # measurements = measurements.drop(['Sensor 2'], axis='columns')
+    # CHIRP_CHANNEL_NAMES.remove('Sensor 2')
 
     """Choose setup"""
-    SETUP = Setup3_2_without_sensor2()
+    SETUP = Setup3_2()
     """Draw setup"""
     SETUP.draw()
 
@@ -70,21 +72,16 @@ def results_setup3_2():
                                                         signal_length_seconds,
                                                         threshold)
 
-    """Run functions to generate results"""
-    plot_time_signals_setup3_2(measurements,
-                               signal_start_seconds,
-                               signal_length_seconds)
-    plot_spectrogram_signals_setup3_2(measurements,
-                                      signal_start_seconds,
-                                      signal_length_seconds)
-    plot_fft_signals_setup_3_2(measurements,
-                               signal_start_seconds,
-                               signal_length_seconds)
+    """Run functions to generate results
+    NOTE:   Only change the functions below this line
+    """
+    transfer_function_setup3_2(measurements,
+                               SETUP)
 
 
 def plot_time_signals_setup3_2(measurements: pd.DataFrame,
                                signal_start_seconds: float,
-                               signal_length_seconds: float) -> None:
+                               signal_length_seconds: float):
     """SETTINGS FOR PLOTTING"""
     plots_to_plot = ['time']
 
@@ -128,9 +125,9 @@ def plot_time_signals_setup3_2(measurements: pd.DataFrame,
 
 def plot_spectrogram_signals_setup3_2(measurements: pd.DataFrame,
                                       signal_start_seconds: float,
-                                      signal_length_seconds: float) -> None:
+                                      signal_length_seconds: float):
     """SETTINGS FOR PLOTTING"""
-    NFFT = 1024
+    NFFT = 2048
     plots_to_plot = ['spectrogram']
 
     """Plot the raw measurements"""
@@ -169,9 +166,9 @@ def plot_spectrogram_signals_setup3_2(measurements: pd.DataFrame,
     subplots_adjust('spectrogram', rows=3, columns=1)
 
 
-def plot_fft_signals_setup_3_2(measurements: pd.DataFrame,
-                               signal_start_seconds: float,
-                               signal_length_seconds: float) -> None:
+def plot_fft_signals_setup3_2(measurements: pd.DataFrame,
+                              signal_start_seconds: float,
+                              signal_length_seconds: float):
     """SETTINGS FOR PLOTTING"""
     plots_to_plot = ['fft']
 
@@ -216,6 +213,77 @@ def plot_fft_signals_setup_3_2(measurements: pd.DataFrame,
     for ax in axs.flatten():
         ax.set_ylim(bottom=-50, top=230)
 
+
+def transfer_function_setup3_2(measurements: pd.DataFrame,
+                               SETUP: Setup):
+    """Calculate the transfer function of the table
+    by dividing the FFT of the direct signal on the output
+    by the FFT of the direct signal on the input,
+    H(f) = Y(f)/X(f),
+    where the signal on sensor 1 is the input and
+    the signal on sensor 3 is the output."""
+
+    """Compress chirps"""
+    measurements = compress_chirp(measurements)
+
+    """Find the FFT of the input signal"""
+    input_signal = measurements['Sensor 1'].values
+    fft_input = scipy.fft.fft(input_signal)
+    fft_frequencies = scipy.fft.fftfreq(fft_input.size,
+                                 d=1 / SAMPLE_RATE)
+    fft_input = np.fft.fftshift(fft_input)
+    fft_frequencies = np.fft.fftshift(fft_frequencies)
+
+    """Find the FFT of the output signal"""
+    output_signal = measurements['Sensor 3'].values
+    fft_output = scipy.fft.fft(output_signal)
+    fft_frequencies = scipy.fft.fftfreq(fft_output.size,
+                                 d=1 / SAMPLE_RATE)
+    fft_output = np.fft.fftshift(fft_output)
+    fft_frequencies = np.fft.fftshift(fft_frequencies)
+
+    """Find the transfer function"""
+    transfer_function = fft_input / fft_output
+
+    """Limit the frequency range to 0-50000 Hz"""
+    transfer_function = transfer_function[(fft_frequencies >= 0) &
+                                          (fft_frequencies <= 45000)]
+    fft_frequencies = fft_frequencies[(fft_frequencies >= 0) &
+                                      (fft_frequencies <= 45000)]
+
+    """Find the amplitude and phase of the transfer function"""
+    transfer_function_amplitude = np.abs(transfer_function)
+    transfer_function_phase = np.unwrap(np.angle(transfer_function)) + 0 * np.pi
+
+    """Find the phase velocity"""
+    distance_between_sensors = np.linalg.norm(SETUP.sensors[1].coordinates -
+                                              SETUP.sensors[0].coordinates)
+    # time_delay = transfer_function_phase / (2 * np.pi * fft_freq)
+    phase_velocities = (2 * np.pi * fft_frequencies) / (transfer_function_phase *
+                                                        distance_between_sensors)
+
+    """Plot the amplitude and the phase of fft_input"""
+    fig, axs = plt.subplots(nrows=2,
+                            ncols=1,
+                            figsize=FIGSIZE_ONE_COLUMN,
+                            squeeze=False,
+                            sharex=True)
+    axs[0, 0].plot(fft_frequencies, transfer_function_phase)
+    axs[0, 0].set_title('Phase of FFT of input signal')
+    axs[0, 0].set_xlabel('Frequency [Hz]')
+    axs[0, 0].set_ylabel('Phase [rad]')
+    # axs[0, 0].set_xlim(left=0, right=50000)
+    axs[0, 0].grid()
+    axs[1, 0].plot(fft_frequencies, phase_velocities)
+    axs[1, 0].set_title('Phase velocity')
+    axs[1, 0].set_xlabel('Frequency [Hz]')
+    axs[1, 0].set_ylabel('v_phase [m/s]')
+    # axs[1, 0].set_xlim(left=700, right=35000)
+    axs[1, 0].grid()
+
+    simulated_phase_velocities = phase_velocities_chipboard(fft_frequencies)
+    axs[1, 0].plot(fft_frequencies, simulated_phase_velocities)
+    axs[1, 0].legend(['Measured', 'Simulated'])
 
 """Setup 7"""
 
