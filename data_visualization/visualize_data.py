@@ -13,7 +13,7 @@ from data_processing.processing import avg_waveform, var_waveform, to_dB
 
 def compare_signals(fig, axs,
                     data: list,
-                    freq_max: int = 50000,
+                    freq_max: int = 45000,
                     nfft: int = 256,
                     dynamic_range_db: int = 60,
                     log_time_signal: bool = False,
@@ -118,8 +118,8 @@ def compare_signals(fig, axs,
             axs[i, axs_index].set_ylabel("Amplitude [dB]")
             axs[i, axs_index].set_xlim(left=0,
                                        right=freq_max)
-            axs[i, axs_index].set_ylim(bottom=-70,
-                                       top=120)
+            axs[i, axs_index].set_ylim(bottom=-25,
+                                       top=80)
             axs[i, axs_index].plot(fftfreq, data_fft_dB)
 
 
@@ -254,6 +254,15 @@ def subplots_adjust(signal_type: str, rows: int, columns: int):
         plt.subplots_adjust(left=0.12, right=0.99,
                             top=0.9, bottom=0.2,
                             hspace=0.28, wspace=0.2)
+    elif signal_type == 'spectrogram' and rows == 1 and columns == 1:
+        # ! Not tested yet
+        plt.subplots_adjust(left=0.125, right=1.05,
+                            top=0.955, bottom=0.07,
+                            hspace=0.28, wspace=0.2)
+    elif signal_type == 'fft' and rows == 1 and columns == 1:
+        plt.subplots_adjust(left=0.1, right=0.95,
+                            top=0.9, bottom=0.15,
+                            hspace=0.28, wspace=0.15)
     elif signal_type == 'time' and rows == 3 and columns == 1:
         plt.subplots_adjust(left=0.125, right=0.965,
                             top=0.955, bottom=0.07,
