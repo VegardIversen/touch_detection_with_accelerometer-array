@@ -90,3 +90,9 @@ def correct_drift(data_split: pd.DataFrame,
                                                  SHIFT_BY)
             data_split.at[chirp, chan] = normalize(data_split.at[chirp, chan])
     return data_split
+
+
+def to_dB(measurements: pd.DataFrame or np.ndarray):
+    """Converts measurements to dB"""
+    measurements_dB = 10 * np.log10(measurements)
+    return measurements_dB

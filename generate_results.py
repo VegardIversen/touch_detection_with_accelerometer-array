@@ -2,10 +2,10 @@
 This will be a collection of functions that will be called
 and print and plot different results with a common configuration.
 """
-import matplotlib.pyplot as plt
+import scipy
 import numpy as np
 import pandas as pd
-import scipy.signal as signal
+import matplotlib.pyplot as plt
 
 from global_constants import (CHIRP_CHANNEL_NAMES,
                               SAMPLE_RATE,
@@ -22,7 +22,8 @@ from data_processing.processing import (avg_waveform,
                                         interpolate_waveform,
                                         normalize,
                                         var_waveform,
-                                        correct_drift)
+                                        correct_drift,
+                                        to_dB)
 from data_visualization.visualize_data import (compare_signals,
                                                wave_statistics,
                                                envelopes_with_lines,

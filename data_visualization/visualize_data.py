@@ -6,11 +6,9 @@ import matplotlib.pyplot as plt
 from setups import Setup
 from global_constants import SAMPLE_RATE
 
-from csv_to_df import csv_to_df
-from data_processing.preprocessing import crop_data
 from data_processing.detect_echoes import get_hilbert
 from data_visualization.drawing import plot_legend_without_duplicates
-from data_processing.processing import avg_waveform, var_waveform
+from data_processing.processing import avg_waveform, var_waveform, to_dB
 
 
 def compare_signals(fig, axs,
@@ -55,8 +53,8 @@ def compare_signals(fig, axs,
                 axs[i, 0].sharey(axs[0, 0])
             axs[i, 0].grid()
             if log_time_signal:
-                axs[i, 0].plot(time_axis, 10 * np.log10(channel))
-                axs[i, 0].set_ylim(bottom=np.max(10 * np.log10(channel)) - 60)
+                axs[i, 0].plot(time_axis, to_dB(channel))
+                axs[i, 0].set_ylim(bottom=np.max(to_dB(channel)) - 60)
             else:
                 axs[i, 0].plot(time_axis, channel)
             axs[i, 0].set_title(f'{channel.name}, time signal')
@@ -87,8 +85,8 @@ def compare_signals(fig, axs,
                 axs[i, axs_index].set_xlim(left=signal_start_seconds,
                                            right=(signal_start_seconds +
                                                   signal_length_seconds))
-            spec[3].set_clim(10 * np.log10(np.max(spec[0])) - dynamic_range_db,
-                             10 * np.log10(np.max(spec[0])))
+            spec[3].set_clim(to_dB(np.max(spec[0])) - dynamic_range_db,
+                             to_dB(np.max(spec[0])))
             fig.colorbar(spec[3], ax=axs[i, axs_index])
             axs[i, axs_index].sharex(axs[0, 0])
             axs[i, axs_index].sharey(axs[0, axs_index])
@@ -107,7 +105,7 @@ def compare_signals(fig, axs,
             else:
                 axs_index = 0
             data_fft = scipy.fft.fft(channel.values, axis=0)
-            data_fft_dB = 20 * np.log10(np.abs(data_fft))
+            data_fft_dB = to_dB(np.abs(data_fft))
             fftfreq = scipy.fft.fftfreq(len(data_fft_dB),  1 / SAMPLE_RATE)
             data_fft_dB = np.fft.fftshift(data_fft_dB)[len(channel) // 2:]
             fftfreq = np.fft.fftshift(fftfreq)[len(channel) // 2:]
@@ -165,8 +163,8 @@ def specgram_with_lines(setup, measurements_comp, arrival_times, bandwidth):
                             Fs=SAMPLE_RATE,
                             NFFT=16,
                             noverlap=(16 // 2))
-        plt.clim(10 * np.log10(np.max(spec[0])) - 60,
-                 10 * np.log10(np.max(spec[0])))
+        plt.clim(to_dB(np.max(spec[0])) - 60,
+                 to_dB(np.max(spec[0])))
         plt.axis(ymax=bandwidth[1] + 20000)
         plt.title('Spectrogram')
         plt.xlabel('Time [s]')
