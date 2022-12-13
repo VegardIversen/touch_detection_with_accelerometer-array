@@ -332,7 +332,6 @@ def find_and_plot_power_loss(measurements: pd.DataFrame,
     subplots_adjust('fft', rows=1, columns=1)
 
 
-
 """Setup 7"""
 
 
@@ -387,6 +386,84 @@ def plot_raw_time_signal_setup7(measurements: pd.DataFrame):
 
     """Adjust for correct spacing in plot"""
     subplots_adjust('time', rows=1, columns=1)
+
+
+"""Generate custom graphs"""
+
+
+def custom_plots():
+    """Generate custom graphs"""
+
+    scattering_figure_3()
+
+
+def scattering_figure_3():
+    """Use coordinates of points along a graph to make a plot"""
+    # ! Not finished yet, polar plot is messed up
+    ka_1 = csv_to_df(file_folder='Data visualisation/Figure datasets/scattering_figure_3',
+                     file_name='ka_1',
+                     channel_names=['r', 'theta'])
+    """Interpolate points"""
+    # ka_1 = interpolate_waveform(ka_1)
+
+    """Plot"""
+    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+    ax.plot(ka_1.theta,
+            ka_1.r,
+            label='Rigid inclusion')
+    ax.legend()
+    ax.grid()
+
+    """Adjust for correct spacing in plot"""
+    subplots_adjust('fft', rows=1, columns=1)
+
+
+def scattering_figure_5():
+    """Use coordinates of points along a graph to make a plot"""
+
+    rigid_inlcusion = csv_to_df(file_folder='Data visualisation/Figure datasets/scattering_figure_5',
+                                file_name='rigid_inclusion',
+                                channel_names=['x', 'y'])
+    steel_thickness_50in = csv_to_df(file_folder='Data visualisation/Figure datasets/scattering_figure_5',
+                                     file_name='steel_thickness_50in',
+                                     channel_names=['x', 'y'])
+    hole = csv_to_df(file_folder='Data visualisation/Figure datasets/scattering_figure_5',
+                     file_name='hole',
+                     channel_names=['x', 'y'])
+    bonded_steel_inclusion_thickness_0_5in = csv_to_df(file_folder='Data visualisation/Figure datasets/scattering_figure_5',
+                                                       file_name='bonded_steel_inclusion_thickness_0_5in',
+                                                       channel_names=['x', 'y'])
+    """Interpolate points"""
+    rigid_inlcusion = interpolate_waveform(rigid_inlcusion)
+    steel_thickness_50in = interpolate_waveform(steel_thickness_50in)
+    hole = interpolate_waveform(hole)
+    bonded_steel_inclusion_thickness_0_5in = interpolate_waveform(bonded_steel_inclusion_thickness_0_5in)
+
+    """Plot"""
+    fig, ax = plt.subplots(nrows=1,
+                           ncols=1,
+                           figsize=FIGSIZE_ONE_SIGNAL)
+    ax.plot(bonded_steel_inclusion_thickness_0_5in.x,
+            bonded_steel_inclusion_thickness_0_5in.y,
+            label='Bonded steel inclusion, thickness 0.5 in')
+    ax.plot(steel_thickness_50in.x,
+            steel_thickness_50in.y,
+            label='Heavy, bonded steel inclusion, thickness 50 in')
+    ax.plot(hole.x,
+            hole.y,
+            label='Limiting case of a hole')
+    ax.plot(rigid_inlcusion.x,
+            rigid_inlcusion.y,
+            label='Rigid inclusion')
+    ax.set_xlabel('ka')
+    ax.set_ylabel(r'$|f(\pi)|/\sqrt{a}$')
+    ax.set_xlim(left=0, right=5)
+    ax.set_ylim(bottom=0, top=4)
+    ax.legend()
+    ax.grid()
+
+    """Adjust for correct spacing in plot"""
+    subplots_adjust('fft', rows=1, columns=1)
 
 
 if __name__ == '__main__':
