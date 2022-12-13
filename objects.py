@@ -120,6 +120,7 @@ class Actuator:
                               fc=self.FILL_COLOUR,
                               ec=self.EDGE_COLOUR,
                               label='Actuator',
+                              #label='Touch point',
                               zorder=10)
         plt.gca().add_patch(actuator)
 

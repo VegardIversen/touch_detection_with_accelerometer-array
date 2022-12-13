@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.widgets import Slider, Button
-
+import scipy
 from objects import Table, Actuator, Sensor
 from setups import Setup2, Setup3, Setup3_2, Setup3_4, Setup6
 from constants import SAMPLE_RATE, CHANNEL_NAMES, CHIRP_CHANNEL_NAMES
@@ -16,7 +16,7 @@ from data_processing.preprocessing import crop_data, filter_general, compress_ch
 from data_processing.detect_echoes import find_first_peak, get_hilbert_envelope, get_travel_times
 from data_processing.find_propagation_speed import find_propagation_speed_with_delay
 from data_viz_files.drawing import plot_legend_without_duplicates
-
+sns.set_theme(style="darkgrid")
 
 def main():
     """CONFIG"""
@@ -25,18 +25,59 @@ def main():
     TIME_END = TIME_START + 0.010  # s
     FILTER = True
     BANDWIDTH = np.array([100, 40000]) #this area the phase velocity is more or less constant, but still differs bwtween the channels
-    SETUP = Setup3_2()
+
 
     
     """Open file"""
     measurements = csv_to_df(file_folder='prop_speed_files/setup3_2',
-                             file_name='prop_speed_chirp3_setup3_2_v8',
+                             file_name='prop_speed_chirp3_setup3_2_v1',
                              channel_names=CHIRP_CHANNEL_NAMES)
     # measurements = csv_to_df(file_folder='first_test_touch_passive_setup2',
     #                           file_name='touch_test_passive_setup2_place_B2_center_v1',
     #                           channel_names=['channel 1', 'channel 2', 'channel 3'])
     """Preprocessing"""
+    chirp = measurements['wave_gen'].to_numpy()
+    s1 = scipy.signal.correlate(measurements['channel 2'].to_numpy(), chirp, mode='same')
+    s2 = scipy.signal.correlate(measurements['channel 3'].to_numpy(), chirp, mode='same')
+    S1 = scipy.fft.fft(s1)
+    S2 = scipy.fft.fft(s2)
+    freq = scipy.fft.fftfreq(len(s1), 1/150000)
+    phase = np.unwrap(np.angle(S2/S1)) 
+    phase_cut = phase[(freq>100) & (freq<40000)]
+    freq_cut = freq[(freq>100) & (freq<40000)]
+    #plot phase
+    plt.plot(freq_cut, phase_cut, label='phase')
+    plt.show()
+    v_ph10 = -2*np.pi*freq_cut*0.267/phase_cut
+    plt.plot(freq_cut, v_ph10, label='v_ph')
+    plt.legend()
+    plt.show()
+    exit()
+    print(type(chirp))
     df1 = measurements.drop(columns=['wave_gen'], axis=1)
+    fig, ax = plt.subplots(nrows=1, ncols=3)
+    time = np.linspace(0, len(df1) / SAMPLE_RATE, num=len(df1))
+    ax[0].plot(time, chirp, label='chirp')
+    ax[0].set_title('Chirp signal')
+    ax[0].set_ylabel(ylabel='Amplitude')
+    ax[0].set_xlabel(xlabel='Time [s]')
+    ax[0].legend()
+
+    spec, specfreq, t, im = ax[1].specgram(chirp, Fs=150000, NFFT=256, noverlap=(256 // 2))
+    plt.colorbar(im, ax=ax[1], label='Amplitude [dB]')
+    im.set_clim(-80,-140)
+    ax[1].set_ylabel(ylabel='Frequency [Hz]')
+    ax[1].axis(ymax=40000)
+    ax[1].set_xlabel(xlabel='Time [s]')
+    ax[1].set_title(f'Spectogram of chirp signal')
+    ax[2].plot(scipy.fft.fftshift(scipy.fft.fftfreq(len(chirp),  1 / 150000)), 20*np.log10(np.abs(scipy.fft.fftshift(scipy.fft.fft(chirp)))))
+    ax[2].set_ylabel(ylabel='Amplitude [dB]')
+    ax[2].set_xlim(left=0, right=40000)
+    ax[2].set_xlabel(xlabel='Frequency [Hz]')
+    ax[2].set_title(f'FFT of chirp signal')
+    plt.tight_layout()
+    plt.show()
+    exit()
     #df1 = measurements
     #create time axis
     compare_signals(measurements['channel 1'],measurements['channel 2'],measurements['channel 3'])

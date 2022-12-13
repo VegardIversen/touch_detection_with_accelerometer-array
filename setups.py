@@ -33,6 +33,7 @@ class Setup:
         plt.xlabel('x (m)')
         plt.ylabel('y (m)')
         plot_legend_without_duplicates()
+        plt.savefig('setup6.png', dpi=300)
         plt.show()
 
     def get_objects(self):
