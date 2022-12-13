@@ -10,8 +10,13 @@ import matplotlib.pyplot as plt
 
 from global_constants import (CHIRP_CHANNEL_NAMES,
                               SAMPLE_RATE,
+                              INTERPOLATION_FACTOR,
                               FIGSIZE_ONE_SIGNAL,
-                              FIGSIZE_ONE_COLUMN)
+                              FIGSIZE_ONE_COLUMN,
+                              FIGSIZE_THREE_COLUMNS,
+                              SENSOR_1,
+                              SENSOR_2,
+                              SENSOR_3)
 from csv_to_df import csv_to_df
 from simulations import phase_velocities_chipboard
 from data_processing.detect_echoes import (get_hilbert,

@@ -84,8 +84,8 @@ def draw_a_setup(sources: np.ndarray, sensors: np.ndarray):
     sensors = flip_sensors(sensors, EDGES_TO_FLIP_AROUND)
     [source.draw() for source in sources]
     [sensor.draw() for sensor in sensors[0:1]]
-    line_mirr_source = plt.Line2D((mirrored_sources[0].x, sensors[0].x),
-                                  (mirrored_sources[0].y, sensors[0].y),
+    line_mirr_source = plt.Line2D((mirrored_sources[0].x, sensors[SENSOR_1].x),
+                                  (mirrored_sources[0].y, sensors[SENSOR_1].y),
                                   color='black',
                                   lw=0.75,
                                   linestyle='--',
