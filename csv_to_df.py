@@ -15,7 +15,7 @@ def csv_to_df(file_folder: str,
     DataFrame with the default column names.
     """
     if platform == 'linux':
-        ROOT_FOLDER = '/mnt/c/Users/nikla/OneDrive - NTNU/NTNU/ProsjektOppgave'
+        ROOT_FOLDER = '/home/niklast/Documents/Specialization_project'
         file_path = f'{ROOT_FOLDER}/{file_folder}/{file_name}.csv'
     else:
         ROOT_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
