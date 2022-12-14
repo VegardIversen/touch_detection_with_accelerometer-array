@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy import signal
+import matplotlib.pyplot as plt
 
 from global_constants import SAMPLE_RATE
 
@@ -150,15 +151,29 @@ def crop_data_threshold(data, threshold=0.0006):
 def window_signals(signals: pd.DataFrame,
                    length_of_signal_seconds: float,
                    threshold: float):
-    """Takes in a dataframe and set silence around the signal to zero"""
+    """Takes in a dataframe and set silence around the signal to zero.
+    TODO:   Use an actual window function, e.g. hamming or tukey.
+    """
     """Find the index of the beginning of the signal"""
     signal_start_samples = signals.loc[(np.abs(signals) >
                                         threshold).any(axis=1)].index[0]
-    """Set everything before the signal to zero"""
-    signals.loc[:signal_start_samples] = 0
-    """Set everything after signal_start + length_of_signal to zero"""
-    length_of_signal_samples = length_of_signal_seconds * SAMPLE_RATE
-    signals.loc[(signal_start_samples + length_of_signal_samples):] = 0
+    length_of_signal_samples = int(length_of_signal_seconds * SAMPLE_RATE)
+    with_window = False
+    if with_window:
+        window = signal.tukey(signal_start_samples + length_of_signal_samples)
+        window = np.pad(window, (0, signals.shape[0] - len(window)), 'constant')
+        _, ax = plt.subplots(nrows=1, ncols=1)
+        ax.plot(window)
+        ax.set_title('Window function')
+        ax.set_xlabel('Samples')
+        for channel in signals:
+            signals[channel] = signals[channel] * window
+    else:
+        """Set everything before the signal to zero"""
+        signals.loc[:signal_start_samples] = 0
+        """Set everything after signal_start + length_of_signal to zero"""
+        signals.loc[(signal_start_samples + length_of_signal_samples):] = 0
+
     signal_start_seconds = signal_start_samples / SAMPLE_RATE
     return signals, signal_start_seconds
 

@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from generate_results import (results_setup3_2,
                               results_setup7,
+                              results_setup9,
                               custom_plots)
 from data_visualization.visualize_data import set_fontsizes
 
@@ -10,6 +11,8 @@ def main():
     set_fontsizes()
 
     results_setup3_2()
+
+    # results_setup9()
 
     # custom_plots()
 

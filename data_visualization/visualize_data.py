@@ -188,7 +188,6 @@ def specgram_with_lines(setup, measurements_comp, arrival_times, bandwidth):
         plt.ylabel('Frequency [Hz]')
         plot_legend_without_duplicates()
     plt.subplots_adjust(hspace=0.5)
-    # plt.show()
 
 
 def envelopes_with_lines(setup: Setup,
@@ -275,6 +274,38 @@ def subplots_adjust(signal_type: str, rows: int, columns: int):
         plt.subplots_adjust(left=0.125, right=0.95,
                             top=0.955, bottom=0.07,
                             hspace=0.28, wspace=0.2)
+
+
+def speed_sliders_book(fig):
+    """Try Vegard's stuff to make sliders
+    NOTE:   Not tested at all and doesn't work.
+    TODO:   Look at later maybe.
+    """
+    # create a slider for the rho value in the range of rho start to rho end
+    rho_slider_spoon_ax = fig.add_axes([0.25, 0.15, 0.65, 0.03])
+
+    rho_slider_spoon = Slider(rho_slider_spoon_ax, 'rho spoon', rho_start, rho_end, valinit=init_rho)
+    rho_slider_furugran_ax = fig.add_axes([0.25, 0.1, 0.65, 0.03])
+
+    rho_slider_furugran = Slider(rho_slider_furugran_ax, 'rho furugran', 400, 700, valinit=550)
+    # create slider for E value in the range of E start to E end
+    E_slider_ax = fig.add_axes([0.25, 0.05, 0.65, 0.03])
+    E_slider_furugran = Slider(E_slider_ax, 'E furugran', 7 * 10**9, 12 * 10**9, valinit=9.5*10**9)
+    # update the graph when the slider is changed
+
+    def update(val):
+        line.set_ydata(get_phase_velocity(frequency[frequency > 0], h, rho_slider_spoon.val, Poisson, E))
+
+        line2.set_ydata(get_phase_velocity(frequency[frequency > 0], h, rho_slider_furugran.val, 0.4, E_slider_furugran.val))
+        fig.canvas.draw_idle()
+
+    # register the update function with the slider
+    rho_slider_spoon.on_changed(update)
+    E_slider_furugran.on_changed(update)
+    rho_slider_furugran.on_changed(update)
+    fig.legend()
+    plt.grid()
+    plt.show()
 
 
 if __name__ == '__main__':

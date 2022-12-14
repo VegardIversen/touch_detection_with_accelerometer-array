@@ -18,7 +18,7 @@ from global_constants import (CHIRP_CHANNEL_NAMES,
                               SENSOR_2,
                               SENSOR_3)
 from csv_to_df import csv_to_df
-from simulations import phase_velocities_chipboard
+from simulations import simulated_phase_velocities
 from data_processing.detect_echoes import (get_hilbert,
                                            get_travel_times)
 from data_processing.preprocessing import (compress_chirp,
@@ -37,7 +37,8 @@ from data_visualization.visualize_data import (compare_signals,
                                                subplots_adjust)
 from setups import (Setup,
                     Setup3_2,
-                    Setup7)
+                    Setup7,
+                    Setup9)
 
 
 """Setup 3_2"""
@@ -53,33 +54,56 @@ def results_setup3_2():
     """
     """Choose file"""
     FILE_FOLDER = 'prop_speed_files/setup3_2'
-    FILE_NAME = 'prop_speed_chirp3_setup3_2_v1'
+    FILE_NAME = 'prop_speed_chirp3_setup3_2_v2'
     """Open file"""
     measurements = csv_to_df(file_folder=FILE_FOLDER,
                              file_name=FILE_NAME)
 
     """Delete sensor 2 as it doesn't have the required bandwidth"""
-    # measurements = measurements.drop(['Sensor 2'], axis='columns')
-    # CHIRP_CHANNEL_NAMES.remove('Sensor 2')
+    measurements = measurements.drop(['Sensor 2'], axis='columns')
+    CHIRP_CHANNEL_NAMES.remove('Sensor 2')
 
     """Choose setup"""
     SETUP = Setup3_2()
     """Draw setup"""
-    SETUP.draw()
+    # SETUP.draw()
 
     """Interpolate waveforms"""
     measurements = interpolate_waveform(measurements)
 
     """Set everything but the signal to zero"""
-    signal_length_seconds = 2 + 0.05  # Length of chirp + time for sensor 3 to die down
-    threshold = 0.001  # Determine empirically
+    direct_signal_seconds_sensor3 = 2 + 0.05  # Length of chirp + time for sensor 3 to die down
+    threshold_amplitude = 0.001  # Determine empirically
     measurements, signal_start_seconds = window_signals(measurements,
-                                                        signal_length_seconds,
-                                                        threshold)
+                                                        direct_signal_seconds_sensor3,
+                                                        threshold_amplitude)
+    """Compress chirps"""
+    measurements = compress_chirp(measurements)
 
+    """Crop the compressed chirps to be only the direct signal"""
+    # measurements.iloc[:(int(SAMPLE_RATE * 0.005))] = 0
+    direct_signal_seconds_sensor1 = 0.00016
+    threshold_amplitude = 1000  # Determine empirically
+    measurements['Sensor 1'], _ = window_signals(pd.DataFrame(measurements['Sensor 1']),
+                                                              direct_signal_seconds_sensor1,
+                                                              threshold_amplitude)
+    # direct_signal_seconds_sensor2 = 0.00025
+    # threshold_amplitude = 500  # Determine empirically
+    # measurements['Sensor 2'], _ = window_signals(pd.DataFrame(measurements['Sensor 2']),
+    #                                                           direct_signal_seconds_sensor2,
+    #                                                           threshold_amplitude)
+    direct_signal_seconds_sensor3 = 0.0002
+    threshold_amplitude = 50  # Determine empirically
+    measurements['Sensor 3'], _ = window_signals((pd.DataFrame(measurements['Sensor 3'])),
+                                                               direct_signal_seconds_sensor3,
+                                                               threshold_amplitude)
     """Run functions to generate results
     NOTE:   Only change the functions below this line
     """
+    find_and_plot_power_loss(measurements,
+                             signal_start_seconds,
+                             direct_signal_seconds_sensor3,
+                             SETUP)
     transfer_function_setup3_2(measurements,
                                SETUP)
 
@@ -228,14 +252,23 @@ def transfer_function_setup3_2(measurements: pd.DataFrame,
     where the signal on sensor 1 is the input and
     the signal on sensor 3 is the output."""
 
-    """Compress chirps"""
-    measurements = compress_chirp(measurements)
+    """Plot the cropped signal"""
+    plots_to_plot = ['time', 'spectrogram', 'fft']
+    fig, axs = plt.subplots(nrows=measurements.shape[1],
+                            ncols=len(plots_to_plot),
+                            figsize=FIGSIZE_THREE_COLUMNS,
+                            squeeze=False)
+    compare_signals(fig, axs,
+                    [measurements[channel] for channel in measurements],
+                    plots_to_plot=plots_to_plot,
+                    compressed_chirps=True,
+                    nfft=128)
 
     """Find the FFT of the input signal"""
     input_signal = measurements['Sensor 1'].values
     fft_input = scipy.fft.fft(input_signal)
     fft_frequencies = scipy.fft.fftfreq(fft_input.size,
-                                 d=1 / SAMPLE_RATE)
+                                        d=1 / SAMPLE_RATE)
     fft_input = np.fft.fftshift(fft_input)
     fft_frequencies = np.fft.fftshift(fft_frequencies)
 
@@ -243,7 +276,7 @@ def transfer_function_setup3_2(measurements: pd.DataFrame,
     output_signal = measurements['Sensor 3'].values
     fft_output = scipy.fft.fft(output_signal)
     fft_frequencies = scipy.fft.fftfreq(fft_output.size,
-                                 d=1 / SAMPLE_RATE)
+                                        d=1 / SAMPLE_RATE)
     fft_output = np.fft.fftshift(fft_output)
     fft_frequencies = np.fft.fftshift(fft_frequencies)
 
@@ -258,14 +291,13 @@ def transfer_function_setup3_2(measurements: pd.DataFrame,
 
     """Find the amplitude and phase of the transfer function"""
     transfer_function_amplitude = np.abs(transfer_function)
-    transfer_function_phase = np.unwrap(np.angle(transfer_function)) + 0 * np.pi
+    transfer_function_phase = np.unwrap(np.angle(transfer_function)) + 1 * np.pi
 
     """Find the phase velocity"""
-    distance_between_sensors = np.linalg.norm(SETUP.sensors[1].coordinates -
-                                              SETUP.sensors[0].coordinates)
-    # time_delay = transfer_function_phase / (2 * np.pi * fft_freq)
-    phase_velocities = (2 * np.pi * fft_frequencies) / (transfer_function_phase *
-                                                        distance_between_sensors)
+    distance_between_sensors = np.linalg.norm(SETUP.sensors[SENSOR_3].coordinates -
+                                              SETUP.sensors[SENSOR_1].coordinates)
+    phase_velocities = (2 * np.pi * fft_frequencies * distance_between_sensors /
+                        transfer_function_phase)
 
     """Plot the amplitude and the phase of fft_input"""
     fig, axs = plt.subplots(nrows=2,
@@ -273,23 +305,38 @@ def transfer_function_setup3_2(measurements: pd.DataFrame,
                             figsize=FIGSIZE_ONE_COLUMN,
                             squeeze=False,
                             sharex=True)
-    axs[0, 0].plot(fft_frequencies, transfer_function_phase)
-    axs[0, 0].set_title('Phase of FFT of input signal')
+    axs[0, 0].plot(fft_frequencies,
+                   transfer_function_phase)
+    axs[0, 0].set_title('Phase of the transfer function')
     axs[0, 0].set_xlabel('Frequency [Hz]')
     axs[0, 0].set_ylabel('Phase [rad]')
-    # axs[0, 0].set_xlim(left=0, right=50000)
+    axs[0, 0].set_ylim(bottom=-200, top=500)
     axs[0, 0].grid()
-    axs[1, 0].plot(fft_frequencies, phase_velocities)
+    axs[1, 0].plot(fft_frequencies,
+                   phase_velocities,
+                   label='Measured phase velocities')
     axs[1, 0].set_title('Phase velocity')
     axs[1, 0].set_xlabel('Frequency [Hz]')
     axs[1, 0].set_ylabel('v_phase [m/s]')
-    # axs[1, 0].set_xlim(left=700, right=35000)
+    axs[1, 0].set_ylim(bottom=0, top=1000)
     axs[1, 0].grid()
 
-    simulated_phase_velocities = phase_velocities_chipboard(fft_frequencies)
-    axs[1, 0].plot(fft_frequencies, simulated_phase_velocities)
-    axs[1, 0].legend(['Measured', 'Simulated'])
-
+    (simulated_phase_velocities_uncorrected,
+     simulated_phase_velocities_corrected,
+     phase_velocity_shear) = simulated_phase_velocities(fft_frequencies)
+    axs[1, 0].plot(fft_frequencies,
+                   simulated_phase_velocities_uncorrected,
+                   label='Simulated phase velocities',
+                   linestyle='--')
+    axs[1, 0].plot(fft_frequencies,
+                   simulated_phase_velocities_corrected,
+                   label='Simulated corrected phase velocities',
+                   linestyle='--')
+    axs[1, 0].plot(fft_frequencies,
+                   np.ones_like(fft_frequencies) * phase_velocity_shear,
+                   label='Simulated shear phase velocities',
+                   linestyle='--')
+    axs[1, 0].legend()
 
 
 def find_and_plot_power_loss(measurements: pd.DataFrame,
@@ -299,9 +346,12 @@ def find_and_plot_power_loss(measurements: pd.DataFrame,
     """Find the power of the signal with RMS"""
     signal_rms = np.sqrt(np.mean(measurements ** 2))
     signal_power = signal_rms ** 2
-    power_loss_sensor1_to_sensor_3 = signal_power[2] / signal_power[0]
+    power_loss_sensor1_to_sensor_3 = signal_power[SENSOR_3] / signal_power[SENSOR_1]
     power_loss_sensor1_to_sensor_3_dB = to_dB(power_loss_sensor1_to_sensor_3)
-    print(f'Power loss sensor 1 to sensor 3: {power_loss_sensor1_to_sensor_3_dB} dB')
+    distance_between_sensors = np.linalg.norm(SETUP.sensors[SENSOR_3].coordinates -
+                                              SETUP.sensors[SENSOR_1].coordinates)
+    print(f'\nPower loss sensor 1 to sensor 3, for 100 Hz to 40 kHz: {power_loss_sensor1_to_sensor_3_dB:.2f} dB')
+    print(f'Power loss per meter: {(power_loss_sensor1_to_sensor_3_dB / distance_between_sensors):.2f} dB/m\n')
 
     """Compress chirps"""
     measurements = compress_chirp(measurements)
@@ -326,14 +376,12 @@ def find_and_plot_power_loss(measurements: pd.DataFrame,
                     compressed_chirps=True)
     for ax in axs.flatten():
         ax.grid()
-    distance_between_sensors = np.linalg.norm(SETUP.sensors[2].coordinates -
-                                              SETUP.sensors[0].coordinates)
     axs[0, 0].set_title('FFT of sensor 1 and sensor 3, ' +
                         f'{distance_between_sensors} meters apart')
     axs[0, 0].legend(['Sensor 1', 'Sensor 3'])
     axs[0, 0].set_ylim(bottom=-25, top=80)
 
-    """Adjust for correct spacing in plot"""
+    """Adjust for correct spacing inz plot"""
     subplots_adjust('fft', rows=1, columns=1)
 
 
@@ -391,6 +439,39 @@ def plot_raw_time_signal_setup7(measurements: pd.DataFrame):
 
     """Adjust for correct spacing in plot"""
     subplots_adjust('time', rows=1, columns=1)
+
+
+"""Setup 9"""
+
+
+def results_setup9():
+    """Choose file"""
+    FILE_FOLDER = 'setup9_propagation_speed_short/touch'
+    FILE_NAME = 'touch_v1'
+    """Open file"""
+    measurements = csv_to_df(file_folder=FILE_FOLDER,
+                             file_name=FILE_NAME)
+
+    """Remove channels that are not to be used"""
+    measurements = measurements.drop(['Actuator'], axis='columns')
+    CHIRP_CHANNEL_NAMES.remove('Actuator')
+    measurements = measurements.drop(['Sensor 2'], axis='columns')
+    CHIRP_CHANNEL_NAMES.remove('Sensor 2')
+
+    """Choose setup"""
+    SETUP = Setup9()
+    """Draw setup"""
+    SETUP.draw()
+
+    """Interpolate waveforms"""
+    measurements = interpolate_waveform(measurements)
+
+    """Set everything but the signal to zero"""
+    direct_signal_seconds_sensor3 = 2 + 0.05  # Length of chirp + time for sensor 3 to die down
+    threshold_amplitude = 0.001  # Determine empirically
+    measurements, signal_start_seconds = window_signals(measurements,
+                                                        direct_signal_seconds_sensor3,
+                                                        threshold_amplitude)
 
 
 """Generate custom graphs"""

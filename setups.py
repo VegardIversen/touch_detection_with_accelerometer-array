@@ -9,6 +9,7 @@ import scipy.signal as signal
 import matplotlib.pyplot as plt
 
 from global_constants import (SAMPLE_RATE,
+                              ACTUATOR_1,
                               SENSOR_1,
                               SENSOR_2,
                               SENSOR_3)
@@ -34,7 +35,6 @@ class Setup:
         plt.xlabel('x (m)')
         plt.ylabel('y (m)')
         plot_legend_without_duplicates()
-        # plt.show()
 
     def get_objects(self):
         return self.actuators, self.sensors
@@ -257,6 +257,42 @@ class Setup7(Setup):
         """
         object_1 = self.sensors[SENSOR_1]
         object_2 = self.sensors[SENSOR_3]
+        n = len(measurements[object_1.name])
+        corr = signal.correlate(measurements[object_1.name],
+                                measurements[object_2.name],
+                                mode='same')
+        delay_arr = np.linspace(start=-0.5 * n / SAMPLE_RATE,
+                                stop=0.5 * n / SAMPLE_RATE,
+                                num=n)
+        delay = delay_arr[np.argmax(corr)]
+        distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
+        propagation_speed = np.abs(distance / delay)
+        return propagation_speed
+
+
+class Setup9(Setup):
+    """Sensors in the middle of the table to
+    separate direct signal and reflections.
+    """
+    actuators = np.empty(shape=1, dtype=Actuator)
+    sensors = np.empty(shape=2, dtype=Sensor)
+    actuators[ACTUATOR_1] = Actuator(coordinates=[1 / 2 * Table.LENGTH - 0.10,
+                                                  1 / 2 * Table.WIDTH])
+    sensors[SENSOR_1] = Sensor(coordinates=(actuators[ACTUATOR_1].coordinates + [0.10, 0]),
+                               name='Sensor 1')
+    sensors[SENSOR_2] = Sensor(coordinates=(sensors[SENSOR_1].coordinates + [0.10, 0]),
+                               name='Sensor 2')
+
+    def __init__(self):
+        pass
+
+    def get_propagation_speed(self, measurements: pd.DataFrame):
+        """Use the cross correlation between the two channels
+        to find the propagation speed. Based on:
+        https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
+        """
+        object_1 = self.sensors[SENSOR_1]
+        object_2 = self.sensors[SENSOR_2]
         n = len(measurements[object_1.name])
         corr = signal.correlate(measurements[object_1.name],
                                 measurements[object_2.name],

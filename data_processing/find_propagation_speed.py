@@ -3,7 +3,7 @@ import scipy.signal as signal
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from global_constants import *
+from global_constants import SAMPLE_RATE
 
 from csv_to_df import csv_to_df
 from data_processing.preprocessing import filter_general
