@@ -7,7 +7,7 @@ from global_constants import SAMPLE_RATE, SENSOR_1, SENSOR_2, SENSOR_3
 from objects import MirroredSensor, MirroredSource, Table, Actuator, Sensor
 
 
-def find_indices_of_peaks(sig_np, height, plot=False, hilbert=True):
+def find_indices_of_peaks(signal, height, plot=False, hilbert=True):
     """Find the indices of the peaks in the signal."""
     peak_indices = pd.DataFrame(columns=['Sensor 1',
                                          'Sensor 2',
@@ -16,36 +16,36 @@ def find_indices_of_peaks(sig_np, height, plot=False, hilbert=True):
 
     if not hilbert:
         # Find the peaks of the square of the signal
-        signal_sqr = np.power(sig_np, 2)
-        peak_indices, _ = signal.find_peaks(signal_sqr, height)
+        signal_squared = np.power(signal, 2)
+        peak_indices, _ = signal.find_peaks(signal_squared, height)
     else:
         # Find the peaks of the Hilbert envelope of the signal
-        sig_np_filtered_hilbert = get_hilbert(sig_np)
-        peak_indices, _ = signal.find_peaks(sig_np_filtered_hilbert, height)
+        signal_filtered_hilbert = get_hilbert(signal)
+        peak_indices, _ = signal.find_peaks(signal_filtered_hilbert, height)
 
     if peak_indices.size == 0:
         raise ValueError('No peaks found!')
 
     if plot:
-        time_axis = np.linspace(0, len(sig_np), num=len(sig_np))
-        fig, ax0 = plt.subplots(nrows=1)
+        time_axis = np.linspace(0, len(signal), num=len(signal))
+        fig, ax = plt.subplots(nrows=1)
         if not hilbert:
-            ax0.plot(time_axis / SAMPLE_RATE, signal_sqr, label='sqrd')  # type: ignore
-            ax0.plot(time_axis[peak_indices] / SAMPLE_RATE,
-                     signal_sqr[peak_indices],
-                     'x',
-                     label='peaks')
+            ax.plot(time_axis / SAMPLE_RATE, signal_squared, label='sqrd')  # type: ignore
+            ax.plot(time_axis[peak_indices] / SAMPLE_RATE,
+                    signal_squared[peak_indices],
+                    'x',
+                    label='peaks')
 
         else:
-            ax0.plot(time_axis / SAMPLE_RATE,
-                     sig_np_filtered_hilbert,
-                     label='filtered hilbert')
-            ax0.plot(time_axis[peak_indices] / SAMPLE_RATE,
-                     sig_np_filtered_hilbert[peak_indices],
-                     'x',
-                     label='peaks')
-        ax0.set_xlabel("Time [s]")
-        ax0.legend()
+            ax.plot(time_axis / SAMPLE_RATE,
+                    signal_filtered_hilbert,
+                    label='filtered hilbert')
+            ax.plot(time_axis[peak_indices] / SAMPLE_RATE,
+                    signal_filtered_hilbert[peak_indices],
+                    'x',
+                    label='peaks')
+        ax.set_xlabel("Time [s]")
+        ax.legend()
         fig.tight_layout()
         plt.grid()
         plt.show()
@@ -65,10 +65,10 @@ def get_hilbert(sig: pd.DataFrame or pd.Series or np.ndarray):
     return sig_hilb
 
 
-def find_first_peak(sig_df, height):
+def find_first_peak(signals: pd.DataFrame, prominence: float):
     """Return the index of the first peak of sig_np"""
-    sig_np = sig_df.values
-    peaks, _ = signal.find_peaks(sig_np, height)
+    signals_values = signals.values
+    peaks, _ = signal.find_peaks(signals_values, prominence=prominence)
     if peaks.size == 0:
         raise ValueError('No peaks found!')
         # return 0

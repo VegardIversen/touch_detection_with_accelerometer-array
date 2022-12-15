@@ -8,7 +8,7 @@ from global_constants import SAMPLE_RATE
 
 from data_processing.detect_echoes import get_hilbert
 from data_visualization.drawing import plot_legend_without_duplicates
-from data_processing.processing import avg_waveform, var_waveform, to_dB
+from data_processing.processing import average_of_signals, variance_of_signals, to_dB
 
 
 def compare_signals(fig, axs,
@@ -129,26 +129,26 @@ def wave_statistics(fig, axs, data: pd.DataFrame):
     """
     chirp_range = [0,
                    len(data['Sensor 1']) - 1]
-    avg = avg_waveform(data, chirp_range)
-    var = var_waveform(data, chirp_range)
+    average = average_of_signals(data, chirp_range)
+    variance = variance_of_signals(data, chirp_range)
     time_axis = np.linspace(start=0,
                             stop=len(data['Sensor 1'][0]) / SAMPLE_RATE,
                             num=len(data['Sensor 1'][0]))
 
     fig.suptitle('Wave statistics')
-    for i, chan in enumerate(data.columns[:3]):
-        axs[i].plot(time_axis, avg[chan][0], label='Average')
+    for i, channel in enumerate(data.columns[:3]):
+        axs[i].plot(time_axis, average[channel][0], label='Average')
         axs[i].plot(time_axis,
-                    avg[chan][0] + var[chan][0],
+                    average[channel][0] + variance[channel][0],
                     label='Average + variance',
                     linestyle='--',
                     color='orange')
         axs[i].plot(time_axis,
-                    avg[chan][0] - var[chan][0],
+                    average[channel][0] - variance[channel][0],
                     label='Average - variance',
                     linestyle='--',
                     color='orange')
-        axs[i].set_title(chan)
+        axs[i].set_title(channel)
         axs[i].set_xlabel('Time [s]')
         axs[i].legend()
         axs[i].grid()

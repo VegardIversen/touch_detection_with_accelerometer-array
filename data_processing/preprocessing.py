@@ -111,7 +111,7 @@ def cut_out_signal(df, rate, threshold):
     return signal_focusing  # , mask_arr
 
 
-def crop_data(sig: pd.DataFrame or np.ndarray,
+def crop_data(signals: pd.DataFrame or np.ndarray,
               time_start: float = None,
               time_end: float = None,
               threshold: float = 0):
@@ -120,22 +120,22 @@ def crop_data(sig: pd.DataFrame or np.ndarray,
     """
     """Some logic for assuming cropping type and length"""
     if (time_start or time_start == 0) and not time_end:
-        time_end = len(sig) / SAMPLE_RATE
+        time_end = len(signals) / SAMPLE_RATE
     elif time_end and not (time_start or time_start == 0):
         time_start = 0
     if (time_start or time_start == 0) and time_end:
-        if isinstance(sig, np.ndarray):
-            data_cropped = sig[int(time_start * SAMPLE_RATE):
-                               int(time_end * SAMPLE_RATE)]
+        if isinstance(signals, np.ndarray):
+            data_cropped = signals[int(time_start * SAMPLE_RATE):
+                                   int(time_end * SAMPLE_RATE)]
         else:
-            data_cropped = sig.loc[time_start * SAMPLE_RATE:
-                                   time_end * SAMPLE_RATE]
+            data_cropped = signals.loc[time_start * SAMPLE_RATE:
+                                       time_end * SAMPLE_RATE]
     elif not (time_start or time_start == 0) and not time_end:
-        if isinstance(sig, pd.DataFrame):
-            data_cropped = sig.loc[(sig > threshold).any(axis=1)]
-            data_cropped = sig.loc[(sig.iloc[::-1] > threshold).any(axis=1)]
+        if isinstance(signals, pd.DataFrame):
+            data_cropped = signals.loc[(signals > threshold).any(axis=1)]
+            data_cropped = signals.loc[(signals.iloc[::-1] > threshold).any(axis=1)]
         else:
-            data_cropped = sig.loc[sig > threshold]
+            data_cropped = signals.loc[signals > threshold]
 
     return data_cropped
 
