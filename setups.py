@@ -30,7 +30,7 @@ class Setup:
         plt.axes()
         self.table.draw()
         [actuator.draw() for actuator in self.actuators]
-        [sensor.draw() for sensor in self.sensors]
+        [sensor.draw() for sensor in self.sensors if sensor.plot is True]
         plt.axis('scaled')
         plt.xlabel('x (m)')
         plt.ylabel('y (m)')
@@ -273,14 +273,20 @@ class Setup7(Setup):
 class Setup9(Setup):
     """Sensors in the middle of the table to
     separate direct signal and reflections.
+    NOTE:   Sensor 2 is not used in this setup,
+            but is included to make the code more
+            consistent with the measurement channels.
     """
     actuators = np.empty(shape=1, dtype=Actuator)
-    sensors = np.empty(shape=2, dtype=Sensor)
+    sensors = np.empty(shape=3, dtype=Sensor)
     actuators[ACTUATOR_1] = Actuator(coordinates=[1 / 2 * Table.LENGTH - 0.10,
                                                   1 / 2 * Table.WIDTH])
-    sensors[SENSOR_1] = Sensor(coordinates=(actuators[ACTUATOR_1].coordinates + [0.10, 0]),
+    sensors[SENSOR_1] = Sensor(coordinates=(actuators[ACTUATOR_1].coordinates + np.array([0.10, 0])),
                                name='Sensor 1')
-    sensors[SENSOR_2] = Sensor(coordinates=(sensors[SENSOR_1].coordinates + [0.10, 0]),
+    sensors[SENSOR_2] = Sensor(coordinates=np.array([0, 0]),
+                               name='Sensor 2',
+                               plot=False)
+    sensors[SENSOR_3] = Sensor(coordinates=(sensors[SENSOR_1].coordinates + np.array([0.10, 0])),
                                name='Sensor 2')
 
     def __init__(self):
