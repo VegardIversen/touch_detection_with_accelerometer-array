@@ -33,7 +33,7 @@ def find_propagation_speed_plot(chirp_df,
     chirp_bps = np.array([])
 
     for freq in range(start_freq, end_freq, steps):
-        chirp_bp = filter_general(sig=chirp_df,
+        chirp_bp = filter_general(signals=chirp_df,
                                   filtertype='bandpass',
                                   cutoff_lowpass=freq * 0.9,
                                   cutoff_highpass=freq * 1.1,

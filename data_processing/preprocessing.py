@@ -12,11 +12,10 @@ from global_constants import SAMPLE_RATE
 def compress_chirps(measurements: pd.DataFrame):
     """Compresses a chirp with cross correlation."""
     compressed_chirp = measurements.copy()
-    if 'Actuator' in measurements.columns:
-        for ch in measurements:
-            compressed_chirp[ch] = signal.correlate(measurements[ch],
-                                                    measurements['Actuator'],
-                                                    mode='same')
+    for channel in measurements:
+        compressed_chirp[channel] = signal.correlate(measurements[channel],
+                                                     measurements['Actuator'],
+                                                     mode='same')
     return compressed_chirp
 
 
