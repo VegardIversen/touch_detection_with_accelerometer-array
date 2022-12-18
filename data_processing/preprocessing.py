@@ -9,45 +9,7 @@ from global_constants import SAMPLE_RATE
 """FILTERING"""
 
 
-def filter_general(sig: pd.DataFrame or np.ndarray,
-                   filtertype: str,
-                   cutoff_highpass: int = 50,
-                   cutoff_lowpass: int = 40000,
-                   order: int = 4):
-    """filtertype: 'highpass', 'lowpass' or 'bandpass"""
-    if filtertype == 'highpass':
-        sos = signal.butter(order,
-                            cutoff_highpass / (0.5 * SAMPLE_RATE),
-                            'highpass',
-                            output='sos')
-    elif filtertype == 'lowpass':
-        sos = signal.butter(order,
-                            cutoff_lowpass / (0.5 * SAMPLE_RATE),
-                            'lowpass',
-                            output='sos')
-    elif filtertype == 'bandpass':
-        sos = signal.butter(order,
-                            [cutoff_highpass / (0.5 * SAMPLE_RATE),
-                             cutoff_lowpass / (0.5 * SAMPLE_RATE)],
-                            'bandpass',
-                            output='sos')
-    else:
-        raise ValueError('Filtertype not recognized')
-
-    sig_filtered = sig.copy()
-    if isinstance(sig, pd.DataFrame):
-        for channel in sig_filtered:
-            sig_filtered[channel] = signal.sosfilt(sos,
-                                                   sig[channel].values)
-    else:
-        sig_filtered = signal.sosfilt(sos,
-                                      sig)
-
-    return sig_filtered
-
-
-def compress_chirp(measurements: pd.DataFrame,
-                   custom_chirp: np.ndarray = None):
+def compress_chirps(measurements: pd.DataFrame):
     """Compresses a chirp with cross correlation."""
     compressed_chirp = measurements.copy()
     if 'Actuator' in measurements.columns:
@@ -55,97 +17,26 @@ def compress_chirp(measurements: pd.DataFrame,
             compressed_chirp[ch] = signal.correlate(measurements[ch],
                                                     measurements['Actuator'],
                                                     mode='same')
-    else:
-        for ch in measurements:
-            compressed_chirp[ch] = signal.correlate(measurements[ch],
-                                                    custom_chirp,
-                                                    mode='same')
     return compressed_chirp
-
-
-def filter_notches(sig, freqs):
-    """Input an array of frequencies <freqs> to filter out
-    with a Q factor given by an array of <Qs>.
-    """
-    for freq in freqs:
-        q = freq ** (1 / 3)  # We want smaller q-factors for higher frequencies
-        b_notch, a_notch = signal.iirnotch(freq / (0.5 * SAMPLE_RATE), q)
-        sig_filtered = sig.copy()
-        for channel in sig_filtered:
-            # Probably a better way to do this than a double for loop
-            sig_filtered[channel] = signal.filtfilt(b_notch, a_notch,
-                                                    sig[channel].values)
-    return sig_filtered
 
 
 """CROPPING"""
 
 
-def cut_out_signal(df, rate, threshold):
-    """
-    Inputs audio data in the form of a numpy array. Converts to pandas series
-    to find the rolling average and apply the absolute value to the signal at
-    all points.
-
-    Additionally takes in the sample rate and threshold (amplitude). Data
-    below the threshold will be filtered out. This is useful for filtering out
-    environmental noise from recordings.
-    """
-    mask = []
-    """Convert to series to find rolling average and apply absolute value to
-    the signal at all points.
-    """
-    signal = df.apply(np.abs)
-    """Take the rolling average of the series within our specified window."""
-    signal_mean = signal.rolling(window=int(rate / 50),
-                                 min_periods=1,
-                                 center=True).mean()
-
-    for mean in signal_mean:
-        if mean > threshold:
-            mask.append(True)
-        else:
-            mask.append(False)
-    mask_arr = np.array(mask)
-    signal_focusing = df.loc[mask_arr]
-    return signal_focusing  # , mask_arr
-
-
 def crop_data(signals: pd.DataFrame or np.ndarray,
               time_start: float = None,
-              time_end: float = None,
-              threshold: float = 0):
+              time_end: float = None):
     """Crop either DataFrame input, pandas series or a numpy array input.
     NOTE:   Not really finished testing yet.
     """
     """Some logic for assuming cropping type and length"""
-    if (time_start or time_start == 0) and not time_end:
-        time_end = len(signals) / SAMPLE_RATE
-    elif time_end and not (time_start or time_start == 0):
-        time_start = 0
-    if (time_start or time_start == 0) and time_end:
-        if isinstance(signals, np.ndarray):
-            data_cropped = signals[int(time_start * SAMPLE_RATE):
-                                   int(time_end * SAMPLE_RATE)]
-        else:
-            data_cropped = signals.loc[time_start * SAMPLE_RATE:
-                                       time_end * SAMPLE_RATE]
-    elif not (time_start or time_start == 0) and not time_end:
-        if isinstance(signals, pd.DataFrame):
-            data_cropped = signals.loc[(signals > threshold).any(axis=1)]
-            data_cropped = signals.loc[(signals.iloc[::-1] > threshold).any(axis=1)]
-        else:
-            data_cropped = signals.loc[signals > threshold]
-
-    return data_cropped
-
-
-def crop_data_threshold(data, threshold=0.0006):
-    if isinstance(data, pd.DataFrame):
-        data_cropped = data.loc[(data > threshold).any(axis=1)]
+    if isinstance(signals, np.ndarray):
+        signals_cropped = signals[int(time_start * SAMPLE_RATE):
+                                  int(time_end * SAMPLE_RATE)]
     else:
-        data_cropped = data.loc[data > threshold]
-    return data_cropped
+        signals_cropped = signals.loc[time_start * SAMPLE_RATE:
+                                      time_end * SAMPLE_RATE]
+    return signals_cropped
 
 
 def window_signals(signals: pd.DataFrame,
