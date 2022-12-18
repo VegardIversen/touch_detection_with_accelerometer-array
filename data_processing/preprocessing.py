@@ -39,33 +39,23 @@ def crop_data(signals: pd.DataFrame or np.ndarray,
 
 
 def window_signals(signals: pd.DataFrame,
-                   length_of_signal_seconds: float,
-                   threshold: float):
-    """Takes in a dataframe and set silence around the signal to zero.
-    TODO:   Use an actual window function, e.g. hamming or tukey.
-    """
+                   length_of_signal_seconds: float):
+    """Takes in a dataframe and set silence around the signal to zero"""
     """Find the index of the beginning of the signal"""
-    signal_start_samples = signals.loc[(np.abs(signals) >
-                                        threshold).any(axis=1)].index[0]
     length_of_signal_samples = int(length_of_signal_seconds * SAMPLE_RATE)
-    with_window = False
-    if with_window:
-        window = signal.tukey(signal_start_samples + length_of_signal_samples)
-        window = np.pad(window, (0, signals.shape[0] - len(window)), 'constant')
-        _, ax = plt.subplots(nrows=1, ncols=1)
-        ax.plot(window)
-        ax.set_title('Window function')
-        ax.set_xlabel('Samples')
-        for channel in signals:
-            signals[channel] = signals[channel] * window
-    else:
-        """Set everything before the signal to zero"""
-        signals.loc[:signal_start_samples] = 0
-        """Set everything after signal_start + length_of_signal to zero"""
-        signals.loc[(signal_start_samples + length_of_signal_samples):] = 0
-
-    signal_start_seconds = signal_start_samples / SAMPLE_RATE
-    return signals, signal_start_seconds
+    peak_index = np.argmax(signals)
+    window = signal.tukey(length_of_signal_samples, alpha=0.1)
+    window = np.pad(window,
+                    (peak_index - int(length_of_signal_samples / 2),
+                     len(signals) - peak_index - int(length_of_signal_samples / 2)),
+                    'edge')
+    _, ax = plt.subplots(nrows=1, ncols=1)
+    ax.plot(np.linspace(0, len(window) / SAMPLE_RATE, len(window)), window)
+    ax.set_title('Window function')
+    ax.set_xlabel('Samples')
+    ax.grid()
+    signals = signals.multiply(window, axis=0)
+    return signals
 
 
 if __name__ == '__main__':
