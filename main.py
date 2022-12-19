@@ -7,12 +7,15 @@ from data_visualization.visualize_data import set_fontsizes
 
 
 def main():
-    """Run results_setup*() functions from generate_results.py"""
+    """Run results_setup*jn() functions from generate_results.py
+    NOTE:   Individual figures can be plotted by wrapping it with
+            plt.close('all') and plt.show()
+    """
     set_fontsizes()
 
-    results_setup3_2()
+    # results_setup3_2()
 
-    # results_setup9()
+    results_setup9()
 
     # custom_plots()
 

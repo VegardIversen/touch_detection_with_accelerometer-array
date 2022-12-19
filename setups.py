@@ -36,6 +36,26 @@ class Setup:
         plt.ylabel('y (m)')
         plot_legend_without_duplicates()
 
+    def get_propagation_speed(self,
+                              measurements: pd.DataFrame,
+                              object_1: Sensor,
+                              object_2: Sensor):
+        """Use the cross correlation between the two channels
+        to find the propagation speed. Based on:
+        https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
+        """
+        n = len(measurements[object_1.name])
+        corr = signal.correlate(measurements[object_1.name],
+                                measurements[object_2.name],
+                                mode='same')
+        delay_arr = np.linspace(start=-0.5 * n / SAMPLE_RATE,
+                                stop=0.5 * n / SAMPLE_RATE,
+                                num=n)
+        delay = delay_arr[np.argmax(corr)]
+        distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
+        propagation_speed = np.abs(distance / delay)
+        return propagation_speed
+
     def get_objects(self):
         return self.actuators, self.sensors
 
@@ -88,13 +108,13 @@ class Setup3(Setup):
     actuators = np.empty(shape=1, dtype=Actuator)
     sensors = np.empty(shape=3, dtype=Sensor)
     sensors[SENSOR_3] = Sensor(coordinates=np.array([Table.WIDTH - 0.212, 0.235]),
-                        name='Sensor 3')
+                               name='Sensor 3')
     sensors[SENSOR_1] = Sensor(sensors[SENSOR_3].coordinates + np.array([-0.101, 0.008]),
-                        name='Sensor 1')
+                               name='Sensor 1')
     actuators[0] = Actuator(np.array([sensors[SENSOR_1].x - 0.10, 0.248]))
     sensors[SENSOR_2] = Sensor(np.array([actuators[0].x, actuators[0].y +
                                   actuators[0].RADIUS + 0.013 / 2]),
-                        name='Sensor 2')
+                               name='Sensor 2')
 
     def __init__(self):
         pass
@@ -125,11 +145,11 @@ class Setup3_2(Setup):
     sensors = np.empty(shape=3, dtype=Sensor)
 
     sensors[SENSOR_1] = Sensor(coordinates=np.array([0.135, 0.305]),
-                        name='Sensor 1')
+                               name='Sensor 1')
     sensors[SENSOR_2] = Sensor(coordinates=(sensors[SENSOR_1].coordinates + np.array([0.267, 0])),
-                        name='Sensor 2')
+                               name='Sensor 2')
     sensors[SENSOR_3] = Sensor(sensors[SENSOR_2].coordinates + np.array([0.267, 0]),
-                        name='Sensor 3')
+                               name='Sensor 3')
     actuators[0] = Actuator(np.array([sensors[SENSOR_1].x / 2,
                                       sensors[SENSOR_1].y]))
 

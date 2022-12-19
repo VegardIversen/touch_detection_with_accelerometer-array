@@ -64,15 +64,14 @@ class Sensor:
     NOTE:   Not sure just how to represent coordinates yet,
             or if get_/set_coordinates() are necessary.
     """
-    def __init__(self, coordinates: np.ndarray, name: str):
+    radius = 0.0035
+
+    def __init__(self, coordinates: np.ndarray, name: str, plot: bool = True):
         self.coordinates = coordinates
         self.x = coordinates[0]
         self.y = coordinates[1]
         self.name = name
-        if name == 'Sensor 2':
-            self.radius = 0.0065
-        else:
-            self.radius = 0.0035
+        self.plot = plot
 
     def set_coordinates(self, coordinates: np.ndarray):
         self.coordinates = coordinates

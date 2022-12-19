@@ -6,22 +6,21 @@ import matplotlib.pyplot as plt
 from setups import Setup
 from global_constants import SAMPLE_RATE
 
-from data_processing.detect_echoes import get_hilbert
+from data_processing.detect_echoes import get_envelope
 from data_visualization.drawing import plot_legend_without_duplicates
 from data_processing.processing import average_of_signals, variance_of_signals, to_dB
 
 
 def compare_signals(fig, axs,
                     data: list,
-                    freq_max: int = 45000,
                     nfft: int = 256,
+                    sharey: bool = False,
+                    freq_max: int = 45000,
+                    set_index: int = None,
                     dynamic_range_db: int = 60,
                     log_time_signal: bool = False,
-                    sharey: bool = False,
-                    plots_to_plot: list = ['time', 'spectrogram', 'fft'],
                     compressed_chirps: bool = False,
-                    signal_start_seconds: float = 0,
-                    signal_length_seconds: float = 5):
+                    plots_to_plot: list = ['time', 'spectrogram', 'fft']):
     """Visually compare two signals, by plotting:
     time signal, spectogram, and fft.
     NOTE:   ['time', 'spectrogram', 'fft'] has to be in this order,
@@ -31,22 +30,24 @@ def compare_signals(fig, axs,
         """Convert to pd.Series if necessary"""
         if isinstance(channel, np.ndarray):
             channel = pd.Series(channel, name='Sensor ' + str(i + 1))
-
+        if set_index is not None:
+            """Plot for instance a spectrogram under a time signal"""
+            i = set_index
         if 'time' in plots_to_plot:
             if compressed_chirps:
                 time_axis = np.linspace(start=-len(channel) / SAMPLE_RATE,
                                         stop=len(channel) / SAMPLE_RATE,
                                         num=len(channel))
-                axs[i, 0].set_xlim(left=-0.005,
-                                   right=(-0.005 + 0.035))
+                # axs[i, 0].set_xlim(left=-0.005,
+                #                    right=(-0.005 + 0.035))
                 axs[i, 0].set_ylabel('Correlation coefficient [-]')
             else:
                 time_axis = np.linspace(start=0,
                                         stop=len(channel) / SAMPLE_RATE,
                                         num=len(channel))
-                axs[i, 0].set_xlim(left=signal_start_seconds,
-                                   right=(signal_start_seconds +
-                                          signal_length_seconds))
+                # axs[i, 0].set_xlim(left=signal_start_seconds,
+                #                    right=(signal_start_seconds +
+                #                           signal_length_seconds))
                 axs[i, 0].set_ylabel('Amplitude [V]')
             axs[i, 0].sharex(axs[0, 0])
             if sharey:
@@ -82,14 +83,23 @@ def compare_signals(fig, axs,
                                                   Fs=SAMPLE_RATE,
                                                   NFFT=nfft,
                                                   noverlap=(nfft // 2))
-                axs[i, axs_index].set_xlim(left=signal_start_seconds,
-                                           right=(signal_start_seconds +
-                                                  signal_length_seconds))
+                # axs[i, axs_index].set_xlim(left=signal_start_seconds,
+                #                            right=(signal_start_seconds +
+                #                                   signal_length_seconds))
             spec[3].set_clim(to_dB(np.max(spec[0])) - dynamic_range_db,
                              to_dB(np.max(spec[0])))
-            fig.colorbar(spec[3], ax=axs[i, axs_index])
+            if set_index is not None:
+                fig.colorbar(spec[3],
+                             ax=axs[i, axs_index],
+                             pad=0.2,
+                             aspect=40,
+                             location='bottom')
+            else:
+                fig.colorbar(spec[3],
+                             ax=axs[i, axs_index])
             axs[i, axs_index].sharex(axs[0, 0])
-            axs[i, axs_index].sharey(axs[0, axs_index])
+            if sharey:
+                axs[i, axs_index].sharey(axs[0, axs_index])
             axs[i, axs_index].axis(ymax=freq_max)
             axs[i, axs_index].set_title(f'{channel.name}, spectrogram')
             axs[len(data) - 1, axs_index].set_xlabel('Time [s]')
@@ -110,17 +120,16 @@ def compare_signals(fig, axs,
             data_fft_dB = np.fft.fftshift(data_fft_dB)[len(channel) // 2:]
             fftfreq = np.fft.fftshift(fftfreq)[len(channel) // 2:]
             axs[i, axs_index].sharex(axs[0, axs_index])
-            if sharey:
-                axs[i, axs_index].sharey(axs[0, axs_index])
+            axs[i, axs_index].sharey(axs[0, axs_index])
             axs[i, axs_index].grid()
             axs[i, axs_index].set_title(f'{channel.name}, FFT')
-            axs[len(data) - 1, axs_index].set_xlabel("Frequency [Hz]")
+            axs[len(data) - 1, axs_index].set_xlabel("Frequency [kHz]")
             axs[i, axs_index].set_ylabel("Amplitude [dB]")
             axs[i, axs_index].set_xlim(left=0,
-                                       right=freq_max)
+                                       right=freq_max / 1000)
             axs[i, axs_index].set_ylim(bottom=-25,
                                        top=80)
-            axs[i, axs_index].plot(fftfreq, data_fft_dB)
+            axs[i, axs_index].plot(fftfreq / 1000, data_fft_dB)
 
 
 def wave_statistics(fig, axs, data: pd.DataFrame):
@@ -154,7 +163,7 @@ def wave_statistics(fig, axs, data: pd.DataFrame):
         axs[i].grid()
 
 
-def specgram_with_lines(setup, measurements_comp, arrival_times, bandwidth):
+def spectrogram_with_lines(setup, measurements_comp, arrival_times, bandwidth):
     """Plot the spectrograms along with lines for expected reflections"""
     for i, sensor in enumerate(setup.sensors):
         plt.subplot(311 + i, sharex=plt.gca())
@@ -197,7 +206,7 @@ def envelopes_with_lines(setup: Setup,
     time_axis_corr = np.linspace(-1000 * len(measurements) / SAMPLE_RATE,
                                  1000 * len(measurements) / SAMPLE_RATE,
                                  (len(measurements)))
-    measurements_comp_hilb = get_hilbert(measurements)
+    measurements_comp_hilb = get_envelope(measurements)
 
     for i, sensor in enumerate(setup.sensors):
         plt.subplot(311 + i, sharex=plt.gca())
@@ -231,9 +240,9 @@ def envelopes_with_lines(setup: Setup,
 
 
 def set_fontsizes():
-    SMALL_SIZE = 12
-    MEDIUM_SIZE = 15
-    BIGGER_SIZE = 20
+    SMALL_SIZE = 18
+    MEDIUM_SIZE = 20
+    BIGGER_SIZE = 25
     plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
     plt.rc('axes', titlesize=MEDIUM_SIZE)     # fontsize of the axes title
     plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
@@ -243,69 +252,59 @@ def set_fontsizes():
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 
-def subplots_adjust(signal_type: str, rows: int, columns: int):
-    """Adjust the subplots for the 1 column plots.
+def subplots_adjust(signal_type: list, rows: int = 1, columns: int = 1):
+    """Adjust the spacing in plots, based on type of plot and number of grapgs.
     Insert this function before starting a new subplot
     or before the plt.show() function.
-    Choose between signal_type: ['time', 'spectrogram', 'fft'].
+    signal_type can be a combination of ['time', 'spectrogram', 'fft'] that is
+    defined beforehand.
     """
-    if signal_type == 'time' and rows == 1 and columns == 1:
+    if signal_type == ['time'] and rows == 1 and columns == 1:
         plt.subplots_adjust(left=0.12, right=0.99,
                             top=0.9, bottom=0.2,
                             hspace=0.28, wspace=0.2)
-    elif signal_type == 'spectrogram' and rows == 1 and columns == 1:
-        # ! Not tested yet
-        plt.subplots_adjust(left=0.125, right=1.05,
-                            top=0.955, bottom=0.07,
-                            hspace=0.28, wspace=0.2)
-    elif signal_type == 'fft' and rows == 1 and columns == 1:
-        plt.subplots_adjust(left=0.1, right=0.95,
-                            top=0.9, bottom=0.15,
-                            hspace=0.28, wspace=0.15)
-    elif signal_type == 'time' and rows == 3 and columns == 1:
+    elif signal_type == ['time'] and rows == 2 and columns == 1:
+        plt.subplots_adjust(left=0.153, right=0.98,
+                            top=0.957, bottom=0.079,
+                            hspace=0.237, wspace=0.2)
+    elif signal_type == ['time'] and rows == 3 and columns == 1:
         plt.subplots_adjust(left=0.125, right=0.965,
                             top=0.955, bottom=0.07,
                             hspace=0.28, wspace=0.2)
-    elif signal_type == 'spectrogram' and rows == 3 and columns == 1:
+    elif signal_type == ['spectrogram'] and rows == 1 and columns == 1:
         plt.subplots_adjust(left=0.125, right=1.05,
                             top=0.955, bottom=0.07,
                             hspace=0.28, wspace=0.2)
-    elif signal_type == 'fft' and rows == 3 and columns == 1:
+    elif signal_type == ['spectrogram'] and rows == 2 and columns == 1:
+        plt.subplots_adjust(left=0.167, right=1,
+                            top=0.955, bottom=0.08,
+                            hspace=0.236, wspace=0.2)
+    elif signal_type == ['spectrogram'] and rows == 3 and columns == 1:
+        plt.subplots_adjust(left=0.125, right=1.05,
+                            top=0.955, bottom=0.07,
+                            hspace=0.28, wspace=0.2)
+    elif signal_type == ['fft'] and rows == 1 and columns == 1:
+        plt.subplots_adjust(left=0.121, right=0.98,
+                            top=0.926, bottom=0.14,
+                            hspace=0.28, wspace=0.15)
+    elif signal_type == ['fft'] and rows == 2 and columns == 1:
+        plt.subplots_adjust(left=0.125, right=0.957,
+                            top=0.955, bottom=0.075,
+                            hspace=0.28, wspace=0.2)
+    elif signal_type == ['fft'] and rows == 3 and columns == 1:
         plt.subplots_adjust(left=0.125, right=0.95,
                             top=0.955, bottom=0.07,
                             hspace=0.28, wspace=0.2)
-
-
-def speed_sliders_book(fig):
-    """Try Vegard's stuff to make sliders
-    NOTE:   Not tested at all and doesn't work.
-    TODO:   Look at later maybe.
-    """
-    # create a slider for the rho value in the range of rho start to rho end
-    rho_slider_spoon_ax = fig.add_axes([0.25, 0.15, 0.65, 0.03])
-
-    rho_slider_spoon = Slider(rho_slider_spoon_ax, 'rho spoon', rho_start, rho_end, valinit=init_rho)
-    rho_slider_furugran_ax = fig.add_axes([0.25, 0.1, 0.65, 0.03])
-
-    rho_slider_furugran = Slider(rho_slider_furugran_ax, 'rho furugran', 400, 700, valinit=550)
-    # create slider for E value in the range of E start to E end
-    E_slider_ax = fig.add_axes([0.25, 0.05, 0.65, 0.03])
-    E_slider_furugran = Slider(E_slider_ax, 'E furugran', 7 * 10**9, 12 * 10**9, valinit=9.5*10**9)
-    # update the graph when the slider is changed
-
-    def update(val):
-        line.set_ydata(get_phase_velocity(frequency[frequency > 0], h, rho_slider_spoon.val, Poisson, E))
-
-        line2.set_ydata(get_phase_velocity(frequency[frequency > 0], h, rho_slider_furugran.val, 0.4, E_slider_furugran.val))
-        fig.canvas.draw_idle()
-
-    # register the update function with the slider
-    rho_slider_spoon.on_changed(update)
-    E_slider_furugran.on_changed(update)
-    rho_slider_furugran.on_changed(update)
-    fig.legend()
-    plt.grid()
-    plt.show()
+    elif signal_type == ['time', 'spectrogram'] and rows == 2 and columns == 1:
+        plt.subplots_adjust(left=0.18, right=0.97,
+                            top=0.955, bottom=0.0,
+                            hspace=0.19, wspace=0.2)
+    elif signal_type == ['setup']:
+        plt.subplots_adjust(left=0.13, right=0.97,
+                            top=0.97, bottom=0.146,
+                            hspace=0.28, wspace=0.2)
+    else:
+        raise ValueError('Signal type or rows and columns not recognized.')
 
 
 if __name__ == '__main__':
