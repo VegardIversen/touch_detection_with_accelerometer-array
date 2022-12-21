@@ -47,8 +47,7 @@ class Setup2(Setup):
         self.actuators = np.append(self.actuators, self.actuator)
 
         self.sensor_2 = Sensor(coordinates=np.array([self.table.LENGTH / 2,
-                                                     self.table.WIDTH - 0.082]),
-                               radius=0.013)
+                                                     self.table.WIDTH - 0.082]))
         SENSOR_1_OFFSET = np.array([-0.08 / 2, -(np.sqrt(0.08 ** 2 - 0.04 ** 2))])
         SENSOR_3_OFFSET = np.array([0.08 / 2, -(np.sqrt(0.08 ** 2 - 0.04 ** 2))])
         self.sensor_1 = Sensor((self.sensor_2.coordinates + SENSOR_1_OFFSET))
