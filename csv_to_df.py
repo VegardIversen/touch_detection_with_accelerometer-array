@@ -21,14 +21,14 @@ def csv_to_df(file_folder: str,
         ROOT_FOLDER = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
         file_path = f'{ROOT_FOLDER}\\{file_folder}\\{file_name}.csv'
 
-    df = pd.read_csv(filepath_or_buffer=file_path, names=channel_names)
+    dataframe = pd.read_csv(filepath_or_buffer=file_path, names=channel_names)
 
     """Move 'Actuator' column to the front of the DataFrame"""
-    cols = df.columns.tolist()
-    cols = cols[-1:] + cols[:-1]
-    df = df[cols]
+    columns = dataframe.columns.tolist()
+    columns = columns[-1:] + columns[:-1]
+    dataframe = dataframe[columns]
 
-    return df
+    return dataframe
 
 
 if __name__ == '__main__':
