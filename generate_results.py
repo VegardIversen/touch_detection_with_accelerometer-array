@@ -10,10 +10,6 @@ import matplotlib.pyplot as plt
 
 from global_constants import (CHIRP_CHANNEL_NAMES,
                               SAMPLE_RATE,
-                              FIGSIZE_ONE_SIGNAL,
-                              FIGSIZE_ONE_COLUMN,
-                              FIGSIZE_TWO_COLUMNS,
-                              FIGSIZE_THREE_COLUMNS,
                               SENSOR_1,
                               SENSOR_2,
                               SENSOR_3,
@@ -34,6 +30,7 @@ from data_processing.processing import (average_of_signals,
 from data_visualization.visualize_data import (compare_signals,
                                                wave_statistics,
                                                envelopes_with_lines,
+                                               set_window_size,
                                                subplots_adjust)
 from setups import (Setup,
                     Setup3_2,
@@ -118,7 +115,8 @@ def plot_time_signals_setup3_2(measurements: pd.DataFrame,
     """Plot the raw measurements"""
     fig, axs = plt.subplots(nrows=measurements.shape[1],
                             ncols=len(plots_to_plot),
-                            figsize=FIGSIZE_ONE_COLUMN,
+                            figsize=set_window_size(rows=measurements.shape[1],
+                                                    columns=len(plots_to_plot)),
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in measurements],
@@ -145,7 +143,7 @@ def plot_time_signals_setup3_2(measurements: pd.DataFrame,
                     plots_to_plot=plots_to_plot,
                     compressed_chirps=True)
 
-    """Use scientific notation if values are greater than 1000"""
+    """Use scientific notation"""
     for ax in axs.flatten():
         ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
 
@@ -158,11 +156,11 @@ def plot_spectrogram_signals_setup3_2(measurements: pd.DataFrame,
                                       signal_length_seconds: float):
     """SETTINGS FOR PLOTTING"""
     NFFT = 2048
-    plots_to_plot = ['spectrogram']
+    PLOTS_TO_PLOT = ['spectrogram']
 
     """Plot the raw measurements"""
     fig, axs = plt.subplots(nrows=measurements.shape[1],
-                            ncols=len(plots_to_plot),
+                            ncols=len(PLOTS_TO_PLOT),
                             figsize=FIGSIZE_ONE_COLUMN,
                             squeeze=False)
     compare_signals(fig, axs,
@@ -170,7 +168,7 @@ def plot_spectrogram_signals_setup3_2(measurements: pd.DataFrame,
                     nfft=NFFT,
                     signal_start_seconds=signal_start_seconds,
                     signal_length_seconds=signal_length_seconds,
-                    plots_to_plot=plots_to_plot,
+                    plots_to_plot=PLOTS_TO_PLOT,
                     compressed_chirps=False)
 
     """Adjust for correct spacing in plot"""
@@ -181,7 +179,7 @@ def plot_spectrogram_signals_setup3_2(measurements: pd.DataFrame,
 
     """Plot the measurements"""
     fig, axs = plt.subplots(nrows=measurements.shape[1],
-                            ncols=len(plots_to_plot),
+                            ncols=len(PLOTS_TO_PLOT),
                             figsize=FIGSIZE_ONE_COLUMN,
                             squeeze=False)
     compare_signals(fig, axs,
@@ -189,7 +187,7 @@ def plot_spectrogram_signals_setup3_2(measurements: pd.DataFrame,
                     nfft=NFFT,
                     signal_start_seconds=signal_start_seconds,
                     signal_length_seconds=signal_length_seconds,
-                    plots_to_plot=plots_to_plot,
+                    plots_to_plot=PLOTS_TO_PLOT,
                     compressed_chirps=True)
 
     """Adjust for correct spacing in plot"""
@@ -200,18 +198,18 @@ def plot_fft_signals_setup3_2(measurements: pd.DataFrame,
                               signal_start_seconds: float,
                               signal_length_seconds: float):
     """SETTINGS FOR PLOTTING"""
-    plots_to_plot = ['fft']
+    PLOTS_TO_PLOT = ['fft']
 
     """Plot the raw measurements"""
     fig, axs = plt.subplots(nrows=measurements.shape[1],
-                            ncols=len(plots_to_plot),
+                            ncols=len(PLOTS_TO_PLOT),
                             figsize=FIGSIZE_ONE_COLUMN,
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in measurements],
                     signal_start_seconds=signal_start_seconds,
                     signal_length_seconds=signal_length_seconds,
-                    plots_to_plot=plots_to_plot,
+                    plots_to_plot=PLOTS_TO_PLOT,
                     compressed_chirps=False)
 
     """Adjust for correct spacing in plot"""
@@ -226,14 +224,14 @@ def plot_fft_signals_setup3_2(measurements: pd.DataFrame,
 
     """Plot the measurements"""
     fig, axs = plt.subplots(nrows=measurements.shape[1],
-                            ncols=len(plots_to_plot),
+                            ncols=len(PLOTS_TO_PLOT),
                             figsize=FIGSIZE_ONE_COLUMN,
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in measurements],
                     signal_start_seconds=signal_start_seconds,
                     signal_length_seconds=signal_length_seconds,
-                    plots_to_plot=plots_to_plot,
+                    plots_to_plot=PLOTS_TO_PLOT,
                     compressed_chirps=True)
 
     """Adjust for correct spacing in plot"""
@@ -254,14 +252,14 @@ def transfer_function_setup3_2(measurements: pd.DataFrame,
     the signal on sensor 3 is the output."""
 
     """Plot the cropped signal"""
-    plots_to_plot = ['time', 'spectrogram', 'fft']
+    PLOTS_TO_PLOT = ['time', 'spectrogram', 'fft']
     fig, axs = plt.subplots(nrows=measurements.shape[1],
-                            ncols=len(plots_to_plot),
+                            ncols=len(PLOTS_TO_PLOT),
                             figsize=FIGSIZE_THREE_COLUMNS,
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in measurements],
-                    plots_to_plot=plots_to_plot,
+                    plots_to_plot=PLOTS_TO_PLOT,
                     compressed_chirps=True,
                     nfft=128)
 
@@ -358,22 +356,22 @@ def find_and_plot_power_loss(measurements: pd.DataFrame,
     measurements = compress_chirps(measurements)
 
     """Plot the measurements"""
-    plots_to_plot = ['fft']
+    PLOTS_TO_PLOT = ['fft']
     fig, axs = plt.subplots(nrows=1,
-                            ncols=len(plots_to_plot),
+                            ncols=len(PLOTS_TO_PLOT),
                             figsize=FIGSIZE_ONE_SIGNAL,
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements['Sensor 1']],
                     signal_start_seconds=signal_start_seconds,
                     signal_length_seconds=signal_length_seconds,
-                    plots_to_plot=plots_to_plot,
+                    PLOTS_TO_PLOT=PLOTS_TO_PLOT,
                     compressed_chirps=True)
     compare_signals(fig, axs,
                     [measurements['Sensor 3']],
                     signal_start_seconds=signal_start_seconds,
                     signal_length_seconds=signal_length_seconds,
-                    plots_to_plot=plots_to_plot,
+                    PLOTS_TO_PLOT=PLOTS_TO_PLOT,
                     compressed_chirps=True)
     for ax in axs.flatten():
         ax.grid()
@@ -463,13 +461,14 @@ def results_setup9():
 
     """Run functions to generate results"""
     # plot_touch_signals_setup9()
-    plot_chirp_signals_setup9()
-    transfer_function_setup9(SETUP)
+    # plot_chirp_signals_setup9()
+    # transfer_function_setup9(SETUP)
+    scattering_setup9(SETUP)
 
 
 def plot_touch_signals_setup9():
     """Choose file"""
-    FILE_FOLDER = 'setup9_propagation_speed_short/touch'
+    FILE_FOLDER = 'setup9_10cm/touch'
     FILE_NAME = 'touch_v1'
     """Open file"""
     measurements = csv_to_df(file_folder=FILE_FOLDER,
@@ -508,7 +507,7 @@ def plot_touch_signals_setup9():
 
 def plot_chirp_signals_setup9():
     """Choose file"""
-    FILE_FOLDER = 'setup9_propagation_speed_short/chirp/100Hz_to_40kHz_single_chirp'
+    FILE_FOLDER = 'setup9_10cm/chirp/100Hz_to_40kHz_single_chirp'
     FILE_NAME = 'chirp_v1'
     """Open file"""
     measurements = csv_to_df(file_folder=FILE_FOLDER,
@@ -569,7 +568,8 @@ def plot_touch_time_signal_setup9(measurements: pd.DataFrame):
     PLOTS_TO_PLOT = ['time']
     fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
                             ncols=len(PLOTS_TO_PLOT),
-                            figsize=FIGSIZE_ONE_COLUMN,
+                            figsize=set_window_size(rows=len(CHANNELS_TO_PLOT),
+                                                    cols=len(PLOTS_TO_PLOT)),
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in CHANNELS_TO_PLOT],
@@ -766,7 +766,7 @@ def transfer_function_setup9(setup: Setup):
     the signal on sensor 3 is the output."""
 
     """Choose file"""
-    FILE_FOLDER = 'setup9_propagation_speed_short/chirp/100Hz_to_40kHz_single_chirp'
+    FILE_FOLDER = 'setup9_10cm/chirp/100Hz_to_40kHz_single_chirp'
     FILE_NAME = 'chirp_v1'
 
     """Open file"""
@@ -915,6 +915,140 @@ def transfer_function_setup9(setup: Setup):
     plt.savefig(SAVE_FIGURES_PATH + 'setup9_phase_velocities.pdf',
                 format='pdf')
     plt.show()
+
+
+def scattering_setup9(setup: Setup):
+    """Open file"""
+    FILE_FOLDER = 'setup9_10cm/scattering_tests/1kHz_to_10kHz_125ms'
+    FILE_NAME = 'no_touch_v1'
+    measurements = csv_to_df(file_folder=FILE_FOLDER,
+                             file_name=FILE_NAME)
+
+    """Interpolate waveforms"""
+    measurements = interpolate_waveform(measurements)
+
+    """Shift to align chirps better with their time intervals"""
+    SHIFT_BY = int(0.0877 * SAMPLE_RATE)
+    for channel in measurements:
+        measurements[channel] = np.roll(measurements[channel],
+                                        -SHIFT_BY)
+        measurements[channel][-SHIFT_BY:] = 0
+
+    """Compress chirps"""
+    CHIRP_LENGTH = int(0.125 * SAMPLE_RATE)
+    PRE_PAD_LENGTH = int(2.5 * SAMPLE_RATE)
+    POST_PAD_LENGTH = measurements.shape[0] - (PRE_PAD_LENGTH + CHIRP_LENGTH) - 1
+    chirp = measurements['Actuator'][0:CHIRP_LENGTH + 1]
+    reference_chirp = np.pad(chirp,
+                             (PRE_PAD_LENGTH, POST_PAD_LENGTH),
+                             mode='constant')
+    _, ax = plt.subplots(1, 1)
+    ax.plot(np.linspace(-2.5, 2.5, measurements.shape[0]), reference_chirp)
+    for channel in measurements:
+        measurements[channel] = signal.correlate(measurements[channel],
+                                                 reference_chirp,
+                                                 mode='same')
+
+    """Split the channels into arrays of length 125 ms"""
+    measurements_split = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES)
+    for channel in measurements_split:
+        measurements_split[channel] = np.split(measurements[channel],
+                                               indices_or_sections=40)
+
+    """Plot the shifted measurements"""
+    CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
+    fig, axs = plt.subplots(nrows=1, ncols=1,
+                            sharex=True, sharey=True,
+                            figsize=set_window_size(),
+                            squeeze=False)
+    time_axis = np.linspace(0, 5, measurements.shape[0])
+    for channel in CHANNELS_TO_PLOT:
+        axs[0, 0].plot(time_axis, measurements[channel], label=channel)
+    axs[0, 0].set_title('Shifted measurements 1')
+    axs[0, 0].set_xlabel('Time [s]')
+    axs[0, 0].set_ylabel('Amplitude [V]')
+    axs[0, 0].legend()
+    axs[0, 0].grid()
+    """Use scientific notation"""
+    for ax in axs.flatten():
+        ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
+    subplots_adjust(['time'])
+
+    """Make up for drift in signal generator"""
+    measurements_split = correct_drift(measurements_split,
+                                       data_to_sync_with=measurements_split)
+
+    """Plot all chirps on top of each other"""
+    time_axis = np.linspace(start=0,
+                            stop=len(measurements_split['Sensor 1'][0]) / SAMPLE_RATE,
+                            num=len(measurements_split['Sensor 1'][0]))
+    fig, axs = plt.subplots(nrows=3, ncols=1,
+                            sharex=True, sharey=True,
+                            figsize=set_window_size(rows=2))
+    for i, _ in enumerate(measurements_split['Sensor 1'][0:39]):
+        axs[0].plot(time_axis, measurements_split['Sensor 1'][i])
+        axs[1].plot(time_axis, measurements_split['Sensor 3'][i])
+        axs[2].plot(time_axis, measurements_split['Actuator'][i])
+    axs[0].set_title('39 chirps, sensor 1')
+    axs[1].set_title('39 chirps, sensor 3')
+    axs[1].set_xlabel('Time [s]')
+    axs[0].grid()
+    axs[1].grid()
+    axs[2].grid()
+    subplots_adjust(['time'], rows=2)
+
+    """Plot each chirp subtracted the previous chirp"""
+    # time_axis = np.linspace(start=0,
+    #                         stop=len(measurements_split['Sensor 1'][0]) / (10 * SAMPLE_RATE),
+    #                         num=len(measurements_split['Sensor 1'][0]))
+
+    # for i, chirp in enumerate(measurements_split['Sensor 1']):
+    #     if i == 0:
+    #         continue
+    #     fig, axs = plt.subplots(nrows=3, ncols=1, sharex=True, sharey=True)
+    #     spec = axs[0].specgram(measurements_split['Sensor 1'][i] - measurements_split['Sensor 1'][i - 1],
+    #                            Fs=SAMPLE_RATE,
+    #                            NFFT=16,
+    #                            noverlap=(8))
+    #     # fig.colorbar(spec[3], ax=axs[i, 1])
+    #     spec[3].set_clim(10 * np.log10(np.max(spec[0])) - 40,
+    #                      10 * np.log10(np.max(spec[0])))
+    #     axs[0].set_xlabel('Time [s]')
+    #     axs[0].set_ylabel('Frequency [Hz]')
+    #     axs[0].axis(ymax=50000)
+    #     axs[0].set_xlim(0.09126, 0.09207)
+    #     axs[0].axvline(np.argmax(measurements_split['Sensor 1'][i]) /20ments_split['Sensor 2'][i - 1],
+    #                            Fs=SAMPLE_RATE,
+    #                            NFFT=16,
+    #                            noverlap=(8))
+    #     spec[3].set_clim(10 * np.log10(np.max(spec[1])) - 40,
+    #                   10 * np.log10(np.max(spec[1])))
+    #     axs[1].set_xlabel('Time [s]')
+    #     axs[1].set_ylabel('Frequency [Hz]')
+    #     axs[1].axis(ymax=50000)
+    #     axs[1].set_xlim(0.09126, 0.09207)
+    #     axs[1].axvline(np.argmax(measurements_split['Sensor 2'][i]) /
+    #                    SAMPLE_RATE + np.abs((0.133333 - 0.573703) / prop_speed),
+    #                    color='red',
+    #                    linestyle='--')
+    #     spec = axs[2].specgram(measurements_split['Sensor 3'][i] - measurements_split['Sensor 3'][i - 1],
+    #                            Fs=SAMPLE_RATE,
+    #                            NFFT=16,
+    #                            noverlap=(8))
+    #     spec[3].set_clim(10 * np.log10(np.max(spec[2])) - 40,
+    #                      10 * np.log10(np.max(spec[2])))
+    #     axs[2].set_xlabel('Time [s]')
+    #     axs[2].set_ylabel('Frequency [Hz]')
+    #     axs[2].axis(ymax=50000)
+    #     axs[2].set_xlim(0.09126, 0.09207)
+    #     axs[2].axvline(np.argmax(measurements_split['Sensor 3'][i]) /
+    #                    SAMPLE_RATE + np.abs((0.146333 - 0.584192) / prop_speed),
+    #                    color='red',
+    #                    linestyle='--')
+    #     manager = plt.get_current_fig_manager()
+    #     manager.full_screen_toggle()
+
+    # plt.subplots_adjust(hspace=0.5, wspace=0.5)
 
 
 """Generate custom graphs"""
