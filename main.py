@@ -25,21 +25,24 @@ def main():
     TIME_END = TIME_START + 0.010  # s
     FILTER = True
     BANDWIDTH = np.array([100, 40000]) #this area the phase velocity is more or less constant, but still differs bwtween the channels
-    SETUP = Setup3_2()
+    SETUP = Setup3()
 
     
     """Open file"""
-    measurements = csv_to_df(file_folder='prop_speed_files/setup3_2',
-                             file_name='prop_speed_chirp3_setup3_2_v8',
-                             channel_names=CHIRP_CHANNEL_NAMES)
-    # measurements = csv_to_df(file_folder='first_test_touch_passive_setup2',
-    #                           file_name='touch_test_passive_setup2_place_B2_center_v1',
-    #                           channel_names=['channel 1', 'channel 2', 'channel 3'])
+    # measurements = csv_to_df(file_folder='prop_speed_files/setup3_2',
+    #                          file_name='prop_speed_chirp3_setup3_2_v8',
+    #                          channel_names=CHIRP_CHANNEL_NAMES)
+    measurements = csv_to_df(file_folder='div_files',
+                              file_name='prop_speed_fingertouch_hard_setup3_v1',
+                              channel_names=['channel 1', 'channel 2', 'channel 3'])
     """Preprocessing"""
-    df1 = measurements.drop(columns=['wave_gen'], axis=1)
+    #df1 = measurements.drop(columns=['wave_gen'], axis=1)
+    df1 = measurements
+    df1.plot()
+    plt.show()
     #df1 = measurements
     #create time axis
-    compare_signals(measurements['channel 1'],measurements['channel 2'],measurements['channel 3'])
+    #compare_signals(measurements['channel 1'],measurements['channel 2'],measurements['channel 3'])
     
     time = np.linspace(0, len(df1) / SAMPLE_RATE, num=len(df1))
     #plot_fft(df1)
@@ -64,9 +67,9 @@ def main():
 
     """Compress chirp signals"""
     #print(np.linalg.norm(SETUP.sensor_1.coordinates-SETUP.sensor_3.coordinates))
-    measurements_comp = compress_chirp(measurements_filt, custom_chirp=None)
+    #measurements_comp = compress_chirp(measurements_filt, custom_chirp=None)
 
-    #measurements_comp = compress_df_touch(measurements_filt, set_threshold_man=True, n_sampl=20)
+    measurements_comp = compress_df_touch(measurements_filt, set_threshold_man=True, n_sampl=50)
     # plt.plot(measurements_comp['channel 1'], label='ch1')
     # plt.plot(measurements_comp['channel 2'], label='ch2')
     # plt.legend()
@@ -141,8 +144,8 @@ def main():
     # plt.plot(int(expected_value),measurements_comp_hilb['channel 1'][int(expected_value)],'ro')
     # plt.show()
     """Place setup objects"""
-    plot_estimated_reflections_with_sliders(SETUP,measurements_comp)
-    exit()
+    #plot_estimated_reflections_with_sliders(SETUP,measurements_comp)
+    #exit()
     SETUP.draw()
     actuator, sensors = SETUP.get_objects()
 
@@ -190,9 +193,9 @@ def main():
         plt.xlabel('Time [s]')
         plt.ylabel('Frequency [Hz]')
         plt.colorbar()
-        plt.axvline(arrival_times[i][0], linestyle='--', color='r', label='Direct wave')
-        x = [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])]
-        y = [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[i][5:])]
+        #plt.axvline(arrival_times[i][0], linestyle='--', color='r', label='Direct wave')
+        #x = [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])]
+        #y = [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[i][5:])]
         plt.xlabel('Time [ms]')
         plt.ylabel('Amplitude [V]')
         plot_legend_without_duplicates()
@@ -211,10 +214,10 @@ def main():
         plt.title('Correlation between chirp and channel ' + str(i + 1))
         plt.plot(time_axis_corr, measurements_comp['channel ' + str(i + 1)], label='Correlation')
         plt.plot(time_axis_corr, measurements_comp_hilb['channel ' + str(i + 1)], label='Hilbert envelope')
-        plt.axvline(arrival_times[i][0], linestyle='--', color='r', label='Direct wave')
-        [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])]
-        [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[i][5:])]
-        print([plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])])
+        #plt.axvline(arrival_times[i][0], linestyle='--', color='r', label='Direct wave')
+        #[plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])]
+        #[plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[i][5:])]
+        #print([plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])])
         plt.xlabel('Time [ms]')
         plt.ylabel('Amplitude [V]')
         plot_legend_without_duplicates()

@@ -16,7 +16,7 @@ CROP_BEFORE = 80000     # samples
 CROP_AFTER = 120000     # samples
 
 DATA_DELIMITER = ","
-CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3']
+CHANNEL_NAMES = ['channel 1', 'channel 2', 'channel 3', 'wave_gen']
 DIRECTION_CHECK = {
                     'A1': range(190,260), 'A2': range(250,290), 'A3': range(280,350),
                     'B1': range(180,250), 'B2': range(250,290), 'B3': range(290,350),
@@ -42,14 +42,16 @@ def CropRegion(data):
     plt.show()
 
 
-def SetBase(path='\\first_test_touch_passive_setup2\\', crop=True, cell_names=GRID_NAMES, output_folder=OUTPUT_FOLDER):
+def SetBase(path='\\first_test_touch_passive_setup2\\', crop=False, cell_names=GRID_NAMES, output_folder=OUTPUT_FOLDER):
     file_path = Path(DATA_FOLDER + path).rglob('*_v1.csv')
     base_dict = {}
     for idx, file in enumerate(sorted(file_path)):
-
         data = pd.read_csv(file, delimiter=DATA_DELIMITER, names=CHANNEL_NAMES)
         if crop:
             data = CropData(data)
+        plt.plot(data)
+        plt.show()
+        exit()
         base_dict[cell_names[idx]] = data
     print(output_folder)
 
