@@ -463,8 +463,8 @@ def results_setup9():
                 format='pdf')
 
     """Run functions to generate results"""
-    plot_touch_signals_setup9()
-    # plot_chirp_signals_setup9()
+    # plot_touch_signals_setup9()
+    plot_chirp_signals_setup9()
     # transfer_function_setup9(SETUP)
     # scattering_setup9(SETUP)
     # predict_reflections_setup9(SETUP)
@@ -614,31 +614,24 @@ def plot_touch_time_signal_and_spectrogram_setup9(measurements: pd.DataFrame,
     """Plot the full touch signal"""
     CHANNELS_TO_PLOT = ['Sensor 1']
     PLOTS_TO_PLOT = ['time', 'spectrogram']
-    fig, axs = plt.subplots(nrows=len(PLOTS_TO_PLOT),
-                            ncols=len(CHANNELS_TO_PLOT),
-                            figsize=set_window_size(rows=len(PLOTS_TO_PLOT),
-                                                    cols=len(CHANNELS_TO_PLOT)),
+    fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
+                            ncols=len(PLOTS_TO_PLOT),
+                            figsize=set_window_size(rows=len(CHANNELS_TO_PLOT),
+                                                    cols=len(PLOTS_TO_PLOT)),
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in CHANNELS_TO_PLOT],
-                    plots_to_plot=PLOTS_TO_PLOT[0],
+                    plots_to_plot=PLOTS_TO_PLOT,
                     compressed_chirps=False)
-    compare_signals(fig, axs,
-                    [measurements[channel] for channel in CHANNELS_TO_PLOT],
-                    plots_to_plot=PLOTS_TO_PLOT[1],
-                    compressed_chirps=False,
-                    dynamic_range_db=60,
-                    nfft=nfft,
-                    set_index=1)
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust(PLOTS_TO_PLOT,
-                    rows=len(PLOTS_TO_PLOT),
-                    columns=len(CHANNELS_TO_PLOT))
+    # subplots_adjust(PLOTS_TO_PLOT,
+    #                 rows=len(PLOTS_TO_PLOT),
+    #                 columns=len(CHANNELS_TO_PLOT))
 
     """Move the xlabel from the first row to the second"""
-    axs[0, 0].set_xlabel('')
-    axs[1, 0].set_xlabel('Time (s)')
+    # axs[0, 0].set_xlabel('')
+    # axs[1, 0].set_xlabel('Time (s)')
 
 
 def plot_touch_fft_setup9(measurements: pd.DataFrame):
@@ -664,11 +657,12 @@ def plot_touch_fft_setup9(measurements: pd.DataFrame):
 def plot_chirp_time_signal_setup9(measurements: pd.DataFrame,
                                   envelope: bool = False):
     """Plot the time signal full chirp signal"""
-    CHANNELS_TO_PLOT = ['Actuator', 'Sensor 1', 'Sensor 3']
+    CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
     PLOTS_TO_PLOT = ['time']
     fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
                             ncols=len(PLOTS_TO_PLOT),
-                            figsize=FIGSIZE_ONE_COLUMN,
+                            figsize=set_window_size(rows=len(CHANNELS_TO_PLOT),
+                                                    cols=len(PLOTS_TO_PLOT)),
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in CHANNELS_TO_PLOT],
@@ -696,7 +690,8 @@ def plot_chirp_spectrogram_setup9(measurements: pd.DataFrame,
     PLOTS_TO_PLOT = ['spectrogram']
     fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
                             ncols=len(PLOTS_TO_PLOT),
-                            figsize=FIGSIZE_ONE_COLUMN,
+                            figsize=set_window_size(rows=len(CHANNELS_TO_PLOT),
+                                                    cols=len(PLOTS_TO_PLOT)),
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in CHANNELS_TO_PLOT],
@@ -720,7 +715,8 @@ def plot_chirp_time_signal_and_spectrogram_setup9(measurements: pd.DataFrame,
     PLOTS_TO_PLOT = ['time', 'spectrogram']
     fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
                             ncols=len(PLOTS_TO_PLOT),
-                            figsize=FIGSIZE_ONE_COLUMN,
+                            figsize=set_window_size(rows=len(CHANNELS_TO_PLOT),
+                                                    cols=len(PLOTS_TO_PLOT)),
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in CHANNELS_TO_PLOT],
@@ -745,7 +741,8 @@ def plot_chirp_fft_setup9(measurements: pd.DataFrame):
     PLOTS_TO_PLOT = ['fft']
     fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
                             ncols=len(PLOTS_TO_PLOT),
-                            figsize=FIGSIZE_ONE_COLUMN,
+                            figsize=set_window_size(rows=len(CHANNELS_TO_PLOT),
+                                                    cols=len(PLOTS_TO_PLOT)),
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in CHANNELS_TO_PLOT],
@@ -960,7 +957,8 @@ def scattering_setup9(setup: Setup):
     CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
     fig, axs = plt.subplots(nrows=1, ncols=1,
                             sharex=True, sharey=True,
-                            figsize=set_window_size(),
+                            figsize=set_window_size(rows=len(CHANNELS_TO_PLOT),
+                                                    cols=len(PLOTS_TO_PLOT)),
                             squeeze=False)
     time_axis = np.linspace(0, 5, measurements.shape[0])
     for channel in CHANNELS_TO_PLOT:

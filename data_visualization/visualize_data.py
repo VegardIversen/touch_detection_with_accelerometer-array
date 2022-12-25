@@ -244,9 +244,12 @@ def envelope_with_lines(sensor: Sensor,
 
 
 def set_fontsizes():
-    SMALL_SIZE = 18
-    MEDIUM_SIZE = 20
-    BIGGER_SIZE = 25
+    """Inspired by
+    https://stackoverflow.com/questions/3899980/how-to-change-the-font-size-on-a-matplotlib-plot
+    """
+    SMALL_SIZE = 13
+    MEDIUM_SIZE = 15
+    BIGGER_SIZE = 18
     plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
     plt.rc('axes', titlesize=MEDIUM_SIZE)     # fontsize of the axes title
     plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
@@ -260,17 +263,17 @@ def set_window_size(rows: int = 1, cols: int = 1):
     """Set the window size for the plots"""
     figsize: tuple
     if rows == 1 and cols == 1:
-        figsize = (9, 5)
+        figsize = (9, 3)
     elif rows == 2 and cols == 1:
-        figsize = (15, 7)
+        figsize = (4.5, 3)
     elif rows == 3 and cols == 1:
-        figsize = (9, 12)
+        figsize = (4.5, 3)
     elif rows == 1 and cols == 2:
-        figsize = (16, 5)
+        figsize = (9, 3)
     elif cols == 2:
-        figsize = (16, 9)
+        figsize = (9, 3)
     elif cols == 3:
-        figsize = (20, 9)
+        figsize = (9, 3)
     else:
         raise ValueError('Window size not defined for given dimensions.')
     return figsize
