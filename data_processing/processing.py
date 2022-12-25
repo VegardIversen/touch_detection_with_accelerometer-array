@@ -79,7 +79,7 @@ def interpolate_waveform(signals: pd.DataFrame) -> pd.DataFrame:
 def correct_drift(data_split: pd.DataFrame,
                   data_to_sync_with: pd.DataFrame) -> pd.DataFrame:
     """Align each chrip in a recording better when split into equal lengths.
-    NOTE:   Also normalizes output and crops each chirp for faster processing.
+    NOTE:   Also normalizes output.
     """
     for channel in data_split:
         for chirp in range(len(data_split['Sensor 1'])):

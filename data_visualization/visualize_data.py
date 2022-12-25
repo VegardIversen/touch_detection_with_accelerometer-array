@@ -262,7 +262,7 @@ def set_window_size(rows: int = 1, cols: int = 1):
     if rows == 1 and cols == 1:
         figsize = (9, 5)
     elif rows == 2 and cols == 1:
-        figsize = (9, 9)
+        figsize = (15, 7)
     elif rows == 3 and cols == 1:
         figsize = (9, 12)
     elif rows == 1 and cols == 2:

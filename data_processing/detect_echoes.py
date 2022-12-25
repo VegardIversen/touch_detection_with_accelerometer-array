@@ -191,7 +191,7 @@ def flip_sensors(sensors: np.ndarray,
 
 def get_travel_times(actuator: Actuator,
                      sensor: Sensor,
-                     prop_speed: float,
+                     propagation_speed: float,
                      ms: bool = False,
                      print_info: bool = False,
                      relative_first_reflection: bool = True):
@@ -207,7 +207,7 @@ def get_travel_times(actuator: Actuator,
     direct_travel_distance = np.linalg.norm(actuator.coordinates -
                                             sensor.coordinates)
     travel_distances = np.append(travel_distances, direct_travel_distance)
-    direct_travel_time = direct_travel_distance / prop_speed
+    direct_travel_time = direct_travel_distance / propagation_speed
     arrival_times = np.append(arrival_times, direct_travel_time)
 
     if print_info and not relative_first_reflection:
@@ -231,7 +231,7 @@ def get_travel_times(actuator: Actuator,
                                                 sensor.coordinates)
             if relative_first_reflection:
                 distance_to_sensor -= direct_travel_distance
-            time_to_sensors = distance_to_sensor / prop_speed
+            time_to_sensors = distance_to_sensor / propagation_speed
             if not edge_1:
                 if print_info:
                     print(f'\nReflecting from {edge_2}: \t \

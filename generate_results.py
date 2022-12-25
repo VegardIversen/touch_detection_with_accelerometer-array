@@ -10,17 +10,19 @@ import matplotlib.pyplot as plt
 
 from global_constants import (CHIRP_CHANNEL_NAMES,
                               SAMPLE_RATE,
+                              ACTUATOR_1,
                               SENSOR_1,
                               SENSOR_2,
                               SENSOR_3,
-                              SAVE_FIGURES_PATH)
+                              FIGURES_SAVE_PATH)
 from csv_to_df import csv_to_df
 from simulations import simulated_phase_velocities
 from data_processing.detect_echoes import (get_envelope,
                                            get_travel_times)
 from data_processing.preprocessing import (compress_chirps,
                                            crop_data,
-                                           window_signals)
+                                           window_signals,
+                                           filter_general)
 from data_processing.processing import (average_of_signals,
                                         interpolate_waveform,
                                         normalize,
@@ -29,7 +31,8 @@ from data_processing.processing import (average_of_signals,
                                         to_dB)
 from data_visualization.visualize_data import (compare_signals,
                                                wave_statistics,
-                                               envelopes_with_lines,
+                                               envelope_with_lines,
+                                               spectrogram_with_lines,
                                                set_window_size,
                                                subplots_adjust)
 from setups import (Setup,
@@ -116,7 +119,7 @@ def plot_time_signals_setup3_2(measurements: pd.DataFrame,
     fig, axs = plt.subplots(nrows=measurements.shape[1],
                             ncols=len(plots_to_plot),
                             figsize=set_window_size(rows=measurements.shape[1],
-                                                    columns=len(plots_to_plot)),
+                                                    cols=len(plots_to_plot)),
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in measurements],
@@ -409,7 +412,7 @@ def results_setup7():
     """Draw setup"""
     subplots_adjust(['setup'])
     SETUP.draw()
-    plt.savefig(SAVE_FIGURES_PATH + 'setup3_draw.pdf',
+    plt.savefig(FIGURES_SAVE_PATH + 'setup3_draw.pdf',
                 format='pdf')
 
     """Open file"""
@@ -456,14 +459,15 @@ def results_setup9():
     """Draw setup"""
     subplots_adjust(['setup'])
     SETUP.draw()
-    plt.savefig(SAVE_FIGURES_PATH + 'setup1_draw.pdf',
+    plt.savefig(FIGURES_SAVE_PATH + 'setup1_draw.pdf',
                 format='pdf')
 
     """Run functions to generate results"""
-    # plot_touch_signals_setup9()
+    plot_touch_signals_setup9()
     # plot_chirp_signals_setup9()
     # transfer_function_setup9(SETUP)
-    scattering_setup9(SETUP)
+    # scattering_setup9(SETUP)
+    # predict_reflections_setup9(SETUP)
 
 
 def plot_touch_signals_setup9():
@@ -483,22 +487,22 @@ def plot_touch_signals_setup9():
                                         time_end=2.5575)
 
     plot_touch_time_signal_and_spectrogram_setup9(measurements_full_touch)
-    plt.savefig(SAVE_FIGURES_PATH + 'setup9_touch_time_and_spectrogram.pdf',
+    plt.savefig(FIGURES_SAVE_PATH + 'setup9_touch_time_and_spectrogram.pdf',
                 format='pdf')
     plot_touch_spectrogram_setup9(measurements_full_touch,
                                   dynamic_range_db=60)
-    plot_touch_fft_setup9(measurements_full_touch)
-    plt.savefig(SAVE_FIGURES_PATH + 'setup9_touch_fft.pdf',
-                format='pdf')
 
     """Crop data to the beginning of the touch signal"""
     measurements_beginning_of_touch = crop_data(measurements_full_touch,
                                                 time_start=(2.05 + 0.0538),
                                                 time_end=(2.05 + 0.07836))
+    plot_touch_fft_setup9(measurements_beginning_of_touch)
+    plt.savefig(FIGURES_SAVE_PATH + 'setup9_touch_fft.pdf',
+                format='pdf')
 
     plot_touch_time_signal_and_spectrogram_setup9(measurements_beginning_of_touch,
                                                   nfft=1024)
-    plt.savefig(SAVE_FIGURES_PATH + 'setup9_touch_time_and_spectrogram_dispersive.pdf',
+    plt.savefig(FIGURES_SAVE_PATH + 'setup9_touch_time_and_spectrogram_dispersive.pdf',
                 format='pdf')
     plot_touch_spectrogram_setup9(measurements_beginning_of_touch,
                                   dynamic_range_db=60,
@@ -522,18 +526,18 @@ def plot_chirp_signals_setup9():
                                  time_end=3.531)
 
     plot_chirp_time_signal_setup9(measurements_raw)
-    plt.savefig(SAVE_FIGURES_PATH + 'setup9_chirp_time_raw.pdf',
+    plt.savefig(FIGURES_SAVE_PATH + 'setup9_chirp_time_raw.pdf',
                 format='pdf')
 
     plot_chirp_spectrogram_setup9(measurements_raw,
                                   dynamic_range_db=60)
-    plt.savefig(SAVE_FIGURES_PATH + 'setup9_chirp_spectrogram_raw.pdf',
+    plt.savefig(FIGURES_SAVE_PATH + 'setup9_chirp_spectrogram_raw.pdf',
                 format='pdf')
 
     plot_chirp_fft_setup9(measurements_raw)
     for ax in plt.gcf().axes:
         ax.set_ylim([-20, 60])
-    plt.savefig(SAVE_FIGURES_PATH + 'setup9_chirp_fft_raw.pdf',
+    plt.savefig(FIGURES_SAVE_PATH + 'setup9_chirp_fft_raw.pdf',
                 format='pdf')
 
     """Crop data to the compressed chirp signal"""
@@ -546,19 +550,19 @@ def plot_chirp_signals_setup9():
     """Use scientific notation for y-axis"""
     for ax in plt.gcf().axes:
         ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
-    plt.savefig(SAVE_FIGURES_PATH + 'setup9_chirp_time_compressed.pdf',
+    plt.savefig(FIGURES_SAVE_PATH + 'setup9_chirp_time_compressed.pdf',
                 format='pdf')
 
     plot_chirp_spectrogram_setup9(measurements_compressed,
                                   dynamic_range_db=40,
                                   nfft=512)
-    plt.savefig(SAVE_FIGURES_PATH + 'setup9_chirp_spectrogram_compressed.pdf',
+    plt.savefig(FIGURES_SAVE_PATH + 'setup9_chirp_spectrogram_compressed.pdf',
                 format='pdf')
 
     plot_chirp_fft_setup9(measurements_compressed)
     for ax in plt.gcf().axes:
         ax.set_ylim([0, 100])
-    plt.savefig(SAVE_FIGURES_PATH + 'setup9_chirp_fft_compressed.pdf',
+    plt.savefig(FIGURES_SAVE_PATH + 'setup9_chirp_fft_compressed.pdf',
                 format='pdf')
 
 
@@ -590,7 +594,7 @@ def plot_touch_spectrogram_setup9(measurements: pd.DataFrame,
     PLOTS_TO_PLOT = ['spectrogram']
     fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
                             ncols=len(PLOTS_TO_PLOT),
-                            figsize=FIGSIZE_ONE_COLUMN,
+                            figsize=set_window_size(rows=2, cols=1),
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in CHANNELS_TO_PLOT],
@@ -607,12 +611,13 @@ def plot_touch_spectrogram_setup9(measurements: pd.DataFrame,
 
 def plot_touch_time_signal_and_spectrogram_setup9(measurements: pd.DataFrame,
                                                   nfft: int = 4096):
-    """Plot the time signal full touch signal"""
+    """Plot the full touch signal"""
     CHANNELS_TO_PLOT = ['Sensor 1']
     PLOTS_TO_PLOT = ['time', 'spectrogram']
     fig, axs = plt.subplots(nrows=len(PLOTS_TO_PLOT),
                             ncols=len(CHANNELS_TO_PLOT),
-                            figsize=FIGSIZE_ONE_COLUMN,
+                            figsize=set_window_size(rows=len(PLOTS_TO_PLOT),
+                                                    cols=len(CHANNELS_TO_PLOT)),
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in CHANNELS_TO_PLOT],
@@ -642,7 +647,8 @@ def plot_touch_fft_setup9(measurements: pd.DataFrame):
     PLOTS_TO_PLOT = ['fft']
     fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
                             ncols=len(PLOTS_TO_PLOT),
-                            figsize=FIGSIZE_ONE_COLUMN,
+                            figsize=set_window_size(rows=len(CHANNELS_TO_PLOT),
+                                                    cols=len(PLOTS_TO_PLOT)),
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in CHANNELS_TO_PLOT],
@@ -653,11 +659,6 @@ def plot_touch_fft_setup9(measurements: pd.DataFrame):
     subplots_adjust(PLOTS_TO_PLOT,
                     rows=len(CHANNELS_TO_PLOT),
                     columns=len(PLOTS_TO_PLOT))
-
-    """Divide all x-axis labels by 1000"""
-    for ax in axs.flatten():
-        ax.set_xticklabels([str(int(x / 1000)) for x in ax.get_xticks()])
-    axs.flatten()[1].set_xlabel('Frequency [kHz]')
 
 
 def plot_chirp_time_signal_setup9(measurements: pd.DataFrame,
@@ -857,7 +858,7 @@ def transfer_function_setup9(setup: Setup):
     axs[0, 0].set_ylim(bottom=-20, top=20)
     axs[0, 0].grid()
     subplots_adjust(['fft'])
-    plt.savefig(SAVE_FIGURES_PATH + 'setup9_amplitude_response.pdf',
+    plt.savefig(FIGURES_SAVE_PATH + 'setup9_amplitude_response.pdf',
                 format='pdf')
 
     """Plot the phase response"""
@@ -873,7 +874,7 @@ def transfer_function_setup9(setup: Setup):
     axs[0, 0].set_ylim(bottom=-50, top=50)
     axs[0, 0].grid()
     subplots_adjust(['fft'])
-    plt.savefig(SAVE_FIGURES_PATH + 'setup9_phase_response.pdf',
+    plt.savefig(FIGURES_SAVE_PATH + 'setup9_phase_response.pdf',
                 format='pdf')
 
     (simulated_phase_velocities_uncorrected,
@@ -905,14 +906,14 @@ def transfer_function_setup9(setup: Setup):
     axs[0, 0].legend()
     axs[0, 0].grid()
     subplots_adjust(['fft'])
-    plt.savefig(SAVE_FIGURES_PATH + 'simulated_phase_velocities.pdf',
+    plt.savefig(FIGURES_SAVE_PATH + 'simulated_phase_velocities.pdf',
                 format='pdf')
     axs[0, 0].plot(fft_frequencies / 1000,
                    phase_velocities,
                    label='Measured phase velocities')
     axs[0, 0].set_ylim(bottom=0, top=1000)
     axs[0, 0].legend()
-    plt.savefig(SAVE_FIGURES_PATH + 'setup9_phase_velocities.pdf',
+    plt.savefig(FIGURES_SAVE_PATH + 'setup9_phase_velocities.pdf',
                 format='pdf')
     plt.show()
 
@@ -997,58 +998,100 @@ def scattering_setup9(setup: Setup):
     axs[2].grid()
     subplots_adjust(['time'], rows=2)
 
-    """Plot each chirp subtracted the previous chirp"""
-    # time_axis = np.linspace(start=0,
-    #                         stop=len(measurements_split['Sensor 1'][0]) / (10 * SAMPLE_RATE),
-    #                         num=len(measurements_split['Sensor 1'][0]))
 
-    # for i, chirp in enumerate(measurements_split['Sensor 1']):
-    #     if i == 0:
-    #         continue
-    #     fig, axs = plt.subplots(nrows=3, ncols=1, sharex=True, sharey=True)
-    #     spec = axs[0].specgram(measurements_split['Sensor 1'][i] - measurements_split['Sensor 1'][i - 1],
-    #                            Fs=SAMPLE_RATE,
-    #                            NFFT=16,
-    #                            noverlap=(8))
-    #     # fig.colorbar(spec[3], ax=axs[i, 1])
-    #     spec[3].set_clim(10 * np.log10(np.max(spec[0])) - 40,
-    #                      10 * np.log10(np.max(spec[0])))
-    #     axs[0].set_xlabel('Time [s]')
-    #     axs[0].set_ylabel('Frequency [Hz]')
-    #     axs[0].axis(ymax=50000)
-    #     axs[0].set_xlim(0.09126, 0.09207)
-    #     axs[0].axvline(np.argmax(measurements_split['Sensor 1'][i]) /20ments_split['Sensor 2'][i - 1],
-    #                            Fs=SAMPLE_RATE,
-    #                            NFFT=16,
-    #                            noverlap=(8))
-    #     spec[3].set_clim(10 * np.log10(np.max(spec[1])) - 40,
-    #                   10 * np.log10(np.max(spec[1])))
-    #     axs[1].set_xlabel('Time [s]')
-    #     axs[1].set_ylabel('Frequency [Hz]')
-    #     axs[1].axis(ymax=50000)
-    #     axs[1].set_xlim(0.09126, 0.09207)
-    #     axs[1].axvline(np.argmax(measurements_split['Sensor 2'][i]) /
-    #                    SAMPLE_RATE + np.abs((0.133333 - 0.573703) / prop_speed),
-    #                    color='red',
-    #                    linestyle='--')
-    #     spec = axs[2].specgram(measurements_split['Sensor 3'][i] - measurements_split['Sensor 3'][i - 1],
-    #                            Fs=SAMPLE_RATE,
-    #                            NFFT=16,
-    #                            noverlap=(8))
-    #     spec[3].set_clim(10 * np.log10(np.max(spec[2])) - 40,
-    #                      10 * np.log10(np.max(spec[2])))
-    #     axs[2].set_xlabel('Time [s]')
-    #     axs[2].set_ylabel('Frequency [Hz]')
-    #     axs[2].axis(ymax=50000)
-    #     axs[2].set_xlim(0.09126, 0.09207)
-    #     axs[2].axvline(np.argmax(measurements_split['Sensor 3'][i]) /
-    #                    SAMPLE_RATE + np.abs((0.146333 - 0.584192) / prop_speed),
-    #                    color='red',
-    #                    linestyle='--')
-    #     manager = plt.get_current_fig_manager()
-    #     manager.full_screen_toggle()
+def predict_reflections_setup9(setup: Setup):
+    """Open file"""
+    FILE_FOLDER = 'setup9_10cm/chirp/100Hz_to_40kHz_single_chirp'
+    FILE_NAME = 'chirp_v1'
+    measurements = csv_to_df(file_folder=FILE_FOLDER,
+                             file_name=FILE_NAME)
 
-    # plt.subplots_adjust(hspace=0.5, wspace=0.5)
+    """Interpolate waveforms"""
+    measurements = interpolate_waveform(measurements)
+
+    """Filter signals"""
+    # measurements = filter_general(measurements,
+    #                               filtertype='highpass',
+    #                               cutoff_highpass=10000)
+
+    """Compress chirps"""
+    measurements = compress_chirps(measurements)
+
+    """Calculate propagation speed based on """
+
+    predict_reflections_in_envelopes_setup9(setup, measurements)
+    predict_reflections_in_spectrograms_setup9(setup, measurements)
+
+
+def predict_reflections_in_envelopes_setup9(setup: Setup,
+                                            measurements: pd.DataFrame):
+    """Calculate arrival times for sensor 1"""
+    arrival_times, _ = get_travel_times(setup.actuators[ACTUATOR_1],
+                                        setup.sensors[SENSOR_1],
+                                        propagation_speed=300,
+                                        ms=True,
+                                        relative_first_reflection=False)
+    """Plot lines for expected arrival times"""
+    envelope_with_lines(setup.sensors[SENSOR_1],
+                        measurements,
+                        arrival_times)
+    subplots_adjust(['time'])
+    plt.savefig(FIGURES_SAVE_PATH + 'predicted_arrivals_envelope_sensor1_setup9.pdf',
+                format='pdf')
+
+    """Calculate arrival times for sensor 3"""
+    arrival_times, _ = get_travel_times(setup.actuators[ACTUATOR_1],
+                                        setup.sensors[SENSOR_3],
+                                        propagation_speed=290,
+                                        ms=True,
+                                        relative_first_reflection=False)
+    envelope_with_lines(setup.sensors[SENSOR_3],
+                        measurements,
+                        arrival_times)
+    subplots_adjust(['time'])
+    plt.savefig(FIGURES_SAVE_PATH + 'predicted_arrivals_envelope_sensor3_setup9.pdf',
+                format='pdf')
+
+
+def predict_reflections_in_spectrograms_setup9(setup: Setup,
+                                               measurements: pd.DataFrame,
+                                               nfft=128,
+                                               dynamic_range_db=15):
+    """Calculate arrival times for sensor 1"""
+    arrival_times, _ = get_travel_times(setup.actuators[ACTUATOR_1],
+                                        setup.sensors[SENSOR_1],
+                                        propagation_speed=580,
+                                        ms=False,
+                                        relative_first_reflection=False)
+    """Fit arrival times to compressed chrip times"""
+    arrival_times += 2.5
+    """Plot lines for expected arrival times"""
+    spectrogram_with_lines(setup.sensors[SENSOR_1],
+                           measurements,
+                           arrival_times,
+                           nfft,
+                           dynamic_range_db=25)
+    subplots_adjust(['spectrogram'])
+    plt.savefig(FIGURES_SAVE_PATH + 'predicted_arrivals_spectrogram_sensor1_setup9.pdf',
+                format='pdf')
+
+    """Calculate arrival times for sensor 3"""
+    arrival_times, _ = get_travel_times(setup.actuators[ACTUATOR_1],
+                                        setup.sensors[SENSOR_3],
+                                        propagation_speed=580,
+                                        ms=False,
+                                        relative_first_reflection=False)
+    """Fit arrival times to compressed chrip times"""
+    arrival_times += 2.5
+    spectrogram_with_lines(setup.sensors[SENSOR_3],
+                           measurements,
+                           arrival_times,
+                           nfft,
+                           dynamic_range_db)
+    subplots_adjust(['spectrogram'])
+    plt.savefig(FIGURES_SAVE_PATH + 'predicted_arrivals_spectrogram_sensor3_setup9.pdf',
+                format='pdf')
+
 
 
 """Generate custom graphs"""

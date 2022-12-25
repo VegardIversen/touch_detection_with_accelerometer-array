@@ -30,7 +30,7 @@ class Setup:
         plt.axes()
         self.table.draw()
         [actuator.draw() for actuator in self.actuators]
-        [sensor.draw() for sensor in self.sensors if sensor.plot is True]
+        [sensor.draw() for sensor in self.sensors if sensor.plot]
         plt.axis('scaled')
         plt.xlabel('x (m)')
         plt.ylabel('y (m)')
@@ -67,14 +67,14 @@ class Setup2(Setup):
     actuators[0] = Actuator(coordinates=np.array([1 / 2 * Table.LENGTH,
                                                   1 / 9 * Table.WIDTH]))
     sensors[SENSOR_2] = Sensor(coordinates=np.array([Table.LENGTH / 2,
-                                              Table.WIDTH - 0.082]),
-                        name='Sensor 2')
+                                                     Table.WIDTH - 0.082]),
+                               name='Sensor 2')
     SENSOR_1_OFFSET = np.array([-0.08 / 2, -(np.sqrt(0.08 ** 2 - 0.04 ** 2))])
     sensors[SENSOR_1] = Sensor(coordinates=(sensors[SENSOR_2].coordinates + SENSOR_1_OFFSET),
-                        name='Sensor 1')
+                               name='Sensor 1')
     SENSOR_3_OFFSET = np.array([0.08 / 2, -(np.sqrt(0.08 ** 2 - 0.04 ** 2))])
     sensors[SENSOR_3] = Sensor(coordinates=(sensors[SENSOR_2].coordinates + SENSOR_3_OFFSET),
-                        name='Sensor 3')
+                               name='Sensor 3')
 
     def __init__(self):
         pass
@@ -307,7 +307,7 @@ class Setup9(Setup):
                                name='Sensor 2',
                                plot=False)
     sensors[SENSOR_3] = Sensor(coordinates=(sensors[SENSOR_1].coordinates + np.array([0.10, 0])),
-                               name='Sensor 2')
+                               name='Sensor 3')
 
     def __init__(self):
         pass
