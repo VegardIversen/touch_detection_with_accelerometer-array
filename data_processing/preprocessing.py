@@ -1,12 +1,48 @@
 import numpy as np
 import pandas as pd
 from scipy import signal
-import matplotlib.pyplot as plt
 
 from global_constants import SAMPLE_RATE
 
 
 """FILTERING"""
+
+
+def filter_general(signals: pd.DataFrame or np.ndarray,
+                   filtertype: str,
+                   cutoff_highpass: int = 50,
+                   cutoff_lowpass: int = 40000,
+                   order: int = 4):
+    """filtertype: 'highpass', 'lowpass' or 'bandpass"""
+    if filtertype == 'highpass':
+        sos = signal.butter(order,
+                            cutoff_highpass / (0.5 * SAMPLE_RATE),
+                            'highpass',
+                            output='sos')
+    elif filtertype == 'lowpass':
+        sos = signal.butter(order,
+                            cutoff_lowpass / (0.5 * SAMPLE_RATE),
+                            'lowpass',
+                            output='sos')
+    elif filtertype == 'bandpass':
+        sos = signal.butter(order,
+                            [cutoff_highpass / (0.5 * SAMPLE_RATE),
+                             cutoff_lowpass / (0.5 * SAMPLE_RATE)],
+                            'bandpass',
+                            output='sos')
+    else:
+        raise ValueError('Filtertype not recognized')
+
+    signals_filtered = signals.copy()
+    if isinstance(signals, pd.DataFrame):
+        for channel in signals_filtered:
+            signals_filtered[channel] = signal.sosfilt(sos,
+                                                   signals[channel].values)
+    else:
+        signals_filtered = signal.sosfilt(sos,
+                                      signals)
+
+    return signals_filtered
 
 
 def compress_chirps(measurements: pd.DataFrame):
