@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from setups import Setup
+from objects import Sensor
 from global_constants import SAMPLE_RATE
 
 from data_processing.detect_echoes import get_envelope
@@ -163,80 +164,83 @@ def wave_statistics(fig, axs, data: pd.DataFrame):
         axs[i].grid()
 
 
-def spectrogram_with_lines(setup, measurements_comp, arrival_times, bandwidth):
+def spectrogram_with_lines(sensor: Sensor,
+                           measurements: pd.DataFrame,
+                           arrival_times: np.ndarray,
+                           nfft: int = 1024,
+                           dynamic_range_db: int = 40):
     """Plot the spectrograms along with lines for expected reflections"""
-    for i, sensor in enumerate(setup.sensors):
-        plt.subplot(311 + i, sharex=plt.gca())
-        plt.title(f'Correlation between chirp and {sensor}')
-        spec = plt.specgram(measurements_comp[sensor.name],
-                            Fs=SAMPLE_RATE,
-                            NFFT=16,
-                            noverlap=(16 // 2))
-        plt.clim(to_dB(np.max(spec[0])) - 60,
-                 to_dB(np.max(spec[0])))
-        plt.axis(ymax=bandwidth[1] + 20000)
-        plt.title('Spectrogram')
-        plt.xlabel('Time [s]')
-        plt.ylabel('Frequency [Hz]')
-        # plt.colorbar()
-        plt.axvline(arrival_times[i][0],
-                    linestyle='--',
-                    color='r',
-                    label='Direct wave')
-        [plt.axvline(line,
-                     linestyle='--',
-                     color='g',
-                     label='1st reflections')
-         for line in (arrival_times[i][1:5])]
-        [plt.axvline(line,
-                     linestyle='--',
-                     color='purple',
-                     label='2nd reflections')
-         for line in (arrival_times[i][5:])]
-        plt.xlabel('Time [ms]')
-        plt.ylabel('Frequency [Hz]')
-        plot_legend_without_duplicates()
-    plt.subplots_adjust(hspace=0.5)
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=set_window_size())
+    spec = plt.specgram(measurements[sensor.name],
+                        Fs=SAMPLE_RATE,
+                        NFFT=nfft,
+                        noverlap=(nfft // 2))
+    spec[3].set_clim(to_dB(np.max(spec[0])) - dynamic_range_db,
+                     to_dB(np.max(spec[0])))
+    ax.set_title(f'Expected wave arrival times for {sensor.name}')
+    ax.set_xlabel('Time [s]')
+    ax.set_ylabel('Frequency [Hz]')
+    ax.set_ylim(0, 40000)
+    ax.set_xlim(2.5, 2.505)
+    fig.colorbar(spec[3])
+    ax.axvline(arrival_times[0],
+               linestyle='--',
+               linewidth=2,
+               color='orange',
+               label='Direct wave')
+    [ax.axvline(line,
+                linestyle='--',
+                linewidth=2,
+                color='cyan',
+                label='1st reflections')
+     for line in (arrival_times[1:5])]
+    [ax.axvline(line,
+                linestyle='--',
+                linewidth=2,
+                color='magenta',
+                label='2nd reflections')
+     for line in (arrival_times[5:])]
+    # """Use scientific notation"""
+    # ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
+    # plot_legend_without_duplicates(placement='upper right')
 
 
-def envelopes_with_lines(setup: Setup,
-                         measurements: pd.DataFrame,
-                         arrival_times: np.ndarray):
+def envelope_with_lines(sensor: Sensor,
+                        measurements: pd.DataFrame,
+                        arrival_times: np.ndarray):
     """Plot the correlation between the chirp signal and the measured signal"""
-    time_axis_corr = np.linspace(-1000 * len(measurements) / SAMPLE_RATE,
-                                 1000 * len(measurements) / SAMPLE_RATE,
-                                 (len(measurements)))
-    measurements_comp_hilb = get_envelope(measurements)
+    time_axis = np.linspace(-1000 * len(measurements) / SAMPLE_RATE,
+                            1000 * len(measurements) / SAMPLE_RATE,
+                            len(measurements))
+    measurements_envelope = get_envelope(measurements)
 
-    for i, sensor in enumerate(setup.sensors):
-        plt.subplot(311 + i, sharex=plt.gca())
-        plt.title(f'Correlation between {setup.actuators[0]} and {sensor}')
-        plt.plot(time_axis_corr,
-                 measurements[sensor.name],
-                 label='Correlation')
-        plt.plot(time_axis_corr,
-                 measurements_comp_hilb[sensor.name],
-                 label='Hilbert envelope')
-        plt.axvline(arrival_times[i][0],
-                    linestyle='--',
-                    color='r',
-                    label='Direct wave')
-        [plt.axvline(line,
-                     linestyle='--',
-                     color='g',
-                     label='1st reflections')
-         for line in (arrival_times[i][1:5])]
-        [plt.axvline(line,
-                     linestyle='--',
-                     color='purple',
-                     label='2nd reflections')
-         for line in (arrival_times[i][5:])]
-        plt.xlabel('Time [ms]')
-        plt.ylabel('Amplitude [V]')
-        plot_legend_without_duplicates()
-        plt.grid()
-    plt.subplots_adjust(hspace=0.5)
-    plt.show()
+    _, ax = plt.subplots(nrows=1, ncols=1, figsize=set_window_size())
+    ax.plot(time_axis,
+            measurements[sensor.name])
+    ax.plot(time_axis,
+            measurements_envelope[sensor.name])
+    ax.axvline(arrival_times[0],
+               linestyle='--',
+               color='red',
+               label='Direct wave')
+    [ax.axvline(line,
+                linestyle='--',
+                color='green',
+                label='1st reflections')
+     for line in (arrival_times[1:5])]
+    [ax.axvline(line,
+                linestyle='--',
+                color='purple',
+                label='2nd reflections')
+     for line in (arrival_times[5:])]
+    ax.set_title(f'Expected wave arrival times for {sensor.name}')
+    ax.set_xlabel('Time [ms]')
+    ax.set_ylabel('Amplitude [V]')
+    ax.set_xlim(0, 5)
+    """Use scientific notation"""
+    ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
+    plot_legend_without_duplicates(placement='upper right')
+    ax.grid()
 
 
 def set_fontsizes():
@@ -252,6 +256,26 @@ def set_fontsizes():
     plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 
+def set_window_size(rows: int = 1, cols: int = 1):
+    """Set the window size for the plots"""
+    figsize: tuple
+    if rows == 1 and cols == 1:
+        figsize = (9, 5)
+    elif rows == 2 and cols == 1:
+        figsize = (9, 9)
+    elif rows == 3 and cols == 1:
+        figsize = (9, 12)
+    elif rows == 1 and cols == 2:
+        figsize = (16, 5)
+    elif cols == 2:
+        figsize = (16, 9)
+    elif cols == 3:
+        figsize = (20, 9)
+    else:
+        raise ValueError('Window size not defined for given dimensions.')
+    return figsize
+
+
 def subplots_adjust(signal_type: list, rows: int = 1, columns: int = 1):
     """Adjust the spacing in plots, based on type of plot and number of grapgs.
     Insert this function before starting a new subplot
@@ -260,7 +284,7 @@ def subplots_adjust(signal_type: list, rows: int = 1, columns: int = 1):
     defined beforehand.
     """
     if signal_type == ['time'] and rows == 1 and columns == 1:
-        plt.subplots_adjust(left=0.12, right=0.99,
+        plt.subplots_adjust(left=0.12, right=0.98,
                             top=0.9, bottom=0.2,
                             hspace=0.28, wspace=0.2)
     elif signal_type == ['time'] and rows == 2 and columns == 1:
@@ -272,8 +296,8 @@ def subplots_adjust(signal_type: list, rows: int = 1, columns: int = 1):
                             top=0.955, bottom=0.07,
                             hspace=0.28, wspace=0.2)
     elif signal_type == ['spectrogram'] and rows == 1 and columns == 1:
-        plt.subplots_adjust(left=0.125, right=1.05,
-                            top=0.955, bottom=0.07,
+        plt.subplots_adjust(left=0.148, right=1,
+                            top=0.929, bottom=0.145,
                             hspace=0.28, wspace=0.2)
     elif signal_type == ['spectrogram'] and rows == 2 and columns == 1:
         plt.subplots_adjust(left=0.167, right=1,
