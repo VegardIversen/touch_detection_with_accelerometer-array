@@ -263,7 +263,7 @@ def set_window_size(rows: int = 1, cols: int = 1):
     """Set the window size for the plots"""
     figsize: tuple
     if rows == 1 and cols == 1:
-        figsize = (9, 3)
+        figsize = (4.5, 3)
     elif rows == 2 and cols == 1:
         figsize = (4.5, 3)
     elif rows == 3 and cols == 1:
