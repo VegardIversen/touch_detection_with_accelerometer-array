@@ -263,7 +263,7 @@ def set_window_size(rows: int = 1, cols: int = 1):
     """Set the window size for the plots"""
     figsize: tuple
     if rows == 1 and cols == 1:
-        figsize = (4.5, 3)
+        figsize = (5.5, 4)
     elif rows == 2 and cols == 1:
         figsize = (4.5, 3)
     elif rows == 3 and cols == 1:
@@ -286,7 +286,12 @@ def subplots_adjust(signal_type: list, rows: int = 1, columns: int = 1):
     signal_type can be a combination of ['time', 'spectrogram', 'fft'] that is
     defined beforehand.
     """
-    if signal_type == ['time'] and rows == 1 and columns == 1:
+    if signal_type == ['time'] or ['spectrogram'] or ['fft'] and rows == 1 and columns == 1:
+        """Use same spacing for all plots, possibly temporarily"""
+        plt.subplots_adjust(left=0.18, right=0.971,
+                            top=0.929, bottom=0.145,
+                            hspace=0.28, wspace=0.2)
+    elif signal_type == ['time'] and rows == 1 and columns == 1:
         plt.subplots_adjust(left=0.12, right=0.98,
                             top=0.9, bottom=0.2,
                             hspace=0.28, wspace=0.2)
@@ -299,7 +304,7 @@ def subplots_adjust(signal_type: list, rows: int = 1, columns: int = 1):
                             top=0.955, bottom=0.07,
                             hspace=0.28, wspace=0.2)
     elif signal_type == ['spectrogram'] and rows == 1 and columns == 1:
-        plt.subplots_adjust(left=0.148, right=1,
+        plt.subplots_adjust(left=0.17, right=1,
                             top=0.929, bottom=0.145,
                             hspace=0.28, wspace=0.2)
     elif signal_type == ['spectrogram'] and rows == 2 and columns == 1:
