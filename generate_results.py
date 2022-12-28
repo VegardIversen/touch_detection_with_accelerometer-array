@@ -44,7 +44,7 @@ from setups import (Setup,
 """Setup 3_2"""
 
 
-def results_setup3_2():
+def setup3_2_results():
     """Run some general commands for all functions:
         - Choose file and open it
         - Channel selection
@@ -52,6 +52,7 @@ def results_setup3_2():
         - Interpolation
         - Generate results from functions
     """
+    print('Setup 3.2')
     """Choose file"""
     FILE_FOLDER = 'prop_speed_files/setup3_2'
     FILE_NAME = 'prop_speed_chirp3_setup3_2_v2'
@@ -109,7 +110,7 @@ def results_setup3_2():
                                SETUP)
 
 
-def plot_time_signals_setup3_2(measurements: pd.DataFrame,
+def setup3_2_plot_time_signals(measurements: pd.DataFrame,
                                signal_start_seconds: float,
                                signal_length_seconds: float):
     """SETTINGS FOR PLOTTING"""
@@ -154,7 +155,7 @@ def plot_time_signals_setup3_2(measurements: pd.DataFrame,
     subplots_adjust('time', rows=3, columns=1)
 
 
-def plot_spectrogram_signals_setup3_2(measurements: pd.DataFrame,
+def setup3_2_plot_spectrogram_signals(measurements: pd.DataFrame,
                                       signal_start_seconds: float,
                                       signal_length_seconds: float):
     """SETTINGS FOR PLOTTING"""
@@ -197,7 +198,7 @@ def plot_spectrogram_signals_setup3_2(measurements: pd.DataFrame,
     subplots_adjust('spectrogram', rows=3, columns=1)
 
 
-def plot_fft_signals_setup3_2(measurements: pd.DataFrame,
+def setup3_2_plot_fft_signals(measurements: pd.DataFrame,
                               signal_start_seconds: float,
                               signal_length_seconds: float):
     """SETTINGS FOR PLOTTING"""
@@ -245,7 +246,7 @@ def plot_fft_signals_setup3_2(measurements: pd.DataFrame,
         ax.set_ylim(bottom=-50, top=230)
 
 
-def transfer_function_setup3_2(measurements: pd.DataFrame,
+def setup3_2_transfer_function(measurements: pd.DataFrame,
                                SETUP: Setup):
     """Calculate the transfer function of the table
     by dividing the FFT of the direct signal on the output
@@ -362,7 +363,7 @@ def find_and_plot_power_loss(measurements: pd.DataFrame,
     PLOTS_TO_PLOT = ['fft']
     fig, axs = plt.subplots(nrows=1,
                             ncols=len(PLOTS_TO_PLOT),
-                            figsize=FIGSIZE_ONE_SIGNAL,
+                            figsize=set_window_size(),
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements['Sensor 1']],
@@ -390,7 +391,7 @@ def find_and_plot_power_loss(measurements: pd.DataFrame,
 """Setup 7"""
 
 
-def results_setup7():
+def setup7_results():
     """Run some general commands for all functions:
         - Choose file and open it
         - Channel selection
@@ -398,7 +399,7 @@ def results_setup7():
         - Interpolation
         - Generate results from functions
     """
-
+    print('Setup 7')
     """Choose file"""
     FILE_FOLDER = 'setup7'
     FILE_NAME = 'notouch_20to40khz_1s_10vpp_v1'
@@ -429,11 +430,11 @@ def results_setup7():
                              time_end=TIME_END)
 
     # plot_raw_time_signal_setup7(measurements)
-    scattering_setup7(SETUP)
+    setup7_scattering(SETUP)
 
 
 
-def plot_raw_time_signal_setup7(measurements: pd.DataFrame):
+def setup7_plot_raw_time_signal(measurements: pd.DataFrame):
     """Plot raw signal"""
     time_axis = np.linspace(start=0,
                             stop=1000 * len(measurements) / SAMPLE_RATE,
@@ -452,7 +453,7 @@ def plot_raw_time_signal_setup7(measurements: pd.DataFrame):
     subplots_adjust(['time'], rows=1, columns=1)
 
 
-def scattering_setup7(setup: Setup):
+def setup7_scattering(setup: Setup):
     """Open file"""
     FILE_FOLDER = 'setup7'
     FILE_NAME = 'notouchThenHoldB2_20to40khz_125ms_10vpp_v1'
@@ -553,7 +554,9 @@ def scattering_setup7(setup: Setup):
 """Setup 9"""
 
 
-def results_setup9():
+def setup9_results():
+    print('Setup 9')
+
     """Choose setup"""
     SETUP = Setup9()
     """Draw setup"""
@@ -563,16 +566,16 @@ def results_setup9():
                 format='pdf')
 
     """Run functions to generate results"""
-    plot_touch_signals_setup9()
-    # plot_chirp_signals_setup9()
-    # transfer_function_setup9(SETUP)
-    # scattering_setup9(SETUP)
-    # predict_reflections_setup9(SETUP)
+    # setup9_plot_touch_signals()
+    # setup9_plot_chirp_signals()
+    setup9_transfer_function(SETUP)
+    # setup9_scattering(SETUP)
+    # setup9_predict_reflections(SETUP)
 
 
-def plot_touch_signals_setup9():
-    # TODO: Make the other plotting functions to behave like this one,
-    # !      i.e. plot individual channels and plot types in for loops.
+def setup9_plot_touch_signals():
+    print('Plot touch signals')
+
     """Choose file"""
     FILE_FOLDER = 'setup9_10cm/touch'
     FILE_NAME = 'touch_v1'
@@ -595,13 +598,13 @@ def plot_touch_signals_setup9():
 
     CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
     for channel in CHANNELS_TO_PLOT:
-        plot_touch_time_signal_setup9(measurements_full_touch, [channel])
+        setup9_plot_touch_time_signal(measurements_full_touch, [channel])
         channel_file_name = channel.replace(" ", "").lower()
         file_name = f'setup9_touch_time_{channel_file_name}_full.pdf'
         plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
 
     for channel in CHANNELS_TO_PLOT:
-        plot_touch_spectrogram_setup9(measurements_full_touch,
+        setup9_plot_touch_spectrogram(measurements_full_touch,
                                       [channel],
                                       dynamic_range_db=60)
         channel_file_name = channel.replace(" ", "").lower()
@@ -610,19 +613,19 @@ def plot_touch_signals_setup9():
 
     """Crop data to the beginning of the touch signal"""
     measurements_beginning_of_touch = crop_data(measurements_full_touch,
-                                                time_start=(2.05 + 0.0538),
-                                                time_end=(2.05 + 0.07836))
+                                                time_start=(2.05 + 0.056),
+                                                time_end=(2.05 + 0.060))
     for channel in CHANNELS_TO_PLOT:
-        plot_touch_time_signal_setup9(measurements_beginning_of_touch, [channel])
+        setup9_plot_touch_time_signal(measurements_beginning_of_touch, [channel])
         channel_file_name = channel.replace(" ", "").lower()
         file_name = f'setup9_touch_time_{channel_file_name}_beginning.pdf'
         plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
 
     for channel in CHANNELS_TO_PLOT:
-        plot_touch_spectrogram_setup9(measurements_beginning_of_touch,
+        setup9_plot_touch_spectrogram(measurements_beginning_of_touch,
                                       [channel],
                                       dynamic_range_db=60,
-                                      nfft=1024)
+                                      nfft=256)
         channel_file_name = channel.replace(" ", "").lower()
         file_name = f'setup9_touch_spectrogram_{channel_file_name}_beginning.pdf'
         plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
@@ -631,19 +634,22 @@ def plot_touch_signals_setup9():
                             figsize=set_window_size(),
                             squeeze=False)
 
-    CHANNELS_TO_PLOT = ['Sensor 1']
+    CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
     for channel in CHANNELS_TO_PLOT:
-        plot_touch_fft_setup9(measurements_beginning_of_touch,
+        setup9_plot_touch_fft(measurements_beginning_of_touch,
                               fig, axs,
                               [channel])
-    # axs[0, 0].legend(CHANNELS_TO_PLOT)
-    # axs[0, 0].grid()
+    axs[0, 0].legend(CHANNELS_TO_PLOT)
+    axs[0, 0].grid()
+    axs[0, 0].set_title('')
     channel_file_name = channel.replace(" ", "").lower()
     file_name = 'setup9_touch_fft_beginning.pdf'
     plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
 
 
-def plot_chirp_signals_setup9():
+def setup9_plot_chirp_signals():
+    print('Plot chirp signals')
+
     """Choose file"""
     FILE_FOLDER = 'setup9_10cm/chirp/100Hz_to_40kHz_single_chirp'
     FILE_NAME = 'chirp_v1'
@@ -659,48 +665,75 @@ def plot_chirp_signals_setup9():
                                  time_start=1.38,
                                  time_end=3.531)
 
-    plot_chirp_time_signal_setup9(measurements_raw)
-    file_name = 'setup9_chirp_time_raw.pdf'
-    # plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
+    CHANNELS_TO_PLOT = ['Actuator', 'Sensor 1', 'Sensor 3']
+    for channel in CHANNELS_TO_PLOT:
+        setup9_plot_chirp_time_signal(measurements_raw, [channel])
+        channel_file_name = channel.replace(" ", "").lower()
+        file_name = f'setup9_chirp_time_{channel_file_name}_raw.pdf'
+        plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
 
-    plot_chirp_spectrogram_setup9(measurements_raw,
-                                  dynamic_range_db=60)
-    file_name = 'setup9_chirp_spectrogram_raw.pdf'
-    # plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
+    for channel in CHANNELS_TO_PLOT:
+        setup9_plot_chirp_spectrogram(measurements_raw,
+                                      [channel],
+                                      dynamic_range_db=60)
+        channel_file_name = channel.replace(" ", "").lower()
+        file_name = f'setup9_chirp_spectrogram_{channel_file_name}_raw.pdf'
+        plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
 
-    plot_chirp_fft_setup9(measurements_raw)
+    fig, axs = plt.subplots(nrows=1,
+                            ncols=1,
+                            figsize=set_window_size(),
+                            squeeze=False)
+    for channel in CHANNELS_TO_PLOT:
+        setup9_plot_chirp_fft(measurements_raw,
+                              fig, axs,
+                              [channel])
+        channel_file_name = channel.replace(" ", "").lower()
+    file_name = 'setup9_chirp_fft_raw.pdf'
+    plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
     for ax in plt.gcf().axes:
         ax.set_ylim([-20, 60])
-    file_name = 'setup9_chirp_fft_raw.pdf'
-    # plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
 
     """Crop data to the compressed chirp signal"""
     measurements_compressed = compress_chirps(measurements)
     measurements_compressed = measurements_compressed.loc[2.499 * SAMPLE_RATE:
                                                           2.51 * SAMPLE_RATE]
 
-    plot_chirp_time_signal_setup9(measurements_compressed,
-                                  envelope=True)
+    for channel in CHANNELS_TO_PLOT:
+        setup9_plot_chirp_time_signal(measurements_compressed, [channel])
+        channel_file_name = channel.replace(" ", "").lower()
+        file_name = f'setup9_chirp_time_{channel_file_name}_compressed.pdf'
+        plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
     """Use scientific notation for y-axis"""
     for ax in plt.gcf().axes:
         ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
-    file_name = 'setup9_chirp_time_compressed.pdf'
-    # plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
 
-    plot_chirp_spectrogram_setup9(measurements_compressed,
-                                  dynamic_range_db=40,
-                                  nfft=512)
-    file_name = 'setup9_chirp_spectrogram_compressed.pdf'
-    # plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
+    for channel in CHANNELS_TO_PLOT:
+        setup9_plot_chirp_spectrogram(measurements_compressed,
+                                      [channel],
+                                      dynamic_range_db=60,
+                                      nfft=512)
+        channel_file_name = channel.replace(" ", "").lower()
+        file_name = f'setup9_chirp_spectrogram_{channel_file_name}_compressed.pdf'
+        plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
 
-    plot_chirp_fft_setup9(measurements_compressed)
-    for ax in plt.gcf().axes:
-        ax.set_ylim([0, 100])
+    fig, axs = plt.subplots(nrows=1,
+                            ncols=1,
+                            figsize=set_window_size(),
+                            squeeze=False)
+    for channel in CHANNELS_TO_PLOT:
+        setup9_plot_chirp_fft(measurements_compressed,
+                              fig, axs,
+                              [channel])
+        channel_file_name = channel.replace(" ", "").lower()
+    axs[0, 0].set_ylim([20, 100])
+    axs[0, 0].legend(CHANNELS_TO_PLOT)
+    axs[0, 0].set_title('')
     file_name = 'setup9_chirp_fft_compressed.pdf'
-    # plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
+    plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
 
 
-def plot_touch_time_signal_setup9(measurements: pd.DataFrame,
+def setup9_plot_touch_time_signal(measurements: pd.DataFrame,
                                   channels_to_plot: list = ['Actuator',
                                                             'Sensor 1',
                                                             'Sensor 3']):
@@ -722,7 +755,7 @@ def plot_touch_time_signal_setup9(measurements: pd.DataFrame,
                     columns=len(PLOTS_TO_PLOT))
 
 
-def plot_touch_spectrogram_setup9(measurements: pd.DataFrame,
+def setup9_plot_touch_spectrogram(measurements: pd.DataFrame,
                                   channels_to_plot: list = ['Sensor 1',
                                                             'Sensor 3'],
                                   dynamic_range_db: int = 60,
@@ -747,32 +780,7 @@ def plot_touch_spectrogram_setup9(measurements: pd.DataFrame,
                     columns=len(PLOTS_TO_PLOT))
 
 
-def plot_touch_time_signal_and_spectrogram_setup9(measurements: pd.DataFrame,
-                                                  nfft: int = 4096):
-    """Plot the full touch signal"""
-    CHANNELS_TO_PLOT = ['Sensor 1']
-    PLOTS_TO_PLOT = ['time', 'spectrogram']
-    fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
-                            ncols=len(PLOTS_TO_PLOT),
-                            figsize=set_window_size(rows=len(CHANNELS_TO_PLOT),
-                                                    cols=len(PLOTS_TO_PLOT)),
-                            squeeze=False)
-    compare_signals(fig, axs,
-                    [measurements[channel] for channel in CHANNELS_TO_PLOT],
-                    plots_to_plot=PLOTS_TO_PLOT,
-                    compressed_chirps=False)
-
-    """Adjust for correct spacing in plot"""
-    # subplots_adjust(PLOTS_TO_PLOT,
-    #                 rows=len(PLOTS_TO_PLOT),
-    #                 columns=len(CHANNELS_TO_PLOT))
-
-    """Move the xlabel from the first row to the second"""
-    # axs[0, 0].set_xlabel('')
-    # axs[1, 0].set_xlabel('Time (s)')
-
-
-def plot_touch_fft_setup9(measurements: pd.DataFrame,
+def setup9_plot_touch_fft(measurements: pd.DataFrame,
                           fig, axs,
                           channels_to_plot = ['Sensor 1', 'Sensor 3']):
     """Plot the FFT a touch signal"""
@@ -790,23 +798,25 @@ def plot_touch_fft_setup9(measurements: pd.DataFrame,
                     columns=len(PLOTS_TO_PLOT))
 
 
-def plot_chirp_time_signal_setup9(measurements: pd.DataFrame,
+def setup9_plot_chirp_time_signal(measurements: pd.DataFrame,
+                                  channels_to_plot: list = ['Actuator',
+                                                            'Sensor 1',
+                                                            'Sensor 3'],
                                   envelope: bool = False):
     """Plot the time signal full chirp signal"""
-    CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
     PLOTS_TO_PLOT = ['time']
-    fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
+    fig, axs = plt.subplots(nrows=len(channels_to_plot),
                             ncols=len(PLOTS_TO_PLOT),
-                            figsize=set_window_size(rows=len(CHANNELS_TO_PLOT),
+                            figsize=set_window_size(rows=len(channels_to_plot),
                                                     cols=len(PLOTS_TO_PLOT)),
                             squeeze=False)
     compare_signals(fig, axs,
-                    [measurements[channel] for channel in CHANNELS_TO_PLOT],
+                    [measurements[channel] for channel in channels_to_plot],
                     plots_to_plot=PLOTS_TO_PLOT,
                     compressed_chirps=False)
     if envelope:
         compare_signals(fig, axs,
-                        [get_envelope(measurements[channel]) for channel in CHANNELS_TO_PLOT],
+                        [get_envelope(measurements[channel]) for channel in channels_to_plot],
                         plots_to_plot=PLOTS_TO_PLOT,
                         compressed_chirps=False)
         """Re-add grid"""
@@ -814,23 +824,25 @@ def plot_chirp_time_signal_setup9(measurements: pd.DataFrame,
             ax.grid()
     """Adjust for correct spacing in plot"""
     subplots_adjust(PLOTS_TO_PLOT,
-                    rows=len(CHANNELS_TO_PLOT),
+                    rows=len(channels_to_plot),
                     columns=len(PLOTS_TO_PLOT))
 
 
-def plot_chirp_spectrogram_setup9(measurements: pd.DataFrame,
+def setup9_plot_chirp_spectrogram(measurements: pd.DataFrame,
+                                  channels_to_plot: list = ['Actuator',
+                                                            'Sensor 1',
+                                                            'Sensor 3'],
                                   dynamic_range_db: int = 60,
                                   nfft: int = 4096):
     """Plot the spectrogram of beginning of the chirp signal"""
-    CHANNELS_TO_PLOT = ['Actuator', 'Sensor 1']
     PLOTS_TO_PLOT = ['spectrogram']
-    fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
+    fig, axs = plt.subplots(nrows=len(channels_to_plot),
                             ncols=len(PLOTS_TO_PLOT),
-                            figsize=set_window_size(rows=len(CHANNELS_TO_PLOT),
+                            figsize=set_window_size(rows=len(channels_to_plot),
                                                     cols=len(PLOTS_TO_PLOT)),
                             squeeze=False)
     compare_signals(fig, axs,
-                    [measurements[channel] for channel in CHANNELS_TO_PLOT],
+                    [measurements[channel] for channel in channels_to_plot],
                     plots_to_plot=PLOTS_TO_PLOT,
                     compressed_chirps=False,
                     dynamic_range_db=dynamic_range_db,
@@ -838,66 +850,36 @@ def plot_chirp_spectrogram_setup9(measurements: pd.DataFrame,
 
     """Adjust for correct spacing in plot"""
     subplots_adjust(PLOTS_TO_PLOT,
-                    rows=len(CHANNELS_TO_PLOT),
+                    rows=len(channels_to_plot),
                     columns=len(PLOTS_TO_PLOT))
 
 
-def plot_chirp_time_signal_and_spectrogram_setup9(measurements: pd.DataFrame,
-                                                  dynamic_range_db: int = 60,
-                                                  nfft: int = 4096):
-    """Plot the time signal full chirp signal"""
-    # ! Look at later maybe
-    CHANNELS_TO_PLOT = ['Actuator', 'Sensor 1']
-    PLOTS_TO_PLOT = ['time', 'spectrogram']
-    fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
-                            ncols=len(PLOTS_TO_PLOT),
-                            figsize=set_window_size(rows=len(CHANNELS_TO_PLOT),
-                                                    cols=len(PLOTS_TO_PLOT)),
-                            squeeze=False)
-    compare_signals(fig, axs,
-                    [measurements[channel] for channel in CHANNELS_TO_PLOT],
-                    plots_to_plot=PLOTS_TO_PLOT,
-                    compressed_chirps=False)
-    compare_signals(fig, axs,
-                    [measurements[channel] for channel in CHANNELS_TO_PLOT],
-                    plots_to_plot=PLOTS_TO_PLOT,
-                    compressed_chirps=False,
-                    dynamic_range_db=dynamic_range_db,
-                    nfft=nfft)
-
-    """Adjust for correct spacing in plot"""
-    subplots_adjust(PLOTS_TO_PLOT,
-                    rows=len(CHANNELS_TO_PLOT),
-                    columns=len(PLOTS_TO_PLOT))
-
-
-def plot_chirp_fft_setup9(measurements: pd.DataFrame):
+def setup9_plot_chirp_fft(measurements: pd.DataFrame,
+                          fig, axs,
+                          channels_to_plot: list = ['Actuator',
+                                                    'Sensor 1',
+                                                    'Sensor 3'],):
     """Plot the FFT a chirp signal"""
-    CHANNELS_TO_PLOT = ['Actuator', 'Sensor 1']
     PLOTS_TO_PLOT = ['fft']
-    fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
-                            ncols=len(PLOTS_TO_PLOT),
-                            figsize=set_window_size(rows=len(CHANNELS_TO_PLOT),
-                                                    cols=len(PLOTS_TO_PLOT)),
-                            squeeze=False)
     compare_signals(fig, axs,
-                    [measurements[channel] for channel in CHANNELS_TO_PLOT],
+                    [measurements[channel] for channel in channels_to_plot],
                     plots_to_plot=PLOTS_TO_PLOT,
                     compressed_chirps=False)
 
     """Adjust for correct spacing in plot"""
     subplots_adjust(PLOTS_TO_PLOT,
-                    rows=len(CHANNELS_TO_PLOT),
+                    rows=len(channels_to_plot),
                     columns=len(PLOTS_TO_PLOT))
 
 
-def transfer_function_setup9(setup: Setup):
+def setup9_transfer_function(setup: Setup):
     """Calculate the transfer function of the table
     by dividing the FFT of the direct signal on the output
     by the FFT of the direct signal on the input,
     H(f) = Y(f)/X(f),
     where the signal on sensor 1 is the input and
     the signal on sensor 3 is the output."""
+    print('Calculate transfer function')
 
     """Choose file"""
     FILE_FOLDER = 'setup9_10cm/chirp/100Hz_to_40kHz_single_chirp'
@@ -927,7 +909,7 @@ def transfer_function_setup9(setup: Setup):
     PLOTS_TO_PLOT = ['time']
     fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
                             ncols=len(PLOTS_TO_PLOT),
-                            figsize=FIGSIZE_ONE_COLUMN,
+                            figsize=set_window_size(),
                             squeeze=False)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in CHANNELS_TO_PLOT],
@@ -944,6 +926,7 @@ def transfer_function_setup9(setup: Setup):
     subplots_adjust(PLOTS_TO_PLOT,
                     rows=len(CHANNELS_TO_PLOT),
                     columns=len(PLOTS_TO_PLOT))
+
 
     """Find the FFT of the input signal"""
     input_signal = measurements['Sensor 1'].values
@@ -981,7 +964,7 @@ def transfer_function_setup9(setup: Setup):
     """Plot the amplitude response"""
     fig, axs = plt.subplots(nrows=1,
                             ncols=1,
-                            figsize=FIGSIZE_ONE_SIGNAL,
+                            figsize=set_window_size(),
                             squeeze=False)
     axs[0, 0].plot(fft_frequencies / 1000,
                    to_dB(amplitude_response))
@@ -991,13 +974,13 @@ def transfer_function_setup9(setup: Setup):
     axs[0, 0].set_ylim(bottom=-20, top=20)
     axs[0, 0].grid()
     subplots_adjust(['fft'])
-    plt.savefig(FIGURES_SAVE_PATH + 'setup9_amplitude_response.pdf',
-                format='pdf')
+    FILE_NAME = 'setup9_amplitude_response.pdf'
+    plt.savefig(FIGURES_SAVE_PATH + FILE_NAME, format='pdf')
 
     """Plot the phase response"""
     fig, axs = plt.subplots(nrows=1,
                             ncols=1,
-                            figsize=FIGSIZE_ONE_SIGNAL,
+                            figsize=set_window_size(),
                             squeeze=False)
     axs[0, 0].plot(fft_frequencies / 1000,
                    phase_response)
@@ -1007,8 +990,8 @@ def transfer_function_setup9(setup: Setup):
     axs[0, 0].set_ylim(bottom=-50, top=50)
     axs[0, 0].grid()
     subplots_adjust(['fft'])
-    plt.savefig(FIGURES_SAVE_PATH + 'setup9_phase_response.pdf',
-                format='pdf')
+    FILE_NAME = 'setup9_phase_response.pdf'
+    plt.savefig(FIGURES_SAVE_PATH + FILE_NAME, format='pdf')
 
     (simulated_phase_velocities_uncorrected,
      simulated_phase_velocities_corrected,
@@ -1017,16 +1000,16 @@ def transfer_function_setup9(setup: Setup):
     """Plot the phase velocities"""
     fig, axs = plt.subplots(nrows=1,
                             ncols=1,
-                            figsize=FIGSIZE_ONE_SIGNAL,
+                            figsize=set_window_size(),
                             squeeze=False,
                             sharex=True)
     axs[0, 0].plot(fft_frequencies / 1000,
                    simulated_phase_velocities_uncorrected,
-                   label='Simulated phase velocities',
+                   label='Simulated velocities',
                    linestyle='--')
     axs[0, 0].plot(fft_frequencies / 1000,
                    simulated_phase_velocities_corrected,
-                   label='Simulated corrected phase velocities',
+                   label='Simulated corrected velocities',
                    linestyle='--')
     # axs[0, 0].plot(fft_frequencies / 1000,
     #                np.ones_like(fft_frequencies) * phase_velocity_shear,
@@ -1039,19 +1022,20 @@ def transfer_function_setup9(setup: Setup):
     axs[0, 0].legend()
     axs[0, 0].grid()
     subplots_adjust(['fft'])
-    plt.savefig(FIGURES_SAVE_PATH + 'simulated_phase_velocities.pdf',
-                format='pdf')
+    FILE_NAME = 'simulated_phase_velocities.pdf'
+    plt.savefig(FIGURES_SAVE_PATH + FILE_NAME, format='pdf')
     axs[0, 0].plot(fft_frequencies / 1000,
                    phase_velocities,
-                   label='Measured phase velocities')
+                   label='Measured velocities')
     axs[0, 0].set_ylim(bottom=0, top=1000)
     axs[0, 0].legend()
-    plt.savefig(FIGURES_SAVE_PATH + 'setup9_phase_velocities.pdf',
-                format='pdf')
+    FILE_NAME = 'setup9_phase_velocities.pdf'
+    plt.savefig(FIGURES_SAVE_PATH + FILE_NAME, format='pdf')
     plt.show()
 
 
-def scattering_setup9(setup: Setup):
+def setup9_scattering(setup: Setup):
+    print('Scattering')
     """Open file"""
     FILE_FOLDER = 'setup9_10cm/scattering_tests/15kHz_to_40kHz_125ms'
     FILE_NAME = 'no_touch_v1'
@@ -1133,7 +1117,8 @@ def scattering_setup9(setup: Setup):
     subplots_adjust(['time'], rows=2)
 
 
-def predict_reflections_setup9(setup: Setup):
+def setup9_predict_reflections(setup: Setup):
+    print('Predict reflections')
     """Open file"""
     FILE_FOLDER = 'setup9_10cm/chirp/100Hz_to_40kHz_single_chirp'
     FILE_NAME = 'chirp_v1'
@@ -1153,11 +1138,11 @@ def predict_reflections_setup9(setup: Setup):
 
     """Calculate propagation speed based on """
 
-    predict_reflections_in_envelopes_setup9(setup, measurements)
-    predict_reflections_in_spectrograms_setup9(setup, measurements)
+    setup9_predict_reflections_in_envelopes(setup, measurements)
+    setup9_predict_reflections_in_spectrograms(setup, measurements)
 
 
-def predict_reflections_in_envelopes_setup9(setup: Setup,
+def setup9_predict_reflections_in_envelopes(setup: Setup,
                                             measurements: pd.DataFrame):
     """Calculate arrival times for sensor 1"""
     arrival_times, _ = get_travel_times(setup.actuators[ACTUATOR_1],
@@ -1187,7 +1172,7 @@ def predict_reflections_in_envelopes_setup9(setup: Setup,
                 format='pdf')
 
 
-def predict_reflections_in_spectrograms_setup9(setup: Setup,
+def setup9_predict_reflections_in_spectrograms(setup: Setup,
                                                measurements: pd.DataFrame,
                                                nfft=128,
                                                dynamic_range_db=15):
@@ -1232,12 +1217,14 @@ def predict_reflections_in_spectrograms_setup9(setup: Setup,
 
 def custom_plots():
     """Generate custom graphs"""
+    print('Generate custom graphs')
     scattering_figure_3()
 
 
 def scattering_figure_3():
     """Use coordinates of points along a graph to make a plot"""
     # ! Not finished yet, polar plot is messed up
+    print('Scattering figure 3')
     ka_1 = csv_to_df(file_folder='Data visualisation/Figure datasets/scattering_figure_3',
                      file_name='ka_1',
                      channel_names=['r', 'theta'])
@@ -1258,7 +1245,7 @@ def scattering_figure_3():
 
 def scattering_figure_5():
     """Use coordinates of points along a graph to make a plot"""
-
+    print('Scattering figure 5')
     rigid_inlcusion = csv_to_df(file_folder='Data visualisation/Figure datasets/scattering_figure_5',
                                 file_name='rigid_inclusion',
                                 channel_names=['x', 'y'])
@@ -1280,7 +1267,7 @@ def scattering_figure_5():
     """Plot"""
     fig, ax = plt.subplots(nrows=1,
                            ncols=1,
-                           figsize=FIGSIZE_ONE_SIGNAL)
+                           figsize=set_window_size())
     ax.plot(bonded_steel_inclusion_thickness_0_5in.x,
             bonded_steel_inclusion_thickness_0_5in.y,
             label='Bonded steel inclusion, thickness 0.5 in')
