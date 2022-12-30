@@ -16,12 +16,40 @@ from data_processing.preprocessing import crop_data, filter_general, compress_ch
 from data_processing.detect_echoes import find_first_peak, get_hilbert_envelope, get_travel_times
 from data_processing.find_propagation_speed import find_propagation_speed_with_delay
 from data_viz_files.drawing import plot_legend_without_duplicates
-
+import timeit
 if __name__ == '__main__':
-    CROSS_CORR_PATH = '\\vegard_og_niklas\\setup2_korrelasjon\\'
+    CROSS_CORR_PATH1 = '\\vegard_og_niklas\\setup2_korrelasjon\\'
+    CROSS_CORR_PATH2 = '\\first_test_touch_passive_setup2\\'
     #set base new base after new measurements:
-    ccp.SetBase(CROSS_CORR_PATH)
+    #execution_time = timeit.timeit(ccp.SetBase, number=1)
+    #print(f'Execution time: {execution_time}')
+    ccp.SetBase(CROSS_CORR_PATH2)
+    #ccp.run_test(tolatex=True)
+    ccp.run_test(tolatex=True,data_folder='\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\first_test_touch_passive_setup2\\',filename='results_correlation_old_samples.csv')
     #find position
-    #ccp.FindTouchPosition()
+    #ccp.FindTouchPosition(f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\vegard_og_niklas\\setup2_korrelasjon\\A2_v3.csv')
+
+    # List all the files in the test folder that end with V2 or V3
+    # test_folder = Path(f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\vegard_og_niklas\\setup2_korrelasjon\\')
+    # #test_folder = Path('path_to_test_folder')
+    # test_files = test_folder.glob('*[v2|v3].csv')
+
+    # # Initialize a data frame to store the results
+    # results = pd.DataFrame()
+
+    # # Iterate over all the test files
+    # for file in test_files:
+    #     # Extract the true label from the file name
+    #     true_label = file.name[:2]
+    #     # Apply the FindTouchPosition function to the file
+    #     predicted_label, direction_check_used = ccp.FindTouchPosition(file)
     
+    #     print(f'direction_check_used: {direction_check_used}')
+    #     # Add the results to the data frame
+    #     result_df = pd.DataFrame({'file':file.name,'true_label': true_label, 'predicted_label': predicted_label, 'direction_check': direction_check_used}, index=[0])
+    #     result_df['direction_check'] = result_df['direction_check'].astype(bool)
+    #     # Concatenate the result DataFrame to the main DataFrame
+    #     results = pd.concat([results, result_df])
+    #     # Save the results to a CSV file
+    # results.to_csv('results.csv', index=False)
 

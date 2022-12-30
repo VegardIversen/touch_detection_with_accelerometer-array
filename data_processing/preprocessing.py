@@ -147,8 +147,7 @@ def cut_out_signal(df, rate, threshold):
     """Convert to series to find rolling average and apply absolute value to the signal at all points."""
     signal = df.apply(np.abs)
     """Take the rolling average of the series within our specified window."""
-    signal_mean = signal.rolling(window = int(rate / 1000), min_periods=1, center=True).mean()
-
+    signal_mean = signal.rolling(window = int(rate / 15), min_periods=1, center=True).mean()
     for mean in signal_mean:
         if mean > threshold:
             mask.append(True)
@@ -158,6 +157,13 @@ def cut_out_signal(df, rate, threshold):
     signal_focusing = df.loc[mask_arr]
     return signal_focusing, mask_arr
 
+def cut_out_signal_df(df, rate, threshold):
+
+    df_ret = pd.DataFrame()
+    for channel in df:
+        df_ret[channel], _ = cut_out_signal(df[channel], rate, threshold)
+        
+    return df_ret
 
 def crop_data(sig, time_start=None, time_end=None, threshold=0):
     """Crop either DataFrame input, pandas series or a numpy array input.
