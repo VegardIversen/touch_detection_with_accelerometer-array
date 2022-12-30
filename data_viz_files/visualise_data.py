@@ -6,7 +6,8 @@ import scipy
 from scipy import signal
 import os
 import seaborn as sb
-#sb.set_theme(style="darkgrid")
+sb.set_theme(style="darkgrid")
+sb.set(font_scale=12/10)
 from matplotlib.widgets import Slider, Button
 from constants import *
 from csv_to_df import csv_to_df
