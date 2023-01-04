@@ -63,8 +63,17 @@ def phase_difference(sig1, sig2, method='sub', n_pi=0):
     else:
         raise ValueError('Invalid method')
 
-def phase_difference_plot(sig1, sig2, method='div', n_pi=0, SAMPLE_RATE=150000, BANDWIDTH=None):
-    phase_diff = np.abs(phase_difference(sig1, sig2, method=method, n_pi=n_pi))
+def phase_difference_plot(
+                        sig1, 
+                        sig2, 
+                        method='div', 
+                        n_pi=0, 
+                        SAMPLE_RATE=150000, 
+                        BANDWIDTH=None, 
+                        save_fig=False,
+                        file_name='phase_difference.png',
+                        file_format='png'):
+    phase_diff = phase_difference(sig1, sig2, method=method, n_pi=n_pi)
     
     freq = np.fft.fftfreq(len(sig1), 1/SAMPLE_RATE)
     #freq = np.fft.fftshift(freq)
@@ -72,10 +81,15 @@ def phase_difference_plot(sig1, sig2, method='div', n_pi=0, SAMPLE_RATE=150000, 
         slices = (freq>BANDWIDTH[0]) & (freq<BANDWIDTH[1])
         phase_diff = phase_diff[slices]
         freq = freq[slices]
+    plt.Figure(figsize=(16, 14))
     plt.plot(freq, phase_diff)
     plt.xlabel('Frequency [Hz]')
     plt.ylabel('Phase difference [rad]')
+    if save_fig:
+        plt.savefig(file_name, format=file_format)
     plt.show()
+    plt.clf()
+    exit()
     return phase_diff, freq
     
 def preprocess_df(df, detrend=True):
@@ -97,11 +111,32 @@ def plot_results(df, channels=['channel 1', 'channel 3'], direct_samples=55, det
     df = compress_and_cut_df_touch(df, channels=channels, direct_samples=direct_samples)
     phase_difference_plot(df[channels[0]], df[channels[1]], method=method, n_pi=n_pi, SAMPLE_RATE=SAMPLE_RATE, BANDWIDTH=BANDWIDTH)
 
-def phase_plotting(df, channels=['channel 1', 'channel 3'], detrend=True, chirp=None, method='div', n_pi=0, SAMPLE_RATE=150000, BANDWIDTH=None, use_recorded_chirp=True, start_stops=None, duration_cut=55):
+def phase_plotting(
+                df,
+                channels=['channel 1', 'channel 3'], 
+                detrend=True, chirp=None, method='div', 
+                n_pi=0, 
+                SAMPLE_RATE=150000, 
+                BANDWIDTH=None, 
+                use_recorded_chirp=True, 
+                start_stops=None, 
+                duration_cut=55,
+                save_fig=False,
+                file_name='phase_difference.png',
+                file_format='png'):
     df = preprocess_df(df, detrend=detrend)
     # check if dataframe has a column with name wave_gen
     if 'wave_gen' in df.columns:
         chirp = df['wave_gen'].to_numpy()
+    # if save_fig:
+    #     #plot channel 1
+    #     fig1=plt.Figure(figsize=(16, 14))
+    #     plt.plot(df[channels[0]])
+    #     plt.xlabel('Samples')
+    #     plt.ylabel('Amplitude')
+    #     plt.savefig('sig'+file_name, format=file_format,dpi=300)
+    #     plt.show()
+        
     if start_stops is not None:
         start1, end1 = start_stops[0]
         start2, end2 = start_stops[1]
@@ -115,10 +150,15 @@ def phase_plotting(df, channels=['channel 1', 'channel 3'], detrend=True, chirp=
     temp_arr[start2:end2,1] = df[channels[1]].iloc[start2:end2]
     df_sig_only = pd.DataFrame(temp_arr, columns=channels)
     compressed_df = compress_chirp(df_sig_only, chirp, use_recorded_chirp=use_recorded_chirp)
-    # plt.plot(compressed_df[channels[0]])
+    # plt.Figure(figsize=(16, 14))
+    # plt.plot(compressed_df[channels[0]], label=channels[0])
+    # plt.plot(compressed_df[channels[1]], label=channels[1])
+    # plt.xlabel('Samples')
+    # plt.ylabel('Amplitude')
+    # plt.legend()
+    # plt.savefig('sig'+file_name, format=file_format,dpi=300)
     # plt.show()
-    # plt.plot(compressed_df[channels[1]])
-    # plt.show()
+    
     # exit()
     start_index_ch1 = get_first_index_above_threshold(compressed_df[channels[0]], 400)
     end_index_ch1 = start_index_ch1 + duration_cut
@@ -131,22 +171,42 @@ def phase_plotting(df, channels=['channel 1', 'channel 3'], detrend=True, chirp=
     cut_ch1_win = cut_ch1 * window
     cut_ch2_win = cut_ch2 * window
 
+    #plot the cut signals
+    # fig2=plt.Figure(figsize=(16, 14))
+    # plt.plot(cut_ch1_win, label=channels[0])
+    # plt.plot(cut_ch2_win, label=channels[1])
+    # # if save_fig:
+    # #     plt.savefig('cut'+file_name, format=file_format, dpi=300)
+    # # plt.legend()
+    # # plt.show()
+    # # exit()
     s1t = np.zeros(len(compressed_df[channels[0]]))
     s1t[start_index_ch1:end_index_ch1] = cut_ch1_win
     s2t = np.zeros(len(compressed_df[channels[1]]))
     s2t[start_index_ch2:end_index_ch2] = cut_ch2_win
     
     
-    phase, freq = phase_difference_plot(s1t, s2t, method=method, n_pi=n_pi, SAMPLE_RATE=SAMPLE_RATE, BANDWIDTH=BANDWIDTH)
+    phase, freq = phase_difference_plot(
+                                    s1t, 
+                                    s2t, 
+                                    method=method, 
+                                    n_pi=n_pi, 
+                                    SAMPLE_RATE=SAMPLE_RATE, 
+                                    BANDWIDTH=BANDWIDTH, 
+                                    save_fig=save_fig,
+                                    file_name=file_name,
+                                    file_format=file_format)
     return phase, freq
 
 def phase_velocity(phase, freq, distance, plot=False):
-    phase_vel = 2*np.pi*freq*distance/phase
+    phase_vel = 2*np.pi*freq*distance/np.abs(phase)
     if plot:
+        fig3=plt.Figure(figsize=(16, 14))
         plt.plot(freq, phase_vel)
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('Phase velocity [m/s]')
         plt.show()
+        
     return phase_vel
 
 def theoretical_velocities(freq):
@@ -181,7 +241,8 @@ def plot_velocities(phase, freq, distance, savefig=False, filename=None, file_fo
     phase_vel = phase_velocity(phase, freq, distance)
     phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear = theoretical_velocities(freq)
     freq = freq/1000
-    plt.figure(figsize=(10, 8))
+    fig4=plt.Figure(figsize=(16, 14))
+    plt.figure(fig4.number)
     plt.plot(freq, phase_vel, label='Measured velocity')
     plt.plot(freq, phase_velocities_flexural, label='Simulated velocity', linestyle='--')
     plt.plot(freq, corrected_phase_velocities, label='Simulated corrected velocity', linestyle='--')
@@ -192,3 +253,20 @@ def plot_velocities(phase, freq, distance, savefig=False, filename=None, file_fo
         plt.savefig(filename, format=file_format, dpi=300)
     plt.show()
 
+def plot_velocities_2distance(phase1, freq1, distance1, phase2, freq2, distance2, savefig=False, filename=None, file_format='png'):
+    phase_vel1 = phase_velocity(phase1, freq1, distance1)
+    phase_vel2 = phase_velocity(phase2, freq2, distance2)
+    phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear = theoretical_velocities(freq1)
+    freq1 = freq1/1000
+    fig5=plt.Figure(figsize=(16, 14))
+    plt.figure(fig5.number)
+    plt.plot(freq1, phase_vel1, label=f'Measured velocity d={distance1}m')
+    plt.plot(freq1, phase_vel2, label=f'Measured velocity d={distance2}m')
+    plt.plot(freq1, phase_velocities_flexural, label='Simulated velocity', linestyle='--')
+    plt.plot(freq1, corrected_phase_velocities, label='Simulated corrected velocity', linestyle='--')
+    plt.xlabel('Frequency [kHz]')
+    plt.ylabel('Phase velocity [m/s]')
+    plt.legend()
+    if savefig:
+        plt.savefig(filename, format=file_format, dpi=300)
+    plt.show()
