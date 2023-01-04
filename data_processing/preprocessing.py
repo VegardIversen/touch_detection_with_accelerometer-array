@@ -226,10 +226,10 @@ def remove_silence(df, threshold=0.0006):
 """Compressing chirps"""
 
 
-def compress_chirp(measurements: pd.DataFrame, custom_chirp: np.ndarray):
+def compress_chirp(measurements: pd.DataFrame, custom_chirp: np.ndarray, use_recorded_chirp: bool = True):
     """Compresses a chirp with cross correlation."""
     compressed_chirp = measurements.copy()
-    if 'wave_gen' in measurements.columns:
+    if 'wave_gen' in measurements.columns and use_recorded_chirp:
         for channel in measurements:
             compressed_chirp[channel] = signal.correlate(measurements[channel],
                                                          measurements['wave_gen'],
@@ -450,7 +450,23 @@ def compress_df_touch(df, set_threshold_man=False, threshold=None,n_sampl=None, 
     return df_compressed
         
 
-
+def cut_out_pulse_wave(df,channels=['channel 1', 'channel 3'], start_stops=None, plot=False):
+    if start_stops is None:
+        start_stops = []
+        for ch in channels:
+            start, stop = manual_cut_signal(df[ch])
+            start_stops.append((start, stop))
+    start1, end1 = start_stops[0]
+    start2, end2 = start_stops[1]
+    temp_arr = np.zeros((len(df[channels[0]]),len(channels)))
+    #filling the array
+    temp_arr[start1:end1,0] = df[channels[0]].iloc[start1:end1]
+    temp_arr[start2:end2,1] = df[channels[1]].iloc[start2:end2]
+    df_sig_only = pd.DataFrame(temp_arr, columns=channels)
+    if plot:
+        plt.plot(df_sig_only)
+        plt.show()
+    return df_sig_only
 
 if __name__ == '__main__':
     pass

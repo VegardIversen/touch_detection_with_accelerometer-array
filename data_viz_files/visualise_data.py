@@ -616,8 +616,236 @@ def plot_estimated_reflections_with_sliders(setup, measurements_comp):
     plt.tight_layout(pad=0.02)
     plt.show()
 
-                
+def inspect_touch(df,savefig=False, file_format='png'):
+    """Inspect touch data by plotting the raw from channel 1 and the spectogram of the raw data on this channel.
+    share axis between the two plots"""
+    fig, axs = plt.subplots(1, 2, figsize=(10, 10), sharex=True)
+    #time axis
+    time_axis = np.linspace(0, len(df) / SAMPLE_RATE, len(df))
+    axs[0].plot(time_axis,df['channel 1'])
+    axs[0].set_title('Raw data from channel 1')
+    axs[0].set_ylabel('Amplitude [V]')
+    axs[0].grid()
+    plt.style.use('default')
+    spec = axs[1].specgram(df['channel 1'], Fs=SAMPLE_RATE, NFFT=256, noverlap=128)
+    spec[3].set_clim(to_dB(np.max(spec[0])) - 60,
+                             to_dB(np.max(spec[0])))
+    axs[1].set_title('Spectrogram of raw data from channel 1')
+    axs[1].set_xlabel('Time [s]')
+    axs[1].set_ylabel('Frequency [Hz]')
+    plt.tight_layout()
+    if savefig:
+        fig.savefig(f'../figures/inspect_touch.{file_format}', dpi=300)
+    plt.show()
 
+    
+
+def plot_compare_signals_v2(
+                        df: pd.DataFrame,
+                        nfft: int = 256,
+                        sharey: bool = False,
+                        freq_max: int = 45000,
+                        set_index: int = None,
+                        dynamic_range_db: int = 60,
+                        log_time_signal: bool = False,
+                        compressed_chirps: bool = False,
+                        plots_to_plot: list = ['time', 'spectrogram', 'fft']):
+                        
+                        FIGSIZE_ONE_COLUMN = (4.5, 3)
+                        fig, axs = plt.subplots(
+                                                nrows=df.shape[1],
+                                                ncols=len(plots_to_plot),
+                                                figsize=FIGSIZE_ONE_COLUMN,
+                                                squeeze=False)
+                        compare_signals_v2(fig, axs, [df[channel] for channel in df]
+                        )
+                        for ax in axs.flatten():
+                            ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
+                        subplots_adjust('time', rows=3, columns=1)
+                        plt.show()
+                    
+
+def compare_signals_v2(fig, axs,
+                    data: list,
+                    nfft: int = 256,
+                    sharey: bool = False,
+                    freq_max: int = 45000,
+                    set_index: int = None,
+                    dynamic_range_db: int = 60,
+                    log_time_signal: bool = False,
+                    compressed_chirps: bool = False,
+                    plots_to_plot: list = ['time', 'spectrogram', 'fft']):
+    """Visually compare two signals, by plotting:
+    time signal, spectogram, and fft.
+    NOTE:   ['time', 'spectrogram', 'fft'] has to be in this order,
+            but can be in any combination.
+    """
+    for i, channel in enumerate(data):
+        """Convert to pd.Series if necessary"""
+        if isinstance(channel, np.ndarray):
+            channel = pd.Series(channel, name='Sensor ' + str(i + 1))
+        if set_index is not None:
+            """Plot for instance a spectrogram under a time signal"""
+            i = set_index
+        if 'time' in plots_to_plot:
+            if compressed_chirps:
+                time_axis = np.linspace(start=-len(channel) / SAMPLE_RATE,
+                                        stop=len(channel) / SAMPLE_RATE,
+                                        num=len(channel))
+                # axs[i, 0].set_xlim(left=-0.005,
+                #                    right=(-0.005 + 0.035))
+                axs[i, 0].set_ylabel('Correlation coefficient [-]')
+            else:
+                time_axis = np.linspace(start=0,
+                                        stop=len(channel) / SAMPLE_RATE,
+                                        num=len(channel))
+                # axs[i, 0].set_xlim(left=signal_start_seconds,
+                #                    right=(signal_start_seconds +
+                #                           signal_length_seconds))
+                axs[i, 0].set_ylabel('Amplitude [V]')
+            axs[i, 0].sharex(axs[0, 0])
+            if sharey:
+                axs[i, 0].sharey(axs[0, 0])
+            axs[i, 0].grid()
+            if log_time_signal:
+                axs[i, 0].plot(time_axis, to_dB(channel))
+                axs[i, 0].set_ylim(bottom=np.max(to_dB(channel)) - 60)
+            else:
+                axs[i, 0].plot(time_axis, channel)
+            axs[i, 0].set_title(f'{channel.name}, time signal')
+            axs[len(data) - 1, 0].set_xlabel('Time [s]')
+            axs[i, 0].plot()
+
+        if 'spectrogram' in plots_to_plot:
+            """Some logic for correct indexing of the axs array"""
+            if 'time' in plots_to_plot:
+                axs_index = 1
+            else:
+                axs_index = 0
+            if compressed_chirps:
+                xextent = (-len(channel) / SAMPLE_RATE,
+                           len(channel) / SAMPLE_RATE)
+                spec = axs[i, axs_index].specgram(channel,
+                                                  Fs=SAMPLE_RATE,
+                                                  NFFT=nfft,
+                                                  noverlap=(nfft // 2),
+                                                  xextent=xextent)
+                axs[i, axs_index].set_xlim(left=-0.005,
+                                           right=(-0.005 + 0.1))
+            else:
+                spec = axs[i, axs_index].specgram(channel,
+                                                  Fs=SAMPLE_RATE,
+                                                  NFFT=nfft,
+                                                  noverlap=(nfft // 2))
+                # axs[i, axs_index].set_xlim(left=signal_start_seconds,
+                #                            right=(signal_start_seconds +
+                #                                   signal_length_seconds))
+            spec[3].set_clim(to_dB(np.max(spec[0])) - dynamic_range_db,
+                             to_dB(np.max(spec[0])))
+            if set_index is not None:
+                fig.colorbar(spec[3],
+                             ax=axs[i, axs_index],
+                             pad=0.2,
+                             aspect=40,
+                             location='bottom')
+            else:
+                fig.colorbar(spec[3],
+                             ax=axs[i, axs_index])
+            axs[i, axs_index].sharex(axs[0, 0])
+            if sharey:
+                axs[i, axs_index].sharey(axs[0, axs_index])
+            axs[i, axs_index].axis(ymax=freq_max)
+            axs[i, axs_index].set_title(f'{channel.name}, spectrogram')
+            axs[len(data) - 1, axs_index].set_xlabel('Time [s]')
+            axs[i, axs_index].set_ylabel('Frequency [Hz]')
+            axs[i, axs_index].plot(sharex=axs[0, 0])
+
+        if 'fft' in plots_to_plot:
+            """Some logic for correct indexing of the axs array"""
+            if ('time' in plots_to_plot) and ('spectrogram' in plots_to_plot):
+                axs_index = 2
+            elif ('time' in plots_to_plot) ^ ('spectrogram' in plots_to_plot):
+                axs_index = 1
+            else:
+                axs_index = 0
+            data_fft = scipy.fft.fft(channel.values, axis=0)
+            data_fft_dB = to_dB(np.abs(data_fft))
+            fftfreq = scipy.fft.fftfreq(len(data_fft_dB),  1 / SAMPLE_RATE)
+            data_fft_dB = np.fft.fftshift(data_fft_dB)[len(channel) // 2:]
+            fftfreq = np.fft.fftshift(fftfreq)[len(channel) // 2:]
+            axs[i, axs_index].sharex(axs[0, axs_index])
+            axs[i, axs_index].sharey(axs[0, axs_index])
+            axs[i, axs_index].grid()
+            axs[i, axs_index].set_title(f'{channel.name}, FFT')
+            axs[len(data) - 1, axs_index].set_xlabel("Frequency [kHz]")
+            axs[i, axs_index].set_ylabel("Amplitude [dB]")
+            axs[i, axs_index].set_xlim(left=0,
+                                       right=freq_max / 1000)
+            axs[i, axs_index].set_ylim(bottom=-25,
+                                       top=80)
+            axs[i, axs_index].plot(fftfreq / 1000, data_fft_dB)    
+
+#create a function to db
+def to_dB(x):
+    return 20 * np.log10(x)
+def subplots_adjust(signal_type: list, rows: int = 1, columns: int = 1):
+    """Adjust the spacing in plots, based on type of plot and number of grapgs.
+    Insert this function before starting a new subplot
+    or before the plt.show() function.
+    signal_type can be a combination of ['time', 'spectrogram', 'fft'] that is
+    defined beforehand.
+    """
+    if signal_type == ['time'] or ['spectrogram'] or ['fft'] and rows == 1 and columns == 1:
+        """Use same spacing for all plots, possibly temporarily"""
+        plt.subplots_adjust(left=0.18, right=0.971,
+                            top=0.927, bottom=0.152,
+                            hspace=0.28, wspace=0.2)
+    elif signal_type == ['time'] and rows == 1 and columns == 1:
+        plt.subplots_adjust(left=0.12, right=0.98,
+                            top=0.9, bottom=0.2,
+                            hspace=0.28, wspace=0.2)
+    elif signal_type == ['time'] and rows == 2 and columns == 1:
+        plt.subplots_adjust(left=0.153, right=0.98,
+                            top=0.957, bottom=0.079,
+                            hspace=0.237, wspace=0.2)
+    elif signal_type == ['time'] and rows == 3 and columns == 1:
+        plt.subplots_adjust(left=0.125, right=0.965,
+                            top=0.955, bottom=0.07,
+                            hspace=0.28, wspace=0.2)
+    elif signal_type == ['spectrogram'] and rows == 1 and columns == 1:
+        plt.subplots_adjust(left=0.17, right=1,
+                            top=0.929, bottom=0.145,
+                            hspace=0.28, wspace=0.2)
+    elif signal_type == ['spectrogram'] and rows == 2 and columns == 1:
+        plt.subplots_adjust(left=0.167, right=1,
+                            top=0.955, bottom=0.08,
+                            hspace=0.236, wspace=0.2)
+    elif signal_type == ['spectrogram'] and rows == 3 and columns == 1:
+        plt.subplots_adjust(left=0.125, right=1.05,
+                            top=0.955, bottom=0.07,
+                            hspace=0.28, wspace=0.2)
+    elif signal_type == ['fft'] and rows == 1 and columns == 1:
+        plt.subplots_adjust(left=0.121, right=0.98,
+                            top=0.926, bottom=0.14,
+                            hspace=0.28, wspace=0.15)
+    elif signal_type == ['fft'] and rows == 2 and columns == 1:
+        plt.subplots_adjust(left=0.125, right=0.957,
+                            top=0.955, bottom=0.075,
+                            hspace=0.28, wspace=0.2)
+    elif signal_type == ['fft'] and rows == 3 and columns == 1:
+        plt.subplots_adjust(left=0.125, right=0.95,
+                            top=0.955, bottom=0.07,
+                            hspace=0.28, wspace=0.2)
+    elif signal_type == ['time', 'spectrogram'] and rows == 2 and columns == 1:
+        plt.subplots_adjust(left=0.18, right=0.97,
+                            top=0.955, bottom=0.0,
+                            hspace=0.19, wspace=0.2)
+    elif signal_type == ['setup']:
+        plt.subplots_adjust(left=0.13, right=0.97,
+                            top=0.97, bottom=0.146,
+                            hspace=0.28, wspace=0.2)
+    else:
+        raise ValueError('Signal type or rows and columns not recognized.')
 
 if __name__ == '__main__':
     pass

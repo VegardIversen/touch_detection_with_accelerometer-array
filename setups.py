@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import scipy.signal as signal
 import matplotlib.pyplot as plt
-
+import seaborn as sb
 from constants import SAMPLE_RATE
 from objects import MirroredSensor, MirroredSource, Table, Actuator, Sensor
 
@@ -20,12 +20,14 @@ class Setup:
     table = Table()
     actuators = np.array([])
     sensors = np.array([])
-
+    plt.figure(figsize=(16, 14))
+    sb.set(font_scale=12/10)
     def __init__(self):
         raise NotImplementedError("Setup version needs to be specified, e.g. Setup2")
 
-    def draw(self):
+    def draw(self, savefig=False, filename=None, fileformat='png'):
         plt.axes()
+        
         self.table.draw()
         [actuator.draw() for actuator in self.actuators]
         [sensor.draw() for sensor in self.sensors]
@@ -33,6 +35,8 @@ class Setup:
         plt.xlabel('x (m)')
         plt.ylabel('y (m)')
         plot_legend_without_duplicates()
+        if savefig:
+            plt.savefig(f'{filename}.{fileformat}', format=fileformat)
         plt.show()
 
     def get_objects(self):
@@ -41,13 +45,12 @@ class Setup:
 
 class Setup2(Setup):
     def __init__(self):
-        self.actuator = Actuator(coordinates=np.array([1 / 2 * self.table.LENGTH,
-                                                       1 / 9 * self.table.WIDTH]))
-        self.actuators = np.append(self.actuators, self.actuator)
+        #self.actuator = Actuator(coordinates=np.array([1 / 2 * self.table.LENGTH,
+        #                                               1 / 9 * self.table.WIDTH]))
+        #self.actuators = np.append(self.actuators, self.actuator)
 
         self.sensor_2 = Sensor(coordinates=np.array([self.table.LENGTH / 2,
-                                                     self.table.WIDTH - 0.082]),
-                               radius=0.013)
+                                                     self.table.WIDTH - 0.082]))
         SENSOR_1_OFFSET = np.array([-0.08 / 2, -(np.sqrt(0.08 ** 2 - 0.04 ** 2))])
         SENSOR_3_OFFSET = np.array([0.08 / 2, -(np.sqrt(0.08 ** 2 - 0.04 ** 2))])
         self.sensor_1 = Sensor((self.sensor_2.coordinates + SENSOR_1_OFFSET))
