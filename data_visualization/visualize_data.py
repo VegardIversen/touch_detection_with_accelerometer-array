@@ -53,7 +53,7 @@ def compare_signals(fig, axs,
             axs[i, 0].sharex(axs[0, 0])
             if sharey:
                 axs[i, 0].sharey(axs[0, 0])
-            axs[i, 0].grid()
+            #axs[i, 0].grid()
             if log_time_signal:
                 axs[i, 0].plot(time_axis, to_dB(channel))
                 axs[i, 0].set_ylim(bottom=np.max(to_dB(channel)) - 60)
@@ -122,7 +122,7 @@ def compare_signals(fig, axs,
             fftfreq = np.fft.fftshift(fftfreq)[len(channel) // 2:]
             axs[i, axs_index].sharex(axs[0, axs_index])
             axs[i, axs_index].sharey(axs[0, axs_index])
-            axs[i, axs_index].grid()
+            #axs[i, axs_index].grid()
             axs[i, axs_index].set_title(f'{channel.name}, FFT')
             axs[len(data) - 1, axs_index].set_xlabel("Frequency [kHz]")
             axs[i, axs_index].set_ylabel("Amplitude [dB]")
@@ -161,7 +161,7 @@ def wave_statistics(fig, axs, data: pd.DataFrame):
         axs[i].set_title(channel)
         axs[i].set_xlabel('Time [s]')
         axs[i].legend()
-        axs[i].grid()
+        #axs[i].grid()
 
 
 def spectrogram_with_lines(sensor: Sensor,
@@ -240,7 +240,7 @@ def envelope_with_lines(sensor: Sensor,
     """Use scientific notation"""
     ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
     plot_legend_without_duplicates(placement='upper right')
-    ax.grid()
+    #ax.grid()
 
 
 def set_fontsizes():
