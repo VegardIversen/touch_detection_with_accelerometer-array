@@ -1136,23 +1136,48 @@ def custom_plots():
 
 def scattering_figure_3():
     """Use coordinates of points along a graph to make a plot"""
-    # ! Not finished yet, polar plot is messed up
+    
+    print('Scattering figure 3')
+    
     ka_1 = csv_to_df(file_folder='Data visualisation/Figure datasets/scattering_figure_3',
-                     file_name='ka_1',
-                     channel_names=['r', 'theta'])
-    """Interpolate points"""
-    # ka_1 = interpolate_waveform(ka_1)
-
+                    file_name='ka_1',
+                    channel_names=['r', 'theta'])
+    
+    ka_0_5 = csv_to_df(file_folder='Data visualisation/Figure datasets/scattering_figure_3',
+                    file_name='ka_0_5',
+                    channel_names=['r', 'theta'])
+    
     """Plot"""
-    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
-    ax.plot(ka_1.theta,
-            ka_1.r,
-            label='Rigid inclusion')
-    ax.legend()
-    ax.grid()
+    _, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize=set_window_size())
+    
+    indexs_to_order_by_ka1 = ka_1.theta.argsort()
+    ka_1_theta_sorted = ka_1.theta[indexs_to_order_by_ka1]
+    ka_1_r_sorted = ka_1.r[indexs_to_order_by_ka1]
+    
+    indexs_to_order_by_ka2 = ka_0_5.theta.argsort()
+    ka_0_5_theta_sorted = ka_0_5.theta[indexs_to_order_by_ka2]
+    ka_0_5_r_sorted = ka_0_5.r[indexs_to_order_by_ka2]
+    
+    ax.plot(ka_1_theta_sorted,
+            ka_1_r_sorted,
+            label="ka = 1")
+    
+    ax.plot(ka_0_5_theta_sorted,
+            ka_0_5_r_sorted,
+            label="ka = 0.5")
 
+    # Rotate the plot by 90 degrees
+    #ax.set_theta_offset(-np.pi / 2)
+    
+    ax.set_rlim(0,3)
+    ax.set_yticks([0, 1, 2, 3])
+    ax.grid(True)
+    ax.legend(bbox_to_anchor=(-0.5, 1), loc='upper left', borderaxespad=0)
+    
     """Adjust for correct spacing in plot"""
-    subplots_adjust('fft', rows=1, columns=1)
+    plt.subplots_adjust(left=0.046, right=1,
+                    top=0.9, bottom=0.09,
+                    hspace=0.28, wspace=0.2)
 
 
 def scattering_figure_5():
