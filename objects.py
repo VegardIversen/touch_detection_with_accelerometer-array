@@ -19,7 +19,7 @@ class Table:
     SURFACE_COLOUR = '#fbe5b6'
     LINE_COLOUR = '#f0c18b'
 
-    """Table locations, in the middle of each block"""
+    """A selection of table locations, in the middle of each block"""
     A1 = np.array([1 / 6 * LENGTH, 1 / 6 * WIDTH])
     A2 = np.array([3 / 6 * LENGTH, 1 / 6 * WIDTH])
     A3 = np.array([5 / 6 * LENGTH, 1 / 6 * WIDTH])

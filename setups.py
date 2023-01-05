@@ -28,6 +28,7 @@ class Setup:
 
     def draw(self):
         plt.axes()
+        plt.gcf().set_size_inches(5.5, 3.5)
         self.table.draw()
         [actuator.draw() for actuator in self.actuators]
         [sensor.draw() for sensor in self.sensors if sensor.plot]

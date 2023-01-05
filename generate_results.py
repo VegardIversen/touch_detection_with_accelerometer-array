@@ -570,8 +570,8 @@ def setup9_results():
     """Choose setup"""
     SETUP = Setup9()
     """Draw setup"""
-    subplots_adjust(['setup'])
     SETUP.draw()
+    subplots_adjust(['setup'])
     plt.savefig(FIGURES_SAVE_PATH + 'setup1_draw.pdf',
                 format='pdf')
 

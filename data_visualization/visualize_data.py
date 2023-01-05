@@ -332,8 +332,8 @@ def subplots_adjust(signal_type: list, rows: int = 1, columns: int = 1):
                             top=0.955, bottom=0.0,
                             hspace=0.19, wspace=0.2)
     elif signal_type == ['setup']:
-        plt.subplots_adjust(left=0.13, right=0.97,
-                            top=0.97, bottom=0.146,
+        plt.subplots_adjust(left=0.088, right=1,
+                            top=0.988, bottom=0.152,
                             hspace=0.28, wspace=0.2)
     else:
         raise ValueError('Signal type or rows and columns not recognized.')
