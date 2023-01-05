@@ -45,13 +45,7 @@ from setups import (Setup,
 
 
 def setup3_2_results():
-    """Run some general commands for all functions:
-        - Choose file and open it
-        - Channel selection
-        - Choose setup and draw it
-        - Interpolation
-        - Generate results from functions
-    """
+    """Run some general commands for all functions"""
     print('Setup 3.2')
     """Choose file"""
     FILE_FOLDER = 'prop_speed_files/setup3_2'
@@ -450,7 +444,6 @@ def setup7_results():
     setup7_scattering(SETUP)
 
 
-
 def setup7_plot_raw_time_signal(measurements: pd.DataFrame):
     """Plot raw signal"""
     time_axis = np.linspace(start=0,
@@ -582,12 +575,27 @@ def setup9_results():
     plt.savefig(FIGURES_SAVE_PATH + 'setup1_draw.pdf',
                 format='pdf')
 
-    """Run functions to generate results"""
-    # setup9_plot_touch_signals()
-    # setup9_plot_chirp_signals()
-    setup9_transfer_function(SETUP)
-    # setup9_scattering(SETUP)
-    # setup9_predict_reflections(SETUP)
+    print('\nWhich results do you want to generate?')
+    print('1: Plot touch signals')
+    print('2: Plot chirp signals')
+    print('3: Transfer function')
+    print('4: Scattering')
+    print('5: Predict reflections')
+    choice = ''
+    while choice != 'q':
+        choice = input('Enter your choice: ')
+        if choice == '1':
+            setup9_plot_touch_signals()
+        elif choice == '2':
+            setup9_plot_chirp_signals()
+        elif choice == '3':
+            setup9_transfer_function(SETUP)
+        elif choice == '4':
+            setup9_scattering(SETUP)
+        elif choice == '5':
+            setup9_predict_reflections(SETUP)
+        else:
+            print('Please choose a number between 1 and 5')
 
 
 def setup9_plot_touch_signals():
@@ -896,7 +904,7 @@ def setup9_transfer_function(setup: Setup):
     H(f) = Y(f)/X(f),
     where the signal on sensor 1 is the input and
     the signal on sensor 3 is the output."""
-    print('Calculate transfer function')
+    print('Calculating transfer function')
 
     """Choose file"""
     FILE_FOLDER = 'setup9_10cm/chirp/100Hz_to_40kHz_single_chirp'
@@ -916,11 +924,13 @@ def setup9_transfer_function(setup: Setup):
     direct_signal_seconds_sensor1 = 0.0012
     measurements['Sensor 1'] = window_signals(pd.DataFrame(measurements['Sensor 1']),
                                                            direct_signal_seconds_sensor1,
-                                                           window_function='tukey')
+                                                           window_function='tukey',
+                                                           window_parameter=0.1)
     direct_signal_seconds_sensor3 = 0.00085
     measurements['Sensor 3'] = window_signals(pd.DataFrame(measurements['Sensor 3']),
                                                            direct_signal_seconds_sensor3,
-                                                           window_function='tukey')
+                                                           window_function='tukey',
+                                                           window_parameter=0.1)
 
     CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
     PLOTS_TO_PLOT = ['time']
@@ -943,7 +953,6 @@ def setup9_transfer_function(setup: Setup):
     subplots_adjust(PLOTS_TO_PLOT,
                     rows=len(CHANNELS_TO_PLOT),
                     columns=len(PLOTS_TO_PLOT))
-
 
     """Find the FFT of the input signal"""
     input_signal = measurements['Sensor 1'].values
@@ -977,7 +986,6 @@ def setup9_transfer_function(setup: Setup):
     phase_velocities = - (2 * np.pi * fft_frequencies * distance_between_sensors /
                           phase_response)
 
-    plt.close('all')
     """Plot the amplitude response"""
     fig, axs = plt.subplots(nrows=1,
                             ncols=1,

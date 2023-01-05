@@ -13,16 +13,28 @@ def main():
     """
     set_fontsizes()
 
-    print('Generating results...')
-    # results_setup3_2()
+    print('\nWhich setup do you want to generate results for?')
+    print('3: Setup 3.2')
+    print('7: Setup 7')
+    print('9: Setup 9')
+    print('0: Custom plots')
 
-    # results_setup7()
+    setup = ''
+    while input != '3' or '7' or '9' or '0':
+        setup = input('Enter number: ')
+        if setup == '3':
+            setup3_2_results()
+        elif setup == '7':
+            setup7_results()
+        elif setup == '9':
+            setup9_results()
+        elif setup == '0':
+            custom_plots()
+        else:
+            print('Please type 3, 7 or 9 for their respective setups '
+                  'or c for custom plots used in the report.')
 
-    setup9_results()
-
-    # custom_plots()
-
-    plt.show()
+        plt.show()
     return 0
 
 
