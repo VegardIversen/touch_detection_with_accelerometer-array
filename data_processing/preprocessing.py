@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy import signal
+import matplotlib.pyplot as plt
 
 from global_constants import SAMPLE_RATE
 
@@ -37,10 +38,10 @@ def filter_general(signals: pd.DataFrame or np.ndarray,
     if isinstance(signals, pd.DataFrame):
         for channel in signals_filtered:
             signals_filtered[channel] = signal.sosfilt(sos,
-                                                   signals[channel].values)
+                                                       signals[channel].values)
     else:
         signals_filtered = signal.sosfilt(sos,
-                                      signals)
+                                          signals)
 
     return signals_filtered
 
@@ -73,16 +74,17 @@ def crop_data(signals: pd.DataFrame or np.ndarray,
 
 def window_signals(signals: pd.DataFrame,
                    length_of_signal_seconds: float,
-                   window_function: str = 'tukey'):
-    """Takes in a dataframe and set silence around the signal to zero"""
+                   window_function: str = 'tukey',
+                   window_parameter: float = None):
+    """Takes in a dataframe and set silence around the signal to zero."""
     length_of_signal_samples = int(length_of_signal_seconds * SAMPLE_RATE)
     peak_index = np.argmax(signals)
-    if window_function == 'tukey':
-        window = signal.tukey(length_of_signal_samples, alpha=0.3)
-    elif window_function == 'hann':
-        window = signal.hann(length_of_signal_samples)
-    elif window_function == 'hamming':
-        window = signal.hamming(length_of_signal_samples)
+    if window_parameter:
+        window = signal.get_window((window_function,
+                                    window_parameter),
+                                   length_of_signal_samples)
+    else:
+        window = signal.get_window(window_function, length_of_signal_samples)
     window = np.pad(window,
                     (peak_index - int(length_of_signal_samples / 2),
                      len(signals) - peak_index - int(length_of_signal_samples / 2)),
