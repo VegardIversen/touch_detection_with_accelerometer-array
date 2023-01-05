@@ -994,6 +994,18 @@ def setup9_transfer_function(setup: Setup):
     FILE_NAME = 'setup9_amplitude_response.pdf'
     plt.savefig(FIGURES_SAVE_PATH + FILE_NAME, format='pdf')
 
+    """Find the power of the signal with RMS"""
+    signal_rms = np.sqrt(np.mean(measurements ** 2))
+    signal_power = signal_rms ** 2  # yes it just undoes the square root
+    power_loss_sensor1_to_sensor_3 = signal_power[SENSOR_3] / signal_power[SENSOR_1]
+    power_loss_sensor1_to_sensor_3_dB = to_dB(power_loss_sensor1_to_sensor_3)
+    distance_between_sensors = np.linalg.norm(setup.sensors[SENSOR_3].coordinates -
+                                              setup.sensors[SENSOR_1].coordinates)
+    print('\nPower loss sensor 1 to sensor 3, for 100 Hz to 40 kHz: '
+          f'{power_loss_sensor1_to_sensor_3_dB:.2f} dB')
+    print('Power loss per meter: '
+          f'{(power_loss_sensor1_to_sensor_3_dB / distance_between_sensors):.2f} dB/m\n')
+
     """Plot the phase response"""
     fig, axs = plt.subplots(nrows=1,
                             ncols=1,
