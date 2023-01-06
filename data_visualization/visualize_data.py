@@ -22,10 +22,10 @@ def compare_signals(fig, axs,
                     log_time_signal: bool = False,
                     compressed_chirps: bool = False,
                     plots_to_plot: list = ['time', 'spectrogram', 'fft']):
-    """Visually compare two signals, by plotting:
-    time signal, spectogram, and fft.
+    """Intended to be used for plotting time signal, spectogram, and fft
+    of all channels, but can be used for individual plots as well.
     NOTE:   ['time', 'spectrogram', 'fft'] has to be in this order,
-            but can be in any combination.
+            but can be in any combination or subset of it.
     """
     for i, channel in enumerate(data):
         """Convert to pd.Series if necessary"""
