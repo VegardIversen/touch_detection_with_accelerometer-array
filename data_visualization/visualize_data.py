@@ -279,17 +279,19 @@ def set_window_size(rows: int = 1, cols: int = 1):
     return figsize
 
 
-def subplots_adjust(signal_type: list, rows: int = 1, columns: int = 1):
+def subplots_adjust(signal_type: list = ['time', 'spectrogram', 'fft'],
+                    rows: int = 1,
+                    columns: int = 1):
     """Adjust the spacing in plots, based on type of plot and number of grapgs.
     Insert this function before starting a new subplot
     or before the plt.show() function.
     signal_type can be a combination of ['time', 'spectrogram', 'fft'] that is
     defined beforehand.
     """
-    if signal_type == ['time'] or ['spectrogram'] or ['fft'] and rows == 1 and columns == 1:
+    if signal_type[0] in ['time', 'spectrogram', 'fft'] and rows == 1 and columns == 1:
         """Use same spacing for all plots, possibly temporarily"""
-        plt.subplots_adjust(left=0.18, right=0.971,
-                            top=0.927, bottom=0.152,
+        plt.subplots_adjust(left=0.175, right=0.98,
+                            top=0.921, bottom=0.155,
                             hspace=0.28, wspace=0.2)
     elif signal_type == ['time'] and rows == 1 and columns == 1:
         plt.subplots_adjust(left=0.12, right=0.98,

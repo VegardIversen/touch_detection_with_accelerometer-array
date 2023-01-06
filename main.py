@@ -13,14 +13,13 @@ def main():
     """
     set_fontsizes()
 
-    print('\nWhich setup do you want to generate results for?')
-    print('3: Setup 3.2')
-    print('7: Setup 7')
-    print('9: Setup 9')
-    print('0: Custom plots')
-
     setup = ''
-    while input != '3' or '7' or '9' or '0':
+    while input not in ['3', '7', '9', '0']:
+        print('\nWhich setup do you want to generate results for?')
+        print('3: Setup 3.2')
+        print('7: Setup 7')
+        print('9: Setup 9')
+        print('0: Custom plots')
         setup = input('Enter number: ')
         if setup == '3':
             setup3_2_results()
