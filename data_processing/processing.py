@@ -1,3 +1,7 @@
+"""Author: Niklas Strømsnes
+Date: 2022-01-09
+"""
+
 import numpy as np
 import pandas as pd
 import scipy.signal as signal

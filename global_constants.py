@@ -1,3 +1,7 @@
+"""Author: Niklas Strømsnes
+Date: 2022-01-09
+"""
+
 """GLOBAL CONSTANTS"""
 
 """Settings"""

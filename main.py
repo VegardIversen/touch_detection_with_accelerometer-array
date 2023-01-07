@@ -1,3 +1,7 @@
+"""Author: Niklas Strømsnes
+Date: 2022-01-09
+"""
+
 import matplotlib.pyplot as plt
 from generate_results import (setup3_2_results,
                               setup7_results,

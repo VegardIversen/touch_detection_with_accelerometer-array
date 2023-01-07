@@ -1,8 +1,7 @@
-"""Each setup has its own child class of the general Setup class.
-TODO:   - Add remaining setups.
-        - Expand propagation speed function to use all options
-          for better estimation.
+"""Author: Niklas Strømsnes
+Date: 2022-01-09
 """
+
 import numpy as np
 import pandas as pd
 import scipy.signal as signal

@@ -1,4 +1,6 @@
-"""Objects such as the table, acutators and sensors have their own class."""
+"""Author: Niklas Strømsnes
+Date: 2022-01-09
+"""
 
 import numpy as np
 import matplotlib.pyplot as plt

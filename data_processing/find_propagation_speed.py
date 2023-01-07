@@ -1,3 +1,7 @@
+"""Author: Niklas Strømsnes
+Date: 2022-01-09
+"""
+
 import numpy as np
 import scipy.signal as signal
 import matplotlib.pyplot as plt

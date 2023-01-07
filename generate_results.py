@@ -1,7 +1,7 @@
-"""Generate results for the paper.
-This will be a collection of functions that will be called
-and print and plot different results with a common configuration.
+"""Author: Niklas Strømsnes
+Date: 2022-01-09
 """
+
 import scipy
 import scipy.signal as signal
 import numpy as np
