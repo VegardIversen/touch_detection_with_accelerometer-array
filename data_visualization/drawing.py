@@ -30,7 +30,7 @@ def plot_legend_without_duplicates_ax(ax):
     ax.legend(by_label.values(), by_label.keys(), loc='upper right')
 
 
-def draw_setup_ideal():
+def draw_setup_example():
     table = Table()
 
     sensor_2 = Sensor(coordinates=np.array([table.LENGTH / 2,
@@ -69,41 +69,3 @@ def draw_setup_ideal():
 
     return actuator, sensor_1, sensor_2, sensor_3
 
-
-def draw_a_setup(sources: np.ndarray, sensors: np.ndarray):
-    table = Table()
-
-    EDGES_TO_FLIP_AROUND = np.array([table.BOTTOM_EDGE,
-                                     table.LEFT_EDGE])
-
-    mirrored_sources = np.array([])
-    mirrored_sources = np.append(mirrored_sources,
-                                 find_mirrored_source(sources[0], [edge for edge in EDGES_TO_FLIP_AROUND]))
-
-    plt.axes()
-    table.draw()
-    # sources[0].draw()
-    [mirrored_source.draw() for mirrored_source in mirrored_sources]
-    sources = flip_sources(sources, EDGES_TO_FLIP_AROUND)
-    sensors = flip_sensors(sensors, EDGES_TO_FLIP_AROUND)
-    [source.draw() for source in sources]
-    [sensor.draw() for sensor in sensors[0:1]]
-    line_mirr_source = plt.Line2D((mirrored_sources[0].x, sensors[SENSOR_1].x),
-                                  (mirrored_sources[0].y, sensors[SENSOR_1].y),
-                                  color='black',
-                                  lw=0.75,
-                                  linestyle='--',
-                                  zorder=2)
-    plt.gca().add_patch(line_mirr_source)
-
-
-    plt.axis('scaled')
-    plt.xlabel('x (m)')
-    plt.ylabel('y (m)')
-    # plt.title(f'Visualising a mirrored source\nfor bouncing on edges: {EDGES_TO_FLIP_AROUND}')
-    plt.title(f'Visualising a mirrored source\nfor bouncing on edges: bottom and left side')
-    plot_legend_without_duplicates()
-
-    plt.show()
-
-    return

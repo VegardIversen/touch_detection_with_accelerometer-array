@@ -196,8 +196,8 @@ def flip_sensors(sensors: np.ndarray,
 def get_travel_times(actuator: Actuator,
                      sensor: Sensor,
                      propagation_speed: float,
-                     ms: bool = False,
                      print_info: bool = False,
+                     milliseconds: bool = False,
                      relative_first_reflection: bool = True):
     """Get the travel distance from first and second reflections.
     TODO:   Add logic for not calculating physically impossible reflections.
@@ -249,7 +249,7 @@ def get_travel_times(actuator: Actuator,
             travel_distances = np.append(travel_distances, distance_to_sensor)
             arrival_times = np.append(arrival_times, time_to_sensors)
 
-    if ms:
+    if milliseconds:
         arrival_times *= 1000
     if relative_first_reflection:
         travel_distances[0] = 0

@@ -63,7 +63,7 @@ def compare_signals(fig, axs,
                 axs[i, 0].set_ylim(bottom=np.max(to_dB(channel)) - 60)
             else:
                 axs[i, 0].plot(time_axis, channel)
-            axs[i, 0].set_title(f'{channel.name}, time signal')
+            # axs[i, 0].set_title(f'{channel.name}, time signal')
             axs[len(data) - 1, 0].set_xlabel('Time [s]')
             axs[i, 0].plot()
 
@@ -106,7 +106,7 @@ def compare_signals(fig, axs,
             if sharey:
                 axs[i, axs_index].sharey(axs[0, axs_index])
             axs[i, axs_index].axis(ymax=freq_max)
-            axs[i, axs_index].set_title(f'{channel.name}, spectrogram')
+            # axs[i, axs_index].set_title(f'{channel.name}, spectrogram')
             axs[len(data) - 1, axs_index].set_xlabel('Time [s]')
             axs[i, axs_index].set_ylabel('Frequency [Hz]')
             axs[i, axs_index].plot(sharex=axs[0, 0])
@@ -127,7 +127,7 @@ def compare_signals(fig, axs,
             axs[i, axs_index].sharex(axs[0, axs_index])
             axs[i, axs_index].sharey(axs[0, axs_index])
             axs[i, axs_index].grid()
-            axs[i, axs_index].set_title(f'{channel.name}, FFT')
+            # axs[i, axs_index].set_title(f'{channel.name}, FFT')
             axs[len(data) - 1, axs_index].set_xlabel("Frequency [kHz]")
             axs[i, axs_index].set_ylabel("Amplitude [dB]")
             axs[i, axs_index].set_xlim(left=0,
@@ -149,7 +149,7 @@ def wave_statistics(fig, axs, data: pd.DataFrame):
                             stop=len(data['Sensor 1'][0]) / SAMPLE_RATE,
                             num=len(data['Sensor 1'][0]))
 
-    fig.suptitle('Wave statistics')
+    # fig.suptitle('Wave statistics')
     for i, channel in enumerate(data.columns[:3]):
         axs[i].plot(time_axis, average[channel][0], label='Average')
         axs[i].plot(time_axis,
@@ -162,7 +162,7 @@ def wave_statistics(fig, axs, data: pd.DataFrame):
                     label='Average - variance',
                     linestyle='--',
                     color='orange')
-        axs[i].set_title(channel)
+        # axs[i].set_title(channel)
         axs[i].set_xlabel('Time [s]')
         axs[i].legend()
         axs[i].grid()
@@ -190,18 +190,18 @@ def spectrogram_with_lines(sensor: Sensor,
     ax.axvline(arrival_times[0],
                linestyle='--',
                linewidth=2,
-               color='orange',
+               color='#ED217C',
                label='Direct wave')
     [ax.axvline(line,
                 linestyle='--',
                 linewidth=2,
-                color='cyan',
+                color='#DFA06E',
                 label='1st reflections')
      for line in (arrival_times[1:5])]
     [ax.axvline(line,
                 linestyle='--',
                 linewidth=2,
-                color='magenta',
+                color='#1b998b',
                 label='2nd reflections')
      for line in (arrival_times[5:])]
     # """Use scientific notation"""
@@ -225,25 +225,28 @@ def envelope_with_lines(sensor: Sensor,
             measurements_envelope[sensor.name])
     ax.axvline(arrival_times[0],
                linestyle='--',
-               color='red',
-               label='Direct wave')
+               color='#ED217C',
+               label='Direct wave',
+               linewidth=2)
     [ax.axvline(line,
                 linestyle='--',
-                color='green',
-                label='1st reflections')
+                color='#DFA06E',
+                label='1st reflections',
+                linewidth=2)
      for line in (arrival_times[1:5])]
     [ax.axvline(line,
                 linestyle='--',
-                color='purple',
-                label='2nd reflections')
+                color='#1B998B',
+                label='2nd reflections',
+                linewidth=2)
      for line in (arrival_times[5:])]
-    ax.set_title(f'Expected wave arrival times for {sensor.name}')
+    # ax.set_title(f'Expected wave arrival times for {sensor.name}')
     ax.set_xlabel('Time [ms]')
     ax.set_ylabel('Amplitude [V]')
     ax.set_xlim(0, 5)
     """Use scientific notation"""
     ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
-    plot_legend_without_duplicates(placement='upper right')
+    plot_legend_without_duplicates(placement='lower right')
     ax.grid()
 
 
@@ -295,7 +298,7 @@ def subplots_adjust(signal_type: list = ['time', 'spectrogram', 'fft'],
     if signal_type[0] in ['time', 'spectrogram', 'fft'] and rows == 1 and columns == 1:
         """Use same spacing for all plots, possibly temporarily"""
         plt.subplots_adjust(left=0.175, right=0.98,
-                            top=0.921, bottom=0.155,
+                            top=0.935, bottom=0.155,
                             hspace=0.28, wspace=0.2)
     elif signal_type == ['time'] and rows == 1 and columns == 1:
         plt.subplots_adjust(left=0.12, right=0.98,
