@@ -545,20 +545,48 @@ def setup7_scattering(setup: Setup):
     time_axis = np.linspace(start=0,
                             stop=len(measurements_split['Sensor 1'][0]) / SAMPLE_RATE,
                             num=len(measurements_split['Sensor 1'][0]))
-    fig, axs = plt.subplots(nrows=3, ncols=1,
-                            sharex=True, sharey=True,
-                            figsize=set_window_size(rows=2))
-    for i, _ in enumerate(measurements_split['Sensor 1'][0:39]):
-        axs[0].plot(time_axis, measurements_split['Sensor 1'][i])
-        axs[1].plot(time_axis, measurements_split['Sensor 3'][i])
-        axs[2].plot(time_axis, measurements_split['Actuator'][i])
-    axs[0].set_title('39 chirps, sensor 1')
-    axs[1].set_title('39 chirps, sensor 3')
-    axs[1].set_xlabel('Time [s]')
-    axs[0].grid()
-    axs[1].grid()
-    axs[2].grid()
-    subplots_adjust(['time'], rows=2)
+    CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
+    for channel in CHANNELS_TO_PLOT:
+        fig, ax = plt.subplots(nrows=1, ncols=1,
+                               figsize=set_window_size())
+        for i, _ in enumerate(measurements_split[channel][0:39]):
+            ax.plot(1000 * time_axis, measurements_split[channel][i])
+        # ax.set_title(f'{i} chirps, {channel}')
+        ax.set_xlabel('Time [ms]')
+        ax.set_ylabel('Normalized \ncorrelation factor [-]')
+        ax.set_xlim(0, 1)
+        ax.grid()
+        plt.subplots_adjust(left=0.19, right=0.967,
+                            top=0.921, bottom=0.155,
+                            hspace=0.28, wspace=0.2)
+        channel_file_name = channel.replace(" ", "").lower()
+        file_name = f'setup7_scattering_stacked_chirps_{channel_file_name}.pdf'
+        plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
+
+    """Separate chirps into with and without touch"""
+    notouch_average = average_of_signals(measurements_split,
+                                         chirp_range=[0, 16])
+    touch_average = average_of_signals(measurements_split,
+                                       chirp_range=[25, 39])
+    # Plot it all
+    fig, ax = plt.subplots(nrows=1, ncols=1,
+                           figsize=set_window_size())
+    time_axis = np.linspace(start=0,
+                            stop=len(touch_average['Sensor 1'][0]) / SAMPLE_RATE,
+                            num=len(touch_average['Sensor 1'][0]))
+    ax.plot(1000 * time_axis, notouch_average['Sensor 1'],
+            label='No touch average')
+    ax.plot(1000 * time_axis, touch_average['Sensor 1'],
+            label='Touch average')
+    # ax.set_title('Sensor 1')
+    ax.set_xlabel('Time [ms]')
+    ax.set_ylabel('Normalized \ncorrelation factor [-]')
+    ax.set_xlim(0, 1)
+    ax.legend(loc='upper right')
+    ax.grid()
+    plt.subplots_adjust(left=0.19, right=0.967,
+                        top=0.921, bottom=0.155,
+                        hspace=0.28, wspace=0.2)
 
 
 """Setup 9"""
