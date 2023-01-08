@@ -169,7 +169,8 @@ def get_travel_times(actuator: Actuator,
                      prop_speed: float,
                      ms: bool = False,
                      print_info: bool = False,
-                     relative_first_reflection: bool = True):
+                     relative_first_reflection: bool = True,
+                     sig_start: int = 0):
     """Get the travel distance from first and second reflections.
     TODO:   Add logic for not calculating physically impossible reflections.
             This is not necessary for predicting WHEN the reflections will arrive,

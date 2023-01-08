@@ -1,7 +1,3 @@
-"""Objects such as the table, acutators and sensors have their own class.
-TODO:   - Give actuators and sensors a name, e.g. 'channel 1' or 'sensor 1'
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
@@ -10,8 +6,8 @@ import matplotlib.patches as patches
 class Table:
     """Represents the table and its edges."""
     """Table dimensions"""
-    LENGTH = 0.80
-    WIDTH = 0.60     # m
+    LENGTH = 0.80   # m
+    WIDTH = 0.60    # m
     """Enum for representing edges"""
     TOP_EDGE = 1
     RIGHT_EDGE = 2
@@ -21,20 +17,18 @@ class Table:
     SURFACE_COLOUR = '#fbe5b6'
     LINE_COLOUR = '#f0c18b'
 
-    def __init__(self):
-        """Table locations, in the middle of each block"""
-        A1 = np.array([1 / 6 * self.LENGTH, 1 / 6 * self.WIDTH])
-        A2 = np.array([3 / 6 * self.LENGTH, 1 / 6 * self.WIDTH])
-        A3 = np.array([5 / 6 * self.LENGTH, 1 / 6 * self.WIDTH])
-        B1 = np.array([1 / 6 * self.LENGTH, 3 / 6 * self.WIDTH])
-        B2 = np.array([3 / 6 * self.LENGTH, 3 / 6 * self.WIDTH])
-        B3 = np.array([5 / 6 * self.LENGTH, 3 / 6 * self.WIDTH])
-        C1 = np.array([1 / 6 * self.LENGTH, 5 / 6 * self.WIDTH])
-        C2 = np.array([3 / 6 * self.LENGTH, 5 / 6 * self.WIDTH])
-        C3 = np.array([5 / 6 * self.LENGTH, 5 / 6 * self.WIDTH])
+    """A selection of table locations, in the middle of each block"""
+    A1 = np.array([1 / 6 * LENGTH, 1 / 6 * WIDTH])
+    A2 = np.array([3 / 6 * LENGTH, 1 / 6 * WIDTH])
+    A3 = np.array([5 / 6 * LENGTH, 1 / 6 * WIDTH])
+    B1 = np.array([1 / 6 * LENGTH, 3 / 6 * WIDTH])
+    B2 = np.array([3 / 6 * LENGTH, 3 / 6 * WIDTH])
+    B3 = np.array([5 / 6 * LENGTH, 3 / 6 * WIDTH])
+    C1 = np.array([1 / 6 * LENGTH, 5 / 6 * WIDTH])
+    C2 = np.array([3 / 6 * LENGTH, 5 / 6 * WIDTH])
+    C3 = np.array([5 / 6 * LENGTH, 5 / 6 * WIDTH])
 
     def draw(self):
-        """Draw the table."""
         "Draw the table with the real dimensions, including the lines."
         table = patches.Rectangle((0, 0),
                                   self.LENGTH,
@@ -68,11 +62,14 @@ class Sensor:
     NOTE:   Not sure just how to represent coordinates yet,
             or if get_/set_coordinates() are necessary.
     """
-    def __init__(self, coordinates: np.ndarray, radius: float = 0.007/2):
+    radius = 0.0035
+
+    def __init__(self, coordinates: np.ndarray, name: str, plot: bool = True):
         self.coordinates = coordinates
         self.x = coordinates[0]
         self.y = coordinates[1]
-        self.radius = radius
+        self.name = name
+        self.plot = plot
 
     def set_coordinates(self, coordinates: np.ndarray):
         self.coordinates = coordinates
@@ -83,15 +80,15 @@ class Sensor:
         """Draw the sensor."""
         sensor = plt.Circle(self.coordinates,
                             radius=self.radius,
-                            fc=self.FILL_COLOUR,
-                            ec=self.EDGE_COLOUR,
+                            fc='#AEAFA7',
+                            ec='dimgray',
                             label='Sensor',
                             zorder=10)
         plt.gca().add_patch(sensor)
 
-    """Colour settings for drawing"""
-    FILL_COLOUR = '#AEAFA7'
-    EDGE_COLOUR = 'dimgray'
+    def __str__(self):
+        return self.name
+
 
 
 class Actuator:
@@ -99,13 +96,16 @@ class Actuator:
     NOTE:   Not sure just how to represent coordinates yet,
             or if get_/set_coordinates() are necessary.
     """
-    def __init__(self, coordinates: np.ndarray):
+    RADIUS = 0.005  # m
+
+    def __init__(self, coordinates: np.ndarray, name: str = 'Actuator'):
         self.coordinates = coordinates
         self.x = coordinates[0]
         self.y = coordinates[1]
+        self.name = name
 
     def copy(self):
-        """Define a function to copy the actuator."""
+        """Define a function to copy the actuator"""
         return Actuator(self.coordinates)
 
     def set_coordinates(self, coordinates: np.ndarray):
@@ -114,19 +114,18 @@ class Actuator:
         self.y = coordinates[1]
 
     def draw(self):
-        """Draw the actuator."""
+        """Draw the actuator"""
         actuator = plt.Circle(self.coordinates,
                               radius=self.RADIUS,
-                              fc=self.FILL_COLOUR,
-                              ec=self.EDGE_COLOUR,
-                              label='Actuator',
+                              fc='#D4434A',
+                              ec='dimgray',
+                              label=self.name,
                               zorder=10)
         plt.gca().add_patch(actuator)
 
-    RADIUS = 0.01/2  # m
-    """Colour settings for drawing"""
-    FILL_COLOUR = '#D4434A'
-    EDGE_COLOUR = 'dimgray'
+    def __str__(self):
+        return self.name
+
 
 
 class MirroredSource(Actuator):
@@ -138,32 +137,25 @@ class MirroredSource(Actuator):
         """Draw the mirrored source."""
         mirrored_source = plt.Circle(self.coordinates,
                                      radius=self.RADIUS,
-                                     fc=self.FILL_COLOUR,
-                                     ec=self.EDGE_COLOUR,
-                                     label='Mirrored source',
+                                     fc='pink',
+                                     ec='dimgray',
+                                     label=f'Mirrored source',
                                      zorder=10)
         plt.gca().add_patch(mirrored_source)
-
-    # Colour settings for drawing
-    FILL_COLOUR = 'pink'
-    EDGE_COLOUR = 'dimgray'
 
 
 class MirroredSensor(Sensor):
     """Represents a mirrored sensor."""
-    def __init__(self, coordinates: np.ndarray):
-        super().__init__(coordinates)
+    def __init__(self, coordinates: np.ndarray, name: str):
+        super().__init__(coordinates, name)
 
     def draw(self):
         """Draw the mirrored sensor."""
         mirrored_sensor = plt.Circle(self.coordinates,
                                      radius=self.radius,
-                                     fc=self.FILL_COLOUR,
-                                     ec=self.EDGE_COLOUR,
+                                     fc='white',
+                                     ec='dimgray',
+                                    #  label=f'Mirrored {self.name}',
                                      label='Mirrored sensor',
                                      zorder=10)
         plt.gca().add_patch(mirrored_sensor)
-
-    # Colour settings for drawing
-    FILL_COLOUR = 'white'
-    EDGE_COLOUR = 'dimgray'

@@ -847,5 +847,24 @@ def subplots_adjust(signal_type: list, rows: int = 1, columns: int = 1):
     else:
         raise ValueError('Signal type or rows and columns not recognized.')
 
+def figure_size_setup(overleaf_size=0.75):
+    sns.set(font_scale=12/10)  # font size = 12pt / 10pt/scale = 1.2 times the default size
+
+    # Calculate the column width in inches (assumes page size and margins as specified in the question)
+    page_width_mm = 250
+    left_margin_mm = 25
+    right_margin_mm = 25
+    column_width_inches = (page_width_mm - left_margin_mm - right_margin_mm) / 25.4
+    # Set the figure height in inches
+    figure_height_inches = 6
+    # Calculate the figure width in inches as 0.75 of the column width
+    
+    figure_width_inches = column_width_inches * overleaf_size#0.75
+
+    # Create the figure and set the size
+    fig, ax = plt.subplots(figsize=(figure_width_inches, figure_height_inches))
+
+    return fig, ax
+    
 if __name__ == '__main__':
     pass

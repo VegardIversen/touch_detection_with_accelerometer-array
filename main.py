@@ -16,9 +16,11 @@ from data_processing.preprocessing import crop_data, filter_general, compress_ch
 from data_processing.detect_echoes import find_first_peak, get_hilbert_envelope, get_travel_times
 from data_processing.find_propagation_speed import find_propagation_speed_with_delay
 from data_viz_files.drawing import plot_legend_without_duplicates
-
+import results as r
 
 def main():
+    r.results_setup5_touch()
+    exit()
     """CONFIG"""
     CROP = False
     TIME_START = 0.75724  # s
@@ -29,68 +31,68 @@ def main():
     #SETUP.draw(savefig=True, filename='setup2_new', fileformat='png')
     # Generate the chirp signal
     # Generate the chirp signal
-    sns.set_theme(style="darkgrid")
-    sns.set(font_scale=12/10)
-    t = np.linspace(0, 1, 1000)
-    f0 = 3
-    f1 = 30
-    k = (f1 - f0) / 1
-    signal = np.sin(2 * np.pi * (f0 * t + k * t * t / 2))
+    # sns.set_theme(style="darkgrid")
+    # sns.set(font_scale=12/10)
+    # t = np.linspace(0, 1, 1000)
+    # f0 = 3
+    # f1 = 30
+    # k = (f1 - f0) / 1
+    # signal = np.sin(2 * np.pi * (f0 * t + k * t * t / 2))
 
-    # Compress the signal using matched filtering
-    signal_compressed = np.convolve(signal, signal[::-1], mode='same')
+    # # Compress the signal using matched filtering
+    # signal_compressed = np.convolve(signal, signal[::-1], mode='same')
 
-    # Plot the original and compressed signals in separate subplots
-    plt.figure(figsize=(16, 14))
+    # # Plot the original and compressed signals in separate subplots
+    # plt.figure(figsize=(16, 14))
     
-    plt.plot(t, signal)
-    plt.xlabel('Time')
-    plt.ylabel('Amplitude')
-    plt.savefig('compression_signal.png', dpi=300, format='png')
-    #clear figure
-    plt.show()
-    plt.clf()
-    plt.figure(figsize=(16, 14))
-    #ax1.set_title('Original Signal')
-    plt.plot(t, signal_compressed)
-    plt.xlabel('Time')
-    plt.ylabel('Amplitude')
-    #ax2.set_title('Compressed Signal')
-    plt.savefig('compression_result.png', dpi=300, format='png')
-    #plt.tight_layout()
-    plt.show()
-    plt.clf()
-    # plot the fft of the respective signals with only positive frequencies
-    plt.figure(figsize=(16, 14))
-    plt.plot(np.fft.rfftfreq(len(signal), 1 / 1000), np.abs(np.fft.rfft(signal)))
-    plt.xlabel('Frequency')
-    plt.ylabel('Amplitude')
-    plt.savefig('compression_fft_signal.png', dpi=300, format='png')
-    #save as svg
-    plt.savefig('compression_fft_signal.svg', dpi=300, format='svg')
-    plt.show()
-    plt.clf()
-    plt.figure(figsize=(16, 14))
-    plt.plot(np.fft.rfftfreq(len(signal_compressed), 1 / 1000), np.abs(np.fft.rfft(signal_compressed)))
-    plt.xlabel('Frequency')
-    plt.ylabel('Amplitude')
-    plt.savefig('compression_fft_result.png', dpi=300, format='png')
-    plt.savefig('compression_fft_result.svg', dpi=300, format='svg')
-    plt.show()
-    plt.clf()
-    #plot the ffts in the same plot with labels "signal" and "compressed signal" and limit the maximum frequency to 100 Hz and normalize the amplitude so they are around the same amplitude
-    plt.figure(figsize=(16, 14))
-    #plot normalized ffts
-    plt.plot(np.fft.rfftfreq(len(signal), 1 / 1000), np.abs(np.fft.rfft(signal))/np.max(np.abs(np.fft.rfft(signal))), label='signal')
-    plt.plot(np.fft.rfftfreq(len(signal_compressed), 1 / 1000), np.abs(np.fft.rfft(signal_compressed))/np.max(np.abs(np.fft.rfft(signal_compressed))), label='compressed signal')
-    plt.xlabel('Frequency')
-    plt.ylabel('Amplitude')
-    plt.xlim(0, 100)
-    plt.legend()
-    plt.savefig('compression_fft_both_norm.png', dpi=300, format='png')
-    plt.savefig('compression_fft_both_norm.svg', dpi=300, format='svg')
-    plt.show()
-    exit()
+    # plt.plot(t, signal)
+    # plt.xlabel('Time')
+    # plt.ylabel('Amplitude')
+    # plt.savefig('compression_signal.png', dpi=300, format='png')
+    # #clear figure
+    # plt.show()
+    # plt.clf()
+    # plt.figure(figsize=(16, 14))
+    # #ax1.set_title('Original Signal')
+    # plt.plot(t, signal_compressed)
+    # plt.xlabel('Time')
+    # plt.ylabel('Amplitude')
+    # #ax2.set_title('Compressed Signal')
+    # plt.savefig('compression_result.png', dpi=300, format='png')
+    # #plt.tight_layout()
+    # plt.show()
+    # plt.clf()
+    # # plot the fft of the respective signals with only positive frequencies
+    # plt.figure(figsize=(16, 14))
+    # plt.plot(np.fft.rfftfreq(len(signal), 1 / 1000), np.abs(np.fft.rfft(signal)))
+    # plt.xlabel('Frequency')
+    # plt.ylabel('Amplitude')
+    # plt.savefig('compression_fft_signal.png', dpi=300, format='png')
+    # #save as svg
+    # plt.savefig('compression_fft_signal.svg', dpi=300, format='svg')
+    # plt.show()
+    # plt.clf()
+    # plt.figure(figsize=(16, 14))
+    # plt.plot(np.fft.rfftfreq(len(signal_compressed), 1 / 1000), np.abs(np.fft.rfft(signal_compressed)))
+    # plt.xlabel('Frequency')
+    # plt.ylabel('Amplitude')
+    # plt.savefig('compression_fft_result.png', dpi=300, format='png')
+    # plt.savefig('compression_fft_result.svg', dpi=300, format='svg')
+    # plt.show()
+    # plt.clf()
+    # #plot the ffts in the same plot with labels "signal" and "compressed signal" and limit the maximum frequency to 100 Hz and normalize the amplitude so they are around the same amplitude
+    # plt.figure(figsize=(16, 14))
+    # #plot normalized ffts
+    # plt.plot(np.fft.rfftfreq(len(signal), 1 / 1000), np.abs(np.fft.rfft(signal))/np.max(np.abs(np.fft.rfft(signal))), label='signal')
+    # plt.plot(np.fft.rfftfreq(len(signal_compressed), 1 / 1000), np.abs(np.fft.rfft(signal_compressed))/np.max(np.abs(np.fft.rfft(signal_compressed))), label='compressed signal')
+    # plt.xlabel('Frequency')
+    # plt.ylabel('Amplitude')
+    # plt.xlim(0, 100)
+    # plt.legend()
+    # plt.savefig('compression_fft_both_norm.png', dpi=300, format='png')
+    # plt.savefig('compression_fft_both_norm.svg', dpi=300, format='svg')
+    # plt.show()
+    # exit()
 
     
     """Open file"""

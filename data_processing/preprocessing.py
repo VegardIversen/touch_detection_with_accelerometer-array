@@ -433,21 +433,25 @@ def compress_single_touch(sig, set_threshold_man=False, threshold=None,n_sampl=N
             start_index = get_first_index_above_threshold(sig, threshold)
             end_index = start_index + n_sampl
             direct_signal = sig[start_index:end_index]
+    print(f'start index {start_index}')
     compressed = signal.correlate(sig, direct_signal, mode='same')
     if plot:
         plt.plot(compressed)
         plt.show()
-    return compressed
+    return compressed, start_index
 
-def compress_df_touch(df, set_threshold_man=False, threshold=None,n_sampl=None, plot=False):
+def compress_df_touch(df, set_threshold_man=False, thresholds=[None,None,None],n_sampl=None, plot=False):
     """Compress signal to touch"""
     if len(df.columns) > 3:
         print('removing wavegen column')
         df = df.drop(columns=['wave_gen'], axis=1)
     df_compressed = df.copy()
-    for col in df.columns:
-        df_compressed[col] = compress_single_touch(sig=df[col], set_threshold_man=set_threshold_man, threshold=threshold, n_sampl=n_sampl, plot=plot)
-    return df_compressed
+    start_indexs = []
+    for idx, col in enumerate(df.columns):
+        df_compressed[col], start_index = compress_single_touch(sig=df[col], set_threshold_man=set_threshold_man, threshold=thresholds[idx], n_sampl=n_sampl, plot=plot)
+        start_indexs.append(start_index)
+
+    return df_compressed, start_indexs
         
 
 def cut_out_pulse_wave(df,channels=['channel 1', 'channel 3'], start_stops=None, plot=False):

@@ -20,7 +20,47 @@ import timeit
 import data_processing.wave_properties as wp
 import data_processing.sensor_testing as st
 from data_viz_files.visualise_data import inspect_touch
+import seaborn as sns
 if __name__ == '__main__':
+    # Set the font scale to match the text size of the document (12pt)
+    sns.set(font_scale=12/10)  # font size = 12pt / 10pt/scale = 1.2 times the default size
+
+    # Calculate the column width in inches (assumes page size and margins as specified in the question)
+    page_width_mm = 250
+    left_margin_mm = 25
+    right_margin_mm = 25
+    column_width_inches = (page_width_mm - left_margin_mm - right_margin_mm) / 25.4
+    # Set the figure height in inches
+    figure_height_inches = 6
+    # Calculate the figure width in inches as 0.75 of the column width
+    
+    figure_width_inches = column_width_inches * 0.3#0.75
+
+    # Create the figure and set the size
+    fig, ax = plt.subplots(figsize=(figure_width_inches, figure_height_inches))
+
+    # Generate some random data and plot it
+    x = np.random.rand(10)
+    y = np.random.rand(10)
+    ax.plot(x, y, label='random')
+
+    # Set the x and y labels
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+
+    # Add a legend
+    ax.legend()
+
+    # Save the figure
+    plt.savefig('random_plot_3sub.png',format='png')
+    plt.savefig('random_plot_3sub.svg',format='svg')
+
+    # Show the plot
+    plt.show()
+    exit()
+
+
+
     CROSS_CORR_PATH1 = '\\vegard_og_niklas\\setup2_korrelasjon\\'
     CROSS_CORR_PATH2 = '\\first_test_touch_passive_setup2\\'
     custom_chirp = csv_to_df(file_folder='div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)

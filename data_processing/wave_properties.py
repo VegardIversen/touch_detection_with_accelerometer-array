@@ -89,7 +89,7 @@ def phase_difference_plot(
         plt.savefig(file_name, format=file_format)
     plt.show()
     plt.clf()
-    exit()
+    
     return phase_diff, freq
     
 def preprocess_df(df, detrend=True):
