@@ -12,7 +12,7 @@ from constants import SAMPLE_RATE, CHANNEL_NAMES, CHIRP_CHANNEL_NAMES
 from data_processing import cross_correlation_position as ccp
 from csv_to_df import csv_to_df
 from data_viz_files.visualise_data import compare_signals, plot_vphs, plot_fft, plot_plate_speed_sliders_book, plot_estimated_reflections_with_sliders, compare_signals_v2, plot_compare_signals_v2
-from data_processing.preprocessing import interpolate_waveform, crop_data, filter_general, compress_chirp, get_phase_and_vph_of_compressed_signal,cut_out_signal, manual_cut_signal, compress_df_touch, cut_out_pulse_wave
+from data_processing.preprocessing import get_first_index_above_threshold, interpolate_waveform, crop_data, filter_general, compress_chirp, get_phase_and_vph_of_compressed_signal,cut_out_signal, manual_cut_signal, compress_df_touch, cut_out_pulse_wave, shift_signal
 from data_processing.detect_echoes import find_first_peak, get_hilbert_envelope, get_travel_times
 from data_processing.find_propagation_speed import find_propagation_speed_with_delay
 from data_viz_files.drawing import plot_legend_without_duplicates
@@ -228,12 +228,15 @@ def results_setup5_touch():
         measurements_filt = df_touch_10cm
     print(f'length of measurements_filt: {len(measurements_filt)}')
     measurements_comp, start_indexes = compress_df_touch(measurements_filt, set_threshold_man=False,thresholds=[0.0010,0.0007,0.0013], n_sampl=max_samples_direct)
+    
+    
     print(f'length of measurements_comp: {len(measurements_comp)}')
     measurements_hilb = get_hilbert_envelope(measurements_filt)
     print(f'length of measurements_hilb: {len(measurements_hilb)}')
     measurements_comp_hilb = get_hilbert_envelope(measurements_comp)
     print(f'length of measurements_comp_hilb: {len(measurements_comp_hilb)}')
     #SETUP.draw()
+    
     actuator, sensors = SETUP.get_objects()
     arrival_times = np.array([])
     for idx, sensor in enumerate(sensors):
@@ -320,15 +323,101 @@ def results_setup5_touch():
     plt.show()
     arrival_times /= 1000   # Convert back to s
 
-
 def results_setup5_chirp():
+    SETUP = Setup9()
+    SETUP.draw()
+    df_touch_10cm = csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
+    df_chirp_ref_10cm = csv_to_df('\\setup9_propagation_speed_short\\chirp\\100Hz_to_40kHz_single_chirp\\', 'chirp_v1')
+    custom_chirp = csv_to_df(file_folder='div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
+    df_chirp_10cm = csv_to_df('vegard_og_niklas\\setup3\\', 'prop_speed_chirp3_setup3_0_v1')
+    custom_chirp = csv_to_df(file_folder='div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
+    phase10, freq10  = wp.phase_plotting(df_chirp_10cm, chirp=custom_chirp, use_recorded_chirp=True, start_stops=[(95000,390500),(94000,390400)], BANDWIDTH=[100,40000], save_fig=False, file_name='phase_plot_10cm.svg', file_format='svg')
+    phase_vel = wp.phase_velocity(phase10, freq10, distance=0.1, plot=False)
+    max_vel = np.max(phase_vel)
+    max_samples_direct = int(0.1/max_vel * SAMPLE_RATE)
+    #prop_speed = max_vel
+    prop_speed = 150
+    #prop_speed = max_vel
+    #compress chirp
+    measurements_compressed = compress_chirp(df_chirp_ref_10cm, custom_chirp)
+    measurements_comp_touch, start_indexes = compress_df_touch(df_touch_10cm, set_threshold_man=False,thresholds=[0.0010,0.0007,0.0013], n_sampl=max_samples_direct)
+    measurements_compressed_hilbert = get_hilbert_envelope(measurements_compressed)
+    wrong_start = get_first_index_above_threshold(measurements_comp_touch['channel 1'], 0.0001)
+    print(f'index of threshold above 0.0001: {wrong_start}')
+    print(f'start index: {start_indexes}')
+    print(f'difference: {start_indexes[0] - wrong_start}')
+    corrected_start = start_indexes[0] - wrong_start
+    touch_comp_shifted = shift_signal(measurements_comp_touch['channel 1'], -59100)
+    measurements_comp_touch_hilb = get_hilbert_envelope(touch_comp_shifted)
+    actuator, sensors = SETUP.get_objects()
+    arrival_times = np.array([])
+    for idx, sensor in enumerate(sensors):
+        time, _ = get_travel_times(actuator[0],
+                                   sensor,
+                                   prop_speed,
+                                   ms=False,
+                                   print_info=False,
+                                   relative_first_reflection=False,
+                                   )
+        #time *= -1
+        #time = time + 2.5
+        print(time)
+        #time = int(time*SAMPLE_RATE)
+        
+        arrival_times = np.append(arrival_times, time)
+    arrival_times = np.reshape(arrival_times, (len(sensors), len(arrival_times) // len(sensors)))
+    sampling_rate = 150_000
+
+    # Length of the cross-correlation function in samples
+    n_samples = 750_000
+
+    # Duration of the recorded signal (in seconds)
+    duration = n_samples / sampling_rate
+
+    # Time axis for the cross-correlation function (in seconds)
+    time_axis = np.linspace(-duration/2, duration/2, n_samples)
+    fig, axs = figure_size_setup()
+    # Time axis in milliseconds
+    #time_axis_ms = time_axis * 1000
+    axs.plot(time_axis, measurements_compressed['channel 1'], label='Correlation')
+    axs.plot(time_axis, measurements_compressed_hilbert['channel 1'], label='Hilbert envelope')
+    
+    axs.axvline(arrival_times[0][0], linestyle='--', color='r', label='Direct wave')
+    [axs.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[0][1:5])]
+    [axs.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[0][5:])]
+    axs.set_xlabel('Time [s]')
+    axs.set_ylabel('Amplitude [V]')
+    plot_legend_without_duplicates()
+    axs.set_xlim(0, 0.0025)
+    fig.savefig(f'chirp_reflections_speed{np.round(prop_speed, 2)}.png',dpi=300, format='png')
+    fig.savefig(f'chirp_reflections_speed{np.round(prop_speed, 2)}.svg',dpi=300, format='svg')
+    plt.show()
+    plt.clf()
+    fig, axs = figure_size_setup()
+    axs.plot(time_axis, touch_comp_shifted, label='Correlation')
+    axs.plot(time_axis, measurements_comp_touch_hilb, label='Hilbert envelope')
+    #axs.plot( touch_comp_shifted, label='Correlation')
+    #axs.plot( measurements_comp_touch_hilb, label='Hilbert envelope')
+    axs.axvline(arrival_times[0][0], linestyle='--', color='r', label='Direct wave')
+    [axs.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[0][1:5])]
+    [axs.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[0][5:])]
+    axs.set_xlabel('Time [s]')
+    axs.set_ylabel('Amplitude [V]')
+    plot_legend_without_duplicates()
+    axs.set_xlim(-0.002, 0.02)
+    fig.savefig(f'touch_reflections_speed{np.round(prop_speed, 2)}.png',dpi=300, format='png')
+    fig.savefig(f'touch_reflections_speed{np.round(prop_speed, 2)}.svg',dpi=300, format='svg')
+    plt.show()
+
+def results_setup5_chirp1():
     SAMPLE_RATE = 150000
     use_recorded_chirp=True
-    channels=['channel 1', 'channel 3']
+    #channels=['channel 1', 'channel 3']
     custom_chirp = csv_to_df(file_folder='div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
-    df1 = csv_to_df('vegard_og_niklas\\setup3\\', 'prop_speed_chirp3_setup3_0_v1')
-    df_touch_15cm = csv_to_df('\\vegard_og_niklas\\setup10_propagation_speed_15cm\\chirp\\', 'chirp_v1')
+    #df1 = csv_to_df('vegard_og_niklas\\setup3\\', 'prop_speed_chirp3_setup3_0_v1')
+    #df_touch_15cm = csv_to_df('\\vegard_og_niklas\\setup10_propagation_speed_15cm\\chirp\\', 'chirp_v1')
     df_touch_10cm = csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
+    df_chirp_10cm = csv_to_df('\\setup9_propagation_speed_short\\chirp\\100Hz_to_40kHz_single_chirp\\', 'chirp_v1')
     time = np.linspace(0, len(df_touch_10cm) / SAMPLE_RATE, num=len(df_touch_10cm))
     df_touch_10cm_detrend = wp.preprocess_df(df_touch_10cm)
     df_touch_15cm_detrend = wp.preprocess_df(df_touch_15cm)
