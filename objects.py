@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-
+import seaborn as sb
+#from data_viz_files.visualise_data import figure_size_setup
 
 class Table:
     """Represents the table and its edges."""
@@ -27,7 +28,7 @@ class Table:
     C1 = np.array([1 / 6 * LENGTH, 5 / 6 * WIDTH])
     C2 = np.array([3 / 6 * LENGTH, 5 / 6 * WIDTH])
     C3 = np.array([5 / 6 * LENGTH, 5 / 6 * WIDTH])
-
+    
     def draw(self):
         "Draw the table with the real dimensions, including the lines."
         table = patches.Rectangle((0, 0),
@@ -37,8 +38,26 @@ class Table:
                                   ec=self.LINE_COLOUR,
                                   lw=2,
                                   zorder=0)
+        def figure_size_setup(overleaf_size=0.75):
+            sb.set(font_scale=12/10)  # font size = 12pt / 10pt/scale = 1.2 times the default size
 
-        plt.gca().add_patch(table)
+            # Calculate the column width in inches (assumes page size and margins as specified in the question)
+            page_width_mm = 250
+            left_margin_mm = 25
+            right_margin_mm = 25
+            column_width_inches = (page_width_mm - left_margin_mm - right_margin_mm) / 25.4
+            # Set the figure height in inches
+            figure_height_inches = 6
+            # Calculate the figure width in inches as 0.75 of the column width
+            
+            figure_width_inches = column_width_inches * overleaf_size#0.75
+
+            # Create the figure and set the size
+            fig, ax = plt.subplots(figsize=(figure_width_inches, figure_height_inches))
+
+            return fig, ax
+        fig, axs = figure_size_setup()
+        axs.add_patch(table)
 
         for i in range(1, 3):
             line_x = plt.Line2D((i / 3 * self.LENGTH, i / 3 * self.LENGTH),
@@ -53,8 +72,8 @@ class Table:
                                 lw=0.75,
                                 linestyle='--',
                                 zorder=1)
-            plt.gca().add_patch(line_x)
-            plt.gca().add_patch(line_y)
+            axs.add_patch(line_x)
+            axs.add_patch(line_y)
 
 
 class Sensor:

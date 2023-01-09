@@ -14,7 +14,7 @@ from csv_to_df import csv_to_df
 from data_processing.preprocessing import crop_data, get_phase_and_vph_of_compressed_signal, filter_general, compress_chirp, cut_out_signal
 from data_processing.detect_echoes import get_travel_times, get_hilbert_envelope
 from objects import Table, Actuator, Sensor
-from setups import Setup2, Setup3, Setup3_2, Setup3_4, Setup6
+#from setups import Setup2, Setup3, Setup3_2, Setup3_4, Setup6
 from data_viz_files.drawing import ax_legend_without_duplicates
 
 def plot_fft(df, sample_rate=150000, window=False):

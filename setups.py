@@ -14,7 +14,7 @@ from global_constants import (SAMPLE_RATE,
                               SENSOR_2,
                               SENSOR_3)
 from objects import Table, Actuator, Sensor
-
+from data_viz_files.visualise_data import figure_size_setup
 from data_viz_files.drawing import plot_legend_without_duplicates
 
 
@@ -22,19 +22,25 @@ class Setup:
     table = Table()
     actuators: np.ndarray
     sensors: np.ndarray
+    
 
     def __init__(self):
         raise NameError("Setup version needs to be specified")
 
-    def draw(self):
+    def draw(self, save_fig=False, fig_name=None, file_format='png', actuator_show=True, show_tab=False):
         plt.axes()
         self.table.draw()
-        [actuator.draw() for actuator in self.actuators]
+        if actuator_show:
+            [actuator.draw() for actuator in self.actuators]
         [sensor.draw() for sensor in self.sensors if sensor.plot]
         plt.axis('scaled')
         plt.xlabel('x (m)')
         plt.ylabel('y (m)')
         plot_legend_without_duplicates()
+        if save_fig:
+            plt.savefig(f'{fig_name}.{file_format}',dpi=300, format=file_format)
+        if show_tab:
+            plt.show()
 
     def get_propagation_speed(self,
                               measurements: pd.DataFrame,

@@ -19,7 +19,8 @@ from data_viz_files.drawing import plot_legend_without_duplicates
 import results as r
 
 def main():
-    r.results_setup4()
+    r.results_setup5_touch()
+    #r.compression_figs()
     exit()
     """CONFIG"""
     CROP = False

@@ -430,7 +430,7 @@ def interpolate_waveform(signals: pd.DataFrame) -> pd.DataFrame:
 
 def compress_single_touch(sig, set_threshold_man=False, threshold=None,n_sampl=None, plot=False):
     """Compress signal to touch"""
-    #direct_signal = np.zeros(len(sig))
+    direct_signal = np.zeros(len(sig))
     if set_threshold_man:
         if n_sampl is not None:
             plt.plot(sig)
@@ -439,12 +439,12 @@ def compress_single_touch(sig, set_threshold_man=False, threshold=None,n_sampl=N
             threshold = float(input('threshold: '))
             start_index = get_first_index_above_threshold(sig, threshold)
             end_index = start_index + n_sampl
-            #direct_signal[start_index:end_index] = sig[start_index:end_index]
-            direct_signal = sig[start_index:end_index]
+            direct_signal[start_index:end_index] = sig[start_index:end_index]
+            #direct_signal = sig[start_index:end_index]
         else:
             start, end = manual_cut_signal(sig)
-            #direct_signal[start:end] = sig[start:end]
-            direct_signal = sig[start:end]
+            direct_signal[start:end] = sig[start:end]
+            #direct_signal = sig[start:end]
     else:
         if threshold is None or n_sampl is None:
             print('set threshold manually and define the number of samples')
@@ -452,8 +452,8 @@ def compress_single_touch(sig, set_threshold_man=False, threshold=None,n_sampl=N
         else:
             start_index = get_first_index_above_threshold(sig, threshold)
             end_index = start_index + n_sampl
-            #direct_signal[start_index:end_index] = sig[start_index:end_index]
-            direct_signal = sig[start_index:end_index].to_numpy()
+            direct_signal[start_index:end_index] = sig[start_index:end_index]
+            #direct_signal = sig[start_index:end_index].to_numpy()
     #print(f'start index {start_index}')
     sig_copy = sig.copy()
     sig_copy[:start_index] = 0
