@@ -35,7 +35,8 @@ from data_visualization.visualize_data import (compare_signals,
                                                envelope_with_lines,
                                                spectrogram_with_lines,
                                                set_window_size,
-                                               subplots_adjust)
+                                               subplots_adjust,
+                                               figure_size_setup)
 from setups import (Setup,
                     Setup3_2,
                     Setup7,
@@ -597,7 +598,8 @@ def setup9_plot_touch_signals():
                                              filtertype='highpass',
                                              cutoff_highpass=100)
     sb.set_theme(style="darkgrid")
-    CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
+    #CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
+    CHANNELS_TO_PLOT = ['Sensor 1']
     for channel in CHANNELS_TO_PLOT:
         setup9_plot_touch_time_signal(measurements_full_touch, [channel])
         channel_file_name = channel.replace(" ", "").lower()
@@ -622,7 +624,7 @@ def setup9_plot_touch_signals():
                                                 time_end=(2.05 + 0.060))
     sb.set_theme(style="darkgrid")                                            
     for channel in CHANNELS_TO_PLOT:
-        setup9_plot_touch_time_signal(measurements_beginning_of_touch, [channel])
+        setup9_plot_touch_time_signal(measurements_beginning_of_touch, [channel], single_fig=True)
         channel_file_name = channel.replace(" ", "").lower()
         file_name = f'setup9_touch_time_{channel_file_name}_beginning.pdf'
         #plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
@@ -747,39 +749,50 @@ def setup9_plot_chirp_signals():
 def setup9_plot_touch_time_signal(measurements: pd.DataFrame,
                                   channels_to_plot: list = ['Actuator',
                                                             'Sensor 1',
-                                                            'Sensor 3']):
+                                                            'Sensor 3'],
+                                single_fig: bool =True):
     """Plot the time signal full touch signal"""
     PLOTS_TO_PLOT = ['time']
-    fig, axs = plt.subplots(nrows=len(channels_to_plot),
-                            ncols=len(PLOTS_TO_PLOT),
-                            #figsize=set_window_size(rows=len(channels_to_plot),
-                            #                        cols=len(PLOTS_TO_PLOT)),
-                            figsize=(10, 8),
-                            squeeze=False)
+    # fig, axs = plt.subplots(nrows=len(channels_to_plot),
+    #                         ncols=len(PLOTS_TO_PLOT),
+    #                         #figsize=set_window_size(rows=len(channels_to_plot),
+    #                         #                        cols=len(PLOTS_TO_PLOT)),
+    #                         figsize=(10, 8),
+    #                         squeeze=False)
+    figsize = 0.45
+    if single_fig:
+        figsize = 0.75
+    fig, axs = figure_size_setup(figsize)
     compare_signals(fig, axs,
                     [measurements[channel] for channel in channels_to_plot],
                     plots_to_plot=PLOTS_TO_PLOT,
                     compressed_chirps=False)
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust(PLOTS_TO_PLOT,
-                    rows=len(channels_to_plot),
-                    columns=len(PLOTS_TO_PLOT))
+    # subplots_adjust(PLOTS_TO_PLOT,
+    #                 rows=len(channels_to_plot),
+    #                 columns=len(PLOTS_TO_PLOT))
 
 
 def setup9_plot_touch_spectrogram(measurements: pd.DataFrame,
                                   channels_to_plot: list = ['Sensor 1',
                                                             'Sensor 3'],
                                   dynamic_range_db: int = 60,
-                                  nfft: int = 4096):
+                                  nfft: int = 4096,
+                                  single_fig: bool=False):
     """Plot the spectrogram of a touch signal"""
     PLOTS_TO_PLOT = ['spectrogram']
-    fig, axs = plt.subplots(nrows=len(channels_to_plot),
-                            ncols=len(PLOTS_TO_PLOT),
-                            #figsize=set_window_size(rows=len(channels_to_plot),
-                            #                        cols=len(PLOTS_TO_PLOT)),
-                            figsize=(10, 8),
-                            squeeze=False)
+    # fig, axs = plt.subplots(nrows=len(channels_to_plot),
+    #                         ncols=len(PLOTS_TO_PLOT),
+    #                         #figsize=set_window_size(rows=len(channels_to_plot),
+    #                         #                        cols=len(PLOTS_TO_PLOT)),
+    #                         figsize=(10, 8),
+    #                         squeeze=False)
+    figsize = 0.45
+    if single_fig:
+        figsize = 0.75
+    fig, axs = figure_size_setup(figsize)
+    plt.style.use('default')
     compare_signals(fig, axs,
                     [measurements[channel] for channel in channels_to_plot],
                     plots_to_plot=PLOTS_TO_PLOT,

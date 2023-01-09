@@ -10,7 +10,25 @@ from global_constants import SAMPLE_RATE
 from data_processing.detect_echoes import get_envelope
 from data_visualization.drawing import plot_legend_without_duplicates
 from data_processing.processing import average_of_signals, variance_of_signals, to_dB
+import seaborn as sb
+def figure_size_setup(overleaf_size=0.75):
+    sb.set(font_scale=12/10)  # font size = 12pt / 10pt/scale = 1.2 times the default size
 
+    # Calculate the column width in inches (assumes page size and margins as specified in the question)
+    page_width_mm = 250
+    left_margin_mm = 25
+    right_margin_mm = 25
+    column_width_inches = (page_width_mm - left_margin_mm - right_margin_mm) / 25.4
+    # Set the figure height in inches
+    figure_height_inches = 6
+    # Calculate the figure width in inches as 0.75 of the column width
+    
+    figure_width_inches = column_width_inches * overleaf_size#0.75
+
+    # Create the figure and set the size
+    fig, ax = plt.subplots(figsize=(figure_width_inches, figure_height_inches))
+
+    return fig, ax
 
 def compare_signals(fig, axs,
                     data: list,
@@ -49,19 +67,19 @@ def compare_signals(fig, axs,
                 # axs[i, 0].set_xlim(left=signal_start_seconds,
                 #                    right=(signal_start_seconds +
                 #                           signal_length_seconds))
-                axs[i, 0].set_ylabel('Amplitude [V]')
-            axs[i, 0].sharex(axs[0, 0])
+                axs.set_ylabel('Amplitude [V]')
+            #axs[i, 0].sharex(axs[0, 0])
             if sharey:
-                axs[i, 0].sharey(axs[0, 0])
+                axs.sharey(axs)
             #axs[i, 0].grid()
             if log_time_signal:
                 axs[i, 0].plot(time_axis, to_dB(channel))
                 axs[i, 0].set_ylim(bottom=np.max(to_dB(channel)) - 60)
             else:
-                axs[i, 0].plot(time_axis, channel)
-            axs[i, 0].set_title(f'{channel.name}, time signal')
-            axs[len(data) - 1, 0].set_xlabel('Time [s]')
-            axs[i, 0].plot()
+                axs.plot(time_axis, channel)
+            #axs.set_title(f'{channel.name}, time signal')
+            axs.set_xlabel('Time [s]')
+            axs.plot()
 
         if 'spectrogram' in plots_to_plot:
             """Some logic for correct indexing of the axs array"""
@@ -80,7 +98,7 @@ def compare_signals(fig, axs,
                 axs[i, axs_index].set_xlim(left=-0.005,
                                            right=(-0.005 + 0.1))
             else:
-                spec = axs[i, axs_index].specgram(channel,
+                spec = axs.specgram(channel,
                                                   Fs=SAMPLE_RATE,
                                                   NFFT=nfft,
                                                   noverlap=(nfft // 2))
@@ -97,15 +115,15 @@ def compare_signals(fig, axs,
                              location='bottom')
             else:
                 fig.colorbar(spec[3],
-                             ax=axs[i, axs_index])
-            axs[i, axs_index].sharex(axs[0, 0])
+                             ax=axs)
+            axs.sharex(axs)
             if sharey:
-                axs[i, axs_index].sharey(axs[0, axs_index])
-            axs[i, axs_index].axis(ymax=freq_max)
-            axs[i, axs_index].set_title(f'{channel.name}, spectrogram')
-            axs[len(data) - 1, axs_index].set_xlabel('Time [s]')
-            axs[i, axs_index].set_ylabel('Frequency [Hz]')
-            axs[i, axs_index].plot(sharex=axs[0, 0])
+                axs.sharey(axs)
+            axs.axis(ymax=freq_max)
+            #axs.set_title(f'{channel.name}, spectrogram')
+            axs.set_xlabel('Time [s]')
+            axs.set_ylabel('Frequency [Hz]')
+            axs.plot(sharex=axs)
 
         if 'fft' in plots_to_plot:
             """Some logic for correct indexing of the axs array"""
