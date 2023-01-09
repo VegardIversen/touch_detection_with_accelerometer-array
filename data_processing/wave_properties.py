@@ -6,7 +6,8 @@ from pathlib import Path
 import seaborn as sb
 from data_processing.preprocessing import get_first_index_above_threshold, compress_single_touch, compress_chirp, manual_cut_signal
 #sb.set_theme(style="darkgrid")
-sb.set(font_scale=12/10)
+#sb.set(font_scale=12/10)
+from data_viz_files.visualise_data import figure_size_setup
 
 def phase_difference_sub(sig1, sig2):
     """
@@ -72,21 +73,22 @@ def phase_difference_plot(
                         BANDWIDTH=None, 
                         save_fig=False,
                         file_name='phase_difference.png',
-                        file_format='png'):
+                        file_format='png',
+                        figsize=0.75):
     phase_diff = phase_difference(sig1, sig2, method=method, n_pi=n_pi)
     
     freq = np.fft.fftfreq(len(sig1), 1/SAMPLE_RATE)
     #freq = np.fft.fftshift(freq)
+    fig, axs = figure_size_setup(figsize)
     if BANDWIDTH is not None:
         slices = (freq>BANDWIDTH[0]) & (freq<BANDWIDTH[1])
         phase_diff = phase_diff[slices]
         freq = freq[slices]
-    plt.Figure(figsize=(16, 14))
-    plt.plot(freq, phase_diff)
-    plt.xlabel('Frequency [Hz]')
-    plt.ylabel('Phase difference [rad]')
+    axs.plot(freq, phase_diff)
+    axs.set_xlabel('Frequency [Hz]')
+    axs.set_ylabel('Phase difference [rad]')
     if save_fig:
-        plt.savefig(file_name, format=file_format)
+        fig.savefig(file_name, format=file_format)
     plt.show()
     plt.clf()
     
@@ -123,7 +125,8 @@ def phase_plotting(
                 duration_cut=55,
                 save_fig=False,
                 file_name='phase_difference.png',
-                file_format='png'):
+                file_format='png',
+                figsize=0.75):
     df = preprocess_df(df, detrend=detrend)
     # check if dataframe has a column with name wave_gen
     if 'wave_gen' in df.columns:
@@ -195,7 +198,8 @@ def phase_plotting(
                                     BANDWIDTH=BANDWIDTH, 
                                     save_fig=save_fig,
                                     file_name=file_name,
-                                    file_format=file_format)
+                                    file_format=file_format,
+                                    figsize=figsize)
     return phase, freq
 
 def phase_velocity(phase, freq, distance, plot=False):
@@ -241,16 +245,15 @@ def plot_velocities(phase, freq, distance, savefig=False, filename=None, file_fo
     phase_vel = phase_velocity(phase, freq, distance)
     phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear = theoretical_velocities(freq)
     freq = freq/1000
-    fig4=plt.Figure(figsize=(16, 14))
-    plt.figure(fig4.number)
-    plt.plot(freq, phase_vel, label='Measured velocity')
-    plt.plot(freq, phase_velocities_flexural, label='Simulated velocity', linestyle='--')
-    plt.plot(freq, corrected_phase_velocities, label='Simulated corrected velocity', linestyle='--')
-    plt.xlabel('Frequency [kHz]')
-    plt.ylabel('Phase velocity [m/s]')
-    plt.legend()
+    fig, axs = figure_size_setup()
+    axs.plot(freq, phase_vel, label='Measured velocity')
+    axs.plot(freq, phase_velocities_flexural, label='Simulated velocity', linestyle='--')
+    axs.plot(freq, corrected_phase_velocities, label='Simulated corrected velocity', linestyle='--')
+    axs.set_xlabel('Frequency [kHz]')
+    axs.set_ylabel('Phase velocity [m/s]')
+    axs.legend()
     if savefig:
-        plt.savefig(filename, format=file_format, dpi=300)
+        fig.savefig(filename, format=file_format, dpi=300)
     plt.show()
 
 def plot_velocities_2distance(phase1, freq1, distance1, phase2, freq2, distance2, savefig=False, filename=None, file_format='png'):
@@ -258,15 +261,14 @@ def plot_velocities_2distance(phase1, freq1, distance1, phase2, freq2, distance2
     phase_vel2 = phase_velocity(phase2, freq2, distance2)
     phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear = theoretical_velocities(freq1)
     freq1 = freq1/1000
-    fig5=plt.Figure(figsize=(16, 14))
-    plt.figure(fig5.number)
-    plt.plot(freq1, phase_vel1, label=f'Measured velocity d={distance1}m')
-    plt.plot(freq1, phase_vel2, label=f'Measured velocity d={distance2}m')
-    plt.plot(freq1, phase_velocities_flexural, label='Simulated velocity', linestyle='--')
-    plt.plot(freq1, corrected_phase_velocities, label='Simulated corrected velocity', linestyle='--')
-    plt.xlabel('Frequency [kHz]')
-    plt.ylabel('Phase velocity [m/s]')
-    plt.legend()
+    fig, axs = figure_size_setup()
+    axs.plot(freq1, phase_vel1, label=f'Measured velocity d={distance1}m')
+    axs.plot(freq1, phase_vel2, label=f'Measured velocity d={distance2}m')
+    axs.plot(freq1, phase_velocities_flexural, label='Simulated velocity', linestyle='--')
+    axs.plot(freq1, corrected_phase_velocities, label='Simulated corrected velocity', linestyle='--')
+    axs.set_xlabel('Frequency [kHz]')
+    axs.set_ylabel('Phase velocity [m/s]')
+    axs.legend()
     if savefig:
-        plt.savefig(filename, format=file_format, dpi=300)
+        fig.savefig(filename, format=file_format, dpi=300)
     plt.show()

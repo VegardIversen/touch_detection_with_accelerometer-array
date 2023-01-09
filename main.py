@@ -19,7 +19,7 @@ from data_viz_files.drawing import plot_legend_without_duplicates
 import results as r
 
 def main():
-    r.results_setup2()
+    r.results_setup4()
     exit()
     """CONFIG"""
     CROP = False

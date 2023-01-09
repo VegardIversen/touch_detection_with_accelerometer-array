@@ -45,75 +45,89 @@ def results_setup1():
     st.fft_analysis_all_positions_compare(folder='\\vegard_og_niklas\\sensortest\\rot_clock_123\\', savefig=True, file_format='png')
 
 def results_setup2():
-    """Inspect touch data by plotting the raw from channel 1 and the spectogram of the raw data on this channel.
-    share axis between the two plots"""
-    df = csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
-    dynamic_range_db = 60
-    #filter the dataframe with a highpassfilter with cutoff at 100 Hz
-    #df = filter_general(df, 'highpass', cutoff_highpass=100)
-    measurements = interpolate_waveform(df)
+    #bug in code here. Done on different branch to save time
+    pass
+    # """Inspect touch data by plotting the raw from channel 1 and the spectogram of the raw data on this channel.
+    # share axis between the two plots"""
+    # df = csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
+    # dynamic_range_db = 60
+    # #filter the dataframe with a highpassfilter with cutoff at 100 Hz
+    # #df = filter_general(df, 'highpass', cutoff_highpass=100)
+    # measurements = interpolate_waveform(df)
 
-    measurements_full_touch = crop_data(measurements,
-                                        time_start=2.05,
-                                        time_end=2.5075)
+    # measurements_full_touch = crop_data(measurements,
+    #                                     time_start=2.05,
+    #                                     time_end=2.5075)
 
-    """Filter signals to remove 50 Hz and other mud"""
-    measurements_full_touch = filter_general(measurements_full_touch,
-                                             filtertype='highpass',
-                                             cutoff_highpass=100)
-    fig, axs = figure_size_setup(0.45)
-    time_axis = np.linspace(0, len(df) / SAMPLE_RATE, len(df))
-    axs.plot(time_axis[315900:370000],df['channel 1'].iloc[315900:370000])
-    #axs.set_title('Raw data from channel 1')
-    axs.set_ylabel('Amplitude [V]')
-    axs.set_xlabel('Time [s]')
-    fig.savefig(f'inspect_touch_fullsignalch1.svg', dpi=300, format='svg')
-    plt.show()
-    plt.clf()
+    # """Filter signals to remove 50 Hz and other mud"""
+    # measurements_full_touch = filter_general(measurements_full_touch,
+    #                                          filtertype='highpass',
+    #                                          cutoff_highpass=100)
+    # fig, axs = figure_size_setup(0.45)
+    # time_axis = np.linspace(0, len(df) / SAMPLE_RATE, len(df))
+    # axs.plot(time_axis[315900:370000],df['channel 1'].iloc[315900:370000])
+    # #axs.set_title('Raw data from channel 1')
+    # axs.set_ylabel('Amplitude [V]')
+    # axs.set_xlabel('Time [s]')
+    # fig.savefig(f'inspect_touch_fullsignalch1.svg', dpi=300, format='svg')
+    # plt.show()
+    # plt.clf()
 
-    fig, axs = figure_size_setup(0.45)
-    style.use('default')
-    spec = axs.specgram(measurements_full_touch['channel 1'], Fs=SAMPLE_RATE, NFFT=256, noverlap=128)
-    spec[3].set_clim(to_dB(np.max(spec[0])) - dynamic_range_db,
-                             to_dB(np.max(spec[0])))
-    #set xlim for spectrogram
-    fig.colorbar(spec[3],ax=axs)
-    #axs.set_xlim(315900, 370000)
-    #axs.set_title('Spectrogram of raw data from channel 1')
-    axs.set_xlabel('Time [s]')
-    axs.set_ylabel('Frequency [Hz]')
-    #plt.tight_layout()
-    fig.savefig(f'inspect_touch_spetrogramch1.svg', dpi=300, format='svg')
-    fig.savefig(f'inspect_touch_spetrogramch1.png', dpi=300, format='png')
-    plt.show()
-    plt.clf()
-    fig, axs = figure_size_setup(0.45)
-    time_axis = np.linspace(0, len(df) / SAMPLE_RATE, len(df))
-    axs.plot(time_axis[315900:370000],df['channel 3'].iloc[315900:370000])
-    #axs.set_title('Raw data from channel 3')
-    axs.set_ylabel('Amplitude [V]')
-    axs.set_xlabel('Time [s]')
-    fig.savefig(f'inspect_touch_fullsignalch3.svg', dpi=300, format='svg')
+    # fig, axs = figure_size_setup(0.45)
+    # style.use('default')
+    # spec = axs.specgram(measurements_full_touch['channel 1'], Fs=SAMPLE_RATE, NFFT=256, noverlap=128)
+    # spec[3].set_clim(to_dB(np.max(spec[0])) - dynamic_range_db,
+    #                          to_dB(np.max(spec[0])))
+    # #set xlim for spectrogram
+    # fig.colorbar(spec[3],ax=axs)
+    # #axs.set_xlim(315900, 370000)
+    # #axs.set_title('Spectrogram of raw data from channel 1')
+    # axs.set_xlabel('Time [s]')
+    # axs.set_ylabel('Frequency [Hz]')
+    # #plt.tight_layout()
+    # fig.savefig(f'inspect_touch_spetrogramch1.svg', dpi=300, format='svg')
+    # fig.savefig(f'inspect_touch_spetrogramch1.png', dpi=300, format='png')
+    # plt.show()
+    # plt.clf()
+    # fig, axs = figure_size_setup(0.45)
+    # time_axis = np.linspace(0, len(df) / SAMPLE_RATE, len(df))
+    # axs.plot(time_axis[315900:370000],df['channel 3'].iloc[315900:370000])
+    # #axs.set_title('Raw data from channel 3')
+    # axs.set_ylabel('Amplitude [V]')
+    # axs.set_xlabel('Time [s]')
+    # fig.savefig(f'inspect_touch_fullsignalch3.svg', dpi=300, format='svg')
     
-    plt.show()
-    plt.clf()
+    # plt.show()
+    # plt.clf()
 
-    fig, axs = figure_size_setup(0.45)
-    style.use('default')
-    spec = axs.specgram(df['channel 3'], Fs=SAMPLE_RATE, NFFT=256, noverlap=128)
-    #spec[3].set_clim(to_dB(np.max(spec[0])) - 60,
-    #                         to_dB(np.max(spec[0])))
-    #set xlim for spectrogram
-    fig.colorbar(spec[3],ax=axs)
-    #axs.set_xlim(315900, 370000)
-    #axs.set_title('Spectrogram of raw data from channel 3')
-    axs.set_xlabel('Time [s]')
-    axs.set_ylabel('Frequency [Hz]')
-    #plt.tight_layout()
-    fig.savefig(f'inspect_touch_spetrogramch3.svg', dpi=300, format='svg')
-    fig.savefig(f'inspect_touch_spetrogramch3.png', dpi=300, format='png')
-    plt.show()
-    plt.clf()
+    # fig, axs = figure_size_setup(0.45)
+    # style.use('default')
+    # spec = axs.specgram(df['channel 3'], Fs=SAMPLE_RATE, NFFT=256, noverlap=128)
+    # #spec[3].set_clim(to_dB(np.max(spec[0])) - 60,
+    # #                         to_dB(np.max(spec[0])))
+    # #set xlim for spectrogram
+    # fig.colorbar(spec[3],ax=axs)
+    # #axs.set_xlim(315900, 370000)
+    # #axs.set_title('Spectrogram of raw data from channel 3')
+    # axs.set_xlabel('Time [s]')
+    # axs.set_ylabel('Frequency [Hz]')
+    # #plt.tight_layout()
+    # fig.savefig(f'inspect_touch_spetrogramch3.svg', dpi=300, format='svg')
+    # fig.savefig(f'inspect_touch_spetrogramch3.png', dpi=300, format='png')
+    # plt.show()
+    # plt.clf()
+def results_setup4():
+    custom_chirp = csv_to_df(file_folder='div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
+    df1 = csv_to_df('vegard_og_niklas\\setup3\\', 'prop_speed_chirp3_setup3_0_v1')
+    df = csv_to_df('\\vegard_og_niklas\\setup10_propagation_speed_15cm\\chirp\\', 'chirp_v1')
+    sensor_test_df = csv_to_df('\\vegard_og_niklas\\sensortest\\rot_clock_123', 'chirp_v1')
+    df_touch_10cm = csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
+    phase15, freq15  = wp.phase_plotting(df, chirp=custom_chirp, use_recorded_chirp=True, BANDWIDTH=[100,40000], start_stops=[(146000,441200),(146000,442000)], save_fig=True, file_name='phase_plot_15cm0_45.svg', file_format='svg',figsize=0.45)
+    phase10, freq10  = wp.phase_plotting(df1, chirp=custom_chirp, use_recorded_chirp=True, start_stops=[(95000,390500),(94000,390400)], BANDWIDTH=[100,40000], save_fig=True, file_name='phase_plot_10cm0_45.svg', file_format='svg',figsize=0.45)
+    #phase_vel = wp.phase_velocity(phase, freq, distance=0.15, plot=True)
+    wp.plot_velocities_2distance(phase15, freq15, 0.15, phase10, freq10,  0.1,  savefig=True, filename='phase_velocity_10_cm_15_cm.png', file_format='png')
+    wp.plot_velocities_2distance(phase15, freq15, 0.15, phase10, freq10,  0.1,  savefig=True, filename='phase_velocity_10_cm_15_cm.svg', file_format='svg')
+    wp.plot_velocities(phase10, freq10, 0.10, savefig=True, filename='phase_velocity_10cm.svg', file_format='svg')
 
 def results_setup5_touch():
     FILTER = False
