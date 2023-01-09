@@ -182,6 +182,7 @@ def get_travel_times(actuator: Actuator,
     """Calculate the direct wave travel time"""
     direct_travel_distance = np.linalg.norm(actuator.coordinates - sensor.coordinates)
     travel_distances = np.append(travel_distances, direct_travel_distance)
+    
     direct_travel_time = direct_travel_distance / prop_speed
     arrival_times = np.append(arrival_times, direct_travel_time)
     if print_info and not relative_first_reflection:
@@ -202,6 +203,7 @@ def get_travel_times(actuator: Actuator,
                 continue
             mirrored_source = find_mirrored_source(actuator, np.array([edge_1, edge_2]))
             distance_to_sensor = np.linalg.norm(mirrored_source.coordinates - sensor.coordinates)
+            print(f'distance to sensor from edge_1 {edge_1}, edge_2 {edge_2}, distance {distance_to_sensor}')
             if relative_first_reflection:
                 distance_to_sensor -= direct_travel_distance
             time_to_sensors = distance_to_sensor / prop_speed

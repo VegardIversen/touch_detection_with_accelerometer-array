@@ -6,12 +6,12 @@ import scipy
 from scipy import signal
 import os
 import seaborn as sb
-sb.set_theme(style="darkgrid")
-sb.set(font_scale=12/10)
+# sb.set_theme(style="darkgrid")
+# sb.set(font_scale=12/10)
 from matplotlib.widgets import Slider, Button
 from constants import *
 from csv_to_df import csv_to_df
-from data_processing.preprocessing import crop_data, get_phase_and_vph_of_compressed_signal, filter_general, compress_chirp
+from data_processing.preprocessing import crop_data, get_phase_and_vph_of_compressed_signal, filter_general, compress_chirp, cut_out_signal
 from data_processing.detect_echoes import get_travel_times, get_hilbert_envelope
 from objects import Table, Actuator, Sensor
 from setups import Setup2, Setup3, Setup3_2, Setup3_4, Setup6
@@ -848,7 +848,7 @@ def subplots_adjust(signal_type: list, rows: int = 1, columns: int = 1):
         raise ValueError('Signal type or rows and columns not recognized.')
 
 def figure_size_setup(overleaf_size=0.75):
-    sns.set(font_scale=12/10)  # font size = 12pt / 10pt/scale = 1.2 times the default size
+    sb.set(font_scale=12/10)  # font size = 12pt / 10pt/scale = 1.2 times the default size
 
     # Calculate the column width in inches (assumes page size and margins as specified in the question)
     page_width_mm = 250

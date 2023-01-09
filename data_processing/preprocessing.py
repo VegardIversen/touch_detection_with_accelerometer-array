@@ -1,4 +1,4 @@
-from scipy import signal
+from scipy import signal, interpolate
 import pandas as pd
 import numpy as np
 from pathlib import Path
@@ -409,10 +409,28 @@ def get_phase_and_vph_of_compressed_signal(
         return phase_cut, v_ph, freq_cut
     else:
         return phase, v_ph, freq
-    
+
+def interpolate_waveform(signals: pd.DataFrame) -> pd.DataFrame:
+    """Interpolate waveform to have new_length with numpy"""
+    new_length = signals.shape[0] * INTERPOLATION_FACTOR
+    # measurements_interp = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES,
+    #                                    data=np.empty((new_length, measurements.shape[1]), np.ndarray))
+    signals_interpolated = pd.DataFrame(data=np.empty((new_length,
+                                                       signals.shape[1]),
+                                                      np.ndarray),
+                                        columns=signals.columns,
+                                        index=range(new_length))
+    for channel in signals:
+        old_length = signals[channel].size
+        x = np.linspace(0, old_length, old_length)
+        f = interpolate.interp1d(x, signals[channel], kind='cubic')
+        x_new = np.linspace(0, old_length, new_length)
+        signals_interpolated[channel] = f(x_new)
+    return signals_interpolated 
 
 def compress_single_touch(sig, set_threshold_man=False, threshold=None,n_sampl=None, plot=False):
     """Compress signal to touch"""
+    #direct_signal = np.zeros(len(sig))
     if set_threshold_man:
         if n_sampl is not None:
             plt.plot(sig)
@@ -421,9 +439,11 @@ def compress_single_touch(sig, set_threshold_man=False, threshold=None,n_sampl=N
             threshold = float(input('threshold: '))
             start_index = get_first_index_above_threshold(sig, threshold)
             end_index = start_index + n_sampl
+            #direct_signal[start_index:end_index] = sig[start_index:end_index]
             direct_signal = sig[start_index:end_index]
         else:
             start, end = manual_cut_signal(sig)
+            #direct_signal[start:end] = sig[start:end]
             direct_signal = sig[start:end]
     else:
         if threshold is None or n_sampl is None:
@@ -432,9 +452,13 @@ def compress_single_touch(sig, set_threshold_man=False, threshold=None,n_sampl=N
         else:
             start_index = get_first_index_above_threshold(sig, threshold)
             end_index = start_index + n_sampl
-            direct_signal = sig[start_index:end_index]
-    print(f'start index {start_index}')
-    compressed = signal.correlate(sig, direct_signal, mode='same')
+            #direct_signal[start_index:end_index] = sig[start_index:end_index]
+            direct_signal = sig[start_index:end_index].to_numpy()
+    #print(f'start index {start_index}')
+    sig_copy = sig.copy()
+    sig_copy[:start_index] = 0
+    compressed = np.correlate(sig_copy,direct_signal, mode='same')
+
     if plot:
         plt.plot(compressed)
         plt.show()

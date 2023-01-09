@@ -5,7 +5,7 @@ import pandas as pd
 from pathlib import Path
 import seaborn as sb
 from data_processing.preprocessing import get_first_index_above_threshold, compress_single_touch, compress_chirp, manual_cut_signal
-sb.set_theme(style="darkgrid")
+#sb.set_theme(style="darkgrid")
 sb.set(font_scale=12/10)
 
 def phase_difference_sub(sig1, sig2):

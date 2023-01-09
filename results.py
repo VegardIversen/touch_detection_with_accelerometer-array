@@ -12,20 +12,115 @@ from constants import SAMPLE_RATE, CHANNEL_NAMES, CHIRP_CHANNEL_NAMES
 from data_processing import cross_correlation_position as ccp
 from csv_to_df import csv_to_df
 from data_viz_files.visualise_data import compare_signals, plot_vphs, plot_fft, plot_plate_speed_sliders_book, plot_estimated_reflections_with_sliders, compare_signals_v2, plot_compare_signals_v2
-from data_processing.preprocessing import crop_data, filter_general, compress_chirp, get_phase_and_vph_of_compressed_signal,cut_out_signal, manual_cut_signal, compress_df_touch, cut_out_pulse_wave
+from data_processing.preprocessing import interpolate_waveform, crop_data, filter_general, compress_chirp, get_phase_and_vph_of_compressed_signal,cut_out_signal, manual_cut_signal, compress_df_touch, cut_out_pulse_wave
 from data_processing.detect_echoes import find_first_peak, get_hilbert_envelope, get_travel_times
 from data_processing.find_propagation_speed import find_propagation_speed_with_delay
 from data_viz_files.drawing import plot_legend_without_duplicates
 import timeit
 import data_processing.wave_properties as wp
 import data_processing.sensor_testing as st
-from data_viz_files.visualise_data import inspect_touch
+from data_viz_files.visualise_data import inspect_touch, figure_size_setup, to_dB
+import data_processing.wave_properties as wp
+import data_processing.sensor_testing as st
+from matplotlib import style
+def results_setup1():
+    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=True, channels=['channel 1','channel 2', 'channel 3'])
+    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=True, channels=['channel 1','channel 2', 'channel 3'], file_format='svg')
+    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=True, channels=['channel 1'])
+    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=True, channels=['channel 1'], file_format='svg')
+    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=False, channels=['channel 1','channel 2', 'channel 3'])
+    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=False, channels=['channel 1','channel 2', 'channel 3'], file_format='svg')
+    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=False, channels=['channel 1'])
+    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=False, channels=['channel 1'], file_format='svg')
+    st.fft_analysis_one_sens_all_pos(folder='\\vegard_og_niklas\\sensortest\\', n_runs=1, plot_chirp_fft=True,savefig=True, file_format='svg')
+    st.fft_analysis_one_sens_all_pos(folder='\\vegard_og_niklas\\sensortest\\', n_runs=1, plot_chirp_fft=True,savefig=True, file_format='png')
+    st.fft_analysis_all_sensors('\\vegard_og_niklas\\sensortest\\', position=-3, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='svg')
+    st.fft_analysis_all_sensors('\\vegard_og_niklas\\sensortest\\', position=-2, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='svg')
+    st.fft_analysis_all_sensors('\\vegard_og_niklas\\sensortest\\', position=-1, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='svg')
+    st.fft_analysis_all_sensors('\\vegard_og_niklas\\sensortest\\', position=-3, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='png')
+    st.fft_analysis_all_sensors('\\vegard_og_niklas\\sensortest\\', position=-2, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='png')
+    st.fft_analysis_all_sensors('\\vegard_og_niklas\\sensortest\\', position=-1, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='png')
+    st.fft_analysis_all_sensors_compare(folder='\\vegard_og_niklas\\sensortest\\', n_runs=1, plot_chirp_fft=True,savefig=True, file_format='svg')
+    st.fft_analysis_all_sensors_compare(folder='\\vegard_og_niklas\\sensortest\\', n_runs=1, plot_chirp_fft=True,savefig=True, file_format='png')
+    st.fft_analysis_all_positions_compare(folder='\\vegard_og_niklas\\sensortest\\rot_clock_123\\', savefig=True, file_format='png')
+
+def results_setup2():
+    """Inspect touch data by plotting the raw from channel 1 and the spectogram of the raw data on this channel.
+    share axis between the two plots"""
+    df = csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
+    dynamic_range_db = 60
+    #filter the dataframe with a highpassfilter with cutoff at 100 Hz
+    #df = filter_general(df, 'highpass', cutoff_highpass=100)
+    measurements = interpolate_waveform(df)
+
+    measurements_full_touch = crop_data(measurements,
+                                        time_start=2.05,
+                                        time_end=2.5075)
+
+    """Filter signals to remove 50 Hz and other mud"""
+    measurements_full_touch = filter_general(measurements_full_touch,
+                                             filtertype='highpass',
+                                             cutoff_highpass=100)
+    fig, axs = figure_size_setup(0.45)
+    time_axis = np.linspace(0, len(df) / SAMPLE_RATE, len(df))
+    axs.plot(time_axis[315900:370000],df['channel 1'].iloc[315900:370000])
+    #axs.set_title('Raw data from channel 1')
+    axs.set_ylabel('Amplitude [V]')
+    axs.set_xlabel('Time [s]')
+    fig.savefig(f'inspect_touch_fullsignalch1.svg', dpi=300, format='svg')
+    plt.show()
+    plt.clf()
+
+    fig, axs = figure_size_setup(0.45)
+    style.use('default')
+    spec = axs.specgram(measurements_full_touch['channel 1'], Fs=SAMPLE_RATE, NFFT=256, noverlap=128)
+    spec[3].set_clim(to_dB(np.max(spec[0])) - dynamic_range_db,
+                             to_dB(np.max(spec[0])))
+    #set xlim for spectrogram
+    fig.colorbar(spec[3],ax=axs)
+    #axs.set_xlim(315900, 370000)
+    #axs.set_title('Spectrogram of raw data from channel 1')
+    axs.set_xlabel('Time [s]')
+    axs.set_ylabel('Frequency [Hz]')
+    #plt.tight_layout()
+    fig.savefig(f'inspect_touch_spetrogramch1.svg', dpi=300, format='svg')
+    fig.savefig(f'inspect_touch_spetrogramch1.png', dpi=300, format='png')
+    plt.show()
+    plt.clf()
+    fig, axs = figure_size_setup(0.45)
+    time_axis = np.linspace(0, len(df) / SAMPLE_RATE, len(df))
+    axs.plot(time_axis[315900:370000],df['channel 3'].iloc[315900:370000])
+    #axs.set_title('Raw data from channel 3')
+    axs.set_ylabel('Amplitude [V]')
+    axs.set_xlabel('Time [s]')
+    fig.savefig(f'inspect_touch_fullsignalch3.svg', dpi=300, format='svg')
+    
+    plt.show()
+    plt.clf()
+
+    fig, axs = figure_size_setup(0.45)
+    style.use('default')
+    spec = axs.specgram(df['channel 3'], Fs=SAMPLE_RATE, NFFT=256, noverlap=128)
+    #spec[3].set_clim(to_dB(np.max(spec[0])) - 60,
+    #                         to_dB(np.max(spec[0])))
+    #set xlim for spectrogram
+    fig.colorbar(spec[3],ax=axs)
+    #axs.set_xlim(315900, 370000)
+    #axs.set_title('Spectrogram of raw data from channel 3')
+    axs.set_xlabel('Time [s]')
+    axs.set_ylabel('Frequency [Hz]')
+    #plt.tight_layout()
+    fig.savefig(f'inspect_touch_spetrogramch3.svg', dpi=300, format='svg')
+    fig.savefig(f'inspect_touch_spetrogramch3.png', dpi=300, format='png')
+    plt.show()
+    plt.clf()
 
 def results_setup5_touch():
     FILTER = False
     SETUP = Setup9()
     BANDWIDTH = np.array([100, 40000])
     df_touch_10cm = csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
+    #df_touch_10cm = csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v2')
     df_chirp_10cm = csv_to_df('vegard_og_niklas\\setup3\\', 'prop_speed_chirp3_setup3_0_v1')
     #threshold of "csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v1')" is 0.0006 ch1. 0.0013 ch3 
     custom_chirp = csv_to_df(file_folder='div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
@@ -34,6 +129,7 @@ def results_setup5_touch():
     max_vel = np.max(phase_vel)
     max_samples_direct = int(0.1/max_vel * SAMPLE_RATE)
     prop_speed = max_vel
+    print(prop_speed)
     #get the compressed touch signal. check where i got the images from
     if FILTER:
         measurements_filt = filter_general(df_touch_10cm,
@@ -43,21 +139,25 @@ def results_setup5_touch():
                                            order=4)
     else:
         measurements_filt = df_touch_10cm
-    measurements_comp, start_indexes = compress_df_touch(measurements_filt, set_threshold_man=False,thresholds=[0.0006,0.0007,0.0013], n_sampl=max_samples_direct)
+    print(f'length of measurements_filt: {len(measurements_filt)}')
+    measurements_comp, start_indexes = compress_df_touch(measurements_filt, set_threshold_man=False,thresholds=[0.0010,0.0007,0.0013], n_sampl=max_samples_direct)
+    print(f'length of measurements_comp: {len(measurements_comp)}')
     measurements_hilb = get_hilbert_envelope(measurements_filt)
-
+    print(f'length of measurements_hilb: {len(measurements_hilb)}')
     measurements_comp_hilb = get_hilbert_envelope(measurements_comp)
+    print(f'length of measurements_comp_hilb: {len(measurements_comp_hilb)}')
     SETUP.draw()
     actuator, sensors = SETUP.get_objects()
     arrival_times = np.array([])
     for idx, sensor in enumerate(sensors):
         time, _ = get_travel_times(actuator[0],
                                    sensor,
-                                   prop_speed,
-                                   ms=False,
-                                   print_info=True,
+                                   300,
+                                   ms=True,
+                                   print_info=False,
                                    relative_first_reflection=False,
                                    sig_start=start_indexes[idx])
+        #time *= -1
         #time = time + 2.5
         print(time)
         #time = int(time*SAMPLE_RATE)
@@ -84,26 +184,45 @@ def results_setup5_touch():
         plot_legend_without_duplicates()
     plt.subplots_adjust(hspace=0.5)
     plt.show()
-    time_axis_corr = np.linspace(-1000 * len(measurements_filt) / SAMPLE_RATE,
-                            1000 * len(measurements_filt) / SAMPLE_RATE,
-                            len(measurements_filt))
-    
-    #arrival_times *= 1000   # Convert to ms
-    for i, sensor in enumerate(sensors):
-        plt.subplot(311 + i, sharex=plt.gca())
-        plt.title('Correlation between chirp and channel ' + str(i + 1))
-        plt.plot(time_axis_corr, measurements_comp['channel ' + str(i + 1)], label='Correlation')
-        plt.plot(time_axis_corr, measurements_comp_hilb['channel ' + str(i + 1)], label='Hilbert envelope')
-        plt.axvline(arrival_times[i][0], linestyle='--', color='r', label='Direct wave')
-        #plt.axvline(start_indexes[i], linestyle='--', color='r', label='Direct wave')
-        [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])]
-        [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[i][5:])]
-        print([plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])])
-        plt.xlabel('Time [ms]')
-        plt.ylabel('Amplitude [V]')
-        plot_legend_without_duplicates()
-        plt.grid()
-    plt.subplots_adjust(hspace=0.5)
+
+    # Sampling rate of the recorded signal (in Hz)
+    sampling_rate = 150_000
+
+    # Length of the cross-correlation function in samples
+    n_samples = 750_000
+
+    # Duration of the recorded signal (in seconds)
+    duration = n_samples / sampling_rate
+
+    # Time axis for the cross-correlation function (in seconds)
+    time_axis = np.linspace(-duration/2, duration/2, n_samples)
+
+    # Time axis in milliseconds
+    time_axis_ms = time_axis * 1000
+    plt.plot(time_axis, measurements_comp['channel 1'], label='Correlation')
+    plt.plot(time_axis, measurements_comp_hilb['channel 1'], label='Hilbert envelope')
+    plt.axvline(arrival_times[0][0], linestyle='--', color='r', label='Direct wave')
+    [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[0][1:5])]
+    [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[0][5:])]
+    plt.xlabel('Time [ms]')
+    plt.ylabel('Amplitude [V]')
+    plot_legend_without_duplicates()
+    # for i, sensor in enumerate(sensors):
+    #     print(f'Length of channel {i+1}: {len(measurements_comp["channel " + str(i + 1)])}')
+    #     plt.subplot(311 + i, sharex=plt.gca())
+    #     plt.title('Correlation between chirp and channel ' + str(i + 1))
+    #     plt.plot(time_axis, measurements_comp['channel ' + str(i + 1)], label='Correlation')
+    #     plt.plot(time_axis, measurements_comp_hilb['channel ' + str(i + 1)], label='Hilbert envelope')
+    #     plt.axvline(arrival_times[i][0], linestyle='--', color='r', label='Direct wave')
+    #     #plt.axvline(start_indexes[i], linestyle='--', color='r', label='Direct wave')
+    #     [plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])]
+    #     [plt.axvline(line, linestyle='--', color='purple', label='2nd reflections') for line in (arrival_times[i][5:])]
+    #     #print([plt.axvline(line, linestyle='--', color='g', label='1st reflections') for line in (arrival_times[i][1:5])])
+    #     plt.xlabel('Time [ms]')
+    #     plt.ylabel('Amplitude [V]')
+    #     plot_legend_without_duplicates()
+    #     plt.grid()
+    #plt.subplots_adjust(hspace=0.5)
     plt.show()
     arrival_times /= 1000   # Convert back to s
 

@@ -4,8 +4,9 @@ from scipy import signal
 import pandas as pd
 from pathlib import Path
 import seaborn as sb
-sb.set_theme(style="darkgrid")
+#sb.set_theme(style="darkgrid")
 sb.set(font_scale=12/10)
+from data_viz_files.visualise_data import figure_size_setup
 
 def time_domain_analysis(df, ch, Fs=150000):
     # Compute the autocorrelation of the sensor data and chirp signal
@@ -95,7 +96,7 @@ def fft_analysis_all_sensors(folder, n_runs=1, position=-3, Fs=150000, plot_chir
     # Get a list of the directories in the directory
     dir_path = Path(folder_path)
     rotation_type_dirs = list(dir_path.glob('*'))
-    plt.figure(figsize=(16, 14))
+    fig, axs = figure_size_setup()
     if bandwidth is not None:
         min_freq = bandwidth[0]
         max_freq = bandwidth[1]
@@ -128,7 +129,7 @@ def fft_analysis_all_sensors(folder, n_runs=1, position=-3, Fs=150000, plot_chir
             freq_axis_plot = freq_axis_centered[(freq_axis_centered>min_freq) & (freq_axis_centered<max_freq)]
             fft_sensor_plot = fft_sensor_centered[(freq_axis_centered>min_freq) & (freq_axis_centered<max_freq)]
             # plot the fft of the data from the 1st sensor + the nuber of different rotations types in the same plot
-            plt.plot(freq_axis_plot/1000, 20*np.log10(np.abs(fft_sensor_plot)), label=f'{ch} pos_({sensor_position[position]})')
+            axs.plot(freq_axis_plot/1000, 20*np.log10(np.abs(fft_sensor_plot)), label=f'{ch} pos_({sensor_position[position]})')
     if plot_chirp_fft:
         #take the fft of the chirp signal
         sensor_position[0] = 'chirp'
@@ -144,14 +145,14 @@ def fft_analysis_all_sensors(folder, n_runs=1, position=-3, Fs=150000, plot_chir
         freq_axis_plot = freq_axis_centered[(freq_axis_centered>min_freq) & (freq_axis_centered<max_freq)]
         fft_chirp_plot = fft_chirp_centered[(freq_axis_centered>min_freq )& (freq_axis_centered<max_freq)]
         #plot
-        plt.plot(freq_axis_plot/1000, 20*np.log10(np.abs(fft_chirp_plot)), label='chirp')
+        axs.plot(freq_axis_plot/1000, 20*np.log10(np.abs(fft_chirp_plot)), label='chirp')
 
-    plt.xlabel('Frequency (kHz)')
-    plt.ylabel('Amplitude (dB)')
+    axs.set_xlabel('Frequency (kHz)')
+    axs.set_ylabel('Amplitude (dB)')
     #plt.title(f'Sensor test')
-    plt.legend()
+    axs.legend(loc='upper right')
     if savefig:
-        plt.savefig(f'sensortest_nfiles_{n_runs}_{sensor_position[position]}_{sensor_position[0]}.{file_format}', format=file_format, dpi=300)
+        fig.savefig(f'sensortest_nfiles_{n_runs}_{sensor_position[position]}_{sensor_position[0]}.{file_format}', format=file_format, dpi=300)
     plt.show()
 
 def fft_analysis_all_sensors_compare(folder, n_runs=1, positions=[-3, -2, -1], Fs=150000, plot_chirp_fft=False, savefig=False, file_format='png', channel_names=['channel 1', 'channel 2', 'channel 3','wave_gen'], bandwidth=None):
@@ -174,7 +175,7 @@ def fft_analysis_all_sensors_compare(folder, n_runs=1, positions=[-3, -2, -1], F
     # Get a list of the directories in the directory
     dir_path = Path(folder_path)
     rotation_type_dirs = list(dir_path.glob('*'))
-    plt.figure(figsize=(16, 14))
+    fig, axs = figure_size_setup()
     if bandwidth is not None:
         min_freq = bandwidth[0]
         max_freq = bandwidth[1]
@@ -214,7 +215,7 @@ def fft_analysis_all_sensors_compare(folder, n_runs=1, positions=[-3, -2, -1], F
                 freq_axis_plot = freq_axis_centered[(freq_axis_centered>min_freq) & (freq_axis_centered<max_freq)]
                 fft_sensor_plot = fft_sensor_centered[(freq_axis_centered>min_freq) & (freq_axis_centered<max_freq)]
                 # plot the fft of the data from the 1st sensor + the nuber of different rotations types in the same plot
-                plt.plot(freq_axis_plot/1000, 20*np.log10(np.abs(fft_sensor_plot)), label = f'{ch} pos_({sensor_position[position]})')
+                axs.plot(freq_axis_plot/1000, 20*np.log10(np.abs(fft_sensor_plot)), label = f'{ch} pos_({sensor_position[position]})')
     if plot_chirp_fft:
         #take the fft of the chirp signal
         sensor_position[0] = 'chirp'
@@ -230,14 +231,14 @@ def fft_analysis_all_sensors_compare(folder, n_runs=1, positions=[-3, -2, -1], F
         freq_axis_plot = freq_axis_centered[(freq_axis_centered>min_freq) & (freq_axis_centered<max_freq)]
         fft_chirp_plot = fft_chirp_centered[(freq_axis_centered>min_freq )& (freq_axis_centered<max_freq)]
         #plot
-        plt.plot(freq_axis_plot/1000, 20*np.log10(np.abs(fft_chirp_plot)), label='chirp')
+        axs.plot(freq_axis_plot/1000, 20*np.log10(np.abs(fft_chirp_plot)), label='chirp')
 
-    plt.xlabel('Frequency (kHz)')
-    plt.ylabel('Amplitude (dB)')
+    axs.set_xlabel('Frequency (kHz)')
+    axs.set_ylabel('Amplitude (dB)')
     #plt.title(f'Sensor test')
-    plt.legend()
+    axs.legend(loc='upper right')
     if savefig:
-        plt.savefig(f'sensortest_nfiles_{n_runs}_{sensor_position[position]}_all_compared.{file_format}', format=file_format, dpi=300)
+        fig.savefig(f'sensortest_nfiles_{n_runs}_{sensor_position[position]}_all_compared.{file_format}', format=file_format, dpi=300)
     plt.show()
 
 def fft_analysis_all_positions_compare(folder, file_num=0, Fs=150000, plot_chirp_fft=False, savefig=False,filename='rot_123', file_format='png', channel_names=['channel 1', 'channel 2', 'channel 3','wave_gen'], bandwidth=None):
@@ -259,7 +260,7 @@ def fft_analysis_all_positions_compare(folder, file_num=0, Fs=150000, plot_chirp
     # Get a list of the directories in the directory
     dir_path = Path(folder_path)
     
-    plt.figure(figsize=(16, 14))
+    fig, axs = figure_size_setup()
     if bandwidth is not None:
         min_freq = bandwidth[0]
         max_freq = bandwidth[1]
@@ -285,19 +286,19 @@ def fft_analysis_all_positions_compare(folder, file_num=0, Fs=150000, plot_chirp
         df_fft_lim = df_fft[ch][(freq_axis_shifted>min_freq) & (freq_axis_shifted<max_freq)]
         if ch == 'wave_gen':
             ch = 'chirp'
-        plt.plot(freq_axis_shifted_lim/1000, 20*np.log10(np.abs(df_fft_lim)), label=ch)
+        axs.plot(freq_axis_shifted_lim/1000, 20*np.log10(np.abs(df_fft_lim)), label=ch)
    
 
 
     
     
 
-    plt.xlabel('Frequency (kHz)')
-    plt.ylabel('Amplitude (dB)')
+    axs.set_xlabel('Frequency (kHz)')
+    axs.set_ylabel('Amplitude (dB)')
     #plt.title(f'Sensor test')
-    plt.legend()
+    axs.legend(loc='upper right')
     if savefig:
-        plt.savefig(f'sensortest_position_file_n{file_num}_folder_{filename}.{file_format}', format=file_format, dpi=300)
+        fig.savefig(f'sensortest_position_file_n{file_num}_folder_{filename}.{file_format}', format=file_format, dpi=300)
     plt.show()
 
 
@@ -320,7 +321,7 @@ def fft_analysis_one_sens_all_pos(folder, n_runs=1,ch='channel 1',start_position
     # Get a list of the directories in the directory
     dir_path = Path(folder_path)
     rotation_type_dirs = list(dir_path.glob('*'))
-    plt.figure(figsize=(16, 14))
+    fig, axs = figure_size_setup()
     if bandwidth is not None:
         min_freq = bandwidth[0]
         max_freq = bandwidth[1]
@@ -352,7 +353,7 @@ def fft_analysis_one_sens_all_pos(folder, n_runs=1,ch='channel 1',start_position
             freq_axis_plot = freq_axis_centered[(freq_axis_centered>min_freq) & (freq_axis_centered<max_freq)]
             fft_sensor_plot = fft_sensor_centered[(freq_axis_centered>min_freq) & (freq_axis_centered<max_freq)]
             # plot the fft of the data from the 1st sensor + the nuber of different rotations types in the same plot
-            plt.plot(freq_axis_plot/1000, 20*np.log10(np.abs(fft_sensor_plot)), label = f'{ch} pos_({start_positions})')
+            axs.plot(freq_axis_plot/1000, 20*np.log10(np.abs(fft_sensor_plot)), label = f'{ch} pos_({start_positions})')
         start_positions += 1
     if plot_chirp_fft:
         #take the fft of the chirp signal
@@ -369,12 +370,12 @@ def fft_analysis_one_sens_all_pos(folder, n_runs=1,ch='channel 1',start_position
         freq_axis_plot = freq_axis_centered[(freq_axis_centered>min_freq) & (freq_axis_centered<max_freq)]
         fft_chirp_plot = fft_chirp_centered[(freq_axis_centered>min_freq )& (freq_axis_centered<max_freq)]
         #plot
-        plt.plot(freq_axis_plot/1000, 20*np.log10(np.abs(fft_chirp_plot)), label='chirp')
+        axs.plot(freq_axis_plot/1000, 20*np.log10(np.abs(fft_chirp_plot)), label='chirp')
 
-    plt.xlabel('Frequency (kHz)')
-    plt.ylabel('Amplitude (dB)')
+    axs.set_xlabel('Frequency (kHz)')
+    axs.set_ylabel('Amplitude (dB)')
     #plt.title(f'Sensor test')
-    plt.legend()
+    axs.legend(loc='upper right')
     if savefig:
         plt.savefig(f'sensortest_nfiles_{n_runs}_ch{ch}.{file_format}', format=file_format, dpi=300)
     plt.show()
@@ -404,7 +405,7 @@ def transfer_function_plate(folder, n_files=1, Fs=150000,channels=['channel 1'],
     file_list = list(dir_path.glob('*.csv'))
     plot_sig_fft = 'no_sig_fft'
     #Iterate over the first n files in the list
-    plt.figure(figsize=(16, 14))
+    fig, axs = figure_size_setup()
     for jdx, file in enumerate(file_list[:n_files]):
         # Read the data from the file
         df = pd.read_csv(filepath_or_buffer=file, names=channel_names)
@@ -426,14 +427,14 @@ def transfer_function_plate(folder, n_files=1, Fs=150000,channels=['channel 1'],
             chirp_fft_centered_plot = chirp_fft_centered[(freq_axis_centered>min_freq) & (freq_axis_centered<max_freq)]
             transfer_func = fft_sensor_plot/chirp_fft_centered_plot
             # plot the fft of the data from the 1st sensor + the nuber of different rotations types in the same plot
-            plt.plot(freq_axis_plot/1000, 20*np.log10(np.abs(transfer_func)), label = f'transfer function with {ch}')
+            axs.plot(freq_axis_plot/1000, 20*np.log10(np.abs(transfer_func)), label = f'transfer function with {ch}')
             if plot_response:
                 plot_sig_fft = 'with_sig_fft'
-                plt.plot(freq_axis_plot/1000, 20*np.log10(np.abs(fft_sensor_plot)), label = f'{ch} response')
-    plt.xlabel('Frequency (kHz)')
-    plt.ylabel('Amplitude (dB)')
+                axs.plot(freq_axis_plot/1000, 20*np.log10(np.abs(fft_sensor_plot)), label = f'{ch} response')
+    axs.set_label('Frequency (kHz)')
+    axs.set_label('Amplitude (dB)')
     #plt.title(f'Sensor test')
-    plt.legend(loc='upper right')
+    axs.legend(loc='lower right')
     if savefig:
-        plt.savefig(f'sensortest__transfer_nfiles_{n_files}_nch{len(channels)}_sens{plot_sig_fft}.{file_format}', format=file_format, dpi=300)
+        fig.savefig(f'sensortest__transfer_nfiles_{n_files}_nch{len(channels)}_sens{plot_sig_fft}.{file_format}', format=file_format, dpi=300)
     plt.show()
