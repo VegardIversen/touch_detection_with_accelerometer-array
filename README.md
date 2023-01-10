@@ -12,6 +12,3 @@ The functions to do data processing and visualizations are split into directorie
 The path for the data to be used is set in the start of each \<result description>() function; the data is imported into a Pandas DataFrame using the csv_to_df() function, where the more general paths for the files are set.
 
 The path for the saving of figures is set in global_constans.py.
-
-## The project report
-The report summarizing the results of the project can be found at: https://github.com/niklad/Specialization-Project-LaTeX/blob/main/main.pdf
