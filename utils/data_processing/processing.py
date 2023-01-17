@@ -7,7 +7,7 @@ import pandas as pd
 import scipy.signal as signal
 from scipy import interpolate
 
-from global_constants import CHIRP_CHANNEL_NAMES, INTERPOLATION_FACTOR
+from utils.global_constants import CHIRP_CHANNEL_NAMES, INTERPOLATION_FACTOR
 
 
 def average_of_signals(measurements: pd.DataFrame,

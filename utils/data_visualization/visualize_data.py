@@ -7,13 +7,13 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from setups import Setup
-from objects import Sensor
-from global_constants import SAMPLE_RATE
+from utils.setups import Setup
+from utils.objects import Sensor
+from utils.global_constants import SAMPLE_RATE
 
-from data_processing.detect_echoes import get_envelope
-from data_visualization.drawing import plot_legend_without_duplicates
-from data_processing.processing import average_of_signals, variance_of_signals, to_dB
+from utils.data_processing.detect_echoes import get_envelope
+from utils.data_visualization.drawing import plot_legend_without_duplicates
+from utils.data_processing.processing import average_of_signals, variance_of_signals, to_dB
 
 
 def compare_signals(fig, axs,
@@ -213,8 +213,8 @@ def envelope_with_lines(sensor: Sensor,
                         measurements: pd.DataFrame,
                         arrival_times: np.ndarray):
     """Plot the correlation between the chirp signal and the measured signal"""
-    time_axis = np.linspace(-1000 * len(measurements) / SAMPLE_RATE,
-                            1000 * len(measurements) / SAMPLE_RATE,
+    time_axis = np.linspace(-1 * len(measurements) / SAMPLE_RATE,
+                            1 * len(measurements) / SAMPLE_RATE,
                             len(measurements))
     measurements_envelope = get_envelope(measurements)
 
@@ -241,9 +241,9 @@ def envelope_with_lines(sensor: Sensor,
                 linewidth=2)
      for line in (arrival_times[5:])]
     # ax.set_title(f'Expected wave arrival times for {sensor.name}')
-    ax.set_xlabel('Time [ms]')
+    ax.set_xlabel('Time [s]')
     ax.set_ylabel('Amplitude [V]')
-    ax.set_xlim(0, 5)
+    # ax.set_xlim(0, 5)
     """Use scientific notation"""
     ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
     plot_legend_without_duplicates(placement='lower right')

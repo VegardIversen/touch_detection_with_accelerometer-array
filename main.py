@@ -3,11 +3,12 @@ Date: 2022-01-09
 """
 
 import matplotlib.pyplot as plt
-from generate_results import (setup3_2_results,
-                              setup7_results,
-                              setup9_results,
-                              custom_plots)
-from data_visualization.visualize_data import set_fontsizes
+from main_scripts.project_thesis import (setup1_results,
+                                         setup2_results,
+                                         setup3_results,
+                                         custom_plots)
+from main_scripts.correlation_bandpassing import (setup1_predict_reflections)
+from utils.data_visualization.visualize_data import set_fontsizes
 
 
 def main():
@@ -17,26 +18,26 @@ def main():
     """
     set_fontsizes()
 
-    setup = ''
-    while input not in ['3', '7', '9', '0']:
+    while input not in ['0', '1', '2', '3']:
         print('\nWhich setup do you want to generate results for?')
-        print('3: Setup 3.2')
-        print('7: Setup 7')
-        print('9: Setup 9')
-        print('0: Custom plots')
-        setup = input('Enter number: ')
-        if setup == '3':
-            setup3_2_results()
-        elif setup == '7':
-            setup7_results()
-        elif setup == '9':
-            setup9_results()
-        elif setup == '0':
-            custom_plots()
+        print('1: Setup 1')
+        print('2: Setup 2')
+        print('3: Setup 3')
+        print('0: Dev')
+        user_input = input('Enter number: ')
+        if user_input == '1':
+            setup1_results()
+        elif user_input == '2':
+            setup2_results()
+        elif user_input == '3':
+            setup3_results()
+        elif user_input == '0':
+            from utils.setups import Setup1
+            setup = Setup1()
+            setup1_predict_reflections(setup)
         else:
-            print('Please type 3, 7 or 9 for their respective setups '
-                  'or c for custom plots used in the report.')
-
+            print('Please type 1, 2 or 3 for their respective setups '
+                  'or 0 for code currently under development.')
         plt.show()
     return 0
 

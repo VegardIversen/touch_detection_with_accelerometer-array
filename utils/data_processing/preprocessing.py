@@ -8,7 +8,7 @@ import pandas as pd
 from scipy import signal
 import matplotlib.pyplot as plt
 
-from global_constants import SAMPLE_RATE
+from utils.global_constants import SAMPLE_RATE
 
 
 """FILTERING"""
@@ -51,12 +51,20 @@ def filter_general(signals: pd.DataFrame or np.ndarray,
     return signals_filtered
 
 
-def compress_chirps(measurements: pd.DataFrame):
-    """Compresses a chirp with cross correlation."""
+def compress_chirps(measurements: pd.DataFrame,
+                    custom_reference: np.ndarray = None):
+    """Compresses a chirp with cross correlation"""
     compressed_chirps = measurements.copy()
+    if custom_reference is None:
+        for channel in measurements:
+            compressed_chirps[channel] = signal.correlate(measurements[channel],
+                                                          measurements['Actuator'],
+                                                          mode='same')
+        return compressed_chirps
+
     for channel in measurements:
         compressed_chirps[channel] = signal.correlate(measurements[channel],
-                                                      measurements['Actuator'],
+                                                      custom_reference,
                                                       mode='same')
     return compressed_chirps
 
