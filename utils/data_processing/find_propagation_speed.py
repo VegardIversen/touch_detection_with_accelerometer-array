@@ -7,11 +7,11 @@ import scipy.signal as signal
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from global_constants import SAMPLE_RATE
+from utils.global_constants import SAMPLE_RATE
 
-from csv_to_df import csv_to_df
-from data_processing.preprocessing import filter_general
-from data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_envelope
+from utils.csv_to_df import csv_to_df
+from utils.data_processing.preprocessing import filter_general
+from utils.data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_envelope
 
 
 def find_propagation_speed_with_delay(df, ch1, ch2, height, distance=0.1, hilbert=True):
