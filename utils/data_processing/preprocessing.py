@@ -18,7 +18,8 @@ def filter_general(signals: pd.DataFrame or np.ndarray,
                    filtertype: str,
                    cutoff_highpass: int = 50,
                    cutoff_lowpass: int = 40000,
-                   order: int = 4):
+                   order: int = 4,
+                   plot_response: bool = False):
     """filtertype: 'highpass', 'lowpass' or 'bandpass"""
     if filtertype == 'highpass':
         sos = signal.butter(order,
@@ -47,6 +48,18 @@ def filter_general(signals: pd.DataFrame or np.ndarray,
     else:
         signals_filtered = signal.sosfilt(sos,
                                           signals)
+
+    if plot_response:
+        w, h = signal.sosfreqz(sos, worN=8000)
+        _, ax = plt.subplots()
+        ax.semilogx((SAMPLE_RATE * 0.5 / np.pi) * w, abs(h))
+        ax.title('Digital filter frequency response')
+        ax.xlabel('Frequency [Hz]')
+        ax.ylabel('Amplitude')
+        ax.margins(0, 0.1)
+        ax.grid(which='both', axis='both')
+        ax.axvline(cutoff_highpass, color='green')
+        ax.axvline(cutoff_lowpass, color='green')
 
     return signals_filtered
 
