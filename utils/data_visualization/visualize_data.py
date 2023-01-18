@@ -303,66 +303,13 @@ def set_window_size(rows: int = 1, cols: int = 1):
     return figsize
 
 
-def adjust_plot_margins(signal_type: list = ['time', 'spectrogram', 'fft'],
-                    rows: int = 1,
-                    columns: int = 1):
-    """Adjust the spacing in plots, based on type of plot and number of grapgs.
-    Insert this function before starting a new subplot
-    or before the plt.show() function.
-    signal_type can be a combination of ['time', 'spectrogram', 'fft'] that is
-    defined beforehand.
+def adjust_plot_margins():
+    """Use the same plot adjustments for all figures,
+    given that the figsizes are the same.
     """
-    if signal_type[0] in ['time', 'spectrogram', 'fft'] and rows == 1 and columns == 1:
-        """Use same spacing for all plots, possibly temporarily"""
-        plt.subplots_adjust(left=0.175, right=0.98,
-                            top=0.935, bottom=0.155,
-                            hspace=0.28, wspace=0.2)
-    elif signal_type == ['time'] and rows == 1 and columns == 1:
-        plt.subplots_adjust(left=0.12, right=0.98,
-                            top=0.9, bottom=0.2,
-                            hspace=0.28, wspace=0.2)
-    elif signal_type == ['time'] and rows == 2 and columns == 1:
-        plt.subplots_adjust(left=0.153, right=0.98,
-                            top=0.957, bottom=0.079,
-                            hspace=0.237, wspace=0.2)
-    elif signal_type == ['time'] and rows == 3 and columns == 1:
-        plt.subplots_adjust(left=0.125, right=0.965,
-                            top=0.955, bottom=0.07,
-                            hspace=0.28, wspace=0.2)
-    elif signal_type == ['spectrogram'] and rows == 1 and columns == 1:
-        plt.subplots_adjust(left=0.17, right=1,
-                            top=0.929, bottom=0.145,
-                            hspace=0.28, wspace=0.2)
-    elif signal_type == ['spectrogram'] and rows == 2 and columns == 1:
-        plt.subplots_adjust(left=0.167, right=1,
-                            top=0.955, bottom=0.08,
-                            hspace=0.236, wspace=0.2)
-    elif signal_type == ['spectrogram'] and rows == 3 and columns == 1:
-        plt.subplots_adjust(left=0.125, right=1.05,
-                            top=0.955, bottom=0.07,
-                            hspace=0.28, wspace=0.2)
-    elif signal_type == ['fft'] and rows == 1 and columns == 1:
-        plt.subplots_adjust(left=0.121, right=0.98,
-                            top=0.926, bottom=0.14,
-                            hspace=0.28, wspace=0.15)
-    elif signal_type == ['fft'] and rows == 2 and columns == 1:
-        plt.subplots_adjust(left=0.125, right=0.957,
-                            top=0.955, bottom=0.075,
-                            hspace=0.28, wspace=0.2)
-    elif signal_type == ['fft'] and rows == 3 and columns == 1:
-        plt.subplots_adjust(left=0.125, right=0.95,
-                            top=0.955, bottom=0.07,
-                            hspace=0.28, wspace=0.2)
-    elif signal_type == ['time', 'spectrogram'] and rows == 2 and columns == 1:
-        plt.subplots_adjust(left=0.18, right=0.97,
-                            top=0.955, bottom=0.0,
-                            hspace=0.19, wspace=0.2)
-    elif signal_type == ['setup']:
-        plt.subplots_adjust(left=0.088, right=1,
-                            top=0.988, bottom=0.152,
-                            hspace=0.28, wspace=0.2)
-    else:
-        raise ValueError('Signal type or rows and columns not recognized.')
+    plt.subplots_adjust(left=0.175, right=0.98,
+                        top=0.935, bottom=0.16,
+                        hspace=0.28, wspace=0.2)
 
 
 if __name__ == '__main__':

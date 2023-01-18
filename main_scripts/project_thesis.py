@@ -479,7 +479,7 @@ def setup1_transfer_function(setup: Setup):
     ax.set_ylabel('Amplitude [dB]')
     ax.set_ylim(bottom=-20, top=20)
     ax.grid()
-    adjust_plot_margins(['fft'])
+    adjust_plot_margins()
     FILE_NAME = 'setup1_amplitude_response.pdf'
     plt.savefig(FIGURES_SAVE_PATH + FILE_NAME, format='pdf')
 
@@ -504,7 +504,7 @@ def setup1_transfer_function(setup: Setup):
     ax.set_ylabel('Phase [rad]')
     ax.set_ylim(bottom=-50, top=50)
     ax.grid()
-    adjust_plot_margins(['fft'])
+    adjust_plot_margins()
     FILE_NAME = 'setup1_phase_response.pdf'
     plt.savefig(FIGURES_SAVE_PATH + FILE_NAME, format='pdf')
 
@@ -534,7 +534,7 @@ def setup1_transfer_function(setup: Setup):
     ax.set_ylim(bottom=0, top=2500)
     ax.legend()
     ax.grid()
-    adjust_plot_margins(['fft'])
+    adjust_plot_margins()
     FILE_NAME = 'simulated_phase_velocities.pdf'
     plt.savefig(FIGURES_SAVE_PATH + FILE_NAME, format='pdf')
     ax.plot(fft_frequencies / 1000,
@@ -693,7 +693,7 @@ def setup1_predict_reflections_in_envelopes(setup: Setup,
     envelope_with_lines(setup.sensors[SENSOR_1],
                         measurements,
                         arrival_times)
-    adjust_plot_margins(['time'])
+    adjust_plot_margins()
     file_name = 'predicted_arrivals_envelope_sensor1_setup1.pdf'
     plt.savefig(FIGURES_SAVE_PATH + file_name,
                 format='pdf')
@@ -713,7 +713,7 @@ def setup1_predict_reflections_in_envelopes(setup: Setup,
     envelope_with_lines(setup.sensors[SENSOR_3],
                         measurements,
                         arrival_times)
-    adjust_plot_margins(['time'])
+    adjust_plot_margins()
     file_name = 'predicted_arrivals_envelope_sensor3_setup1.pdf'
     plt.savefig(FIGURES_SAVE_PATH + file_name,
                 format='pdf')
@@ -740,7 +740,7 @@ def setup1_predict_reflections_in_spectrograms(setup: Setup,
                            arrival_times,
                            nfft,
                            dynamic_range_db)
-    adjust_plot_margins(['spectrogram'])
+    adjust_plot_margins()
     plt.savefig(FIGURES_SAVE_PATH + 'predicted_arrivals_spectrogram_sensor1_setup1.pdf',
                 format='pdf')
 
@@ -757,7 +757,7 @@ def setup1_predict_reflections_in_spectrograms(setup: Setup,
                            arrival_times,
                            nfft,
                            dynamic_range_db)
-    adjust_plot_margins(['spectrogram'])
+    adjust_plot_margins()
     plt.savefig(FIGURES_SAVE_PATH + 'predicted_arrivals_spectrogram_sensor3_setup1.pdf',
                 format='pdf')
 
@@ -1016,7 +1016,7 @@ def setup2_transfer_function(setup: Setup):
     ax.set_ylabel('Amplitude [dB]')
     ax.set_ylim(bottom=-35, top=20)
     ax.grid()
-    adjust_plot_margins(['fft'])
+    adjust_plot_margins()
     FILE_NAME = 'setup2_amplitude_response.pdf'
     plt.savefig(FIGURES_SAVE_PATH + FILE_NAME, format='pdf')
 

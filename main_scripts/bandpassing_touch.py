@@ -60,7 +60,7 @@ def setup1_predict_reflections(setup: Setup):
                                   cutoff_lowpass=10000 + 1000,
                                   order=4,
                                   plot_response=True)
-    adjust_plot_margins(['time'])
+    adjust_plot_margins()
     file_name = 'bandpass_filter.pdf'
     plt.savefig(FIGURES_SAVE_PATH + file_name,
                 format='pdf')
@@ -90,7 +90,7 @@ def setup1_predict_reflections_in_envelopes(setup: Setup,
     envelope_with_lines(setup.sensors[SENSOR_1],
                         measurements,
                         arrival_times)
-    adjust_plot_margins(['time'])
+    adjust_plot_margins()
     file_name = 'predicted_arrivals_envelope_sensor1_setup1.pdf'
     plt.savefig(FIGURES_SAVE_PATH + file_name,
                 format='pdf')
@@ -110,7 +110,7 @@ def setup1_predict_reflections_in_envelopes(setup: Setup,
     envelope_with_lines(setup.sensors[SENSOR_3],
                         measurements,
                         arrival_times)
-    adjust_plot_margins(['time'])
+    adjust_plot_margins()
     file_name = 'predicted_arrivals_envelope_sensor3_setup1.pdf'
     plt.savefig(FIGURES_SAVE_PATH + file_name,
                 format='pdf')
