@@ -24,7 +24,8 @@ def main():
         print('2: Setup 2')
         print('3: Setup 3')
         print('0: Dev')
-        user_input = input('Enter number: ')
+        # user_input = input('Enter number: ')
+        user_input = '0'
         if user_input == '1':
             setup1_results()
         elif user_input == '2':
