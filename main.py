@@ -7,7 +7,7 @@ from main_scripts.project_thesis import (setup1_results,
                                          setup2_results,
                                          setup3_results,
                                          custom_plots)
-from main_scripts.correlation_bandpassing import (setup1_predict_reflections)
+from main_scripts.bandpassing_touch import (setup1_predict_reflections)
 from utils.data_visualization.visualize_data import set_fontsizes
 
 
