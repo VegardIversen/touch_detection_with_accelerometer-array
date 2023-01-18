@@ -56,12 +56,12 @@ def setup1_predict_reflections(setup: Setup):
 
     measurements = filter_general(measurements,
                                   filtertype='bandpass',
-                                  cutoff_highpass=10000 - 1000,
-                                  cutoff_lowpass=10000 + 1000,
-                                  order=4,
+                                  critical_frequency=15000,
+                                  q=0.1,
+                                  order=16,
                                   plot_response=True)
     adjust_plot_margins()
-    file_name = 'bandpass_filter.pdf'
+    file_name = 'bandpass_filter_response.pdf'
     plt.savefig(FIGURES_SAVE_PATH + file_name,
                 format='pdf')
 

@@ -16,25 +16,28 @@ from utils.data_visualization.visualize_data import (plot_filter_response)
 
 def filter_general(signals: pd.DataFrame or np.ndarray,
                    filtertype: str,
-                   cutoff_highpass: int = 50,
-                   cutoff_lowpass: int = 40000,
+                   critical_frequency: int,
+                   q: float = 0.05,
                    order: int = 4,
                    plot_response: bool = False):
-    """filtertype: 'highpass', 'lowpass' or 'bandpass"""
+    """filtertype: 'highpass', 'lowpass' or 'bandpass.
+    NOTE:   q is a value that determines the width of the flat bandpass,
+            and is a value between 0 and 1. order determines the slope.
+    """
     if filtertype == 'highpass':
         sos = signal.butter(order,
-                            cutoff_highpass / (0.5 * SAMPLE_RATE),
+                            critical_frequency / (0.5 * SAMPLE_RATE),
                             'highpass',
                             output='sos')
     elif filtertype == 'lowpass':
         sos = signal.butter(order,
-                            cutoff_lowpass / (0.5 * SAMPLE_RATE),
+                            critical_frequency / (0.5 * SAMPLE_RATE),
                             'lowpass',
                             output='sos')
     elif filtertype == 'bandpass':
         sos = signal.butter(order,
-                            [cutoff_highpass / (0.5 * SAMPLE_RATE),
-                             cutoff_lowpass / (0.5 * SAMPLE_RATE)],
+                            [critical_frequency * (1 - q) / (0.5 * SAMPLE_RATE),
+                             critical_frequency * (1 + q) / (0.5 * SAMPLE_RATE)],
                             'bandpass',
                             output='sos')
     else:
@@ -50,7 +53,7 @@ def filter_general(signals: pd.DataFrame or np.ndarray,
                                           signals)
 
     if plot_response:
-        plot_filter_response(sos, cutoff_highpass, cutoff_lowpass)
+        plot_filter_response(sos, critical_frequency, critical_frequency)
 
     return signals_filtered
 

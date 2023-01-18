@@ -101,7 +101,7 @@ def setup1_plot_touch_signals():
     """Filter signals to remove 50 Hz and other mud"""
     measurements_full_touch = filter_general(measurements_full_touch,
                                              filtertype='highpass',
-                                             cutoff_highpass=100)
+                                             critical_frequency=100)
 
     CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
     for channel in CHANNELS_TO_PLOT:
