@@ -29,7 +29,7 @@ from utils.data_visualization.visualize_data import (compare_signals,
                                                      envelope_with_lines,
                                                      spectrogram_with_lines,
                                                      set_window_size,
-                                                     subplots_adjust)
+                                                     adjust_plot_margins)
 
 from utils.setups import (Setup,
                           Setup1,
@@ -56,8 +56,9 @@ def setup1_predict_reflections(setup: Setup):
     # measurements = filter_general(measurements,
     #                               filtertype='highpass',
     #                               cutoff_highpass=10000)
-    cosine = make_gaussian_cosine(frequency=10000,
-                                  num_of_samples=measurements.shape[0])
+    cosine = make_gaussian_cosine(frequency=1500,
+                                  num_of_samples=measurements.shape[0],
+                                  standard_deviation=1500)
     measurements = compress_chirps(measurements, cosine)
 
     setup1_predict_reflections_in_envelopes(setup, measurements)
@@ -67,9 +68,8 @@ def setup1_predict_reflections(setup: Setup):
 def setup1_predict_reflections_in_envelopes(setup: Setup,
                                             measurements: pd.DataFrame):
     """Calculate arrival times for sensor 1"""
-    # propagation_speed = setup.get_propagation_speed(measurements)
     propagation_speed = setup.get_propagation_speed(measurements)
-    # print(f'Propagation speed: {propagation_speed}')
+    print(f'Propagation speed: {propagation_speed}')
     arrival_times, _ = get_travel_times(setup.actuators[ACTUATOR_1],
                                         setup.sensors[SENSOR_1],
                                         propagation_speed,
@@ -85,7 +85,7 @@ def setup1_predict_reflections_in_envelopes(setup: Setup,
     envelope_with_lines(setup.sensors[SENSOR_1],
                         measurements,
                         arrival_times)
-    subplots_adjust(['time'])
+    adjust_plot_margins(['time'])
     file_name = 'predicted_arrivals_envelope_sensor1_setup1.pdf'
     plt.savefig(FIGURES_SAVE_PATH + file_name,
                 format='pdf')
@@ -105,26 +105,29 @@ def setup1_predict_reflections_in_envelopes(setup: Setup,
     envelope_with_lines(setup.sensors[SENSOR_3],
                         measurements,
                         arrival_times)
-    subplots_adjust(['time'])
+    adjust_plot_margins(['time'])
     file_name = 'predicted_arrivals_envelope_sensor3_setup1.pdf'
     plt.savefig(FIGURES_SAVE_PATH + file_name,
                 format='pdf')
 
 
-def make_gaussian_cosine(frequency: float = 1000,
-                         num_of_samples: int = SAMPLE_RATE):
+def make_gaussian_cosine(frequency: float = 1500,
+                         num_of_samples: int = SAMPLE_RATE,
+                         standard_deviation: float = 1500):
     """Make a cosine of 1000 Hz modulated by a Gaussian pulse"""
     time = np.linspace(-5, 5, num_of_samples)
     effective_frequency = 1 / (1 / frequency)
     cosine = np.cos(2 * np.pi * effective_frequency * time) * \
-             signal.gaussian(num_of_samples, std=50)
+             signal.gaussian(num_of_samples, std=standard_deviation)
+
     fig, ax = plt.subplots()
     ax.plot(time, cosine)
     ax.set_xlabel('Time [s]')
     ax.set_ylabel('Amplitude')
-    ax.set_xlim(-0.01, 0.01)
+    ax.set_xlim(-0.1, 0.1)
     ax.grid()
 
+    return cosine
 
 
 if __name__ == '__main__':

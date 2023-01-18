@@ -35,7 +35,7 @@ from utils.data_visualization.visualize_data import (compare_signals,
                                                envelope_with_lines,
                                                spectrogram_with_lines,
                                                set_window_size,
-                                               subplots_adjust)
+                                               adjust_plot_margins)
 from main_scripts.correlation_bandpassing import (make_gaussian_cosine)
 
 from utils.setups import (Setup,
@@ -53,7 +53,7 @@ def setup1_results():
     """Choose setup"""
     SETUP = Setup1()
     SETUP.draw()
-    subplots_adjust(['setup'])
+    adjust_plot_margins(['setup'])
     plt.savefig(FIGURES_SAVE_PATH + 'setup1_draw.pdf',
                 format='pdf')
 
@@ -259,7 +259,7 @@ def setup1_plot_touch_time_signal(measurements: pd.DataFrame,
                     compressed_chirps=False)
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust(PLOTS_TO_PLOT,
+    adjust_plot_margins(PLOTS_TO_PLOT,
                     rows=len(channels_to_plot),
                     columns=len(PLOTS_TO_PLOT))
 
@@ -284,7 +284,7 @@ def setup1_plot_touch_spectrogram(measurements: pd.DataFrame,
                     nfft=nfft)
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust(PLOTS_TO_PLOT,
+    adjust_plot_margins(PLOTS_TO_PLOT,
                     rows=len(channels_to_plot),
                     columns=len(PLOTS_TO_PLOT))
 
@@ -302,7 +302,7 @@ def setup1_plot_touch_fft(measurements: pd.DataFrame,
     axs[0, 0].set_ylim([-25, 25])
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust(PLOTS_TO_PLOT,
+    adjust_plot_margins(PLOTS_TO_PLOT,
                     rows=len(channels_to_plot),
                     columns=len(PLOTS_TO_PLOT))
 
@@ -332,7 +332,7 @@ def setup1_plot_chirp_time_signal(measurements: pd.DataFrame,
         for ax in axs.flatten():
             ax.grid()
     """Adjust for correct spacing in plot"""
-    subplots_adjust(PLOTS_TO_PLOT,
+    adjust_plot_margins(PLOTS_TO_PLOT,
                     rows=len(channels_to_plot),
                     columns=len(PLOTS_TO_PLOT))
 
@@ -358,7 +358,7 @@ def setup1_plot_chirp_spectrogram(measurements: pd.DataFrame,
                     nfft=nfft)
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust(PLOTS_TO_PLOT,
+    adjust_plot_margins(PLOTS_TO_PLOT,
                     rows=len(channels_to_plot),
                     columns=len(PLOTS_TO_PLOT))
 
@@ -376,7 +376,7 @@ def setup1_plot_chirp_fft(measurements: pd.DataFrame,
                     compressed_chirps=False)
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust(PLOTS_TO_PLOT,
+    adjust_plot_margins(PLOTS_TO_PLOT,
                     rows=len(channels_to_plot),
                     columns=len(PLOTS_TO_PLOT))
 
@@ -434,7 +434,7 @@ def setup1_transfer_function(setup: Setup):
                     dynamic_range_db=15,
                     nfft=32)
     """Adjust for correct spacing in plot"""
-    subplots_adjust(PLOTS_TO_PLOT,
+    adjust_plot_margins(PLOTS_TO_PLOT,
                     rows=len(CHANNELS_TO_PLOT),
                     columns=len(PLOTS_TO_PLOT))
 
@@ -479,7 +479,7 @@ def setup1_transfer_function(setup: Setup):
     ax.set_ylabel('Amplitude [dB]')
     ax.set_ylim(bottom=-20, top=20)
     ax.grid()
-    subplots_adjust(['fft'])
+    adjust_plot_margins(['fft'])
     FILE_NAME = 'setup1_amplitude_response.pdf'
     plt.savefig(FIGURES_SAVE_PATH + FILE_NAME, format='pdf')
 
@@ -504,7 +504,7 @@ def setup1_transfer_function(setup: Setup):
     ax.set_ylabel('Phase [rad]')
     ax.set_ylim(bottom=-50, top=50)
     ax.grid()
-    subplots_adjust(['fft'])
+    adjust_plot_margins(['fft'])
     FILE_NAME = 'setup1_phase_response.pdf'
     plt.savefig(FIGURES_SAVE_PATH + FILE_NAME, format='pdf')
 
@@ -534,7 +534,7 @@ def setup1_transfer_function(setup: Setup):
     ax.set_ylim(bottom=0, top=2500)
     ax.legend()
     ax.grid()
-    subplots_adjust(['fft'])
+    adjust_plot_margins(['fft'])
     FILE_NAME = 'simulated_phase_velocities.pdf'
     plt.savefig(FIGURES_SAVE_PATH + FILE_NAME, format='pdf')
     ax.plot(fft_frequencies / 1000,
@@ -570,7 +570,7 @@ def setup1_scattering():
     axs[0, 0].set_ylabel('Amplitude [V]')
     axs[0, 0].legend(loc='upper right')
     axs[0, 0].grid()
-    subplots_adjust()
+    adjust_plot_margins()
 
     """Shift to align chirps better with their time intervals"""
     SHIFT_BY = int(0.0877 * SAMPLE_RATE)
@@ -618,7 +618,7 @@ def setup1_scattering():
     """Use scientific notation"""
     for ax in axs.flatten():
         ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
-    subplots_adjust()
+    adjust_plot_margins()
 
     """Make up for drift in signal generator"""
     measurements_split = correct_drift(measurements_split,
@@ -693,7 +693,7 @@ def setup1_predict_reflections_in_envelopes(setup: Setup,
     envelope_with_lines(setup.sensors[SENSOR_1],
                         measurements,
                         arrival_times)
-    subplots_adjust(['time'])
+    adjust_plot_margins(['time'])
     file_name = 'predicted_arrivals_envelope_sensor1_setup1.pdf'
     plt.savefig(FIGURES_SAVE_PATH + file_name,
                 format='pdf')
@@ -713,7 +713,7 @@ def setup1_predict_reflections_in_envelopes(setup: Setup,
     envelope_with_lines(setup.sensors[SENSOR_3],
                         measurements,
                         arrival_times)
-    subplots_adjust(['time'])
+    adjust_plot_margins(['time'])
     file_name = 'predicted_arrivals_envelope_sensor3_setup1.pdf'
     plt.savefig(FIGURES_SAVE_PATH + file_name,
                 format='pdf')
@@ -740,7 +740,7 @@ def setup1_predict_reflections_in_spectrograms(setup: Setup,
                            arrival_times,
                            nfft,
                            dynamic_range_db)
-    subplots_adjust(['spectrogram'])
+    adjust_plot_margins(['spectrogram'])
     plt.savefig(FIGURES_SAVE_PATH + 'predicted_arrivals_spectrogram_sensor1_setup1.pdf',
                 format='pdf')
 
@@ -757,7 +757,7 @@ def setup1_predict_reflections_in_spectrograms(setup: Setup,
                            arrival_times,
                            nfft,
                            dynamic_range_db)
-    subplots_adjust(['spectrogram'])
+    adjust_plot_margins(['spectrogram'])
     plt.savefig(FIGURES_SAVE_PATH + 'predicted_arrivals_spectrogram_sensor3_setup1.pdf',
                 format='pdf')
 
@@ -782,7 +782,7 @@ def setup2_results():
     """Choose setup"""
     SETUP = Setup2()
     SETUP.draw()
-    subplots_adjust(['setup'])
+    adjust_plot_margins(['setup'])
     plt.savefig(FIGURES_SAVE_PATH + 'setup2_draw.pdf',
                 format='pdf')
 
@@ -809,7 +809,7 @@ def setup2_plot_time_signals(measurements: pd.DataFrame,
                     compressed_chirps=False)
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust('time', rows=3, columns=1)
+    adjust_plot_margins('time', rows=3, columns=1)
 
     """Compress chirps"""
     measurements = compress_chirps(measurements)
@@ -831,7 +831,7 @@ def setup2_plot_time_signals(measurements: pd.DataFrame,
         ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust('time', rows=3, columns=1)
+    adjust_plot_margins('time', rows=3, columns=1)
 
 
 def setup2_plot_spectrogram_signals(measurements: pd.DataFrame,
@@ -855,7 +855,7 @@ def setup2_plot_spectrogram_signals(measurements: pd.DataFrame,
                     compressed_chirps=False)
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust('spectrogram', rows=3, columns=1)
+    adjust_plot_margins('spectrogram', rows=3, columns=1)
 
     """Compress chirps"""
     measurements = compress_chirps(measurements)
@@ -874,7 +874,7 @@ def setup2_plot_spectrogram_signals(measurements: pd.DataFrame,
                     compressed_chirps=True)
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust('spectrogram', rows=3, columns=1)
+    adjust_plot_margins('spectrogram', rows=3, columns=1)
 
 
 def setup2_plot_fft_signals(measurements: pd.DataFrame,
@@ -896,7 +896,7 @@ def setup2_plot_fft_signals(measurements: pd.DataFrame,
                     compressed_chirps=False)
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust('fft', rows=3, columns=1)
+    adjust_plot_margins('fft', rows=3, columns=1)
 
     """Limit y axis"""
     for ax in axs.flatten():
@@ -918,7 +918,7 @@ def setup2_plot_fft_signals(measurements: pd.DataFrame,
                     compressed_chirps=True)
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust('fft', rows=3, columns=1)
+    adjust_plot_margins('fft', rows=3, columns=1)
 
     """Limit y axis"""
     for ax in axs.flatten():
@@ -978,7 +978,7 @@ def setup2_transfer_function(setup: Setup):
                     dynamic_range_db=15,
                     nfft=32)
     """Adjust for correct spacing in plot"""
-    subplots_adjust(PLOTS_TO_PLOT,
+    adjust_plot_margins(PLOTS_TO_PLOT,
                     rows=len(CHANNELS_TO_PLOT),
                     columns=len(PLOTS_TO_PLOT))
 
@@ -1016,7 +1016,7 @@ def setup2_transfer_function(setup: Setup):
     ax.set_ylabel('Amplitude [dB]')
     ax.set_ylim(bottom=-35, top=20)
     ax.grid()
-    subplots_adjust(['fft'])
+    adjust_plot_margins(['fft'])
     FILE_NAME = 'setup2_amplitude_response.pdf'
     plt.savefig(FIGURES_SAVE_PATH + FILE_NAME, format='pdf')
 
@@ -1074,7 +1074,7 @@ def find_and_plot_power_loss(measurements: pd.DataFrame,
     axs[0, 0].set_ylim(bottom=-25, top=80)
 
     """Adjust for correct spacing inz plot"""
-    subplots_adjust('fft', rows=1, columns=1)
+    adjust_plot_margins('fft', rows=1, columns=1)
 
 
 """Setup 3"""
@@ -1087,7 +1087,7 @@ def setup3_results():
     """Choose setup"""
     SETUP = Setup3()
     SETUP.draw()
-    subplots_adjust(['setup'])
+    adjust_plot_margins(['setup'])
     plt.savefig(FIGURES_SAVE_PATH + 'setup3_draw.pdf',
                 format='pdf')
 
@@ -1126,7 +1126,7 @@ def setup3_plot_raw_time_signal():
     ax.grid()
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust(['time'], rows=1, columns=1)
+    adjust_plot_margins(['time'], rows=1, columns=1)
 
 
 def setup3_scattering():
@@ -1152,7 +1152,7 @@ def setup3_scattering():
     axs[0, 0].set_ylabel('Amplitude [V]')
     axs[0, 0].legend(loc='upper right')
     axs[0, 0].grid()
-    subplots_adjust()
+    adjust_plot_margins()
     file_name = 'setup3_scattering_shifted_measurements_raw.pdf'
     plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
 
@@ -1202,7 +1202,7 @@ def setup3_scattering():
     """Use scientific notation"""
     for ax in axs.flatten():
         ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
-    subplots_adjust()
+    adjust_plot_margins()
 
     """Make up for drift in signal generator"""
     measurements_split = correct_drift(measurements_split,
@@ -1283,7 +1283,7 @@ def scattering_figure_3():
     ax.grid()
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust('fft', rows=1, columns=1)
+    adjust_plot_margins('fft', rows=1, columns=1)
 
 
 def scattering_figure_5():
@@ -1331,7 +1331,7 @@ def scattering_figure_5():
     ax.grid()
 
     """Adjust for correct spacing in plot"""
-    subplots_adjust('fft', rows=1, columns=1)
+    adjust_plot_margins('fft', rows=1, columns=1)
 
 
 

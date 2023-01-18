@@ -286,7 +286,7 @@ def set_window_size(rows: int = 1, cols: int = 1):
     return figsize
 
 
-def subplots_adjust(signal_type: list = ['time', 'spectrogram', 'fft'],
+def adjust_plot_margins(signal_type: list = ['time', 'spectrogram', 'fft'],
                     rows: int = 1,
                     columns: int = 1):
     """Adjust the spacing in plots, based on type of plot and number of grapgs.
