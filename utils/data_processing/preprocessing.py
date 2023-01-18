@@ -9,7 +9,7 @@ from scipy import signal
 import matplotlib.pyplot as plt
 
 from utils.global_constants import SAMPLE_RATE
-
+from utils.data_visualization.visualize_data import (plot_filter_response)
 
 """FILTERING"""
 
@@ -50,16 +50,7 @@ def filter_general(signals: pd.DataFrame or np.ndarray,
                                           signals)
 
     if plot_response:
-        w, h = signal.sosfreqz(sos, worN=8000)
-        _, ax = plt.subplots()
-        ax.semilogx((SAMPLE_RATE * 0.5 / np.pi) * w, abs(h))
-        ax.set_title('Digital filter frequency response')
-        ax.set_xlabel('Frequency [Hz]')
-        ax.set_ylabel('Amplitude')
-        ax.margins(0, 0.1)
-        ax.grid(which='both', axis='both')
-        ax.axvline(cutoff_highpass, color='green')
-        ax.axvline(cutoff_lowpass, color='green')
+        plot_filter_response(sos, cutoff_highpass, cutoff_lowpass)
 
     return signals_filtered
 

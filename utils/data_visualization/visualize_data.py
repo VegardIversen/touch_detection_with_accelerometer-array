@@ -250,6 +250,23 @@ def envelope_with_lines(sensor: Sensor,
     ax.grid()
 
 
+def plot_filter_response(sos: np.ndarray,
+                         cutoff_highpass: int,
+                         cutoff_lowpass: int):
+    w, h = scipy.signal.sosfreqz(sos, worN=2**18)
+    _, ax = plt.subplots(figsize=set_window_size())
+    ax.semilogx((SAMPLE_RATE * 0.5 / np.pi) * w, abs(h))
+    ax.set_xlabel('Frequency [Hz]')
+    ax.set_ylabel('Amplitude')
+    ax.margins(0, 0.1)
+    ax.grid(which='both', axis='both')
+    ax.axvline(cutoff_highpass, color='green')
+    ax.axvline(cutoff_lowpass, color='green')
+
+
+"""Matplotlib settings"""
+
+
 def set_fontsizes():
     """Inspired by
     https://stackoverflow.com/questions/3899980/how-to-change-the-font-size-on-a-matplotlib-plot
