@@ -409,40 +409,7 @@ def results_setup5_chirp():
     fig.savefig(f'touch_reflections_speed{np.round(prop_speed, 2)}.svg',dpi=300, format='svg')
     plt.show()
 
-def results_setup5_chirp1():
-    SAMPLE_RATE = 150000
-    use_recorded_chirp=True
-    #channels=['channel 1', 'channel 3']
-    custom_chirp = csv_to_df(file_folder='div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
-    #df1 = csv_to_df('vegard_og_niklas\\setup3\\', 'prop_speed_chirp3_setup3_0_v1')
-    #df_touch_15cm = csv_to_df('\\vegard_og_niklas\\setup10_propagation_speed_15cm\\chirp\\', 'chirp_v1')
-    df_touch_10cm = csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
-    df_chirp_10cm = csv_to_df('\\setup9_propagation_speed_short\\chirp\\100Hz_to_40kHz_single_chirp\\', 'chirp_v1')
-    time = np.linspace(0, len(df_touch_10cm) / SAMPLE_RATE, num=len(df_touch_10cm))
-    df_touch_10cm_detrend = wp.preprocess_df(df_touch_10cm)
-    df_touch_15cm_detrend = wp.preprocess_df(df_touch_15cm)
-    chirp_10cm = df_touch_10cm_detrend['wave_gen'].to_numpy()
-    chirp_15cm = df_touch_15cm_detrend['wave_gen'].to_numpy()
-    temp_arr_15cm = np.zeros((len(df_touch_15cm_detrend[channels[0]]),len(channels)))
-    temp_arr_10cm = np.zeros((len(df_touch_10cm_detrend[channels[0]]),len(channels)))
-    #filling the array
-    start_stops_15cm=[(146000,441200),(146000,442000)]
-    start_stops_10cm=[(95000,390500),(94000,390400)]
-    start_stops=[(95000,390500),(94000,390400)]
-    start1_15cm, end1_15cm = start_stops_15cm[0]
-    start2_15cm, end2_15cm = start_stops_15cm[1]
-    start1_10cm, end1_10cm = start_stops_10cm[0]
-    start2_10cm, end2_10cm = start_stops_10cm[1]
 
-    temp_arr_15cm[start1_15cm:end1_15cm,0] = df_touch_15cm_detrend[channels[0]].iloc[start1_15cm:end1_15cm]
-    temp_arr_15cm[start2_15cm:end2_15cm,1] = df_touch_15cm_detrend[channels[1]].iloc[start2_15cm:end2_15cm]
-    temp_arr_10cm[start1_10cm:end1_10cm,0] = df_touch_10cm_detrend[channels[0]].iloc[start1_10cm:end1_10cm]
-    temp_arr_10cm[start2_10cm:end2_10cm,1] = df_touch_10cm_detrend[channels[1]].iloc[start2_10cm:end2_10cm]
-    df_sig_only_15cm = pd.DataFrame(temp_arr_15cm, columns=channels)
-    df_sig_only_10cm = pd.DataFrame(temp_arr_10cm, columns=channels)
-
-    compressed_df15 = wp.compress_chirp(df_sig_only_15, chirp_15cm, use_recorded_chirp=use_recorded_chirp)
-    compressed_df10 = wp.compress_chirp(df_sig_only_10, chirp_10cm, use_recorded_chirp=use_recorded_chirp)
 
 
 if __name__ == '__main__':
