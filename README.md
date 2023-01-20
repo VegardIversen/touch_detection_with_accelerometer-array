@@ -8,7 +8,10 @@ They can be embedded in a portable "puck" that can be placed on a surface as nee
 The work in this repository is based on the project description above, but as the MEMS were not finished in time we had to use other sensors. 
 The code in the repo is developed to do research on the topic, and we had to learn the behaviour of acoustic waves in the plate during the research. 
 ## Running the project
+Run:
 ``` pip install -r requirements.txt```
+
+
 To create the figures from the report run 
 
 ``` python main.py ```
