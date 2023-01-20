@@ -18,4 +18,5 @@ To create the figures from the report run
 
 ### Notes
 The code is still very messy as we developed as we learn the theory. 
+To run the code the files needed are in a onedrive folder. Contact us for access.
 
