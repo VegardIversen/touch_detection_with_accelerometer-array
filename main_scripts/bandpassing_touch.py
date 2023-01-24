@@ -115,6 +115,30 @@ def setup1_predict_reflections_in_envelopes(setup: Setup,
     plt.savefig(FIGURES_SAVE_PATH + file_name,
                 format='pdf')
 
+    return (arrival_times_sensor1,
+            arrival_times_sensor3)
+
+
+def setup1_predict_reflections_in_spectrograms(setup: Setup,
+                                               measurements: pd.DataFrame,
+                                               arrival_times_sensor1: np.ndarray,
+                                               arrival_times_sensor3: np.ndarray,
+                                               nfft=1024 * 2,
+                                               dynamic_range_db=20):
+    """Plot lines for expected arrival times"""
+    spectrogram_with_lines(setup.sensors[SENSOR_1],
+                           measurements,
+                           arrival_times_sensor1,
+                           nfft,
+                           dynamic_range_db)
+    adjust_plot_margins()
+    spectrogram_with_lines(setup.sensors[SENSOR_3],
+                           measurements,
+                           arrival_times_sensor3,
+                           nfft,
+                           dynamic_range_db)
+    adjust_plot_margins()
+
 
 def make_gaussian_cosine(frequency: float = 1500,
                          num_of_samples: int = SAMPLE_RATE,
