@@ -97,12 +97,23 @@ class Setup1(Setup):
         # distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
         # propagation_speed = np.abs(distance / delay)
         """Alternatively:"""
-        peak_object1 = np.argmax(np.abs(signal.hilbert(measurements[object_1.name])))
-        peak_object2 = np.argmax(np.abs(signal.hilbert(measurements[object_2.name])))
-        delay = (peak_object2 - peak_object1) / SAMPLE_RATE
+        # peak_object1 = np.argmax(np.abs(signal.hilbert(measurements[object_1.name])))
+        # peak_object2 = np.argmax(np.abs(signal.hilbert(measurements[object_2.name])))
+        # delay = (peak_object2 - peak_object1) / SAMPLE_RATE
+        # distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
+        # propagation_speed = np.abs(distance / delay)
+        """Or even alternativelier:"""
+        measurements = get_envelopes(measurements)
+        _, ax = plt.subplots()
+        first_peak_object1 = find_first_peak_index(measurements[object_1.name],
+                                                   prominence=prominence,
+                                                   ax=ax)
+        first_peak_object2 = find_first_peak_index(measurements[object_2.name],
+                                                   prominence=prominence,
+                                                   ax=ax)
+        delay = (first_peak_object2 - first_peak_object1) / SAMPLE_RATE
         distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
         propagation_speed = np.abs(distance / delay)
-
         return propagation_speed
 
 
