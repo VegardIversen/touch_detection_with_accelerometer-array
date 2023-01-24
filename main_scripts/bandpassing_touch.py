@@ -11,9 +11,9 @@ from utils.global_constants import (CHIRP_CHANNEL_NAMES,
                                     FIGURES_SAVE_PATH)
 from utils.csv_to_df import csv_to_df
 from utils.simulations import simulated_phase_velocities
-from utils.data_processing.detect_echoes import (get_envelope,
+from utils.data_processing.detect_echoes import (get_envelopes,
                                                  get_travel_times,
-                                                 find_first_peak)
+                                                 find_first_peak_index)
 from utils.data_processing.preprocessing import (compress_chirps,
                                                  crop_data,
                                                  window_signals,
@@ -35,7 +35,6 @@ from utils.setups import (Setup,
                           Setup1,
                           Setup2,
                           Setup3)
-
 
 
 def setup1_predict_reflections(setup: Setup):
@@ -160,7 +159,7 @@ def make_gaussian_cosine(frequency: float = 1500,
     time = np.linspace(-5, 5, num_of_samples)
     effective_frequency = 1 / (1 / frequency)
     cosine = np.cos(2 * np.pi * effective_frequency * time) * \
-             signal.gaussian(num_of_samples, std=standard_deviation)
+        signal.gaussian(num_of_samples, std=standard_deviation)
 
     fig, ax = plt.subplots()
     ax.plot(time, cosine)
@@ -174,4 +173,3 @@ def make_gaussian_cosine(frequency: float = 1500,
 
 if __name__ == '__main__':
     raise ValueError('This script should not be run as main')
-

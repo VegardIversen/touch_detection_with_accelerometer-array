@@ -9,39 +9,39 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from utils.global_constants import (CHIRP_CHANNEL_NAMES,
-                              SAMPLE_RATE,
-                              ACTUATOR_1,
-                              SENSOR_1,
-                              SENSOR_2,
-                              SENSOR_3,
-                              FIGURES_SAVE_PATH)
+                                    SAMPLE_RATE,
+                                    ACTUATOR_1,
+                                    SENSOR_1,
+                                    SENSOR_2,
+                                    SENSOR_3,
+                                    FIGURES_SAVE_PATH)
 from utils.csv_to_df import csv_to_df
 from utils.simulations import simulated_phase_velocities
-from utils.data_processing.detect_echoes import (get_envelope,
-                                           get_travel_times,
-                                           find_first_peak)
+from utils.data_processing.detect_echoes import (get_envelopes,
+                                                 get_travel_times,
+                                                 find_first_peak_index)
 from utils.data_processing.preprocessing import (compress_chirps,
-                                           crop_data,
-                                           window_signals,
-                                           filter_general)
+                                                 crop_data,
+                                                 window_signals,
+                                                 filter_general)
 from utils.data_processing.processing import (average_of_signals,
-                                        interpolate_waveform,
-                                        normalize,
-                                        variance_of_signals,
-                                        correct_drift,
-                                        to_dB)
+                                              interpolate_waveform,
+                                              normalize,
+                                              variance_of_signals,
+                                              correct_drift,
+                                              to_dB)
 from utils.data_visualization.visualize_data import (compare_signals,
-                                               wave_statistics,
-                                               envelope_with_lines,
-                                               spectrogram_with_lines,
-                                               set_window_size,
-                                               adjust_plot_margins)
+                                                     wave_statistics,
+                                                     envelope_with_lines,
+                                                     spectrogram_with_lines,
+                                                     set_window_size,
+                                                     adjust_plot_margins)
 from main_scripts.correlation_bandpassing import (make_gaussian_cosine)
 
 from utils.setups import (Setup,
-                    Setup1,
-                    Setup2,
-                    Setup3)
+                          Setup1,
+                          Setup2,
+                          Setup3)
 
 
 """Setup 1"""
@@ -53,7 +53,7 @@ def setup1_results():
     """Choose setup"""
     SETUP = Setup1()
     SETUP.draw()
-    adjust_plot_margins(['setup'])
+    adjust_plot_margins()
     plt.savefig(FIGURES_SAVE_PATH + 'setup1_draw.pdf',
                 format='pdf')
 
@@ -123,7 +123,8 @@ def setup1_plot_touch_signals():
                                                 time_start=(2.05 + 0.0538),
                                                 time_end=(2.05 + 0.07836))
     for channel in CHANNELS_TO_PLOT:
-        setup1_plot_touch_time_signal(measurements_beginning_of_touch, [channel])
+        setup1_plot_touch_time_signal(
+            measurements_beginning_of_touch, [channel])
         channel_file_name = channel.replace(" ", "").lower()
         file_name = f'setup1_touch_time_{channel_file_name}_beginning.pdf'
         plt.savefig(FIGURES_SAVE_PATH + file_name, format='pdf')
@@ -205,8 +206,8 @@ def setup1_plot_chirp_signals():
 
     """Crop data to the compressed chirp signal"""
     measurements_compressed = compress_chirps(measurements)
-    measurements_compressed = measurements_compressed.loc[2.554 * SAMPLE_RATE:
-                                                          2.51 * SAMPLE_RATE]
+    measurements_compressed = measurements_compressed.loc[2 * SAMPLE_RATE:
+                                                          3 * SAMPLE_RATE]
 
     for channel in CHANNELS_TO_PLOT:
         setup1_plot_chirp_time_signal(measurements_compressed, [channel])
@@ -259,9 +260,7 @@ def setup1_plot_touch_time_signal(measurements: pd.DataFrame,
                     compressed_chirps=False)
 
     """Adjust for correct spacing in plot"""
-    adjust_plot_margins(PLOTS_TO_PLOT,
-                    rows=len(channels_to_plot),
-                    columns=len(PLOTS_TO_PLOT))
+    adjust_plot_margins()
 
 
 def setup1_plot_touch_spectrogram(measurements: pd.DataFrame,
@@ -284,14 +283,12 @@ def setup1_plot_touch_spectrogram(measurements: pd.DataFrame,
                     nfft=nfft)
 
     """Adjust for correct spacing in plot"""
-    adjust_plot_margins(PLOTS_TO_PLOT,
-                    rows=len(channels_to_plot),
-                    columns=len(PLOTS_TO_PLOT))
+    adjust_plot_margins()
 
 
 def setup1_plot_touch_fft(measurements: pd.DataFrame,
                           fig, axs,
-                          channels_to_plot = ['Sensor 1', 'Sensor 3']):
+                          channels_to_plot=['Sensor 1', 'Sensor 3']):
     """Plot the FFT a touch signal"""
     PLOTS_TO_PLOT = ['fft']
     compare_signals(fig, axs,
@@ -302,9 +299,7 @@ def setup1_plot_touch_fft(measurements: pd.DataFrame,
     axs[0, 0].set_ylim([-25, 25])
 
     """Adjust for correct spacing in plot"""
-    adjust_plot_margins(PLOTS_TO_PLOT,
-                    rows=len(channels_to_plot),
-                    columns=len(PLOTS_TO_PLOT))
+    adjust_plot_margins()
 
 
 def setup1_plot_chirp_time_signal(measurements: pd.DataFrame,
@@ -325,16 +320,15 @@ def setup1_plot_chirp_time_signal(measurements: pd.DataFrame,
                     compressed_chirps=False)
     if envelope:
         compare_signals(fig, axs,
-                        [get_envelope(measurements[channel]) for channel in channels_to_plot],
+                        [get_envelopes(measurements[channel])
+                         for channel in channels_to_plot],
                         plots_to_plot=PLOTS_TO_PLOT,
                         compressed_chirps=False)
         """Re-add grid"""
         for ax in axs.flatten():
             ax.grid()
     """Adjust for correct spacing in plot"""
-    adjust_plot_margins(PLOTS_TO_PLOT,
-                    rows=len(channels_to_plot),
-                    columns=len(PLOTS_TO_PLOT))
+    adjust_plot_margins()
 
 
 def setup1_plot_chirp_spectrogram(measurements: pd.DataFrame,
@@ -358,9 +352,7 @@ def setup1_plot_chirp_spectrogram(measurements: pd.DataFrame,
                     nfft=nfft)
 
     """Adjust for correct spacing in plot"""
-    adjust_plot_margins(PLOTS_TO_PLOT,
-                    rows=len(channels_to_plot),
-                    columns=len(PLOTS_TO_PLOT))
+    adjust_plot_margins()
 
 
 def setup1_plot_chirp_fft(measurements: pd.DataFrame,
@@ -376,9 +368,7 @@ def setup1_plot_chirp_fft(measurements: pd.DataFrame,
                     compressed_chirps=False)
 
     """Adjust for correct spacing in plot"""
-    adjust_plot_margins(PLOTS_TO_PLOT,
-                    rows=len(channels_to_plot),
-                    columns=len(PLOTS_TO_PLOT))
+    adjust_plot_margins()
 
 
 def setup1_transfer_function(setup: Setup):
@@ -407,14 +397,14 @@ def setup1_transfer_function(setup: Setup):
     """Crop the compressed chirps to be only the direct signal"""
     direct_signal_seconds_sensor1 = 0.0012
     measurements['Sensor 1'] = window_signals(pd.DataFrame(measurements['Sensor 1']),
-                                                           direct_signal_seconds_sensor1,
-                                                           window_function='tukey',
-                                                           window_parameter=0.1)
+                                              direct_signal_seconds_sensor1,
+                                              window_function='tukey',
+                                              window_parameter=0.1)
     direct_signal_seconds_sensor3 = 0.00085
     measurements['Sensor 3'] = window_signals(pd.DataFrame(measurements['Sensor 3']),
-                                                           direct_signal_seconds_sensor3,
-                                                           window_function='tukey',
-                                                           window_parameter=0.1)
+                                              direct_signal_seconds_sensor3,
+                                              window_function='tukey',
+                                              window_parameter=0.1)
 
     CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
     PLOTS_TO_PLOT = ['time']
@@ -428,15 +418,14 @@ def setup1_transfer_function(setup: Setup):
                     compressed_chirps=True,
                     nfft=256)
     compare_signals(fig, axs,
-                    [get_envelope(measurements[channel]) for channel in CHANNELS_TO_PLOT],
+                    [get_envelopes(measurements[channel])
+                     for channel in CHANNELS_TO_PLOT],
                     plots_to_plot=PLOTS_TO_PLOT,
                     compressed_chirps=True,
                     dynamic_range_db=15,
                     nfft=32)
     """Adjust for correct spacing in plot"""
-    adjust_plot_margins(PLOTS_TO_PLOT,
-                    rows=len(CHANNELS_TO_PLOT),
-                    columns=len(PLOTS_TO_PLOT))
+    adjust_plot_margins()
 
     """Find the FFT of the input signal"""
     input_signal = measurements['Sensor 1'].values
@@ -486,7 +475,8 @@ def setup1_transfer_function(setup: Setup):
     """Find the power of the signal with RMS"""
     signal_rms = np.sqrt(np.mean(measurements ** 2))
     signal_power = signal_rms ** 2  # yes it just undoes the square root
-    power_loss_sensor1_to_sensor_3 = signal_power[SENSOR_3] / signal_power[SENSOR_1]
+    power_loss_sensor1_to_sensor_3 = signal_power[SENSOR_3] / \
+        signal_power[SENSOR_1]
     power_loss_sensor1_to_sensor_3_dB = to_dB(power_loss_sensor1_to_sensor_3)
     distance_between_sensors = np.linalg.norm(setup.sensors[SENSOR_3].coordinates -
                                               setup.sensors[SENSOR_1].coordinates)
@@ -582,7 +572,8 @@ def setup1_scattering():
     """Compress chirps"""
     CHIRP_LENGTH = int(0.125 * SAMPLE_RATE)
     PRE_PAD_LENGTH = int(2.5 * SAMPLE_RATE)
-    POST_PAD_LENGTH = measurements.shape[0] - (PRE_PAD_LENGTH + CHIRP_LENGTH) - 1
+    POST_PAD_LENGTH = measurements.shape[0] - \
+        (PRE_PAD_LENGTH + CHIRP_LENGTH) - 1
     chirp = measurements['Actuator'][0:CHIRP_LENGTH + 1]
     reference_chirp = np.pad(chirp,
                              (PRE_PAD_LENGTH, POST_PAD_LENGTH),
@@ -626,7 +617,8 @@ def setup1_scattering():
 
     """Plot all chirps on top of each other"""
     time_axis = np.linspace(start=0,
-                            stop=len(measurements_split['Sensor 1'][0]) / SAMPLE_RATE,
+                            stop=len(
+                                measurements_split['Sensor 1'][0]) / SAMPLE_RATE,
                             num=len(measurements_split['Sensor 1'][0]))
     CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
     for channel in CHANNELS_TO_PLOT:
@@ -670,7 +662,7 @@ def setup1_predict_reflections(setup: Setup):
     measurements = compress_chirps(measurements, cosine)
 
     setup1_predict_reflections_in_envelopes(setup, measurements)
-    # setup1_predict_reflections_in_spectrograms(setup, measurements)
+    setup1_predict_reflections_in_spectrograms(setup, measurements)
 
 
 def setup1_predict_reflections_in_envelopes(setup: Setup,
@@ -724,8 +716,7 @@ def setup1_predict_reflections_in_spectrograms(setup: Setup,
                                                nfft=1024,
                                                dynamic_range_db=60):
     propagation_speed = setup.get_propagation_speed(measurements,
-                                                    setup.sensors[SENSOR_1],
-                                                    setup.sensors[SENSOR_3])
+                                                    prominence=0.2)
     """Calculate arrival times for sensor 1"""
     arrival_times, _ = get_travel_times(setup.actuators[ACTUATOR_1],
                                         setup.sensors[SENSOR_1],
@@ -782,7 +773,7 @@ def setup2_results():
     """Choose setup"""
     SETUP = Setup2()
     SETUP.draw()
-    adjust_plot_margins(['setup'])
+    adjust_plot_margins()
     plt.savefig(FIGURES_SAVE_PATH + 'setup2_draw.pdf',
                 format='pdf')
 
@@ -878,8 +869,8 @@ def setup2_plot_spectrogram_signals(measurements: pd.DataFrame,
 
 
 def setup2_plot_fft_signals(measurements: pd.DataFrame,
-                              signal_start_seconds: float,
-                              signal_length_seconds: float):
+                            signal_start_seconds: float,
+                            signal_length_seconds: float):
     """SETTINGS FOR PLOTTING"""
     PLOTS_TO_PLOT = ['fft']
 
@@ -951,14 +942,14 @@ def setup2_transfer_function(setup: Setup):
     """Crop the compressed chirps to be only the direct signal"""
     direct_signal_seconds_sensor1 = 0.01
     measurements['Sensor 1'] = window_signals(pd.DataFrame(measurements['Sensor 1']),
-                                                           direct_signal_seconds_sensor1,
-                                                           window_function='tukey',
-                                                           window_parameter=0.1)
+                                              direct_signal_seconds_sensor1,
+                                              window_function='tukey',
+                                              window_parameter=0.1)
     direct_signal_seconds_sensor3 = 0.01
     measurements['Sensor 3'] = window_signals(pd.DataFrame(measurements['Sensor 3']),
-                                                           direct_signal_seconds_sensor3,
-                                                           window_function='tukey',
-                                                           window_parameter=0.1)
+                                              direct_signal_seconds_sensor3,
+                                              window_function='tukey',
+                                              window_parameter=0.1)
 
     CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
     PLOTS_TO_PLOT = ['time']
@@ -972,15 +963,14 @@ def setup2_transfer_function(setup: Setup):
                     compressed_chirps=True,
                     nfft=256)
     compare_signals(fig, axs,
-                    [get_envelope(measurements[channel]) for channel in CHANNELS_TO_PLOT],
+                    [get_envelopes(measurements[channel])
+                     for channel in CHANNELS_TO_PLOT],
                     plots_to_plot=PLOTS_TO_PLOT,
                     compressed_chirps=True,
                     dynamic_range_db=15,
                     nfft=32)
     """Adjust for correct spacing in plot"""
-    adjust_plot_margins(PLOTS_TO_PLOT,
-                    rows=len(CHANNELS_TO_PLOT),
-                    columns=len(PLOTS_TO_PLOT))
+    adjust_plot_margins()
 
     """Find the FFT of the input signal"""
     input_signal = measurements['Sensor 1'].values
@@ -1023,12 +1013,15 @@ def setup2_transfer_function(setup: Setup):
     """Find the power of the signal with RMS"""
     signal_rms = np.sqrt(np.mean(measurements ** 2))
     signal_power = signal_rms ** 2  # yes it just undoes the square root
-    power_loss_sensor1_to_sensor_3 = signal_power[SENSOR_3] / signal_power[SENSOR_1]
+    power_loss_sensor1_to_sensor_3 = signal_power[SENSOR_3] / \
+        signal_power[SENSOR_1]
     power_loss_sensor1_to_sensor_3_dB = to_dB(power_loss_sensor1_to_sensor_3)
     distance_between_sensors = np.linalg.norm(setup.sensors[SENSOR_3].coordinates -
                                               setup.sensors[SENSOR_1].coordinates)
-    print(f'\nPower loss sensor 1 to sensor 3, for 100 Hz to 40 kHz: {power_loss_sensor1_to_sensor_3_dB:.2f} dB')
-    print(f'Power loss per meter: {(power_loss_sensor1_to_sensor_3_dB / distance_between_sensors):.2f} dB/m\n')
+    print(
+        f'\nPower loss sensor 1 to sensor 3, for 100 Hz to 40 kHz: {power_loss_sensor1_to_sensor_3_dB:.2f} dB')
+    print(
+        f'Power loss per meter: {(power_loss_sensor1_to_sensor_3_dB / distance_between_sensors):.2f} dB/m\n')
 
 
 def find_and_plot_power_loss(measurements: pd.DataFrame,
@@ -1038,12 +1031,15 @@ def find_and_plot_power_loss(measurements: pd.DataFrame,
     """Find the power of the signal with RMS"""
     signal_rms = np.sqrt(np.mean(measurements ** 2))
     signal_power = signal_rms ** 2  # yes it just undoes the square root
-    power_loss_sensor1_to_sensor_3 = signal_power[SENSOR_3] / signal_power[SENSOR_1]
+    power_loss_sensor1_to_sensor_3 = signal_power[SENSOR_3] / \
+        signal_power[SENSOR_1]
     power_loss_sensor1_to_sensor_3_dB = to_dB(power_loss_sensor1_to_sensor_3)
     distance_between_sensors = np.linalg.norm(setup.sensors[SENSOR_3].coordinates -
                                               setup.sensors[SENSOR_1].coordinates)
-    print(f'\nPower loss sensor 1 to sensor 3, for 100 Hz to 40 kHz: {power_loss_sensor1_to_sensor_3_dB:.2f} dB')
-    print(f'Power loss per meter: {(power_loss_sensor1_to_sensor_3_dB / distance_between_sensors):.2f} dB/m\n')
+    print(
+        f'\nPower loss sensor 1 to sensor 3, for 100 Hz to 40 kHz: {power_loss_sensor1_to_sensor_3_dB:.2f} dB')
+    print(
+        f'Power loss per meter: {(power_loss_sensor1_to_sensor_3_dB / distance_between_sensors):.2f} dB/m\n')
 
     """Compress chirps"""
     measurements = compress_chirps(measurements)
@@ -1069,7 +1065,7 @@ def find_and_plot_power_loss(measurements: pd.DataFrame,
     for ax in axs.flatten():
         ax.grid()
     # axs[0, 0].set_title('FFT of sensor 1 and sensor 3, ' +
-                        # f'{distance_between_sensors} meters apart')
+        # f'{distance_between_sensors} meters apart')
     axs[0, 0].legend(['Sensor 1', 'Sensor 3'])
     axs[0, 0].set_ylim(bottom=-25, top=80)
 
@@ -1087,7 +1083,7 @@ def setup3_results():
     """Choose setup"""
     SETUP = Setup3()
     SETUP.draw()
-    adjust_plot_margins(['setup'])
+    adjust_plot_margins()
     plt.savefig(FIGURES_SAVE_PATH + 'setup3_draw.pdf',
                 format='pdf')
 
@@ -1126,7 +1122,7 @@ def setup3_plot_raw_time_signal():
     ax.grid()
 
     """Adjust for correct spacing in plot"""
-    adjust_plot_margins(['time'], rows=1, columns=1)
+    adjust_plot_margins()
 
 
 def setup3_scattering():
@@ -1166,7 +1162,8 @@ def setup3_scattering():
     """Compress chirps"""
     CHIRP_LENGTH = int(0.125 * SAMPLE_RATE)
     PRE_PAD_LENGTH = int(2.5 * SAMPLE_RATE)
-    POST_PAD_LENGTH = measurements.shape[0] - (PRE_PAD_LENGTH + CHIRP_LENGTH) - 1
+    POST_PAD_LENGTH = measurements.shape[0] - \
+        (PRE_PAD_LENGTH + CHIRP_LENGTH) - 1
     chirp = measurements['Actuator'][0:CHIRP_LENGTH + 1]
     reference_chirp = np.pad(chirp,
                              (PRE_PAD_LENGTH, POST_PAD_LENGTH),
@@ -1210,7 +1207,8 @@ def setup3_scattering():
 
     """Plot all chirps on top of each other"""
     time_axis = np.linspace(start=0,
-                            stop=len(measurements_split['Sensor 1'][0]) / SAMPLE_RATE,
+                            stop=len(
+                                measurements_split['Sensor 1'][0]) / SAMPLE_RATE,
                             num=len(measurements_split['Sensor 1'][0]))
     CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
     for channel in CHANNELS_TO_PLOT:
@@ -1305,7 +1303,8 @@ def scattering_figure_5():
     rigid_inlcusion = interpolate_waveform(rigid_inlcusion)
     steel_thickness_50in = interpolate_waveform(steel_thickness_50in)
     hole = interpolate_waveform(hole)
-    bonded_steel_inclusion_thickness_0_5in = interpolate_waveform(bonded_steel_inclusion_thickness_0_5in)
+    bonded_steel_inclusion_thickness_0_5in = interpolate_waveform(
+        bonded_steel_inclusion_thickness_0_5in)
 
     """Plot"""
     fig, ax = plt.subplots(nrows=1,
@@ -1332,8 +1331,6 @@ def scattering_figure_5():
 
     """Adjust for correct spacing in plot"""
     adjust_plot_margins('fft', rows=1, columns=1)
-
-
 
 
 if __name__ == '__main__':

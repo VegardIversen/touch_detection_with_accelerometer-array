@@ -11,16 +11,22 @@ from utils.global_constants import SAMPLE_RATE
 
 from utils.csv_to_df import csv_to_df
 from utils.data_processing.preprocessing import filter_general
-from utils.data_processing.detect_echoes import find_first_peak, find_indices_of_peaks, get_envelope
+from utils.data_processing.detect_echoes import (find_first_peak_index,
+                                                 find_indices_of_peaks,
+                                                 get_envelopes)
 
 
 def find_propagation_speed_with_delay(df, ch1, ch2, height, distance=0.1, hilbert=True):
     if hilbert:
-        peak_indices_ch1 = find_indices_of_peaks(df[ch1].to_numpy(), height, hilbert=hilbert, plot=False)
-        peak_indices_ch2 = find_indices_of_peaks(df[ch2].to_numpy(), height, hilbert=hilbert, plot=False)
+        peak_indices_ch1 = find_indices_of_peaks(
+            df[ch1].to_numpy(), height, hilbert=hilbert, plot=False)
+        peak_indices_ch2 = find_indices_of_peaks(
+            df[ch2].to_numpy(), height, hilbert=hilbert, plot=False)
     else:
-        peak_indices_ch1 = find_indices_of_peaks(df[ch1].to_numpy(), height, hilbert=hilbert, plot=False)
-        peak_indices_ch2 = find_indices_of_peaks(df[ch2].to_numpy(), height, hilbert=hilbert, plot=False)
+        peak_indices_ch1 = find_indices_of_peaks(
+            df[ch1].to_numpy(), height, hilbert=hilbert, plot=False)
+        peak_indices_ch2 = find_indices_of_peaks(
+            df[ch2].to_numpy(), height, hilbert=hilbert, plot=False)
     diff = np.abs(peak_indices_ch1[0] - peak_indices_ch2[0])
     time = diff / SAMPLE_RATE
     speed = distance / time
@@ -50,7 +56,6 @@ def find_propagation_speed_plot(chirp_df,
         chirp_bps = np.append(chirp_bps, chirp_bp)
 
     return frequencies, freq_speeds, chirp_bps
-
 
 
 if __name__ == '__main__':

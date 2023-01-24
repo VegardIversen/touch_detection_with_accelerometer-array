@@ -11,7 +11,7 @@ from utils.setups import Setup
 from utils.objects import Sensor
 from utils.global_constants import SAMPLE_RATE
 
-from utils.data_processing.detect_echoes import get_envelope
+from utils.data_processing.detect_echoes import get_envelopes
 from utils.data_visualization.drawing import plot_legend_without_duplicates
 from utils.data_processing.processing import average_of_signals, variance_of_signals, to_dB
 
@@ -174,7 +174,7 @@ def spectrogram_with_lines(sensor: Sensor,
                            nfft: int = 1024,
                            dynamic_range_db: int = 40):
     """Plot the spectrograms along with lines for expected reflections"""
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=set_window_size())
+    fig, ax = plt.subplots(figsize=set_window_size())
     spec = plt.specgram(measurements[sensor.name],
                         Fs=SAMPLE_RATE,
                         NFFT=nfft,
@@ -184,8 +184,8 @@ def spectrogram_with_lines(sensor: Sensor,
     # ax.set_title(f'Expected wave arrival times for {sensor.name}')
     ax.set_xlabel('Time [s]')
     ax.set_ylabel('Frequency [Hz]')
-    ax.set_ylim(0, 40000)
-    ax.set_xlim(2.5, 2.505)
+    ax.set_ylim(0, 5000)
+    # ax.set_xlim(2.5, 2.505)
     fig.colorbar(spec[3])
     ax.axvline(arrival_times[0],
                linestyle='--',
@@ -213,16 +213,16 @@ def envelope_with_lines(sensor: Sensor,
                         measurements: pd.DataFrame,
                         arrival_times: np.ndarray):
     """Plot the correlation between the chirp signal and the measured signal"""
-    time_axis = np.linspace(-1 * len(measurements) / SAMPLE_RATE,
-                            1 * len(measurements) / SAMPLE_RATE,
+    time_axis = np.linspace(0,
+                            len(measurements) / SAMPLE_RATE,
                             len(measurements))
-    measurements_envelope = get_envelope(measurements)
+    measurements_envelope = get_envelopes(measurements)
 
-    _, ax = plt.subplots(nrows=1, ncols=1, figsize=set_window_size())
+    _, ax = plt.subplots(figsize=set_window_size())
     ax.plot(time_axis,
             measurements[sensor.name])
     ax.plot(time_axis,
-            measurements_envelope[sensor.name])
+            (measurements_envelope[sensor.name]))
     ax.axvline(arrival_times[0],
                linestyle='--',
                color='#ED217C',
@@ -253,9 +253,9 @@ def envelope_with_lines(sensor: Sensor,
 def plot_filter_response(sos: np.ndarray,
                          cutoff_highpass: int,
                          cutoff_lowpass: int):
-    w, h = scipy.signal.sosfreqz(sos, worN=2**18)
+    w, h = scipy.signal.sosfreqz(sos, worN=2**15)
     _, ax = plt.subplots(figsize=set_window_size())
-    ax.semilogx((SAMPLE_RATE * 0.5 / np.pi) * w, abs(h))
+    ax.semilogx((SAMPLE_RATE * 0.5 / np.pi) * w, to_dB(abs(h)))
     ax.set_xlabel('Frequency [Hz]')
     ax.set_ylabel('Amplitude')
     ax.margins(0, 0.1)

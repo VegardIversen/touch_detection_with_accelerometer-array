@@ -11,9 +11,9 @@ from utils.global_constants import (CHIRP_CHANNEL_NAMES,
                                     FIGURES_SAVE_PATH)
 from utils.csv_to_df import csv_to_df
 from utils.simulations import simulated_phase_velocities
-from utils.data_processing.detect_echoes import (get_envelope,
+from utils.data_processing.detect_echoes import (get_envelopes,
                                                  get_travel_times,
-                                                 find_first_peak)
+                                                 find_first_peak_index)
 from utils.data_processing.preprocessing import (compress_chirps,
                                                  crop_data,
                                                  window_signals,

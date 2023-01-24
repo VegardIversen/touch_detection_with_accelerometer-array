@@ -8,13 +8,15 @@ import scipy.signal as signal
 import matplotlib.pyplot as plt
 
 from utils.global_constants import (SAMPLE_RATE,
-                              ACTUATOR_1,
-                              SENSOR_1,
-                              SENSOR_2,
-                              SENSOR_3)
+                                    ACTUATOR_1,
+                                    SENSOR_1,
+                                    SENSOR_2,
+                                    SENSOR_3)
 from utils.objects import Table, Actuator, Sensor
 
 from utils.data_visualization.drawing import plot_legend_without_duplicates
+from utils.data_processing.detect_echoes import (find_first_peak_index,
+                                                 get_envelopes)
 
 
 class Setup:
@@ -79,7 +81,9 @@ class Setup1(Setup):
     def __init__(self):
         pass
 
-    def get_propagation_speed(self, measurements: pd.DataFrame):
+    def get_propagation_speed(self,
+                              measurements: pd.DataFrame,
+                              prominence: float = 0.001):
         """Use the cross correlation between the two channels
         to find the propagation speed. Based on:
         https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
@@ -161,11 +165,11 @@ class Setup3(Setup):
     actuators[0] = Actuator(coordinates=(np.array([1 / 3 * Table.LENGTH,
                                                    5 / 6 * Table.WIDTH])))
     sensors[SENSOR_1] = Sensor(coordinates=(Table.C2 + np.array([-0.035, 0])),
-                        name='Sensor 1')
+                               name='Sensor 1')
     sensors[SENSOR_2] = Sensor(coordinates=Table.C2,
-                        name='Sensor 2')
+                               name='Sensor 2')
     sensors[SENSOR_3] = Sensor(coordinates=(Table.C2 + np.array([0.03, 0])),
-                        name='Sensor 3')
+                               name='Sensor 3')
 
     def __init__(self):
         pass
