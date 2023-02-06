@@ -8,7 +8,13 @@ import scipy.signal as signal
 import matplotlib.pyplot as plt
 
 from utils.global_constants import (SAMPLE_RATE)
-from utils.objects import MirroredSensor, MirroredSource, Table, Actuator, Sensor
+from utils.objects import (MirroredSensor,
+                           MirroredSource,
+                           Table,
+                           Actuator,
+                           Sensor)
+
+from utils.data_processing.processing import (to_dB)
 
 
 def find_indices_of_peaks(signal, height, plot=False, hilbert=True):
@@ -67,25 +73,34 @@ def get_envelopes(signals: pd.DataFrame or pd.Series or np.ndarray):
     elif isinstance(signals, pd.DataFrame):
         for channel in envelopes_of_signals:
             envelope = signal.hilbert(signals[channel])
+            # envelope = np.abs(signals[channel])
             envelopes_of_signals[channel] = np.abs(envelope)
     return envelopes_of_signals
 
 
 def find_first_peak_index(measurements: pd.DataFrame,
-                          prominence: float = 0.1,
                           ax: plt.Axes = None) -> int:
     """Return the index of the first peak of sig_np"""
     signals_values = measurements.values
-    peaks, _ = signal.find_peaks(signals_values, prominence=prominence)
+    """Demanding the peak higher than
+    three times the standard deviation,
+    assuming that the signal period is
+    short relative to the full measurement.
+    """
+    std = np.std(signals_values)
+    peaks, _ = signal.find_peaks(signals_values, height=10 * std)
     if peaks.size == 0:
         raise ValueError('No peaks found!')
     peak_index = peaks[0]
 
     """Plot the signals and the first peaks, for visual inspection"""
     if ax is not None:
-        ax.plot(measurements, label=measurements.name)
+        time_axis = np.linspace(0,
+                                len(signals_values) / SAMPLE_RATE,
+                                num=len(signals_values))
+        ax.plot(time_axis, measurements, label=measurements.name)
         color = ax.get_lines()[-1].get_color()
-        ax.axvline(x=peak_index, color=color)
+        ax.axvline(x=peak_index / SAMPLE_RATE, color=color, linestyle='--')
         ax.set_xlabel('Time [s]')
         ax.set_ylabel('Amplitude')
         ax.legend(loc='upper right')
