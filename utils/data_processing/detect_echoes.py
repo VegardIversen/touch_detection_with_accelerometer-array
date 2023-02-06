@@ -7,7 +7,7 @@ import pandas as pd
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 
-from utils.global_constants import SAMPLE_RATE, SENSOR_1, SENSOR_2, SENSOR_3
+from utils.global_constants import (SAMPLE_RATE)
 from utils.objects import MirroredSensor, MirroredSource, Table, Actuator, Sensor
 
 
@@ -34,7 +34,8 @@ def find_indices_of_peaks(signal, height, plot=False, hilbert=True):
         time_axis = np.linspace(0, len(signal), num=len(signal))
         fig, ax = plt.subplots(nrows=1)
         if not hilbert:
-            ax.plot(time_axis / SAMPLE_RATE, signal_squared, label='sqrd')  # type: ignore
+            ax.plot(time_axis / SAMPLE_RATE, signal_squared,
+                    label='sqrd')  # type: ignore
             ax.plot(time_axis[peak_indices] / SAMPLE_RATE,
                     signal_squared[peak_indices],
                     'x',
