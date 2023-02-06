@@ -52,12 +52,12 @@ def setup1_predict_reflections(setup: Setup):
     # measurements = compress_chirps(measurements)
 
     """Filter signals by a correlation based bandpass filter"""
-    critical_frequency = 2000
+    critical_frequency = 400
     measurements = filter_general(measurements,
                                   filtertype='bandpass',
                                   critical_frequency=critical_frequency,
-                                  q=0.1,
-                                  order=16,
+                                  q=0.2,
+                                  order=4,
                                   plot_response=True)
     adjust_plot_margins()
     file_name = 'bandpass_filter_response.pdf'
@@ -77,7 +77,9 @@ def setup1_predict_reflections_in_envelopes(setup: Setup,
                                             measurements: pd.DataFrame):
     """Calculate arrival times for sensor 1"""
     measurement_envelopes = get_envelopes(measurements)
-    propagation_speed = setup.get_propagation_speed(measurements)
+    propagation_speed = setup.get_propagation_speed(measurements,
+                                                    prominence=0.0012)
+    propagation_speed = 0.26 * propagation_speed
     print(f'Propagation speed: {propagation_speed:.2f}')
     arrival_times_sensor1, _ = get_travel_times(setup.actuators[ACTUATOR_1],
                                                 setup.sensors[SENSOR_1],
@@ -85,12 +87,7 @@ def setup1_predict_reflections_in_envelopes(setup: Setup,
                                                 milliseconds=False,
                                                 relative_first_reflection=True,
                                                 print_info=False)
-    # max_index = np.argmax(np.abs(signal.hilbert(measurements['Sensor 1'])))
-    _, ax = plt.subplots(figsize=set_window_size())
-    first_peak_index = find_first_peak_index(measurement_envelopes['Sensor 1'],
-                                             prominence=0.0005,
-                                             ax=ax)
-    adjust_plot_margins()
+    first_peak_index = find_first_peak_index(measurement_envelopes['Sensor 1'])
     correction_offset = first_peak_index
     correction_offset_time = correction_offset / SAMPLE_RATE
     arrival_times_sensor1 += correction_offset_time
@@ -111,11 +108,7 @@ def setup1_predict_reflections_in_envelopes(setup: Setup,
                                                 relative_first_reflection=True,
                                                 print_info=False)
     # max_index = np.argmax(np.abs(signal.hilbert(measurements['Sensor 3'])))
-    _, ax = plt.subplots(figsize=set_window_size())
-    first_peak_index = find_first_peak_index(measurement_envelopes['Sensor 1'],
-                                             prominence=0.0005,
-                                             ax=ax)
-    adjust_plot_margins()
+    first_peak_index = find_first_peak_index(measurement_envelopes['Sensor 3'])
     correction_offset = first_peak_index
     correction_offset_time = correction_offset / SAMPLE_RATE
     arrival_times_sensor3 += correction_offset_time
@@ -135,8 +128,8 @@ def setup1_predict_reflections_in_spectrograms(setup: Setup,
                                                measurements: pd.DataFrame,
                                                arrival_times_sensor1: np.ndarray,
                                                arrival_times_sensor3: np.ndarray,
-                                               nfft=1024 * 2,
-                                               dynamic_range_db=20):
+                                               nfft=2**8,
+                                               dynamic_range_db=60):
     """Plot lines for expected arrival times"""
     spectrogram_with_lines(setup.sensors[SENSOR_1],
                            measurements,
