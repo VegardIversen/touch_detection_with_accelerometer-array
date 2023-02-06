@@ -110,10 +110,8 @@ class Setup1(Setup):
         measurements = get_envelopes(measurements)
         _, ax = plt.subplots()
         first_peak_object1 = find_first_peak_index(measurements[object_1.name],
-                                                   prominence=prominence,
                                                    ax=ax)
         first_peak_object2 = find_first_peak_index(measurements[object_2.name],
-                                                   prominence=prominence,
                                                    ax=ax)
         delay = (first_peak_object2 - first_peak_object1) / SAMPLE_RATE
         distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
