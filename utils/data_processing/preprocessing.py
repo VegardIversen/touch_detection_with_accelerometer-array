@@ -9,31 +9,35 @@ from scipy import signal
 import matplotlib.pyplot as plt
 
 from utils.global_constants import SAMPLE_RATE
-
+from utils.data_visualization.visualize_data import (plot_filter_response)
 
 """FILTERING"""
 
 
 def filter_general(signals: pd.DataFrame or np.ndarray,
                    filtertype: str,
-                   cutoff_highpass: int = 50,
-                   cutoff_lowpass: int = 40000,
-                   order: int = 4):
-    """filtertype: 'highpass', 'lowpass' or 'bandpass"""
+                   critical_frequency: int,
+                   q: float = 0.05,
+                   order: int = 4,
+                   plot_response: bool = False):
+    """filtertype: 'highpass', 'lowpass' or 'bandpass.
+    NOTE:   q is a value that determines the width of the flat bandpass,
+            and is a value between 0 and 1. order determines the slope.
+    """
     if filtertype == 'highpass':
         sos = signal.butter(order,
-                            cutoff_highpass / (0.5 * SAMPLE_RATE),
+                            critical_frequency / (0.5 * SAMPLE_RATE),
                             'highpass',
                             output='sos')
     elif filtertype == 'lowpass':
         sos = signal.butter(order,
-                            cutoff_lowpass / (0.5 * SAMPLE_RATE),
+                            critical_frequency / (0.5 * SAMPLE_RATE),
                             'lowpass',
                             output='sos')
     elif filtertype == 'bandpass':
         sos = signal.butter(order,
-                            [cutoff_highpass / (0.5 * SAMPLE_RATE),
-                             cutoff_lowpass / (0.5 * SAMPLE_RATE)],
+                            [critical_frequency * (1 - q) / (0.5 * SAMPLE_RATE),
+                             critical_frequency * (1 + q) / (0.5 * SAMPLE_RATE)],
                             'bandpass',
                             output='sos')
     else:
@@ -47,6 +51,9 @@ def filter_general(signals: pd.DataFrame or np.ndarray,
     else:
         signals_filtered = signal.sosfilt(sos,
                                           signals)
+
+    if plot_response:
+        plot_filter_response(sos, critical_frequency, critical_frequency)
 
     return signals_filtered
 

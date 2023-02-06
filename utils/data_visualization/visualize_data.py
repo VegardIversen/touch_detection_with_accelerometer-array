@@ -11,7 +11,7 @@ from utils.setups import Setup
 from utils.objects import Sensor
 from utils.global_constants import SAMPLE_RATE
 
-from utils.data_processing.detect_echoes import get_envelope
+from utils.data_processing.detect_echoes import get_envelopes
 from utils.data_visualization.drawing import plot_legend_without_duplicates
 from utils.data_processing.processing import average_of_signals, variance_of_signals, to_dB
 
@@ -174,7 +174,7 @@ def spectrogram_with_lines(sensor: Sensor,
                            nfft: int = 1024,
                            dynamic_range_db: int = 40):
     """Plot the spectrograms along with lines for expected reflections"""
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=set_window_size())
+    fig, ax = plt.subplots(figsize=set_window_size())
     spec = plt.specgram(measurements[sensor.name],
                         Fs=SAMPLE_RATE,
                         NFFT=nfft,
@@ -184,8 +184,8 @@ def spectrogram_with_lines(sensor: Sensor,
     # ax.set_title(f'Expected wave arrival times for {sensor.name}')
     ax.set_xlabel('Time [s]')
     ax.set_ylabel('Frequency [Hz]')
-    ax.set_ylim(0, 40000)
-    ax.set_xlim(2.5, 2.505)
+    ax.set_ylim(0, 5000)
+    # ax.set_xlim(2.5, 2.505)
     fig.colorbar(spec[3])
     ax.axvline(arrival_times[0],
                linestyle='--',
@@ -213,16 +213,16 @@ def envelope_with_lines(sensor: Sensor,
                         measurements: pd.DataFrame,
                         arrival_times: np.ndarray):
     """Plot the correlation between the chirp signal and the measured signal"""
-    time_axis = np.linspace(-1 * len(measurements) / SAMPLE_RATE,
-                            1 * len(measurements) / SAMPLE_RATE,
+    time_axis = np.linspace(0,
+                            len(measurements) / SAMPLE_RATE,
                             len(measurements))
-    measurements_envelope = get_envelope(measurements)
+    measurements_envelope = get_envelopes(measurements)
 
-    _, ax = plt.subplots(nrows=1, ncols=1, figsize=set_window_size())
+    _, ax = plt.subplots(figsize=set_window_size())
     ax.plot(time_axis,
             measurements[sensor.name])
     ax.plot(time_axis,
-            measurements_envelope[sensor.name])
+            (measurements_envelope[sensor.name]))
     ax.axvline(arrival_times[0],
                linestyle='--',
                color='#ED217C',
@@ -248,6 +248,23 @@ def envelope_with_lines(sensor: Sensor,
     ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
     plot_legend_without_duplicates(placement='lower right')
     ax.grid()
+
+
+def plot_filter_response(sos: np.ndarray,
+                         cutoff_highpass: int,
+                         cutoff_lowpass: int):
+    w, h = scipy.signal.sosfreqz(sos, worN=2**15)
+    _, ax = plt.subplots(figsize=set_window_size())
+    ax.semilogx((SAMPLE_RATE * 0.5 / np.pi) * w, to_dB(abs(h)))
+    ax.set_xlabel('Frequency [Hz]')
+    ax.set_ylabel('Amplitude')
+    ax.margins(0, 0.1)
+    ax.grid(which='both', axis='both')
+    ax.axvline(cutoff_highpass, color='green')
+    ax.axvline(cutoff_lowpass, color='green')
+
+
+"""Matplotlib settings"""
 
 
 def set_fontsizes():
@@ -286,66 +303,13 @@ def set_window_size(rows: int = 1, cols: int = 1):
     return figsize
 
 
-def adjust_plot_margins(signal_type: list = ['time', 'spectrogram', 'fft'],
-                    rows: int = 1,
-                    columns: int = 1):
-    """Adjust the spacing in plots, based on type of plot and number of grapgs.
-    Insert this function before starting a new subplot
-    or before the plt.show() function.
-    signal_type can be a combination of ['time', 'spectrogram', 'fft'] that is
-    defined beforehand.
+def adjust_plot_margins():
+    """Use the same plot adjustments for all figures,
+    given that the figsizes are the same.
     """
-    if signal_type[0] in ['time', 'spectrogram', 'fft'] and rows == 1 and columns == 1:
-        """Use same spacing for all plots, possibly temporarily"""
-        plt.subplots_adjust(left=0.175, right=0.98,
-                            top=0.935, bottom=0.155,
-                            hspace=0.28, wspace=0.2)
-    elif signal_type == ['time'] and rows == 1 and columns == 1:
-        plt.subplots_adjust(left=0.12, right=0.98,
-                            top=0.9, bottom=0.2,
-                            hspace=0.28, wspace=0.2)
-    elif signal_type == ['time'] and rows == 2 and columns == 1:
-        plt.subplots_adjust(left=0.153, right=0.98,
-                            top=0.957, bottom=0.079,
-                            hspace=0.237, wspace=0.2)
-    elif signal_type == ['time'] and rows == 3 and columns == 1:
-        plt.subplots_adjust(left=0.125, right=0.965,
-                            top=0.955, bottom=0.07,
-                            hspace=0.28, wspace=0.2)
-    elif signal_type == ['spectrogram'] and rows == 1 and columns == 1:
-        plt.subplots_adjust(left=0.17, right=1,
-                            top=0.929, bottom=0.145,
-                            hspace=0.28, wspace=0.2)
-    elif signal_type == ['spectrogram'] and rows == 2 and columns == 1:
-        plt.subplots_adjust(left=0.167, right=1,
-                            top=0.955, bottom=0.08,
-                            hspace=0.236, wspace=0.2)
-    elif signal_type == ['spectrogram'] and rows == 3 and columns == 1:
-        plt.subplots_adjust(left=0.125, right=1.05,
-                            top=0.955, bottom=0.07,
-                            hspace=0.28, wspace=0.2)
-    elif signal_type == ['fft'] and rows == 1 and columns == 1:
-        plt.subplots_adjust(left=0.121, right=0.98,
-                            top=0.926, bottom=0.14,
-                            hspace=0.28, wspace=0.15)
-    elif signal_type == ['fft'] and rows == 2 and columns == 1:
-        plt.subplots_adjust(left=0.125, right=0.957,
-                            top=0.955, bottom=0.075,
-                            hspace=0.28, wspace=0.2)
-    elif signal_type == ['fft'] and rows == 3 and columns == 1:
-        plt.subplots_adjust(left=0.125, right=0.95,
-                            top=0.955, bottom=0.07,
-                            hspace=0.28, wspace=0.2)
-    elif signal_type == ['time', 'spectrogram'] and rows == 2 and columns == 1:
-        plt.subplots_adjust(left=0.18, right=0.97,
-                            top=0.955, bottom=0.0,
-                            hspace=0.19, wspace=0.2)
-    elif signal_type == ['setup']:
-        plt.subplots_adjust(left=0.088, right=1,
-                            top=0.988, bottom=0.152,
-                            hspace=0.28, wspace=0.2)
-    else:
-        raise ValueError('Signal type or rows and columns not recognized.')
+    plt.subplots_adjust(left=0.175, right=0.98,
+                        top=0.935, bottom=0.16,
+                        hspace=0.28, wspace=0.2)
 
 
 if __name__ == '__main__':

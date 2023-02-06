@@ -24,7 +24,7 @@ def find_indices_of_peaks(signal, height, plot=False, hilbert=True):
         peak_indices, _ = signal.find_peaks(signal_squared, height)
     else:
         # Find the peaks of the Hilbert envelope of the signal
-        signal_filtered_hilbert = get_envelope(signal)
+        signal_filtered_hilbert = get_envelopes(signal)
         peak_indices, _ = signal.find_peaks(signal_filtered_hilbert, height)
 
     if peak_indices.size == 0:
@@ -57,7 +57,7 @@ def find_indices_of_peaks(signal, height, plot=False, hilbert=True):
     return peak_indices
 
 
-def get_envelope(signals: pd.DataFrame or pd.Series or np.ndarray):
+def get_envelopes(signals: pd.DataFrame or pd.Series or np.ndarray):
     """Get the Hilbert envelope for all channels in df"""
     envelopes_of_signals = signals.copy()
     if isinstance(signals, np.ndarray) or isinstance(signals, pd.Series):
@@ -70,21 +70,26 @@ def get_envelope(signals: pd.DataFrame or pd.Series or np.ndarray):
     return envelopes_of_signals
 
 
-def find_first_peak(signals: pd.DataFrame, prominence: float = 0.1):
+def find_first_peak_index(measurements: pd.DataFrame,
+                          prominence: float = 0.1,
+                          ax: plt.Axes = None) -> int:
     """Return the index of the first peak of sig_np"""
-    signals_values = signals.values
+    signals_values = measurements.values
     peaks, _ = signal.find_peaks(signals_values, prominence=prominence)
     if peaks.size == 0:
         raise ValueError('No peaks found!')
-        # return 0
     peak_index = peaks[0]
+
+    """Plot the signals and the first peaks, for visual inspection"""
+    if ax is not None:
+        ax.plot(measurements, label=measurements.name)
+        color = ax.get_lines()[-1].get_color()
+        ax.axvline(x=peak_index, color=color)
+        ax.set_xlabel('Time [s]')
+        ax.set_ylabel('Amplitude')
+        ax.legend(loc='upper right')
+        ax.grid()
     return peak_index
-
-
-def get_expected_reflections_pos(speed, peak, s=[0.26, 0.337, 0.386, 0.41]):
-    t = s / speed
-    n = t * SAMPLE_RATE + peak
-    return n.tolist()
 
 
 def find_mirrored_source(actuator: Actuator,

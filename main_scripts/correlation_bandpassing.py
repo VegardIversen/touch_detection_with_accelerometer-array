@@ -11,9 +11,9 @@ from utils.global_constants import (CHIRP_CHANNEL_NAMES,
                                     FIGURES_SAVE_PATH)
 from utils.csv_to_df import csv_to_df
 from utils.simulations import simulated_phase_velocities
-from utils.data_processing.detect_echoes import (get_envelope,
+from utils.data_processing.detect_echoes import (get_envelopes,
                                                  get_travel_times,
-                                                 find_first_peak)
+                                                 find_first_peak_index)
 from utils.data_processing.preprocessing import (compress_chirps,
                                                  crop_data,
                                                  window_signals,
@@ -85,7 +85,7 @@ def setup1_predict_reflections_in_envelopes(setup: Setup,
     envelope_with_lines(setup.sensors[SENSOR_1],
                         measurements,
                         arrival_times)
-    adjust_plot_margins(['time'])
+    adjust_plot_margins()
     file_name = 'predicted_arrivals_envelope_sensor1_setup1.pdf'
     plt.savefig(FIGURES_SAVE_PATH + file_name,
                 format='pdf')
@@ -105,7 +105,7 @@ def setup1_predict_reflections_in_envelopes(setup: Setup,
     envelope_with_lines(setup.sensors[SENSOR_3],
                         measurements,
                         arrival_times)
-    adjust_plot_margins(['time'])
+    adjust_plot_margins()
     file_name = 'predicted_arrivals_envelope_sensor3_setup1.pdf'
     plt.savefig(FIGURES_SAVE_PATH + file_name,
                 format='pdf')
