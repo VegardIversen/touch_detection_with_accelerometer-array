@@ -111,7 +111,7 @@ def correct_dispersion():
 
     measurements = filter_general(measurements,
                                   filtertype='highpass',
-                                  critical_frequency=5000,
+                                  critical_frequency=2000,
                                   order=8,
                                   plot_response=False)
 
@@ -179,7 +179,7 @@ def correct_dispersion():
         # optimal_phase_parameter = PHASE_PARAMETERS[np.argmax(highest_values)]
     else:
         # Set phase_parameter manually
-        optimal_phase_parameter = -0.0056
+        optimal_phase_parameter = -0.002
     # A linear graph providing the phase offset
     phase_offset = np.linspace(
         optimal_phase_parameter, -optimal_phase_parameter, len(ffts))
