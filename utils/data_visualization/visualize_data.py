@@ -210,19 +210,19 @@ def spectrogram_with_lines(sensor: Sensor,
 
 
 def envelope_with_lines(sensor: Sensor,
-                        measurements: pd.DataFrame,
+                        measurement: np.ndarray,
                         arrival_times: np.ndarray):
     """Plot the correlation between the chirp signal and the measured signal"""
     time_axis = np.linspace(0,
-                            len(measurements) / SAMPLE_RATE,
-                            len(measurements))
-    measurements_envelope = get_envelopes(measurements)
+                            len(measurement) / SAMPLE_RATE,
+                            len(measurement))
+    measurements_envelope = get_envelopes(measurement)
 
     _, ax = plt.subplots(figsize=set_window_size())
     ax.plot(time_axis,
-            measurements[sensor.name])
+            measurement)
     ax.plot(time_axis,
-            (measurements_envelope[sensor.name]))
+            (measurements_envelope))
     ax.axvline(arrival_times[0],
                linestyle='--',
                color='#ED217C',

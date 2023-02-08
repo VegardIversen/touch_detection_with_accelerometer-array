@@ -59,7 +59,6 @@ def find_indices_of_peaks(signal, height, plot=False, hilbert=True):
         ax.legend()
         fig.tight_layout()
         plt.grid()
-        plt.show()
 
     return peak_indices
 
@@ -68,7 +67,7 @@ def get_envelopes(signals: pd.DataFrame or pd.Series or np.ndarray):
     """Get the Hilbert envelope for all channels in df"""
     envelopes_of_signals = signals.copy()
     if isinstance(signals, np.ndarray) or isinstance(signals, pd.Series):
-        envelopes_of_signals = np.abs(signal.hilbert(signals))
+        envelopes_of_signals = np.abs(signal.hilbert(np.real(signals)))
         return envelopes_of_signals
     elif isinstance(signals, pd.DataFrame):
         for channel in envelopes_of_signals:
