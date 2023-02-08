@@ -77,10 +77,10 @@ def get_envelopes(signals: pd.DataFrame or pd.Series or np.ndarray):
     return envelopes_of_signals
 
 
-def find_first_peak_index(measurements: pd.DataFrame,
+def find_first_peak_index(measurements: np.ndarray,
                           ax: plt.Axes = None) -> int:
     """Return the index of the first peak of sig_np"""
-    signals_values = measurements.values
+    signals_values = measurements
     """Demanding the peak higher than
     three times the standard deviation,
     assuming that the signal period is

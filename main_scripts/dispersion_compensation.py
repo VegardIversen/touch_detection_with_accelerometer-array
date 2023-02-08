@@ -71,7 +71,8 @@ def dispersive_filter():
     ax.plot(fft_frequencies, phase_offset)
     ax.set_xlabel('Frequency (Hz)')
     ax.set_ylabel('Phase offset (rad)')
-    ax.set_title('Phase response of the dispersive filter, +0.5 for time offset')
+    ax.set_title(
+        'Phase response of the dispersive filter, +0.5 for time offset')
     ax.grid()
 
     new_chirp = np.fft.ifft(
@@ -108,9 +109,16 @@ def correct_dispersion():
     measurements = csv_to_df(file_folder=FILE_FOLDER,
                              file_name=FILE_NAME)
 
+    measurements = filter_general(measurements,
+                                  filtertype='highpass',
+                                  critical_frequency=5000,
+                                  order=8,
+                                  plot_response=False)
+
     # Interpolate waveforms
     measurements = interpolate_waveform(measurements)
 
+    # Only look at sensor 3 for now
     measurement = measurements['Sensor 3']
 
     # Calculate the FFT
@@ -122,30 +130,34 @@ def correct_dispersion():
 
     FIND_PHASE_PARAMETER = False
     if FIND_PHASE_PARAMETER:
-        PHASE_PARAMETERS = np.linspace(-50, -30, 20)
+        PHASE_PARAMETERS = np.linspace(-0.0001, -0.005, 100)
         average_prominences = []
         highest_values = []
 
         for phase_parameter in PHASE_PARAMETERS:
             # A linear graph providing the phase offset
-            phase_offset = np.linspace(phase_parameter, -phase_parameter, len(ffts))
+            phase_offset = np.linspace(
+                phase_parameter, -phase_parameter, len(ffts))
             # Do an fft shift on the phase offset
             phase_offset = np.fft.fftshift(phase_offset)
             phase_offset = phase_parameter + np.abs(phase_offset)
 
             # Correct the phase offset
-            corrected_ffts = ffts * np.exp(-1j * phase_offset * fft_frequencies)
+            corrected_ffts = ffts * \
+                np.exp(-1j * phase_offset * fft_frequencies)
 
             # Calculate the inverse FFT
             corrected_chirp = np.fft.ifft(corrected_ffts)
 
-            corrected_chirp = signal.resample(corrected_chirp, len(measurement))
+            corrected_chirp = signal.resample(
+                corrected_chirp, len(measurement))
 
             # Get the prominence of the peaks
             average_prominence = np.average(get_prominences_of_peaks(
                 np.abs(signal.hilbert(np.real(corrected_chirp)))))
             average_prominences.append(average_prominence)
-            highest_values.append(np.max(np.abs(signal.hilbert(np.real(corrected_chirp)))))
+            highest_values.append(
+                np.max(np.abs(signal.hilbert(np.real(corrected_chirp)))))
 
         # Plot the average prominence
         _, ax = plt.subplots()
@@ -162,13 +174,15 @@ def correct_dispersion():
         ax.grid()
 
         # Choose which criteria to pick the phase parameter
-        optimal_phase_parameter = PHASE_PARAMETERS[np.argmax(average_prominences)]
+        optimal_phase_parameter = PHASE_PARAMETERS[np.argmax(
+            average_prominences)]
         # optimal_phase_parameter = PHASE_PARAMETERS[np.argmax(highest_values)]
     else:
         # Set phase_parameter manually
-        optimal_phase_parameter = -6.95
+        optimal_phase_parameter = -0.0056
     # A linear graph providing the phase offset
-    phase_offset = np.linspace(optimal_phase_parameter, -optimal_phase_parameter, len(ffts))
+    phase_offset = np.linspace(
+        optimal_phase_parameter, -optimal_phase_parameter, len(ffts))
     # Do an fft shift on the phase offset
     phase_offset = np.fft.fftshift(phase_offset)
     phase_offset = optimal_phase_parameter + np.abs(phase_offset)
@@ -203,15 +217,16 @@ def correct_dispersion():
     ax[0, 0].grid()
     ax[1, 0].grid()
 
-    propagation_speed = 50
+    propagation_speed = 600
     arrival_times, _ = get_travel_times(setup.actuators[ACTUATOR_1],
                                         setup.sensors[SENSOR_3],
                                         propagation_speed,
                                         milliseconds=False,
                                         relative_first_reflection=True,
                                         print_info=False)
-    max_index = np.argmax(np.abs(signal.hilbert(np.real(corrected_chirp))))
-    # zero_index = corrected_chirp.shape[0] / 2
+    # max_index = np.argmax(np.abs(signal.hilbert(np.real(corrected_chirp))))
+    max_index = find_first_peak_index(
+        np.abs(signal.hilbert(np.real(corrected_chirp))))
     correction_offset = max_index
     correction_offset_time = correction_offset / SAMPLE_RATE
     arrival_times += correction_offset_time
