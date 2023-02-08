@@ -53,29 +53,35 @@ def dispersive_filter():
     impulse = signal.correlate(chirp, chirp, mode='same')
 
     # Calculate the FFT
-    impulse_fft = np.fft.fft(impulse)
-    impulse_fft_frequencies = np.fft.fftfreq(N, 1 / SAMPLE_RATE)
+    fft = np.fft.fft(impulse)
+    fft_frequencies = np.fft.fftfreq(N, 1 / SAMPLE_RATE)
     # Crop to 40 kHz
-    impulse_fft = impulse_fft[impulse_fft_frequencies < 40000]
-    impulse_fft_frequencies = impulse_fft_frequencies[impulse_fft_frequencies < 40000]
+    fft = fft[np.abs(fft_frequencies) < 40000]
+    fft_frequencies = fft_frequencies[np.abs(fft_frequencies) < 40000]
 
+    phase_parameter = 0.01  #
     # A linear graph providing the phase offset
-    phase_offset = np.linspace(0.05, -0.05, len(impulse_fft))
+    phase_offset = np.linspace(phase_parameter, -phase_parameter, len(fft))
     # Do an fft shift on the phase offset
     phase_offset = np.fft.fftshift(phase_offset)
+    phase_offset = phase_parameter - np.abs(phase_offset) + 0.05
 
     # Plot the phase offset
     _, ax = plt.subplots()
-    ax.plot(impulse_fft_frequencies, phase_offset)
+    ax.plot(fft_frequencies, phase_offset)
     ax.set_xlabel('Frequency (Hz)')
     ax.set_ylabel('Phase offset (rad)')
+    ax.set_title('Phase response of the dispersive filter, +0.5 for time offset')
     ax.grid()
 
     new_chirp = np.fft.ifft(
-        impulse_fft * np.exp(-1j * phase_offset * impulse_fft_frequencies))
+        fft * np.exp(-1j * phase_offset * fft_frequencies))
 
-    # Set the values before time 0 in new_chirp to 0
-    new_chirp[:len(new_chirp) // 2] = 0
+    new_chirp = signal.resample(new_chirp, len(chirp))
+
+    # Compansate for the insane amplitude boost happening somewhere
+    impulse = normalize(impulse)
+    new_chirp = normalize(new_chirp) / 2
 
     # Calculate the time values for each sample
     time = np.linspace(0, LENGTH, N)
@@ -83,11 +89,12 @@ def dispersive_filter():
 
     # Plot the signal
     _, ax = plt.subplots()
-    ax.plot(time, impulse, label='Original')
-    ax.plot(cropped_time, new_chirp, label='New chirp')
+    ax.plot(time, impulse, label='Original impulse chirp')
+    ax.plot(cropped_time, new_chirp, label='Phase-altered impulse')
     ax.legend()
     ax.set_xlabel('Time (s)')
     ax.set_ylabel('Amplitude')
+    ax.set_title('Dispersion simulation on a 0-40kHz compressed chirp')
     ax.grid()
 
     return 0
@@ -113,9 +120,9 @@ def correct_dispersion():
     ffts = ffts[np.abs(fft_frequencies) < 40000]
     fft_frequencies = fft_frequencies[np.abs(fft_frequencies) < 40000]
 
-    FIND_PHASE_PARAMETER = True
+    FIND_PHASE_PARAMETER = False
     if FIND_PHASE_PARAMETER:
-        PHASE_PARAMETERS = np.linspace(-100, 100, 500)
+        PHASE_PARAMETERS = np.linspace(-50, -30, 20)
         average_prominences = []
         highest_values = []
 
@@ -159,7 +166,7 @@ def correct_dispersion():
         # optimal_phase_parameter = PHASE_PARAMETERS[np.argmax(highest_values)]
     else:
         # Set phase_parameter manually
-        optimal_phase_parameter = -7.1
+        optimal_phase_parameter = -6.95
     # A linear graph providing the phase offset
     phase_offset = np.linspace(optimal_phase_parameter, -optimal_phase_parameter, len(ffts))
     # Do an fft shift on the phase offset
@@ -196,7 +203,7 @@ def correct_dispersion():
     ax[0, 0].grid()
     ax[1, 0].grid()
 
-    propagation_speed = 75
+    propagation_speed = 50
     arrival_times, _ = get_travel_times(setup.actuators[ACTUATOR_1],
                                         setup.sensors[SENSOR_3],
                                         propagation_speed,
