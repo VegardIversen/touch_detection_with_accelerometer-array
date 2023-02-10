@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from utils.global_constants import SAMPLE_RATE
 from utils.data_visualization.visualize_data import (plot_filter_response)
 
+
 """FILTERING"""
 
 
@@ -90,6 +91,29 @@ def crop_data(signals: pd.DataFrame or np.ndarray,
         signals_cropped = signals.loc[time_start * SAMPLE_RATE:
                                       time_end * SAMPLE_RATE]
     return signals_cropped
+
+
+def crop_measurement_to_signal(signal: np.ndarray,
+                               std_threshold_multiplier: float = 8):
+    """Crop the signal to the first and last value
+    above a threshold given by the standard deviation.
+    """
+    # Find the first index where the signal is higher than five times the standard deviation
+    std = np.std(signal)
+    threshold = std_threshold_multiplier * std
+    start_index = np.argmax(signal > threshold)
+
+    # Find the last index where the signal is higher than five times the standard deviation
+    end_index = len(signal) - np.argmax(signal[::-1] > threshold) - 1
+
+    # Add 10% of the signal length to the start and end index
+    start_index = int(start_index - 0.1 * (end_index - start_index))
+    end_index = int(end_index + 0.1 * (end_index - start_index))
+
+    # Crop the signal
+    signal = signal[start_index:end_index]
+
+    return signal
 
 
 def window_signals(signals: pd.DataFrame,
