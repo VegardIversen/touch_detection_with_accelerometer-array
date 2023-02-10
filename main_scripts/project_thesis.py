@@ -38,10 +38,10 @@ from utils.data_visualization.visualize_data import (compare_signals,
                                                      adjust_plot_margins)
 from main_scripts.correlation_bandpassing import (make_gaussian_cosine)
 
-from utils.setups import (Setup,
-                          Setup1,
-                          Setup2,
-                          Setup3)
+from utils.table_setups import (Setup,
+                                Setup1,
+                                Setup2,
+                                Setup3)
 
 
 """Setup 1"""
