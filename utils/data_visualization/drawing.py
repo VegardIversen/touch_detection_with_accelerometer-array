@@ -20,6 +20,13 @@ from utils.objects import (MirroredSensor,
 def plot_legend_without_duplicates(placement: str = None):
     """Avoid duplicate labels in the legend"""
     handles, labels = plt.gca().get_legend_handles_labels()
+    # Make the handles circles
+    for i, handle in enumerate(handles):
+        if isinstance(handle, patches.Circle):
+            handles[i] = plt.Line2D([], [],
+                                    markerfacecolor=handle.get_facecolor(),
+                                    markeredgecolor=handle.get_edgecolor(),
+                                    marker='o', linestyle='None')
     by_label = OrderedDict(zip(labels, handles))
     if placement:
         plt.legend(by_label.values(), by_label.keys(), loc=placement)
