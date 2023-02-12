@@ -10,6 +10,7 @@ from main_scripts.project_thesis import (setup1_results,
 from main_scripts.bandpassing_touch import (setup1_predict_reflections)
 from main_scripts.dispersion_compensation import (correct_dispersion,
                                                   dispersive_filter)
+from main_scripts.scattering_second_look import scattering_second_look
 from utils.data_visualization.visualize_data import set_fontsizes
 
 
@@ -35,7 +36,7 @@ def main():
         elif user_input == '3':
             setup3_results()
         elif user_input == '0':
-            correct_dispersion()
+            scattering_second_look()
             plt.show()
         else:
             print('Please type 1, 2 or 3 for their respective setups '

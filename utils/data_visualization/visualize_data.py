@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from utils.setups import Setup
 from utils.objects import Sensor
 from utils.global_constants import SAMPLE_RATE
 

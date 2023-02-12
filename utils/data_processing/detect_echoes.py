@@ -86,8 +86,8 @@ def find_first_peak_index(measurements: np.ndarray,
     assuming that the signal period is
     short relative to the full measurement.
     """
-    std = np.std(signals_values)
-    peaks, _ = signal.find_peaks(signals_values, height=10 * std)
+    std = np.std(signals_values[0:int(0.01 * len(measurements))])
+    peaks, _ = signal.find_peaks(signals_values, height=4 * std)
     if peaks.size == 0:
         raise ValueError('No peaks found!')
     peak_index = peaks[0]

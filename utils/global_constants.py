@@ -5,7 +5,7 @@ Date: 2022-01-09
 """GLOBAL CONSTANTS"""
 
 """Settings"""
-INTERPOLATION_FACTOR = 2
+INTERPOLATION_FACTOR = 8
 SAMPLE_RATE = 150000 * INTERPOLATION_FACTOR
 CHANNEL_NAMES = ['Sensor 1', 'Sensor 2', 'Sensor 3']
 CHIRP_CHANNEL_NAMES = ['Actuator', 'Sensor 1', 'Sensor 2', 'Sensor 3']
@@ -17,4 +17,5 @@ SENSOR_2 = 1
 SENSOR_3 = 2
 
 """Saving figures"""
-FIGURES_SAVE_PATH = '/home/niklast/Documents/GitHub/Specialization-Project-LaTeX/Figures/'
+# FIGURES_SAVE_PATH = '/home/niklast/Documents/GitHub/Specialization-Project-LaTeX/Figures/'
+FIGURES_SAVE_PATH = 'temp_figs/'
