@@ -93,27 +93,46 @@ def crop_data(signals: pd.DataFrame or np.ndarray,
     return signals_cropped
 
 
-def crop_measurement_to_signal(signal: np.ndarray,
-                               std_threshold_multiplier: float = 8):
+def crop_measurement_to_signal_ndarray(measurement: np.ndarray,
+                                       std_threshold_multiplier: float = 8):
     """Crop the signal to the first and last value
     above a threshold given by the standard deviation.
     """
-    # Find the first index where the signal is higher than five times the standard deviation
-    std = np.std(signal)
-    threshold = std_threshold_multiplier * std
-    start_index = np.argmax(signal > threshold)
+    # Use the first 1% of the measurement to estimate the noise floor
+    noise_avg = (np.std(measurement[:int(len(measurement) * 0.01)]))
 
-    # Find the last index where the signal is higher than five times the standard deviation
-    end_index = len(signal) - np.argmax(signal[::-1] > threshold) - 1
+    # Find the first index where the signal is higher than the threshold
+    threshold = std_threshold_multiplier * noise_avg
+    start_index = np.argmax(np.abs(measurement) > threshold)
 
-    # Add 10% of the signal length to the start and end index
-    start_index = int(start_index - 0.1 * (end_index - start_index))
-    end_index = int(end_index + 0.1 * (end_index - start_index))
+    # Find the last index where the signal is higher than the threshold
+    end_index = len(measurement) - np.argmax(np.abs(measurement[::-1]) > threshold) - 1
+
+    # Add 5% of the signal length to the start and end index
+    signal_length = end_index - start_index
+    start_index -= int(signal_length * 0.05)
+    if start_index < 0:
+        start_index = 0
+    end_index += int(signal_length * 0.05)
+    if end_index > len(measurement):
+        end_index = len(measurement)
 
     # Crop the signal
-    signal = signal[start_index:end_index]
+    signal = measurement[start_index:end_index]
 
     return signal
+
+
+def crop_measurements_to_signals_dataframe(measurements: pd.DataFrame,
+                                           std_threshold_multiplier: float = 5):
+    """Crop the signal to the first and last value
+    above a threshold given by the standard deviation.
+    """
+    signals = pd.DataFrame(columns=measurements.columns)
+    for channel in signals:
+        signals[channel] = crop_measurement_to_signal_ndarray(measurements[channel],
+                                                              std_threshold_multiplier)
+    return signals
 
 
 def window_signals(signals: pd.DataFrame,

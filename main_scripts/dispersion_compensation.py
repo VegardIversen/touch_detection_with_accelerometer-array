@@ -4,40 +4,33 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from utils.global_constants import (CHIRP_CHANNEL_NAMES,
-                                    SAMPLE_RATE,
-                                    ACTUATOR_1,
-                                    SENSOR_1,
-                                    SENSOR_2,
-                                    SENSOR_3,
-                                    FIGURES_SAVE_PATH,)
+from utils.global_constants import (
+    SAMPLE_RATE,
+    ACTUATOR_1,
+    SENSOR_1,
+    SENSOR_2,
+    SENSOR_3,
+    FIGURES_SAVE_PATH,
+)
 from utils.csv_to_df import csv_to_df
-from utils.simulations import simulated_phase_velocities
-from utils.data_processing.detect_echoes import (get_envelopes,
-                                                 get_travel_times,
-                                                 find_first_peak_index,)
-from utils.data_processing.preprocessing import (compress_chirps,
-                                                 crop_data,
-                                                 window_signals,
-                                                 filter_general,
-                                                 crop_measurement_to_signal,)
-from utils.data_processing.processing import (average_of_signals,
-                                              interpolate_waveform,
-                                              normalize,
-                                              variance_of_signals,
-                                              correct_drift,
-                                              to_dB,)
-from utils.data_visualization.visualize_data import (compare_signals,
-                                                     wave_statistics,
-                                                     envelope_with_lines,
-                                                     spectrogram_with_lines,
-                                                     set_window_size,
-                                                     adjust_plot_margins,)
-from main_scripts.correlation_bandpassing import (make_gaussian_cosine,)
-from utils.plate_setups import (Setup,
-                                Setup1,
-                                Setup2,
-                                Setup3)
+from utils.data_processing.detect_echoes import (
+    get_travel_times,
+    find_first_peak_index,
+)
+from utils.data_processing.preprocessing import (
+    filter_general,
+    crop_measurement_to_signal_ndarray,
+    crop_measurements_to_signals_dataframe,
+)
+from utils.data_processing.processing import (
+    interpolate_waveform,
+    normalize,
+)
+from utils.data_visualization.visualize_data import (
+    compare_signals,
+    envelope_with_lines,
+)
+from utils.plate_setups import Setup, Setup1, Setup2, Setup3
 
 
 def dispersive_filter():
@@ -50,7 +43,7 @@ def dispersive_filter():
 
     # Generate a chirp with bandwidth 40 kHz
     chirp = signal.chirp(np.linspace(0, LENGTH, N), 0, LENGTH, 40000)
-    impulse = signal.correlate(chirp, chirp, mode='same')
+    impulse = signal.correlate(chirp, chirp, mode="same")
 
     # Calculate the FFT
     fft = np.fft.fft(impulse)
@@ -69,14 +62,12 @@ def dispersive_filter():
     # Plot the phase offset
     _, ax = plt.subplots()
     ax.plot(fft_frequencies, phase_offset)
-    ax.set_xlabel('Frequency (Hz)')
-    ax.set_ylabel('Phase offset (rad)')
-    ax.set_title(
-        'Phase response of the dispersive filter, +0.5 for time offset')
+    ax.set_xlabel("Frequency (Hz)")
+    ax.set_ylabel("Phase offset (rad)")
+    ax.set_title("Phase response of the dispersive filter, +0.5 for time offset")
     ax.grid()
 
-    new_chirp = np.fft.ifft(
-        fft * np.exp(-1j * phase_offset * fft_frequencies))
+    new_chirp = np.fft.ifft(fft * np.exp(-1j * phase_offset * fft_frequencies))
 
     new_chirp = signal.resample(new_chirp, len(chirp))
 
@@ -90,12 +81,12 @@ def dispersive_filter():
 
     # Plot the signal
     _, ax = plt.subplots()
-    ax.plot(time, impulse, label='Original impulse chirp')
-    ax.plot(cropped_time, new_chirp, label='Phase-altered impulse')
+    ax.plot(time, impulse, label="Original impulse chirp")
+    ax.plot(cropped_time, new_chirp, label="Phase-altered impulse")
     ax.legend()
-    ax.set_xlabel('Time (s)')
-    ax.set_ylabel('Amplitude')
-    ax.set_title('Dispersion simulation on a 0-40kHz compressed chirp')
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("Amplitude")
+    ax.set_title("Dispersion simulation on a 0-40kHz compressed chirp")
     ax.grid()
 
     return 0
@@ -104,140 +95,133 @@ def dispersive_filter():
 def correct_dispersion():
     setup = Setup1()
     setup.draw()
-    FILE_FOLDER = 'Plate_10mm/Setup1/touch'
-    FILE_NAME = 'nik_touch_v1'
-    measurements = csv_to_df(file_folder=FILE_FOLDER,
-                             file_name=FILE_NAME)
+    FILE_FOLDER = "Plate_10mm/Setup1/touch"
+    FILE_NAME = "nik_touch_v2"
+    measurements = csv_to_df(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
-    measurements = filter_general(measurements,
-                                  filtertype='highpass',
-                                  critical_frequency=2000,
-                                  order=8,
-                                  plot_response=False)
+    measurements = measurements.drop(columns=["Actuator"])
 
-
-    # Interpolate waveforms
     measurements = interpolate_waveform(measurements)
 
-    # Only look at sensor 3 for now
-    measurement = measurements['Sensor 1']
+    BANDWIDTH = [4000, 40000]
+    measurements = filter_general(
+        measurements,
+        filtertype="highpass",
+        critical_frequency=BANDWIDTH[0],
+        order=2**5,
+        plot_response=False,
+    )
 
-    measurement = crop_measurement_to_signal(measurement)
+    measurements = crop_measurements_to_signals_dataframe(
+        measurements,
+        std_threshold_multiplier=10,
+    )
+
+    # measurements = crop_measurements_to_signals_dataframe(measurements,
+    #                                                       std_threshold_multiplier=7,)
+
+    # measurement = crop_measurement_to_signal_ndarray(measurements['Sensor 3'],
+    #                                                  std_threshold_multiplier=1,)
+
+    # Only look at one sensor for now
+    measurement = measurements["Sensor 1"]
+    measurement = np.pad(measurement.values, (len(measurement) // 2, 0))
 
     # Calculate the FFT
     fft = np.fft.fft(measurement)
     fft_frequencies = np.fft.fftfreq(len(measurement), 1 / SAMPLE_RATE)
-    # Crop to 40 kHz
-    fft = fft[np.abs(fft_frequencies) < 40000]
-    fft_frequencies = fft_frequencies[np.abs(fft_frequencies) < 40000]
+    # Crop to an upper limit
+    fft = fft[np.abs(fft_frequencies) < BANDWIDTH[1]]
+    fft_frequencies = fft_frequencies[np.abs(fft_frequencies) < BANDWIDTH[1]]
 
-    FIND_PHASE_PARAMETER = False
-    if FIND_PHASE_PARAMETER:
-        PHASE_PARAMETERS = np.linspace(-0.001, -0.05, 5000)
-        average_prominences = []
-        highest_values = []
+    # A linear graph providing the phase offset, with some trickery for correct lengths
+    phase_response = np.linspace(0, -40, len(fft_frequencies) // 2 + 1) - 10 * np.pi
+    # phase_response = np.pad(phase_response, (len(fft_frequencies) - len(phase_response), 0))
+    # phase_response = np.fft.fftshift(phase_response)
+    phase_offsets = -(
+        2
+        * np.pi
+        * (fft_frequencies[len(fft_frequencies) - len(phase_response) :])
+        * 0.1
+        / phase_response
+    )
+    # Concatenate phase_offset so that is mirrored around 0
+    phase_offsets = np.concatenate((-phase_offsets, phase_offsets[-1:0:-1]))
 
-        for phase_parameter in PHASE_PARAMETERS:
-            # A linear graph providing the phase offset
-            phase_offset = np.linspace(
-                phase_parameter, -phase_parameter, len(fft))
-            # Do an fft shift on the phase offset
-            phase_offset = np.fft.fftshift(phase_offset)
-            phase_offset = phase_parameter + np.abs(phase_offset)
+    phase_parameter = 0.2
+    phase_offsets = phase_offsets * phase_parameter
 
-            # Correct the phase offset
-            corrected_ffts = fft * \
-                np.exp(-1j * phase_offset * fft_frequencies)
-
-            # Calculate the inverse FFT
-            corrected_measurement = np.fft.ifft(corrected_ffts)
-
-            corrected_measurement = signal.resample(
-                corrected_measurement, len(measurement))
-
-            # Get the prominence of the peaks
-            average_prominence = np.average(get_prominences_of_peaks(
-                np.abs(signal.hilbert(np.real(corrected_measurement)))))
-            average_prominences.append(average_prominence)
-            highest_values.append(
-                np.max(np.abs(signal.hilbert(np.real(corrected_measurement)))))
-
-        # Plot the average prominence
-        _, ax = plt.subplots()
-        ax.plot(PHASE_PARAMETERS, average_prominences)
-        ax.set_xlabel('Phase parameter')
-        ax.set_ylabel('Average prominence')
-        ax.grid()
-
-        # Plot the highest value
-        _, ax = plt.subplots()
-        ax.plot(PHASE_PARAMETERS, highest_values)
-        ax.set_xlabel('Phase parameter')
-        ax.set_ylabel('Highest value')
-        ax.grid()
-
-        # Choose which criteria to pick the phase parameter
-        optimal_phase_parameter = PHASE_PARAMETERS[np.argmax(
-            average_prominences)]
-        optimal_phase_parameter = PHASE_PARAMETERS[np.argmax(highest_values)]
-    else:
-        # Set phase_parameter manually
-        optimal_phase_parameter = -0.00035
-
-    # A linear graph providing the phase offset
-    phase_offset = np.linspace(
-        optimal_phase_parameter, -optimal_phase_parameter, len(fft))
-    # Do an fft shift on the phase offset
-    phase_offset = np.fft.fftshift(phase_offset)
-    phase_offset = optimal_phase_parameter + np.abs(phase_offset)
+    # phase_offsets = -1 / fft_frequencies
+    # phase_offsets[:int(len(phase_offsets) / 2)] = -phase_offsets[:int(len(phase_offsets) / 2)]
+    # phase_offsets = (optimal_phase_parameter / (fft_frequencies))
+    # # Set values between -2000Hz and 2000 Hz to zero
 
     # Plot the phase offset
     _, ax = plt.subplots()
-    ax.plot(fft_frequencies, phase_offset)
-    ax.set_xlabel('Frequency (Hz)')
-    ax.set_ylabel('Phase offset (rad)')
+    ax.plot(fft_frequencies, phase_offsets)
+    # ax.plot(fft_frequencies, phase_response)
+    ax.set_xlabel("Frequency (Hz)")
+    ax.set_ylabel("Phase offset (rad)")
     ax.grid()
 
     # Correct the phase offset
-    corrected_ffts = fft * np.exp(-1j * phase_offset * fft_frequencies)
+    corrected_ffts = fft * np.exp(-1j * phase_offsets)
 
     # Calculate the inverse FFT
     corrected_measurement = np.fft.ifft(corrected_ffts)
 
-    corrected_measurement = signal.resample(
-        corrected_measurement, len(measurement))
+    corrected_measurement = signal.resample(corrected_measurement, len(measurement))
+
+    corrected_measurement = crop_measurement_to_signal_ndarray(corrected_measurement)
 
     # # Plot the corrected measurements
     fig, ax = plt.subplots(2, 1, squeeze=False)
-    compare_signals(fig, ax,
-                    [measurement,
-                     np.real(corrected_measurement)],
-                    plots_to_plot=['time'])
-    compare_signals(fig, ax,
-                    [np.abs(signal.hilbert(np.real(measurement))),
-                     np.abs(signal.hilbert(np.real(corrected_measurement)))],
-                    plots_to_plot=['time'])
-    ax[0, 0].set_title('Original')
-    ax[1, 0].set_title('Corrected')
+    compare_signals(
+        fig, ax, [measurement, np.real(corrected_measurement)], plots_to_plot=["time"]
+    )
+    compare_signals(
+        fig,
+        ax,
+        [
+            np.abs(signal.hilbert(np.real(measurement))),
+            np.abs(signal.hilbert(np.real(corrected_measurement))),
+        ],
+        plots_to_plot=["time"],
+    )
+    ax[0, 0].set_title("Original")
+    ax[1, 0].set_title("Corrected")
     ax[0, 0].grid()
     ax[1, 0].grid()
 
-    propagation_speed = 600
-    arrival_times, _ = get_travel_times(setup.actuators[ACTUATOR_1],
-                                        setup.sensors[SENSOR_1],
-                                        propagation_speed,
-                                        milliseconds=False,
-                                        relative_first_reflection=True,
-                                        print_info=False)
-    # max_index = np.argmax(np.abs(signal.hilbert(np.real(corrected_chirp))))
+    propagation_speed = setup.get_propagation_speed(measurements)
+    # propagation_speed = 75
+    arrival_times, _ = get_travel_times(
+        setup.actuators[ACTUATOR_1],
+        setup.sensors[SENSOR_1],
+        propagation_speed,
+        milliseconds=False,
+        relative_first_reflection=True,
+        print_info=False,
+    )
+    # max_index = np.argmax(np.abs(signal.hilbert(np.real(corrected_measurement))))
     max_index = find_first_peak_index(
-        np.abs(signal.hilbert(np.real(corrected_measurement))))
+        np.abs(signal.hilbert(np.real(corrected_measurement)))
+    )
     correction_offset = max_index
     correction_offset_time = correction_offset / SAMPLE_RATE
     arrival_times += correction_offset_time
-    envelope_with_lines(setup.sensors[SENSOR_1],
-                        corrected_measurement,
-                        arrival_times)
+    envelope_with_lines(setup.sensors[SENSOR_1], corrected_measurement, arrival_times)
+
+    fig, ax = plt.subplots(2, 3, squeeze=False)
+    compare_signals(
+        fig,
+        ax,
+        [measurement, corrected_measurement],
+        plots_to_plot=["time", "spectrogram", "fft"],
+        dynamic_range_db=40,
+        nfft=2**8,
+        freq_max=20000,
+    )
 
     return 0
 

@@ -84,7 +84,7 @@ def setup1_plot_touch_signals():
     print('Plotting touch signals')
 
     """Choose file"""
-    FILE_FOLDER = 'Setup_1/touch'
+    FILE_FOLDER = 'Table/Setup1/touch'
     FILE_NAME = 'touch_v1'
     """Open file"""
     measurements = csv_to_df(file_folder=FILE_FOLDER,
@@ -159,7 +159,7 @@ def setup1_plot_chirp_signals():
     print('Plotting chirp signals')
 
     """Choose file"""
-    FILE_FOLDER = 'Setup_1/chirp/100Hz_to_40kHz_single_chirp'
+    FILE_FOLDER = 'Table/Setup1/chirp/100Hz_to_40kHz_single_chirp'
     FILE_NAME = 'chirp_v1'
     """Open file"""
     measurements = csv_to_df(file_folder=FILE_FOLDER,
@@ -381,7 +381,7 @@ def setup1_transfer_function(setup: Setup):
     print('Calculating transfer function')
 
     """Choose file"""
-    FILE_FOLDER = 'Setup_1/chirp/100Hz_to_40kHz_single_chirp'
+    FILE_FOLDER = 'Table/Setup1/chirp/100Hz_to_40kHz_single_chirp'
     FILE_NAME = 'chirp_v1'
 
     """Open file"""
@@ -452,6 +452,7 @@ def setup1_transfer_function(setup: Setup):
     """Find the amplitude and phase of the transfer function"""
     amplitude_response = np.abs(transfer_function)
     phase_response = np.unwrap(np.angle(transfer_function)) - 2 * np.pi
+    # phase_response = np.linspace(0, -40, len(transfer_function)) - np.pi
 
     """Find the phase velocity"""
     distance_between_sensors = np.linalg.norm(setup.sensors[SENSOR_3].coordinates -
@@ -539,7 +540,7 @@ def setup1_transfer_function(setup: Setup):
 def setup1_scattering():
     print('Scattering')
     """Open file"""
-    FILE_FOLDER = 'Setup_1/scattering_tests/15kHz_to_40kHz_125ms'
+    FILE_FOLDER = 'Table/Setup1/scattering_tests/15kHz_to_40kHz_125ms'
     FILE_NAME = 'no_touch_v1'
     measurements = csv_to_df(file_folder=FILE_FOLDER,
                              file_name=FILE_NAME)
@@ -642,7 +643,7 @@ def setup1_scattering():
 def setup1_predict_reflections(setup: Setup):
     print('Predicting reflections')
     """Open file"""
-    FILE_FOLDER = 'Setup_1/touch'
+    FILE_FOLDER = 'Table/Setup1/touch'
     FILE_NAME = 'touch_v1'
     measurements = csv_to_df(file_folder=FILE_FOLDER,
                              file_name=FILE_NAME)
@@ -760,7 +761,7 @@ def setup2_results():
     """Run some general commands for all functions"""
     print('Setup 2')
     """Choose file"""
-    FILE_FOLDER = 'Setup_2'
+    FILE_FOLDER = 'Table/Setup2'
     FILE_NAME = 'prop_speed_chirp3_setup3_2_v2'
     """Open file"""
     measurements = csv_to_df(file_folder=FILE_FOLDER,
@@ -926,7 +927,7 @@ def setup2_transfer_function(setup: Setup):
     print('Calculating transfer function')
 
     """Choose file"""
-    FILE_FOLDER = 'Setup_2'
+    FILE_FOLDER = 'Table/Setup2'
     FILE_NAME = 'prop_speed_chirp3_setup3_2_v1'
 
     """Open file"""
@@ -1092,7 +1093,7 @@ def setup3_results():
 
 def setup3_plot_raw_time_signal():
     """Open file"""
-    FILE_FOLDER = 'Setup_3'
+    FILE_FOLDER = 'Setup3'
     FILE_NAME = 'notouch_20to40khz_1s_10vpp_v1'
     measurements = csv_to_df(file_folder=FILE_FOLDER,
                              file_name=FILE_NAME,
@@ -1127,7 +1128,7 @@ def setup3_plot_raw_time_signal():
 
 def setup3_scattering():
     """Open file"""
-    FILE_FOLDER = 'Setup_3'
+    FILE_FOLDER = 'Setup3'
     FILE_NAME = 'notouchThenHoldB2_20to40khz_125ms_10vpp_v1'
     measurements = csv_to_df(file_folder=FILE_FOLDER,
                              file_name=FILE_NAME)

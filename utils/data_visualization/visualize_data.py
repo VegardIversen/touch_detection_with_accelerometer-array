@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from utils.setups import Setup
+from utils.table_setups import Setup
 from utils.objects import Sensor
 from utils.global_constants import SAMPLE_RATE
 
@@ -87,7 +87,8 @@ def compare_signals(fig, axs,
                 spec = axs[i, axs_index].specgram(channel,
                                                   Fs=SAMPLE_RATE,
                                                   NFFT=nfft,
-                                                  noverlap=(nfft // 2))
+                                                  noverlap=(nfft // 2),
+                                                  sides='twosided')
                 # axs[i, axs_index].set_xlim(left=signal_start_seconds,
                 #                            right=(signal_start_seconds +
                 #                                   signal_length_seconds))
@@ -105,7 +106,7 @@ def compare_signals(fig, axs,
             axs[i, axs_index].sharex(axs[0, 0])
             if sharey:
                 axs[i, axs_index].sharey(axs[0, axs_index])
-            axs[i, axs_index].axis(ymax=freq_max)
+            axs[i, axs_index].axis(ymax=freq_max, ymin=-freq_max)
             # axs[i, axs_index].set_title(f'{channel.name}, spectrogram')
             axs[len(data) - 1, axs_index].set_xlabel('Time [s]')
             axs[i, axs_index].set_ylabel('Frequency [Hz]')
