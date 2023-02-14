@@ -41,7 +41,7 @@ from utils.table_setups import (Setup,
 
 
 def scattering_second_look():
-    FILE_FOLDER = 'Table\\Setup1\\scattering_tests\\15kHz_to_40kHz_125ms'
+    FILE_FOLDER = 'Table/Setup1/scattering_tests/15kHz_to_40kHz_125ms'
     FILE_NAME = 'no_touch_v1'
     # FILE_FOLDER = 'Table\\Setup3'
     # FILE_NAME = 'notouchThenHoldB2_20to40khz_125ms_10vpp_v1'
@@ -56,7 +56,7 @@ def scattering_second_look():
                               order=8,
                               plot_response=False,)
 
-    FILE_FOLDER = 'Table\\Setup1\\scattering_tests\\15kHz_to_40kHz_125ms'
+    FILE_FOLDER = 'Table/Setup1/scattering_tests/15kHz_to_40kHz_125ms'
     FILE_NAME = 'hold_pos_2_v1'
     # FILE_FOLDER = 'Table\\Setup3'
     # FILE_NAME = 'notouchThenHoldB2_20to40khz_125ms_10vpp_v1'
