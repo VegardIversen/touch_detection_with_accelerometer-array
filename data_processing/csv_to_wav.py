@@ -6,7 +6,7 @@ from pathlib import Path
 
 data_folder = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave'
 output = data_folder + '\\noise_test_veg_gudsong_5s_samplerate_150khz.wav'
-file_path = data_folder + '\\div_files\\noise_test_veg_gudsong_5s_samplerate_150khz.csv'
+file_path = data_folder + '\\Measurements\\div_files\\noise_test_veg_gudsong_5s_samplerate_150khz.csv'
 A1 = pd.read_csv(file_path, delimiter=',', names=['channel 1', 'channel 2', 'channel 3'])
 data = A1.to_numpy()
 SAMPLE_RATE = 150000

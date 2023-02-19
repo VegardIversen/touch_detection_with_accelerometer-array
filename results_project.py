@@ -96,32 +96,32 @@ def table_figures():
     SETUP.draw(actuator_show=False, save_fig=True, file_format='svg', fig_name='table_setup2_correlation', show_tab=True)
     SETUP.draw(actuator_show=False, save_fig=True, file_format='png', fig_name='table_setup2_correlation', show_tab=True)
 def results_setup1():
-    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=True, channels=['channel 1','channel 2', 'channel 3'])
-    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=True, channels=['channel 1','channel 2', 'channel 3'], file_format='svg')
-    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=True, channels=['channel 1'])
-    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=True, channels=['channel 1'], file_format='svg')
-    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=False, channels=['channel 1','channel 2', 'channel 3'])
-    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=False, channels=['channel 1','channel 2', 'channel 3'], file_format='svg')
-    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=False, channels=['channel 1'])
-    st.transfer_function_plate('\\vegard_og_niklas\\sensortest\\rot_clock_123', n_files=1,plot_response=False, channels=['channel 1'], file_format='svg')
-    st.fft_analysis_one_sens_all_pos(folder='\\vegard_og_niklas\\sensortest\\', n_runs=1, plot_chirp_fft=True,savefig=True, file_format='svg')
-    st.fft_analysis_one_sens_all_pos(folder='\\vegard_og_niklas\\sensortest\\', n_runs=1, plot_chirp_fft=True,savefig=True, file_format='png')
-    st.fft_analysis_all_sensors('\\vegard_og_niklas\\sensortest\\', position=-3, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='svg')
-    st.fft_analysis_all_sensors('\\vegard_og_niklas\\sensortest\\', position=-2, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='svg')
-    st.fft_analysis_all_sensors('\\vegard_og_niklas\\sensortest\\', position=-1, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='svg')
-    st.fft_analysis_all_sensors('\\vegard_og_niklas\\sensortest\\', position=-3, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='png')
-    st.fft_analysis_all_sensors('\\vegard_og_niklas\\sensortest\\', position=-2, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='png')
-    st.fft_analysis_all_sensors('\\vegard_og_niklas\\sensortest\\', position=-1, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='png')
-    st.fft_analysis_all_sensors_compare(folder='\\vegard_og_niklas\\sensortest\\', n_runs=1, plot_chirp_fft=True,savefig=True, file_format='svg')
-    st.fft_analysis_all_sensors_compare(folder='\\vegard_og_niklas\\sensortest\\', n_runs=1, plot_chirp_fft=True,savefig=True, file_format='png')
-    st.fft_analysis_all_positions_compare(folder='\\vegard_og_niklas\\sensortest\\rot_clock_123\\', savefig=True, file_format='png')
+    st.transfer_function_plate('\\Measurements\\sensortest\\rot_clock_123', n_files=1,plot_response=True, channels=['channel 1','channel 2', 'channel 3'])
+    st.transfer_function_plate('\\Measurements\\sensortest\\rot_clock_123', n_files=1,plot_response=True, channels=['channel 1','channel 2', 'channel 3'], file_format='svg')
+    st.transfer_function_plate('\\Measurements\\sensortest\\rot_clock_123', n_files=1,plot_response=True, channels=['channel 1'])
+    st.transfer_function_plate('\\Measurements\\sensortest\\rot_clock_123', n_files=1,plot_response=True, channels=['channel 1'], file_format='svg')
+    st.transfer_function_plate('\\Measurements\\sensortest\\rot_clock_123', n_files=1,plot_response=False, channels=['channel 1','channel 2', 'channel 3'])
+    st.transfer_function_plate('\\Measurements\\sensortest\\rot_clock_123', n_files=1,plot_response=False, channels=['channel 1','channel 2', 'channel 3'], file_format='svg')
+    st.transfer_function_plate('\\Measurements\\sensortest\\rot_clock_123', n_files=1,plot_response=False, channels=['channel 1'])
+    st.transfer_function_plate('\\Measurements\\sensortest\\rot_clock_123', n_files=1,plot_response=False, channels=['channel 1'], file_format='svg')
+    st.fft_analysis_one_sens_all_pos(folder='\\Measurements\\sensortest\\', n_runs=1, plot_chirp_fft=True,savefig=True, file_format='svg')
+    st.fft_analysis_one_sens_all_pos(folder='\\Measurements\\sensortest\\', n_runs=1, plot_chirp_fft=True,savefig=True, file_format='png')
+    st.fft_analysis_all_sensors('\\Measurements\\sensortest\\', position=-3, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='svg')
+    st.fft_analysis_all_sensors('\\Measurements\\sensortest\\', position=-2, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='svg')
+    st.fft_analysis_all_sensors('\\Measurements\\sensortest\\', position=-1, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='svg')
+    st.fft_analysis_all_sensors('\\Measurements\\sensortest\\', position=-3, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='png')
+    st.fft_analysis_all_sensors('\\Measurements\\sensortest\\', position=-2, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='png')
+    st.fft_analysis_all_sensors('\\Measurements\\sensortest\\', position=-1, n_runs=1, plot_chirp_fft=True,savefig=True, file_format='png')
+    st.fft_analysis_all_sensors_compare(folder='\\Measurements\\sensortest\\', n_runs=1, plot_chirp_fft=True,savefig=True, file_format='svg')
+    st.fft_analysis_all_sensors_compare(folder='\\Measurements\\sensortest\\', n_runs=1, plot_chirp_fft=True,savefig=True, file_format='png')
+    st.fft_analysis_all_positions_compare(folder='\\Measurements\\sensortest\\rot_clock_123\\', savefig=True, file_format='png')
 
 def results_setup2():
     #bug in code here. Done on different branch to save time
     pass
     # """Inspect touch data by plotting the raw from channel 1 and the spectogram of the raw data on this channel.
     # share axis between the two plots"""
-    # df = csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
+    # df = csv_to_df('Measurements\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
     # dynamic_range_db = 60
     # #filter the dataframe with a highpassfilter with cutoff at 100 Hz
     # #df = filter_general(df, 'highpass', cutoff_highpass=100)
@@ -189,27 +189,27 @@ def results_setup2():
     # plt.show()
     # plt.clf()
 def results_setup4():
-    custom_chirp = csv_to_df(file_folder='div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
-    df1 = csv_to_df('vegard_og_niklas\\setup3\\', 'prop_speed_chirp3_setup3_0_v1')
-    df = csv_to_df('\\vegard_og_niklas\\setup10_propagation_speed_15cm\\chirp\\', 'chirp_v1')
-    sensor_test_df = csv_to_df('\\vegard_og_niklas\\sensortest\\rot_clock_123', 'chirp_v1')
-    df_touch_10cm = csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
-    phase15, freq15  = wp.phase_plotting(df, chirp=custom_chirp, use_recorded_chirp=True, BANDWIDTH=[100,40000], start_stops=[(146000,441200),(146000,442000)], save_fig=True, file_name='phase_plot_15cm0_45.svg', file_format='svg',figsize=0.45)
+    custom_chirp = csv_to_df(file_folder='Measurements\\div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
+    df1 = csv_to_df('Measurements\\setup3_0\\', 'chirp_100_40000_2s_v1')
+    #df = csv_to_df('\\Measurements\\setup10_propagation_speed_15cm\\chirp\\', 'chirp_v1')
+    #sensor_test_df = csv_to_df('\\Measurements\\sensortest\\rot_clock_123', 'chirp_v1')
+    #df_touch_10cm = csv_to_df('Measurements\\setup9_propagation_speed_short\\touch', 'touch_v1')
+    #phase15, freq15  = wp.phase_plotting(df, chirp=custom_chirp, use_recorded_chirp=True, BANDWIDTH=[100,40000], start_stops=[(146000,441200),(146000,442000)], save_fig=True, file_name='phase_plot_15cm0_45.svg', file_format='svg',figsize=0.45)
     phase10, freq10  = wp.phase_plotting(df1, chirp=custom_chirp, use_recorded_chirp=True, start_stops=[(95000,390500),(94000,390400)], BANDWIDTH=[100,40000], save_fig=True, file_name='phase_plot_10cm0_45.svg', file_format='svg',figsize=0.45)
     #phase_vel = wp.phase_velocity(phase, freq, distance=0.15, plot=True)
-    wp.plot_velocities_2distance(phase15, freq15, 0.15, phase10, freq10,  0.1,  savefig=True, filename='phase_velocity_10_cm_15_cm.png', file_format='png')
-    wp.plot_velocities_2distance(phase15, freq15, 0.15, phase10, freq10,  0.1,  savefig=True, filename='phase_velocity_10_cm_15_cm.svg', file_format='svg')
-    wp.plot_velocities(phase10, freq10, 0.10, savefig=True, filename='phase_velocity_10cm.svg', file_format='svg')
+    #wp.plot_velocities_2distance(phase15, freq15, 0.15, phase10, freq10,  0.1,  savefig=True, filename='phase_velocity_10_cm_15_cm.png', file_format='png')
+    #wp.plot_velocities_2distance(phase15, freq15, 0.15, phase10, freq10,  0.1,  savefig=True, filename='phase_velocity_10_cm_15_cm.svg', file_format='svg')
+    wp.plot_velocities(phase10, freq10, 0.10, savefig=False, filename='phase_velocity_10cm.svg', file_format='svg')
 
 def results_setup5_touch():
     FILTER = False
     SETUP = Setup9()
     BANDWIDTH = np.array([100, 40000])
-    df_touch_10cm = csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
-    #df_touch_10cm = csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v2')
-    df_chirp_10cm = csv_to_df('vegard_og_niklas\\setup3\\', 'prop_speed_chirp3_setup3_0_v1')
-    #threshold of "csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v1')" is 0.0006 ch1. 0.0013 ch3 
-    custom_chirp = csv_to_df(file_folder='div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
+    df_touch_10cm = csv_to_df('Measurements\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
+    #df_touch_10cm = csv_to_df('Measurements\\setup9_propagation_speed_short\\touch\\', 'touch_v2')
+    df_chirp_10cm = csv_to_df('Measurements\\setup3_0\\', 'prop_speed_chirp3_setup3_0_v1')
+    #threshold of "csv_to_df('Measurements\\setup9_propagation_speed_short\\touch\\', 'touch_v1')" is 0.0006 ch1. 0.0013 ch3 
+    custom_chirp = csv_to_df(file_folder='Measurements\\div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
     phase10, freq10  = wp.phase_plotting(df_chirp_10cm, chirp=custom_chirp, use_recorded_chirp=True, start_stops=[(95000,390500),(94000,390400)], BANDWIDTH=[100,40000], save_fig=False, file_name='phase_plot_10cm.svg', file_format='svg')
     phase_vel = wp.phase_velocity(phase10, freq10, distance=0.1, plot=False)
     max_vel = np.max(phase_vel)
@@ -326,11 +326,11 @@ def results_setup5_touch():
 def results_setup5_chirp():
     SETUP = Setup9()
     SETUP.draw()
-    df_touch_10cm = csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
-    df_chirp_ref_10cm = csv_to_df('\\setup9_propagation_speed_short\\chirp\\100Hz_to_40kHz_single_chirp\\', 'chirp_v1')
-    custom_chirp = csv_to_df(file_folder='div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
-    df_chirp_10cm = csv_to_df('vegard_og_niklas\\setup3\\', 'prop_speed_chirp3_setup3_0_v1')
-    custom_chirp = csv_to_df(file_folder='div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
+    df_touch_10cm = csv_to_df('Measurements\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
+    df_chirp_ref_10cm = csv_to_df('Measurements\\setup9_propagation_speed_short\\chirp\\100Hz_to_40kHz_single_chirp\\', 'chirp_v1')
+    custom_chirp = csv_to_df(file_folder='Measurements\\div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
+    df_chirp_10cm = csv_to_df('Measurements\\setup3_0\\', 'prop_speed_chirp3_setup3_0_v1')
+    custom_chirp = csv_to_df(file_folder='Measurements\\div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
     phase10, freq10  = wp.phase_plotting(df_chirp_10cm, chirp=custom_chirp, use_recorded_chirp=True, start_stops=[(95000,390500),(94000,390400)], BANDWIDTH=[100,40000], save_fig=False, file_name='phase_plot_10cm.svg', file_format='svg')
     phase_vel = wp.phase_velocity(phase10, freq10, distance=0.1, plot=False)
     max_vel = np.max(phase_vel)
@@ -413,9 +413,9 @@ def results_setup5_chirp():
 
 
 if __name__ == '__main__':
-    CROSS_CORR_PATH1 = '\\vegard_og_niklas\\setup2_korrelasjon\\'
+    CROSS_CORR_PATH1 = '\\Measurements\\setup2_korrelasjon\\'
     CROSS_CORR_PATH2 = '\\first_test_touch_passive_setup2\\'
-    custom_chirp = csv_to_df(file_folder='div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
+    custom_chirp = csv_to_df(file_folder='Measurements\\div_files', file_name='chirp_custom_fs_150000_tmax_2_100-40000_method_linear', channel_names=CHIRP_CHANNEL_NAMES)
     #set base new base after new measurements:
     #execution_time = timeit.timeit(ccp.SetBase, number=1)
     #print(f'Execution time: {execution_time}')
@@ -423,10 +423,10 @@ if __name__ == '__main__':
     #ccp.run_test(tolatex=True)
     #ccp.run_test(tolatex=True,data_folder='\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\first_test_touch_passive_setup2\\',filename='results_correlation_old_samples.csv')
     #find position
-    #ccp.FindTouchPosition(f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\vegard_og_niklas\\setup2_korrelasjon\\A2_v3.csv')
-    df1 = csv_to_df('vegard_og_niklas\\setup3\\', 'prop_speed_chirp3_setup3_0_v1')
-    df = csv_to_df('\\vegard_og_niklas\\setup10_propagation_speed_15cm\\chirp\\', 'chirp_v1')
-    sensor_test_df = csv_to_df('\\vegard_og_niklas\\sensortest\\rot_clock_123', 'chirp_v1')
-    df_touch_10cm = csv_to_df('\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
+    #ccp.FindTouchPosition(f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\Measurements\\setup2_korrelasjon\\A2_v3.csv')
+    df1 = csv_to_df('Measurements\\setup3_0\\', 'prop_speed_chirp3_setup3_0_v1')
+    df = csv_to_df('\\Measurements\\setup10_propagation_speed_15cm\\chirp\\', 'chirp_v1')
+    sensor_test_df = csv_to_df('\\Measurements\\sensortest\\rot_clock_123', 'chirp_v1')
+    df_touch_10cm = csv_to_df('Measurements\\setup9_propagation_speed_short\\touch\\', 'touch_v1')
     time = np.linspace(0, len(df1) / SAMPLE_RATE, num=len(df1))
     

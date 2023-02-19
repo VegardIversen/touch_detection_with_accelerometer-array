@@ -20,8 +20,8 @@ def manual_cut_signal(signal):
     return start, end
 
 SAMPLERATE = 150000
-path = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\setup9_propagation_speed_short\\touch\\touch_v1.csv'
-path_chirp = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\setup9_propagation_speed_short\\chirp\\100Hz_to_40kHz_single_chirp\\chirp_v1.csv'
+path = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgaveMeasurements\\setup9_propagation_speed_short\\touch\\touch_v1.csv'
+path_chirp = f'{Path.home()}\\OneDrive - NTNU\\NTNU\\ProsjektOppgaveMeasurements\\setup9_propagation_speed_short\\chirp\\100Hz_to_40kHz_single_chirp\\chirp_v1.csv'
 data = pd.read_csv(path, names=['channel 1', 'channel 2', 'channel 3', 'wave_gen'])
 data_chirp = pd.read_csv(path_chirp, names=['channel 1', 'channel 2', 'channel 3', 'wave_gen'])
 time_ax = np.linspace(0, len(data)/SAMPLERATE, len(data))

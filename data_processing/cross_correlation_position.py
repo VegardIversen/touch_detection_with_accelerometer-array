@@ -214,7 +214,7 @@ def FindTouchPosition(file, crop=True, direction_check=True, channel='channel 1'
     return grid_cell, double_checked, degrees
 
 def run_test(
-            data_folder='\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\vegard_og_niklas\\setup2_korrelasjon\\',
+            data_folder='\\OneDrive - NTNU\\NTNU\\ProsjektOppgave\\Measurements\\setup2_korrelasjon\\',
             pick_files='*[v2|v3].csv',
             output_folder=RESULT_DATA_FOLDER,
             filename='results_correlation.csv',

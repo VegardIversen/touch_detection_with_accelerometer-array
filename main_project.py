@@ -16,19 +16,19 @@ from data_processing.preprocessing import crop_data, filter_general, compress_ch
 from data_processing.detect_echoes import find_first_peak, get_hilbert_envelope, get_travel_times
 from data_processing.find_propagation_speed import find_propagation_speed_with_delay
 from data_viz_files.drawing import plot_legend_without_duplicates
-import results as r
+import results_project as r
 
 def main():
     """
     Run this file to create all the figures in the report.
     """
-    r.results_setup1()
+    #r.results_setup1()
     #r.results_setup2()
-    r.results_setup3()
+    #r.results_setup3()
     r.results_setup4()
-    r.results_setup5_touch()
-    r.results_setup5_chirp()
-    r.compression_figs()
+    #r.results_setup5_touch()
+    #r.results_setup5_chirp()
+    #r.compression_figs()
 
     
 

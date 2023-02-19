@@ -126,7 +126,9 @@ def phase_plotting(
                 save_fig=False,
                 file_name='phase_difference.png',
                 file_format='png',
-                figsize=0.75):
+                figsize=0.75,
+                threshold1=400,
+                threshold2=400,):
     df = preprocess_df(df, detrend=detrend)
     # check if dataframe has a column with name wave_gen
     if 'wave_gen' in df.columns:
@@ -153,19 +155,19 @@ def phase_plotting(
     temp_arr[start2:end2,1] = df[channels[1]].iloc[start2:end2]
     df_sig_only = pd.DataFrame(temp_arr, columns=channels)
     compressed_df = compress_chirp(df_sig_only, chirp, use_recorded_chirp=use_recorded_chirp)
-    # plt.Figure(figsize=(16, 14))
-    # plt.plot(compressed_df[channels[0]], label=channels[0])
-    # plt.plot(compressed_df[channels[1]], label=channels[1])
-    # plt.xlabel('Samples')
-    # plt.ylabel('Amplitude')
-    # plt.legend()
-    # plt.savefig('sig'+file_name, format=file_format,dpi=300)
-    # plt.show()
+    plt.Figure(figsize=(16, 14))
+    plt.plot(compressed_df[channels[0]], label=channels[0])
+    plt.plot(compressed_df[channels[1]], label=channels[1])
+    plt.xlabel('Samples')
+    plt.ylabel('Amplitude')
+    plt.legend()
+    #plt.savefig('sig'+file_name, format=file_format,dpi=300)
+    plt.show()
     
-    # exit()
-    start_index_ch1 = get_first_index_above_threshold(compressed_df[channels[0]], 400)
+    
+    start_index_ch1 = get_first_index_above_threshold(compressed_df[channels[0]], threshold1)
     end_index_ch1 = start_index_ch1 + duration_cut
-    start_index_ch2 = get_first_index_above_threshold(compressed_df[channels[1]], 800)
+    start_index_ch2 = get_first_index_above_threshold(compressed_df[channels[1]], threshold2)
     end_index_ch2 = start_index_ch2 + duration_cut
     cut_ch1 = compressed_df[channels[0]][start_index_ch1:end_index_ch1]
     cut_ch2 = compressed_df[channels[1]][start_index_ch2:end_index_ch2]
@@ -175,14 +177,14 @@ def phase_plotting(
     cut_ch2_win = cut_ch2 * window
 
     #plot the cut signals
-    # fig2=plt.Figure(figsize=(16, 14))
-    # plt.plot(cut_ch1_win, label=channels[0])
-    # plt.plot(cut_ch2_win, label=channels[1])
-    # # if save_fig:
-    # #     plt.savefig('cut'+file_name, format=file_format, dpi=300)
-    # # plt.legend()
-    # # plt.show()
-    # # exit()
+    fig2=plt.Figure(figsize=(16, 14))
+    plt.plot(cut_ch1_win, label=channels[0])
+    plt.plot(cut_ch2_win, label=channels[1])
+    # if save_fig:
+    #     plt.savefig('cut'+file_name, format=file_format, dpi=300)
+    plt.legend()
+    plt.show()
+    
     s1t = np.zeros(len(compressed_df[channels[0]]))
     s1t[start_index_ch1:end_index_ch1] = cut_ch1_win
     s2t = np.zeros(len(compressed_df[channels[1]]))
@@ -214,10 +216,16 @@ def phase_velocity(phase, freq, distance, plot=False):
     return phase_vel
 
 def theoretical_velocities(freq):
-    plate_thickness = 0.02  # m
-    youngs_modulus = 3.8 * 10 ** 9  # Pa
-    density = (650 + 800) / 2  # kg/m^3
-    poisson_ratio = 0.2  # -
+    # plate_thickness = 0.02  # m
+    # youngs_modulus = 3.8 * 10 ** 9  # Pa
+    # density = (650 + 800) / 2  # kg/m^3
+    # poisson_ratio = 0.2  # -
+    plate_thickness = 0.01  # m
+    #youngs_modulus = 5.52e8  # Pa
+    youngs_modulus = 1e9  # Pa
+    #density = 2.2e3  # kg/m^3
+    density = 950  # kg/m^3
+    poisson_ratio = 0.42  # -
     phase_velocity_longitudinal = np.sqrt(youngs_modulus /
                                           (density * (1 - poisson_ratio ** 2)))
     phase_velocity_shear = (phase_velocity_longitudinal *
