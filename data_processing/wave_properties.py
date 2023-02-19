@@ -268,7 +268,8 @@ def phase_velocity(phase, freq, distance, plot=False):
         
     return phase_vel
 
-def theoretical_velocities(freq):
+def theoretical_velocities(freq, material='teflon'):
+    
     # plate_thickness = 0.02  # m
     # youngs_modulus = 3.8 * 10 ** 9  # Pa
     # density = (650 + 800) / 2  # kg/m^3
