@@ -204,6 +204,59 @@ def phase_plotting(
                                     figsize=figsize)
     return phase, freq
 
+
+def phase_plotting_chirp(
+                df,
+                channels=['channel 1', 'channel 3'], 
+                detrend=True, chirp=None, method='div', 
+                n_pi=0, 
+                SAMPLE_RATE=150000, 
+                BANDWIDTH=None, 
+                use_recorded_chirp=True, 
+                start_stops=None, 
+                duration_cut=55,
+                save_fig=False,
+                file_name='phase_difference.png',
+                file_format='png',
+                figsize=0.75,
+                threshold1=400,
+                threshold2=400,):
+    df = preprocess_df(df, detrend=detrend)
+    # check if dataframe has a column with name wave_gen
+    if 'wave_gen' in df.columns:
+        chirp = df['wave_gen'].to_numpy()
+ 
+        
+    df_sig_only = df.drop(columns=['wave_gen'])
+    compressed_df = compress_chirp(df_sig_only, chirp, use_recorded_chirp=use_recorded_chirp)
+    plt.Figure(figsize=(16, 14))
+    plt.plot(compressed_df[channels[0]], label=channels[0])
+    plt.plot(compressed_df[channels[1]], label=channels[1])
+    plt.xlabel('Samples')
+    plt.ylabel('Amplitude')
+    plt.legend()
+    #plt.savefig('sig'+file_name, format=file_format,dpi=300)
+    plt.show()
+    
+    
+    
+    s1t = compressed_df[channels[0]]
+
+    s2t = compressed_df[channels[1]]
+    
+    phase, freq = phase_difference_plot(
+                                    s1t, 
+                                    s2t, 
+                                    method=method, 
+                                    n_pi=n_pi, 
+                                    SAMPLE_RATE=SAMPLE_RATE, 
+                                    BANDWIDTH=BANDWIDTH, 
+                                    save_fig=save_fig,
+                                    file_name=file_name,
+                                    file_format=file_format,
+                                    figsize=figsize)
+    return phase, freq
+
 def phase_velocity(phase, freq, distance, plot=False):
     phase_vel = 2*np.pi*freq*distance/np.abs(phase)
     if plot:
