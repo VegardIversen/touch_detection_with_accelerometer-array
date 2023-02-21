@@ -208,19 +208,16 @@ def phase_plotting(
 def phase_plotting_chirp(
                 df,
                 channels=['channel 1', 'channel 3'], 
-                detrend=True, chirp=None, method='div', 
+                detrend=True,
+                method='div', 
                 n_pi=0, 
                 SAMPLE_RATE=150000, 
                 BANDWIDTH=None, 
-                use_recorded_chirp=True, 
-                start_stops=None, 
-                duration_cut=55,
                 save_fig=False,
                 file_name='phase_difference.png',
                 file_format='png',
                 figsize=0.75,
-                threshold1=400,
-                threshold2=400,):
+                use_recorded_chirp=True):
     df = preprocess_df(df, detrend=detrend)
     # check if dataframe has a column with name wave_gen
     if 'wave_gen' in df.columns:
@@ -269,17 +266,32 @@ def phase_velocity(phase, freq, distance, plot=False):
     return phase_vel
 
 def theoretical_velocities(freq, material='teflon'):
-    
+    #values dispersion calculator
+    if material == 'teflon':
+        poisson_ratio = 0.46
+        youngs_modulus = 0.475e9
+        plate_thickness = 0.01
+        density = 2170
+    elif material == 'HDPE':
+        poisson_ratio = 0.361337
+        youngs_modulus = 3.49897e9
+        plate_thickness = 0.02
+        density = 940
+    elif material == 'LDPE':
+        poisson_ratio = 0.348275
+        youngs_modulus = 3.82535e9
+        plate_thickness = 0.02
+        density = 910
     # plate_thickness = 0.02  # m
     # youngs_modulus = 3.8 * 10 ** 9  # Pa
     # density = (650 + 800) / 2  # kg/m^3
     # poisson_ratio = 0.2  # -
-    plate_thickness = 0.01  # m
+    #plate_thickness = 0.01  # m
     #youngs_modulus = 5.52e8  # Pa
-    youngs_modulus = 1e9  # Pa
+    #youngs_modulus = 1e9  # Pa
     #density = 2.2e3  # kg/m^3
-    density = 950  # kg/m^3
-    poisson_ratio = 0.42  # -
+    #density = 950  # kg/m^3
+    #poisson_ratio = 0.42  # -
     phase_velocity_longitudinal = np.sqrt(youngs_modulus /
                                           (density * (1 - poisson_ratio ** 2)))
     phase_velocity_shear = (phase_velocity_longitudinal *
@@ -301,11 +313,11 @@ def theoretical_velocities(freq, material='teflon'):
                                   ((1 / (phase_velocities_flexural ** 3)) +
                                    (1 / ((correction_factor ** 3) *
                                     (c_G ** 3))))) ** (1 / 3)
-    return phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear
+    return phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear, material
 
-def plot_velocities(phase, freq, distance, savefig=False, filename=None, file_format='png'):
+def plot_velocities(phase, freq, distance, savefig=False, filename=None, file_format='png', material='teflon'):
     phase_vel = phase_velocity(phase, freq, distance)
-    phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear = theoretical_velocities(freq)
+    phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear, material = theoretical_velocities(freq,material)
     freq = freq/1000
     fig, axs = figure_size_setup()
     axs.plot(freq, phase_vel, label='Measured velocity')
@@ -313,10 +325,51 @@ def plot_velocities(phase, freq, distance, savefig=False, filename=None, file_fo
     axs.plot(freq, corrected_phase_velocities, label='Simulated corrected velocity', linestyle='--')
     axs.set_xlabel('Frequency [kHz]')
     axs.set_ylabel('Phase velocity [m/s]')
+    axs.set_title(f'Phase velocity for {material} plate')
     axs.legend()
     if savefig:
         fig.savefig(filename, format=file_format, dpi=300)
     plt.show()
+def max_peak_velocity(df, distance=0.1, sampling_rate=150000, material='teflon'):
+    #Test indicates that the pressure wave travels with 1000 m/s for teflon and 1500 m/s for PE
+    # Extract the signal data from the DataFrame
+    signal1 = df.iloc[:, 2].values
+    signal2 = df.iloc[:, 1].values
+    if material == 'teflon':
+
+        # Find peaks in signal 1
+        peaks1, _ = signal.find_peaks(signal1, threshold=0.007, prominence=0.005)
+        # Find peaks in signal 2
+        peaks2, _ = signal.find_peaks(signal2, threshold=0.007, prominence=0.005)
+    elif material == 'HDPE' or material == 'LDPE':
+        # Find peaks in signal 1
+        peaks1, _ = signal.find_peaks(signal1, threshold=0.0015)
+        # Find peaks in signal 2
+        peaks2, _ = signal.find_peaks(signal2, threshold=0.0015)
+
+    # Plot the signals with the detected peaks
+    fig, ax = plt.subplots(2, 1, sharex=True, sharey=True)
+    fig.suptitle('Detected Peaks')
+    ax[0].plot(signal1)
+    ax[0].plot(peaks1, signal1[peaks1], "x")
+    ax[0].set_ylabel('Signal 1')
+    ax[1].plot(signal2)
+    ax[1].plot(peaks2, signal2[peaks2], "x")
+    ax[1].set_ylabel('Signal 2')
+    plt.show()
+    
+    # Find the closest pair of peaks
+    
+    t1 = peaks1[0] / sampling_rate  # Convert sample index to time in seconds
+    t2 = peaks2[0] / sampling_rate
+    
+    # Calculate the time difference between the two peaks
+    dt = t2 - t1
+    
+    # Calculate the velocity
+    velocity = distance / dt
+
+    return velocity
 
 def plot_velocities_2distance(phase1, freq1, distance1, phase2, freq2, distance2, savefig=False, filename=None, file_format='png'):
     phase_vel1 = phase_velocity(phase1, freq1, distance1)

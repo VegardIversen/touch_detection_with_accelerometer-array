@@ -34,11 +34,16 @@ def results_setup1():
     df_teflon = csv_to_df_thesis('plate10mm\\setup1\\chirp', 'chirp_100_40000_2s_v1')
     #filter signal
     df_PE_filt = filter_general(df_PE, filtertype='bandpass', cutoff_highpass=10000, cutoff_lowpass=15000, order=4)
-    df_teflon_filt = filter_general(df_teflon, filtertype='bandpass', cutoff_highpass=10000, cutoff_lowpass=15000, order=4)
-    #phase_PE, freq_PE  = wp.phase_plotting(df_PE, chirp=custom_chirp, use_recorded_chirp=True, start_stops=[(185000,460800),(185000,460800)], threshold1=100, threshold2=100, BANDWIDTH=[100,40000], save_fig=False, file_name='phase_plot_PE_45.svg', file_format='svg',figsize=0.45, n_pi=1)
-    phase_teflon, freq_teflon  = wp.phase_plotting_chirp(df_teflon_filt, chirp=custom_chirp, use_recorded_chirp=True,start_stops=[(216000,230000),(216000,230000)], threshold1=0.002, threshold2=0.002, BANDWIDTH=[10000,15000], save_fig=False, file_name='phase_plot_teflon_45.svg', file_format='svg',figsize=0.45, n_pi=1)
+    #df_teflon_filt = filter_general(df_teflon, filtertype='bandpass', cutoff_highpass=100, cutoff_lowpass=40000, order=4)
+    phase_PE, freq_PE  = wp.phase_plotting_chirp(df_PE, BANDWIDTH=[100,40000], save_fig=False, file_name='phase_plot_PE_45.svg', file_format='svg',figsize=0.45, n_pi=1)
+    #phase_teflon, freq_teflon  = wp.phase_plotting_chirp(df_teflon, BANDWIDTH=[5000,40000], save_fig=False, file_name='phase_plot_teflon_45.svg', file_format='svg',figsize=0.45, n_pi=1)
     #wp.plot_velocities(phase_PE, freq_PE, 0.10, savefig=False, filename='phase_velocity_PE.svg', file_format='svg')
-    wp.plot_velocities(phase_teflon, freq_teflon, 0.10, savefig=False, filename='phase_velocity_teflon.svg', file_format='svg')
+    #wp.plot_velocities(phase_teflon, freq_teflon, 0.10, savefig=False, filename='phase_velocity_teflon.svg', file_format='svg')
+    #wp.plot_velocities(phase_PE, freq_PE, 0.10, material='HDPE', savefig=False, filename='phase_velocity_teflon.svg', file_format='svg')
+    #wp.plot_velocities(phase_PE, freq_PE, 0.10, material='LDPE', savefig=False, filename='phase_velocity_teflon.svg', file_format='svg')
+    print(wp.max_peak_velocity(df_PE, material='HDPE'))
+    #print(wp.max_peak_velocity(df_teflon))
+    #print(wp.max_peak_velocity(df_PE))
 if __name__ == '__main__':
     CROSS_CORR_PATH1 = '\\Measurements\\setup2_korrelasjon\\'
     CROSS_CORR_PATH2 = '\\first_test_touch_passive_setup2\\'
