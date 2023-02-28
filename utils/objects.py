@@ -45,18 +45,14 @@ class Table:
         plt.gca().add_patch(table)
 
         for i in range(1, 3):
-            line_x = plt.Line2D((i / 3 * self.LENGTH, i / 3 * self.LENGTH),
-                                (0, self.WIDTH),
-                                color=self.LINE_COLOUR,
-                                lw=0.75,
-                                linestyle='--',
-                                zorder=1)
-            line_y = plt.Line2D((0, self.LENGTH),
-                                (i / 3 * self.WIDTH, i / 3 * self.WIDTH),
-                                color=self.LINE_COLOUR,
-                                lw=0.75,
-                                linestyle='--',
-                                zorder=1)
+            line_x = patches.Rectangle((i / 3 * self.LENGTH, 0), 0, self.WIDTH,
+                                       linewidth=0.75, linestyle='--',
+                                       edgecolor=self.LINE_COLOUR, facecolor='none',
+                                       zorder=1)
+            line_y = patches.Rectangle((0, i / 3 * self.WIDTH), self.LENGTH, 0,
+                                       linewidth=0.75, linestyle='--',
+                                       edgecolor=self.LINE_COLOUR, facecolor='none',
+                                       zorder=1)
             plt.gca().add_patch(line_x)
             plt.gca().add_patch(line_y)
 
