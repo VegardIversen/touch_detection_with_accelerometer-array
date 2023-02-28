@@ -12,7 +12,10 @@ from utils.global_constants import (SAMPLE_RATE,
                                     SENSOR_1,
                                     SENSOR_2,
                                     SENSOR_3)
-from utils.objects import Table, Actuator, Sensor
+from utils.objects import (Table,
+                           Plate,
+                           Actuator,
+                           Sensor)
 
 from utils.data_visualization.drawing import plot_legend_without_duplicates
 from utils.data_processing.detect_echoes import (find_first_peak_index,
@@ -20,7 +23,7 @@ from utils.data_processing.detect_echoes import (find_first_peak_index,
 
 
 class Setup:
-    table = Table()
+    surface = Plate()
     actuators: np.ndarray
     sensors: np.ndarray
 
@@ -30,7 +33,7 @@ class Setup:
     def draw(self):
         plt.axes()
         plt.gcf().set_size_inches(5.5, 3.5)
-        self.table.draw()
+        self.surface.draw()
         [actuator.draw() for actuator in self.actuators]
         [sensor.draw() for sensor in self.sensors if sensor.plot]
         plt.axis('scaled')
@@ -68,14 +71,16 @@ class Setup1(Setup):
     """
     actuators = np.empty(shape=1, dtype=Actuator)
     sensors = np.empty(shape=3, dtype=Sensor)
-    actuators[ACTUATOR_1] = Actuator(coordinates=np.array([1 / 2 * Table.LENGTH - 0.10,
-                                                           1 / 2 * Table.WIDTH]))
-    sensors[SENSOR_1] = Sensor(coordinates=(actuators[ACTUATOR_1].coordinates + np.array([0.10, 0])),
+    actuators[ACTUATOR_1] = Actuator(coordinates=np.array([1 / 2 * Plate.LENGTH - 0.15,
+                                                           1 / 2 * Plate.WIDTH]))
+    sensors[SENSOR_1] = Sensor(coordinates=(actuators[ACTUATOR_1].coordinates +
+                                            np.array([0.10, 0])),
                                name='Sensor 1')
-    sensors[SENSOR_2] = Sensor(coordinates=np.array([0, 0]),
-                               name='Sensor 2',
-                               plot=False)
-    sensors[SENSOR_3] = Sensor(coordinates=(sensors[SENSOR_1].coordinates + np.array([0.10, 0])),
+    sensors[SENSOR_2] = Sensor(coordinates=(sensors[SENSOR_1].coordinates +
+                                            np.array([0.10, 0])),
+                               name='Sensor 2')
+    sensors[SENSOR_3] = Sensor(coordinates=(sensors[SENSOR_2].coordinates +
+                                            np.array([0.10, 0])),
                                name='Sensor 3')
 
     def __init__(self):

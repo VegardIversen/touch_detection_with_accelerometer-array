@@ -31,17 +31,16 @@ from utils.data_visualization.visualize_data import (compare_signals,
                                                      set_window_size,
                                                      adjust_plot_margins)
 
-from utils.setups import (Setup,
-                          Setup1,
-                          Setup2,
-                          Setup3)
-
+from utils.table_setups import (Setup,
+                                Setup1,
+                                Setup2,
+                                Setup3)
 
 
 def setup1_predict_reflections(setup: Setup):
     print('Predicting reflections')
     """Open file"""
-    FILE_FOLDER = 'Setup_1/touch'
+    FILE_FOLDER = 'Table/Setup1/touch'
     FILE_NAME = 'touch_v1'
     measurements = csv_to_df(file_folder=FILE_FOLDER,
                              file_name=FILE_NAME)
@@ -118,7 +117,7 @@ def make_gaussian_cosine(frequency: float = 1500,
     time = np.linspace(-5, 5, num_of_samples)
     effective_frequency = 1 / (1 / frequency)
     cosine = np.cos(2 * np.pi * effective_frequency * time) * \
-             signal.gaussian(num_of_samples, std=standard_deviation)
+        signal.gaussian(num_of_samples, std=standard_deviation)
 
     fig, ax = plt.subplots()
     ax.plot(time, cosine)
@@ -132,4 +131,3 @@ def make_gaussian_cosine(frequency: float = 1500,
 
 if __name__ == '__main__':
     raise ValueError('This script should not be run as main')
-
