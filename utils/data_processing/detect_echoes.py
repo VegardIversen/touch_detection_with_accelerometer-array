@@ -250,6 +250,9 @@ def get_travel_times(actuator: Actuator,
             elif edge_1 and not edge_2:
                 # To avoid repeating first reflection calculations
                 continue
+            elif (edge_1 - edge_2) == 1 or (edge_1 == 4 and edge_2 == 1):
+                # Check if edges are adjacent to remove unphysical combinations
+                continue
             mirrored_source = find_mirrored_source(actuator,
                                                    np.array([edge_1, edge_2]))
             distance_to_sensor = np.linalg.norm(mirrored_source.coordinates -
