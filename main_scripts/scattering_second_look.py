@@ -57,7 +57,7 @@ def scattering_second_look():
                               plot_response=False,)
 
     FILE_FOLDER = 'Table/Setup1/scattering_tests/15kHz_to_40kHz_125ms'
-    FILE_NAME = 'hold_pos_2_v1'
+    FILE_NAME = 'hold_pos_1_v1'
     # FILE_FOLDER = 'Table\\Setup3'
     # FILE_NAME = 'notouchThenHoldB2_20to40khz_125ms_10vpp_v1'
     touch = csv_to_df(file_folder=FILE_FOLDER,
@@ -102,7 +102,7 @@ def scattering_second_look():
 
     """Plot measurements"""
     PLOTS_TO_PLOT = ['time']
-    fig, axs = plt.subplots(nrows=2,
+    fig, axs = plt.subplots(nrows=3,
                             ncols=len(PLOTS_TO_PLOT),
                             figsize=set_window_size(),
                             squeeze=False)
@@ -112,11 +112,14 @@ def scattering_second_look():
     diff_envelope_2 = np.abs(signal.hilbert(diff_signal_2))
     compare_signals(fig, axs,
                     data=[normalize(np.abs(signal.hilbert(no_touch['Sensor 1']))),
-                          normalize(np.abs(signal.hilbert(no_touch['Sensor 3'])))],
+                          normalize(
+                              np.abs(signal.hilbert(no_touch['Sensor 3']))),
+                          normalize(np.abs(signal.hilbert(no_touch['Actuator']))),],
                     plots_to_plot=PLOTS_TO_PLOT,)
     compare_signals(fig, axs,
                     data=[normalize(np.abs(signal.hilbert(touch['Sensor 1']))),
-                          normalize(np.abs(signal.hilbert(touch['Sensor 3'])))],
+                          normalize(np.abs(signal.hilbert(touch['Sensor 3']))),
+                          normalize(np.abs(signal.hilbert(no_touch['Actuator']))),],
                     plots_to_plot=PLOTS_TO_PLOT,)
     compare_signals(fig, axs,
                     data=[10 * normalize(diff_envelope_1),
@@ -127,3 +130,13 @@ def scattering_second_look():
     propagation_speed = setup.get_propagation_speed(no_touch)
     print(f'Propagation speed: {propagation_speed:.2f} m/s')
 
+    sensors_distance = np.linalg.norm(setup.sensors[0] -
+                                      setup.sensors[2])
+    calculate_angle_degrees(1.377630, 1.377693, sensors_distance, propagation_speed)
+
+
+def calculate_angle_degrees(sensor1_time, sensor3_time, sensors_distance, propagation_speed):
+    """Calculate angle between sensor 1 and sensor 3"""
+    time_difference = sensor3_time - sensor1_time
+
+    return angle_degrees
