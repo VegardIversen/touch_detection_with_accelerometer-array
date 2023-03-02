@@ -195,3 +195,69 @@ class Setup3(Setup):
         distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
         propagation_speed = np.abs(distance / delay)
         return propagation_speed
+
+
+class Setup_3x3(Setup):
+    actuators = np.empty(shape=1, dtype=Actuator)
+    sensors = np.empty(shape=9, dtype=Sensor)
+    actuators[ACTUATOR_1] = Actuator(coordinates=np.array([1 / 2 * Plate.LENGTH - 0.15,
+                                                           1 / 2 * Plate.WIDTH]))
+    sensors[1] = Sensor(coordinates=np.array([Plate.LENGTH / 2,
+                                              Plate.WIDTH - 0.05]),
+                        name='Sensor 2')
+    sensors[0] = Sensor(coordinates=(sensors[1].x - 0.02, sensors[1].y),
+                        name='Sensor 1')
+    sensors[2] = Sensor(coordinates=(sensors[1].x + 0.02, sensors[1].y),
+                        name='Sensor 3')
+    sensors[3] = Sensor(coordinates=(sensors[1].x - 0.02, sensors[1].y - 0.02),
+                        name='Sensor 4')
+    sensors[4] = Sensor(coordinates=(sensors[1].x, sensors[1].y - 0.02),
+                        name='Sensor 5')
+    sensors[5] = Sensor(coordinates=(sensors[1].x + 0.02, sensors[1].y - 0.02),
+                        name='Sensor 6')
+    sensors[6] = Sensor(coordinates=(sensors[1].x - 0.02, sensors[1].y - 0.04),
+                        name='Sensor 7')
+    sensors[7] = Sensor(coordinates=(sensors[1].x, sensors[1].y - 0.04),
+                        name='Sensor 8')
+    sensors[8] = Sensor(coordinates=(sensors[1].x + 0.02, sensors[1].y - 0.04),
+                        name='Sensor 9')
+
+    def __init__(self):
+        pass
+
+    def get_propagation_speed(self,
+                              measurements: pd.DataFrame,
+                              prominence: float = 0.001):
+        """Use the cross correlation between the two channels
+        to find the propagation speed. Based on:
+        https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
+        """
+        object_1 = self.sensors[SENSOR_1]
+        object_2 = self.sensors[SENSOR_3]
+        # n = len(measurements[object_1.name])
+        # corr = signal.correlate(measurements[object_1.name],
+        #                         measurements[object_2.name],
+        #                         mode='same')
+        # delay_arr = np.linspace(start=-0.5 * n / SAMPLE_RATE,
+        #                         stop=0.5 * n / SAMPLE_RATE,
+        #                         num=n)
+        # delay = delay_arr[np.argmax(corr)]
+        # distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
+        # propagation_speed = np.abs(distance / delay)
+        """Alternatively:"""
+        # peak_object1 = np.argmax(np.abs(signal.hilbert(measurements[object_1.name])))
+        # peak_object2 = np.argmax(np.abs(signal.hilbert(measurements[object_2.name])))
+        # delay = (peak_object2 - peak_object1) / SAMPLE_RATE
+        # distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
+        # propagation_speed = np.abs(distance / delay)
+        """Or even alternativelier:"""
+        measurements = get_envelopes(measurements)
+        _, ax = plt.subplots()
+        first_peak_object1 = find_first_peak_index(measurements[object_1.name],
+                                                   ax=ax)
+        first_peak_object2 = find_first_peak_index(measurements[object_2.name],
+                                                   ax=ax)
+        delay = (first_peak_object2 - first_peak_object1) / SAMPLE_RATE
+        distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
+        propagation_speed = np.abs(distance / delay)
+        return propagation_speed
