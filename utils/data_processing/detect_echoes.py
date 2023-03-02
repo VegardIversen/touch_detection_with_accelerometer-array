@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from utils.global_constants import (SAMPLE_RATE)
 from utils.objects import (MirroredSensor,
-                           MirroredSource,
+                           MirroredSource, Plate,
                            Table,
                            Actuator,
                            Sensor)
@@ -109,7 +109,8 @@ def find_first_peak_index(measurements: pd.DataFrame,
 
 
 def find_mirrored_source(actuator: Actuator,
-                         edges_to_bounce_on: np.ndarray):
+                         edges_to_bounce_on: np.ndarray,
+                         surface: Table or Plate):
     """Calculate the coordinate of the mirrored source
     to be used to find the wave travel distance.
     """
@@ -118,21 +119,21 @@ def find_mirrored_source(actuator: Actuator,
     for edge in edges_to_bounce_on:
         if edge == NO_REFLECTION:
             continue
-        elif edge == Table.TOP_EDGE:
-            MIRRORED_SOURCE_OFFSET = np.array([0, 2 * (Table.WIDTH -
+        elif edge == surface.TOP_EDGE:
+            MIRRORED_SOURCE_OFFSET = np.array([0, 2 * (surface.WIDTH -
                                                        mirrored_source.y)])
             mirrored_source.set_coordinates(mirrored_source.coordinates +
                                             MIRRORED_SOURCE_OFFSET)
-        elif edge == Table.RIGHT_EDGE:
-            MIRRORED_SOURCE_OFFSET = np.array([2 * (Table.LENGTH -
+        elif edge == surface.RIGHT_EDGE:
+            MIRRORED_SOURCE_OFFSET = np.array([2 * (surface.LENGTH -
                                                     mirrored_source.x), 0])
             mirrored_source.set_coordinates(mirrored_source.coordinates +
                                             MIRRORED_SOURCE_OFFSET)
-        elif edge == Table.BOTTOM_EDGE:
+        elif edge == surface.BOTTOM_EDGE:
             MIRRORED_SOURCE_OFFSET = np.array([0, -2 * mirrored_source.y])
             mirrored_source.set_coordinates(mirrored_source.coordinates +
                                             MIRRORED_SOURCE_OFFSET)
-        elif edge == Table.LEFT_EDGE:
+        elif edge == surface.LEFT_EDGE:
             MIRRORED_SOURCE_OFFSET = np.array([-2 * mirrored_source.x, 0])
             mirrored_source.set_coordinates(mirrored_source.coordinates +
                                             MIRRORED_SOURCE_OFFSET)
@@ -217,6 +218,7 @@ def flip_sensors(sensors: np.ndarray,
 def get_travel_times(actuator: Actuator,
                      sensor: Sensor,
                      propagation_speed: float,
+                     surface: Table or Plate,
                      print_info: bool = False,
                      milliseconds: bool = False,
                      relative_first_reflection: bool = True):
@@ -254,7 +256,8 @@ def get_travel_times(actuator: Actuator,
                 # Check if edges are adjacent to remove unphysical combinations
                 continue
             mirrored_source = find_mirrored_source(actuator,
-                                                   np.array([edge_1, edge_2]))
+                                                   np.array([edge_1, edge_2]),
+                                                   surface)
             distance_to_sensor = np.linalg.norm(mirrored_source.coordinates -
                                                 sensor.coordinates)
             if relative_first_reflection:
