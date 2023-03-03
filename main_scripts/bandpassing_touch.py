@@ -17,7 +17,7 @@ from utils.data_processing.detect_echoes import (get_envelopes,
 from utils.data_processing.preprocessing import (compress_chirps,
                                                  crop_data,
                                                  window_signals,
-                                                 filter_general)
+                                                 filter)
 from utils.data_processing.processing import (average_of_signals,
                                               interpolate_waveform,
                                               normalize,
@@ -30,17 +30,16 @@ from utils.data_visualization.visualize_data import (compare_signals,
                                                      spectrogram_with_lines,
                                                      set_window_size,
                                                      adjust_plot_margins)
-
-from utils.setups import (Setup,
-                          Setup1,
-                          Setup2,
-                          Setup3)
+from utils.table_setups import (Setup,
+                                Setup1,
+                                Setup2,
+                                Setup3)
 
 
 def setup1_predict_reflections(setup: Setup):
     print('Predicting reflections')
     """Open file"""
-    FILE_FOLDER = 'Setup_1/touch'
+    FILE_FOLDER = 'Table/Setup1/touch'
     FILE_NAME = 'touch_v1'
     measurements = csv_to_df(file_folder=FILE_FOLDER,
                              file_name=FILE_NAME)
@@ -53,12 +52,12 @@ def setup1_predict_reflections(setup: Setup):
 
     """Filter signals by a correlation based bandpass filter"""
     critical_frequency = 400
-    measurements = filter_general(measurements,
-                                  filtertype='bandpass',
-                                  critical_frequency=critical_frequency,
-                                  q=0.2,
-                                  order=4,
-                                  plot_response=True)
+    measurements = filter(measurements,
+                          filtertype='bandpass',
+                          critical_frequency=critical_frequency,
+                          q=0.2,
+                          order=4,
+                          plot_response=True)
     adjust_plot_margins()
     file_name = 'bandpass_filter_response.pdf'
     plt.savefig(FIGURES_SAVE_PATH + file_name,

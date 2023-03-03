@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import scipy.signal as signal
 from scipy import interpolate
-
 from utils.global_constants import CHIRP_CHANNEL_NAMES, INTERPOLATION_FACTOR
 
 
@@ -16,7 +15,8 @@ def average_of_signals(measurements: pd.DataFrame,
     signals_average = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES,
                                    data=np.empty((1, 4), np.ndarray))
     for channel in signals_average:
-        signals_average.at[0, channel] = np.empty(measurements.at[0, channel].size)
+        signals_average.at[0, channel] = np.empty(
+            measurements.at[0, channel].size)
 
     for channel in measurements:
         chirps = np.empty((chirp_range[1], measurements.at[0, channel].size))
@@ -48,8 +48,8 @@ def normalize(signals: np.ndarray or pd.DataFrame) -> np.ndarray or pd.DataFrame
     """Normalize array to be between t_min and t_max"""
     if isinstance(signals, pd.DataFrame):
         for channel in signals:
-            signals.at[0, channel] = normalize(signals.at[0, channel])
-            signals.at[0, channel] = signal.detrend(signals.at[0, channel])
+            signals[channel] = normalize(signals[channel])
+            # signals.at[0, channel] = signal.detrend(signals.at[0, channel])
     else:
         signals = signals - np.min(signals)
         if np.max(signals) != 0:
@@ -97,8 +97,45 @@ def correct_drift(data_split: pd.DataFrame,
             SHIFT_BY = (np.rint(delay)).astype(int)
             data_split.at[chirp, channel] = np.roll(data_split.at[chirp, channel],
                                                     SHIFT_BY)
-            data_split.at[chirp, channel] = normalize(data_split.at[chirp, channel])
+            data_split.at[chirp, channel] = normalize(
+                data_split.at[chirp, channel])
     return data_split
+
+
+def align_signals_by_correlation(signals: pd.DataFrame,
+                                 signals_to_align_with: pd.DataFrame) -> pd.DataFrame:
+    """Align signals to signals_to_align_with using their correlation"""
+    shifted_signals = signals.copy()
+    for channel in signals:
+        corr = signal.correlate(signals_to_align_with[channel],
+                                signals[channel],
+                                mode='same')
+        delays = np.linspace(start=-0.5 * len(corr),
+                             stop=0.5 * len(corr),
+                             num=len(corr))
+        delay = delays[np.argmax(corr)]
+        SHIFT_BY = (np.rint(delay)).astype(int)
+        shifted_signals[channel] = np.roll(signals[channel], SHIFT_BY)
+        shifted_signals[channel] = normalize(shifted_signals[channel])
+    return shifted_signals
+
+
+def align_signals_by_max_value(signals: pd.DataFrame,
+                               signals_to_align_with: pd.DataFrame):
+    """Align signals to signals_to_align with using their max values"""
+    shifted_signals = signals.copy()
+    for channel in signals:
+        max_index_in_signal1 = np.argmax(signals[channel])
+        max_index_in_signal2 = np.argmax(signals_to_align_with[channel])
+        SHIFT_BY = (np.rint(max_index_in_signal2 -
+                    max_index_in_signal1)).astype(int)
+        shifted_signals[channel] = np.roll(signals[channel], SHIFT_BY)
+        # Normalize and match the amplitude of signals_to_align_with
+        shifted_signals[channel] = normalize(shifted_signals[channel])
+        shifted_signals[channel] = shifted_signals[channel] * \
+            np.max(signals_to_align_with[channel]) / \
+            np.max(shifted_signals[channel])
+    return shifted_signals
 
 
 def to_dB(measurements: pd.DataFrame or np.ndarray):

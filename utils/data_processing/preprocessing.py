@@ -11,15 +11,16 @@ import matplotlib.pyplot as plt
 from utils.global_constants import SAMPLE_RATE
 from utils.data_visualization.visualize_data import (plot_filter_response)
 
+
 """FILTERING"""
 
 
-def filter_general(signals: pd.DataFrame or np.ndarray,
-                   filtertype: str,
-                   critical_frequency: int,
-                   q: float = 0.05,
-                   order: int = 4,
-                   plot_response: bool = False):
+def filter(signals: pd.DataFrame or np.ndarray,
+           filtertype: str,
+           critical_frequency: int,
+           q: float = 0.05,
+           order: int = 4,
+           plot_response: bool = False):
     """filtertype: 'highpass', 'lowpass' or 'bandpass.
     NOTE:   q is a value that determines the width of the flat bandpass,
             and is a value between 0 and 1. order determines the slope.
@@ -58,9 +59,13 @@ def filter_general(signals: pd.DataFrame or np.ndarray,
     return signals_filtered
 
 
-def compress_chirps(measurements: pd.DataFrame,
+def compress_chirps(measurements: pd.DataFrame or np.ndarray,
                     custom_reference: np.ndarray = None):
     """Compresses a chirp with cross correlation"""
+    if isinstance(measurements, np.ndarray):
+        # Add the measurements array and the actuator signal as columns to the measurements
+        measurements = pd.DataFrame(measurements, columns=['Sensor 1'])
+
     compressed_chirps = measurements.copy()
     if custom_reference is None:
         for channel in measurements:
@@ -90,6 +95,35 @@ def crop_data(signals: pd.DataFrame or np.ndarray,
         signals_cropped = signals.loc[time_start * SAMPLE_RATE:
                                       time_end * SAMPLE_RATE]
     return signals_cropped
+
+
+def crop_measurement_to_signal(signal: np.ndarray or pd.DataFrame,
+                               std_threshold_multiplier: float = None,
+                               custom_threshold: float = None):
+    """Crop the signal to the first and last value
+    above a threshold given by the standard deviation.
+    """
+    if isinstance(signal, pd.DataFrame):
+        signal = signal.values
+    if std_threshold_multiplier:
+        std = np.std(signal)
+        threshold = std_threshold_multiplier * std
+    elif custom_threshold:
+        threshold = custom_threshold
+
+    start_index = np.argmax(signal > threshold)
+
+    # Find the last index where the signal is higher than the threshold
+    end_index = len(signal) - np.argmax(signal[::-1] > threshold) - 1
+
+    # Add 10% of the signal length to the start and end index
+    start_index = int(start_index - 0.1 * (end_index - start_index))
+    end_index = int(end_index + 0.1 * (end_index - start_index))
+
+    # Crop the signal
+    signal = signal[start_index:end_index]
+
+    return signal
 
 
 def window_signals(signals: pd.DataFrame,

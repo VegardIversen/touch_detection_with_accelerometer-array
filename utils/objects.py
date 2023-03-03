@@ -45,18 +45,64 @@ class Table:
         plt.gca().add_patch(table)
 
         for i in range(1, 3):
-            line_x = plt.Line2D((i / 3 * self.LENGTH, i / 3 * self.LENGTH),
-                                (0, self.WIDTH),
-                                color=self.LINE_COLOUR,
-                                lw=0.75,
-                                linestyle='--',
-                                zorder=1)
-            line_y = plt.Line2D((0, self.LENGTH),
-                                (i / 3 * self.WIDTH, i / 3 * self.WIDTH),
-                                color=self.LINE_COLOUR,
-                                lw=0.75,
-                                linestyle='--',
-                                zorder=1)
+            line_x = patches.Rectangle((i / 3 * self.LENGTH, 0), 0, self.WIDTH,
+                                       linewidth=0.75, linestyle='--',
+                                       edgecolor=self.LINE_COLOUR, facecolor='none',
+                                       zorder=1)
+            line_y = patches.Rectangle((0, i / 3 * self.WIDTH), self.LENGTH, 0,
+                                       linewidth=0.75, linestyle='--',
+                                       edgecolor=self.LINE_COLOUR, facecolor='none',
+                                       zorder=1)
+            plt.gca().add_patch(line_x)
+            plt.gca().add_patch(line_y)
+
+
+class Plate:
+    """Represents the table and its edges."""
+    """Table dimensions"""
+    LENGTH = 1   # m
+    WIDTH = 0.7  # m
+    """Enum for representing edges"""
+    TOP_EDGE = 1
+    RIGHT_EDGE = 2
+    BOTTOM_EDGE = 3
+    LEFT_EDGE = 4
+    """Colour settings for drawing"""
+    SURFACE_COLOUR = '#f8f8f8'
+    LINE_COLOUR = 'lightgrey'
+
+    """A selection of table locations, in the middle of each block"""
+    A1 = np.array([1 / 6 * LENGTH, 1 / 6 * WIDTH])
+    A2 = np.array([3 / 6 * LENGTH, 1 / 6 * WIDTH])
+    A3 = np.array([5 / 6 * LENGTH, 1 / 6 * WIDTH])
+    B1 = np.array([1 / 6 * LENGTH, 3 / 6 * WIDTH])
+    B2 = np.array([3 / 6 * LENGTH, 3 / 6 * WIDTH])
+    B3 = np.array([5 / 6 * LENGTH, 3 / 6 * WIDTH])
+    C1 = np.array([1 / 6 * LENGTH, 5 / 6 * WIDTH])
+    C2 = np.array([3 / 6 * LENGTH, 5 / 6 * WIDTH])
+    C3 = np.array([5 / 6 * LENGTH, 5 / 6 * WIDTH])
+
+    def draw(self):
+        "Draw the table with the real dimensions, including the lines."
+        table = patches.Rectangle((0, 0),
+                                  self.LENGTH,
+                                  self.WIDTH,
+                                  fc=self.SURFACE_COLOUR,
+                                  ec=self.LINE_COLOUR,
+                                  lw=2,
+                                  zorder=0)
+
+        plt.gca().add_patch(table)
+
+        for i in range(1, 3):
+            line_x = patches.Rectangle((i / 3 * self.LENGTH, 0), 0, self.WIDTH,
+                                       linewidth=0.75, linestyle='--',
+                                       edgecolor=self.LINE_COLOUR, facecolor='none',
+                                       zorder=1)
+            line_y = patches.Rectangle((0, i / 3 * self.WIDTH), self.LENGTH, 0,
+                                       linewidth=0.75, linestyle='--',
+                                       edgecolor=self.LINE_COLOUR, facecolor='none',
+                                       zorder=1)
             plt.gca().add_patch(line_x)
             plt.gca().add_patch(line_y)
 
@@ -94,12 +140,8 @@ class Sensor:
         return self.name
 
 
-
 class Actuator:
-    """Represents an actuator.
-    NOTE:   Not sure just how to represent coordinates yet,
-            or if get_/set_coordinates() are necessary.
-    """
+    """Represents an actuator"""
     RADIUS = 0.005  # m
 
     def __init__(self, coordinates: np.ndarray, name: str = 'Actuator'):
@@ -122,7 +164,7 @@ class Actuator:
         actuator = plt.Circle(self.coordinates,
                               radius=self.RADIUS,
                               fc='#D4434A',
-                              ec='dimgray',
+                              ec='darkred',
                               label=self.name,
                               zorder=10)
         plt.gca().add_patch(actuator)
@@ -131,9 +173,9 @@ class Actuator:
         return self.name
 
 
-
 class MirroredSource(Actuator):
-    """Represents a mirrored source."""
+    """Represents a mirrored source, to use when drawing reflection sources"""
+
     def __init__(self, coordinates: np.ndarray):
         super().__init__(coordinates)
 
@@ -143,13 +185,14 @@ class MirroredSource(Actuator):
                                      radius=self.RADIUS,
                                      fc='pink',
                                      ec='dimgray',
-                                     label=f'Mirrored source',
+                                     label='Mirrored source',
                                      zorder=10)
         plt.gca().add_patch(mirrored_source)
 
 
 class MirroredSensor(Sensor):
-    """Represents a mirrored sensor."""
+    """Represents a mirrored sensor, to use when drawing reflection sources"""
+
     def __init__(self, coordinates: np.ndarray, name: str):
         super().__init__(coordinates, name)
 
@@ -159,7 +202,7 @@ class MirroredSensor(Sensor):
                                      radius=self.radius,
                                      fc='white',
                                      ec='dimgray',
-                                    #  label=f'Mirrored {self.name}',
+                                     #  label=f'Mirrored {self.name}',
                                      label='Mirrored sensor',
                                      zorder=10)
         plt.gca().add_patch(mirrored_sensor)

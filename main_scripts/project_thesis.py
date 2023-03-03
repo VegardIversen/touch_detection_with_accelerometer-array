@@ -7,6 +7,7 @@ import scipy.signal as signal
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from main_scripts.generate_ideal_signal import generate_ideal_signal
 
 from utils.global_constants import (CHIRP_CHANNEL_NAMES,
                                     SAMPLE_RATE,
@@ -23,8 +24,8 @@ from utils.data_processing.detect_echoes import (get_envelopes,
 from utils.data_processing.preprocessing import (compress_chirps,
                                                  crop_data,
                                                  window_signals,
-                                                 filter_general)
-from utils.data_processing.processing import (average_of_signals,
+                                                 filter)
+from utils.data_processing.processing import (align_signals_by_correlation, align_signals_by_max_value, average_of_signals,
                                               interpolate_waveform,
                                               normalize,
                                               variance_of_signals,
@@ -38,10 +39,10 @@ from utils.data_visualization.visualize_data import (compare_signals,
                                                      adjust_plot_margins)
 from main_scripts.correlation_bandpassing import (make_gaussian_cosine)
 
-from utils.setups import (Setup,
-                          Setup1,
-                          Setup2,
-                          Setup3)
+from utils.table_setups import (Setup,
+                                Setup1,
+                                Setup2,
+                                Setup3)
 
 
 """Setup 1"""
@@ -52,10 +53,10 @@ def setup1_results():
 
     """Choose setup"""
     SETUP = Setup1()
-    SETUP.draw()
-    adjust_plot_margins()
-    plt.savefig(FIGURES_SAVE_PATH + 'setup1_draw.pdf',
-                format='pdf')
+    # SETUP.draw()
+    # adjust_plot_margins()
+    # plt.savefig(FIGURES_SAVE_PATH + 'setup1_draw.pdf',
+    #             format='pdf')
 
     choice = ''
     while choice not in ['1', '2', '3', '4', '5']:
@@ -84,7 +85,7 @@ def setup1_plot_touch_signals():
     print('Plotting touch signals')
 
     """Choose file"""
-    FILE_FOLDER = 'Setup_1/touch'
+    FILE_FOLDER = 'Table/Setup1/touch'
     FILE_NAME = 'touch_v1'
     """Open file"""
     measurements = csv_to_df(file_folder=FILE_FOLDER,
@@ -99,9 +100,9 @@ def setup1_plot_touch_signals():
                                         time_end=2.5075)
 
     """Filter signals to remove 50 Hz and other mud"""
-    measurements_full_touch = filter_general(measurements_full_touch,
-                                             filtertype='highpass',
-                                             critical_frequency=100)
+    measurements_full_touch = filter(measurements_full_touch,
+                                     filtertype='highpass',
+                                     critical_frequency=100)
 
     CHANNELS_TO_PLOT = ['Sensor 1', 'Sensor 3']
     for channel in CHANNELS_TO_PLOT:
@@ -159,7 +160,7 @@ def setup1_plot_chirp_signals():
     print('Plotting chirp signals')
 
     """Choose file"""
-    FILE_FOLDER = 'Setup_1/chirp/100Hz_to_40kHz_single_chirp'
+    FILE_FOLDER = 'Table/Setup1/chirp/100Hz_to_40kHz_single_chirp'
     FILE_NAME = 'chirp_v1'
     """Open file"""
     measurements = csv_to_df(file_folder=FILE_FOLDER,
@@ -381,7 +382,7 @@ def setup1_transfer_function(setup: Setup):
     print('Calculating transfer function')
 
     """Choose file"""
-    FILE_FOLDER = 'Setup_1/chirp/100Hz_to_40kHz_single_chirp'
+    FILE_FOLDER = 'Table/Setup1/chirp/100Hz_to_40kHz_single_chirp'
     FILE_NAME = 'chirp_v1'
 
     """Open file"""
@@ -539,7 +540,7 @@ def setup1_transfer_function(setup: Setup):
 def setup1_scattering():
     print('Scattering')
     """Open file"""
-    FILE_FOLDER = 'Setup_1/scattering_tests/15kHz_to_40kHz_125ms'
+    FILE_FOLDER = 'Table/Setup1/scattering_tests/15kHz_to_40kHz_125ms'
     FILE_NAME = 'no_touch_v1'
     measurements = csv_to_df(file_folder=FILE_FOLDER,
                              file_name=FILE_NAME)
@@ -642,7 +643,7 @@ def setup1_scattering():
 def setup1_predict_reflections(setup: Setup):
     print('Predicting reflections')
     """Open file"""
-    FILE_FOLDER = 'Setup_1/touch'
+    FILE_FOLDER = 'Table/Setup1/touch'
     FILE_NAME = 'touch_v1'
     measurements = csv_to_df(file_folder=FILE_FOLDER,
                              file_name=FILE_NAME)
@@ -654,12 +655,9 @@ def setup1_predict_reflections(setup: Setup):
     # measurements = compress_chirps(measurements)
 
     """Filter signals by a correlation based bandpass filter"""
-    # measurements = filter_general(measurements,
-    #                               filtertype='highpass',
-    #                               cutoff_highpass=10000)
-    cosine = make_gaussian_cosine(frequency=4000,
-                                  num_of_samples=measurements.shape[0])
-    measurements = compress_chirps(measurements, cosine)
+    measurements = filter(measurements,
+                          filtertype='highpass',
+                          critical_frequency=1000)
 
     setup1_predict_reflections_in_envelopes(setup, measurements)
     setup1_predict_reflections_in_spectrograms(setup, measurements)
@@ -760,7 +758,7 @@ def setup2_results():
     """Run some general commands for all functions"""
     print('Setup 2')
     """Choose file"""
-    FILE_FOLDER = 'Setup_2'
+    FILE_FOLDER = 'Setup2'
     FILE_NAME = 'prop_speed_chirp3_setup3_2_v2'
     """Open file"""
     measurements = csv_to_df(file_folder=FILE_FOLDER,
@@ -926,7 +924,7 @@ def setup2_transfer_function(setup: Setup):
     print('Calculating transfer function')
 
     """Choose file"""
-    FILE_FOLDER = 'Setup_2'
+    FILE_FOLDER = 'Setup2'
     FILE_NAME = 'prop_speed_chirp3_setup3_2_v1'
 
     """Open file"""
@@ -1092,7 +1090,7 @@ def setup3_results():
 
 def setup3_plot_raw_time_signal():
     """Open file"""
-    FILE_FOLDER = 'Setup_3'
+    FILE_FOLDER = 'Setup3'
     FILE_NAME = 'notouch_20to40khz_1s_10vpp_v1'
     measurements = csv_to_df(file_folder=FILE_FOLDER,
                              file_name=FILE_NAME,
@@ -1127,7 +1125,7 @@ def setup3_plot_raw_time_signal():
 
 def setup3_scattering():
     """Open file"""
-    FILE_FOLDER = 'Setup_3'
+    FILE_FOLDER = 'Setup3'
     FILE_NAME = 'notouchThenHoldB2_20to40khz_125ms_10vpp_v1'
     measurements = csv_to_df(file_folder=FILE_FOLDER,
                              file_name=FILE_NAME)
