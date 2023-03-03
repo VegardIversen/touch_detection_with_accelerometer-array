@@ -59,9 +59,13 @@ def filter(signals: pd.DataFrame or np.ndarray,
     return signals_filtered
 
 
-def compress_chirps(measurements: pd.DataFrame,
+def compress_chirps(measurements: pd.DataFrame or np.ndarray,
                     custom_reference: np.ndarray = None):
     """Compresses a chirp with cross correlation"""
+    if isinstance(measurements, np.ndarray):
+        # Add the measurements array and the actuator signal as columns to the measurements
+        measurements = pd.DataFrame(measurements, columns=['Sensor 1'])
+
     compressed_chirps = measurements.copy()
     if custom_reference is None:
         for channel in measurements:
@@ -93,17 +97,23 @@ def crop_data(signals: pd.DataFrame or np.ndarray,
     return signals_cropped
 
 
-def crop_measurement_to_signal(signal: np.ndarray,
-                               std_threshold_multiplier: float = 8):
+def crop_measurement_to_signal(signal: np.ndarray or pd.DataFrame,
+                               std_threshold_multiplier: float = None,
+                               custom_threshold: float = None):
     """Crop the signal to the first and last value
     above a threshold given by the standard deviation.
     """
-    # Find the first index where the signal is higher than five times the standard deviation
-    std = np.std(signal)
-    threshold = std_threshold_multiplier * std
+    if isinstance(signal, pd.DataFrame):
+        signal = signal.values
+    if std_threshold_multiplier:
+        std = np.std(signal)
+        threshold = std_threshold_multiplier * std
+    elif custom_threshold:
+        threshold = custom_threshold
+
     start_index = np.argmax(signal > threshold)
 
-    # Find the last index where the signal is higher than five times the standard deviation
+    # Find the last index where the signal is higher than the threshold
     end_index = len(signal) - np.argmax(signal[::-1] > threshold) - 1
 
     # Add 10% of the signal length to the start and end index

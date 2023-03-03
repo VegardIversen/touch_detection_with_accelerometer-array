@@ -174,7 +174,7 @@ class Actuator:
 
 
 class MirroredSource(Actuator):
-    """Represents a mirrored source."""
+    """Represents a mirrored source, to use when drawing reflection sources"""
 
     def __init__(self, coordinates: np.ndarray):
         super().__init__(coordinates)
@@ -185,13 +185,13 @@ class MirroredSource(Actuator):
                                      radius=self.RADIUS,
                                      fc='pink',
                                      ec='dimgray',
-                                     label=f'Mirrored source',
+                                     label='Mirrored source',
                                      zorder=10)
         plt.gca().add_patch(mirrored_source)
 
 
 class MirroredSensor(Sensor):
-    """Represents a mirrored sensor."""
+    """Represents a mirrored sensor, to use when drawing reflection sources"""
 
     def __init__(self, coordinates: np.ndarray, name: str):
         super().__init__(coordinates, name)

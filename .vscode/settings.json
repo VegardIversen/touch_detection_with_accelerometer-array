@@ -6,5 +6,5 @@
     "python.linting.pylamaArgs": [
         "--max-line-length=79"
     ],
-    "python.formatting.provider": "autopep8"
+    "python.formatting.provider": "autopep8",
 }
