@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from utils.data_processing.processing import align_signals_by_max_value, normalize
 
 from utils.plate_setups import Setup
-from utils.chirp_gen import generate_chirp
+from utils.generate_chirp import generate_chirp
 from utils.global_constants import (SAMPLE_RATE,
                                     ACTUATOR_1,
                                     SENSOR_1,)
