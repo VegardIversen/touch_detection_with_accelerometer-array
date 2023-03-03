@@ -97,33 +97,40 @@ def crop_data(signals: pd.DataFrame or np.ndarray,
     return signals_cropped
 
 
-def crop_measurement_to_signal(signal: np.ndarray or pd.DataFrame,
-                               std_threshold_multiplier: float = None,
-                               custom_threshold: float = None):
+def crop_measurement_to_signal_ndarray(measurement: np.ndarray):
     """Crop the signal to the first and last value
     above a threshold given by the standard deviation.
     """
-    if isinstance(signal, pd.DataFrame):
-        signal = signal.values
-    if std_threshold_multiplier:
-        std = np.std(signal)
-        threshold = std_threshold_multiplier * std
-    elif custom_threshold:
-        threshold = custom_threshold
-
-    start_index = np.argmax(signal > threshold)
+    # Find the first index where the signal is higher than the threshold
+    threshold = 0.05 * np.max(np.abs(measurement))
+    start_index = np.argmax(np.abs(measurement) > threshold)
 
     # Find the last index where the signal is higher than the threshold
-    end_index = len(signal) - np.argmax(signal[::-1] > threshold) - 1
+    end_index = len(measurement) - \
+        np.argmax(np.abs(measurement[::-1]) > threshold) - 1
 
-    # Add 10% of the signal length to the start and end index
-    start_index = int(start_index - 0.1 * (end_index - start_index))
-    end_index = int(end_index + 0.1 * (end_index - start_index))
+    # Add 5% of the signal length to the start and end index
+    signal_length = end_index - start_index
+    start_index -= int(signal_length * 0.05)
+    if start_index < 0:
+        start_index = 0
+    end_index += int(signal_length * 0.05)
+    if end_index > len(measurement):
+        end_index = len(measurement)
 
     # Crop the signal
-    signal = signal[start_index:end_index]
+    signal = measurement[start_index:end_index]
 
     return signal
+
+
+def crop_measurements_to_signals_dataframe(measurements: pd.DataFrame):
+    """Crop the signal to the first and last value
+    above a threshold given by the standard deviation.
+    """
+    for channel in measurements.columns:
+        measurements[channel] = crop_measurement_to_signal_ndarray(measurements[channel])
+    return measurements
 
 
 def window_signals(signals: pd.DataFrame,
@@ -159,4 +166,4 @@ def window_signals(signals: pd.DataFrame,
 
 
 if __name__ == '__main__':
-    pass
+    raise RuntimeError('This module is not intended to be ran from CLI')

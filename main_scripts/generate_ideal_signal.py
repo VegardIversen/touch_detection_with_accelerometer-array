@@ -5,15 +5,14 @@ import matplotlib.pyplot as plt
 from utils.data_processing.processing import align_signals_by_max_value, normalize
 
 from utils.plate_setups import Setup
-from utils.chirp_gen import generate_chirp
+from utils.generate_chirp import generate_chirp
 from utils.global_constants import (SAMPLE_RATE,
                                     ACTUATOR_1,
                                     SENSOR_1,)
 from utils.data_visualization.visualize_data import (
     compare_signals, set_window_size, adjust_plot_margins)
 from utils.data_processing.detect_echoes import get_envelopes, get_travel_times
-from utils.data_processing.preprocessing import (
-    compress_chirps, crop_measurement_to_signal)
+from utils.data_processing.preprocessing import (compress_chirps)
 
 
 def compare_to_ideal_signal(setup: Setup, measurements: pd.DataFrame):
@@ -72,7 +71,7 @@ def generate_ideal_signal(setup: Setup,
 
     # Compress the test signal
     compressed_ideal_signal = compress_chirps(sensor_measurements)
-    crop_measurement_to_signal(compressed_ideal_signal, custom_threshold=3000)
+    # crop_measurement_to_signal_ndarray(compressed_ideal_signal)
     return compressed_ideal_signal
 
 
@@ -83,10 +82,9 @@ def make_chirp(time_end: float,
     chirp = generate_chirp(sample_rate=SAMPLE_RATE,
                            frequency_start=frequency_start,
                            frequency_stop=frequency_stop,
-                           time_end=time_end,
+                           time_end_s=time_end,
                            save_to_file=False)
     if plot_chirp:
-        # Plot the chirp
         fig, axs = plt.subplots(1, 3, squeeze=False,
                                 figsize=set_window_size(rows=1, cols=3))
         compare_signals(fig, axs,

@@ -11,9 +11,10 @@ from main_scripts.project_thesis import (setup1_results,
 from main_scripts.bandpassing_touch import (setup1_predict_reflections)
 from main_scripts.generate_ideal_signal import (generate_ideal_signal,
                                                 compare_to_ideal_signal)
+from utils.data_processing.preprocessing import crop_measurements_to_signals_dataframe
 from utils.data_visualization.visualize_data import compare_signals, set_fontsizes
 from utils.global_constants import SAMPLE_RATE
-from utils.plate_setups import Setup_3x3
+from utils.plate_setups import Setup_3x3, Setup_Linear_Array
 
 
 def main():
@@ -37,24 +38,34 @@ def main():
     elif user_input == '3':
         setup3_results()
     elif user_input == '0':
-        SETUP = Setup_3x3()
+        actuator_x = np.random.uniform(0.05, 0.95)
+        actuator_y = np.random.uniform(0.05, 0.65)
+        SETUP = Setup_Linear_Array(number_of_sensors=4,
+                                   actuator_coordinates=np.array([actuator_x,
+                                                                  actuator_y]),
+                                   array_start_coordinates=np.array(
+                                       [0.4, 0.6]),
+                                   array_spacing_m=0.01,)
         SETUP.draw()
         ideal_signal = generate_ideal_signal(setup=SETUP,
-                                             propagation_speed_mps=600 ,
-                                             attenuation_dBpm=10,
+                                             propagation_speed_mps=600,
+                                             attenuation_dBpm=20,
                                              time_end=0.125,
                                              frequency_start=1,
-                                             frequency_stop=6500)
-        TIME_AXIS = np.linspace(0, 0.2, ideal_signal.shape[0])
-        fig, axs = plt.subplots(3, 3, squeeze=False,
-                                sharex=True, sharey=True)
-        for i in range(3):
-            for j in range(3):
-                sensor_number = str(i * 3 + j + 1)
-                axs[i, j].plot(
-                    TIME_AXIS, ideal_signal['Sensor ' + sensor_number])
-                axs[i, j].grid()
-                axs[i, j].set_title('Sensor ' + sensor_number)
+                                             frequency_stop=20000,)
+        crop_measurements_to_signals_dataframe(ideal_signal)
+        PLOTS_TO_PLOT = ['time']
+        fig, axs = plt.subplots(nrows=len(SETUP.sensors),
+                                ncols=len(PLOTS_TO_PLOT),
+                                squeeze=False,
+                                sharex=True,
+                                sharey=True,)
+        compare_signals(fig, axs,
+                        [ideal_signal[sensor.name]
+                            for sensor in SETUP.sensors],
+                        plots_to_plot=PLOTS_TO_PLOT)
+        # Set the title to the actuator coordinates
+        fig.suptitle(f'Actuator coordinates: {actuator_x:.3f}, {actuator_y:.3f}')
 
     else:
         print('Please type 1, 2 or 3 for their respective setups '
