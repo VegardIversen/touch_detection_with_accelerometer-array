@@ -23,7 +23,7 @@ from utils.data_processing.detect_echoes import (get_envelopes,
 from utils.data_processing.preprocessing import (compress_chirps,
                                                  crop_data,
                                                  window_signals,
-                                                 filter_general)
+                                                 filter)
 from utils.data_processing.processing import (average_of_signals,
                                               interpolate_waveform,
                                               normalize,

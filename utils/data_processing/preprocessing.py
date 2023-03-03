@@ -15,12 +15,12 @@ from utils.data_visualization.visualize_data import (plot_filter_response)
 """FILTERING"""
 
 
-def filter_general(signals: pd.DataFrame or np.ndarray,
-                   filtertype: str,
-                   critical_frequency: int,
-                   q: float = 0.05,
-                   order: int = 4,
-                   plot_response: bool = False):
+def filter(signals: pd.DataFrame or np.ndarray,
+           filtertype: str,
+           critical_frequency: int,
+           q: float = 0.05,
+           order: int = 4,
+           plot_response: bool = False):
     """filtertype: 'highpass', 'lowpass' or 'bandpass.
     NOTE:   q is a value that determines the width of the flat bandpass,
             and is a value between 0 and 1. order determines the slope.
