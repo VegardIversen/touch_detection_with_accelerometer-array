@@ -261,3 +261,26 @@ class Setup_3x3(Setup):
         distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
         propagation_speed = np.abs(distance / delay)
         return propagation_speed
+
+
+class Setup_Linear_Array(Setup):
+    """A line of number_of_sensors sensors,
+    with an actuator given by actuator_coordinates.
+    """
+
+    def __init__(self,
+                 number_of_sensors: int,
+                 actuator_coordinates: np.ndarray,
+                 array_start_coordinates: np.ndarray,
+                 array_spacing_m: float):
+        self.number_of_sensors = number_of_sensors
+        self.actuator_coordinates = actuator_coordinates
+        self.array_start_coordinates = array_start_coordinates
+        self.array_spacing = array_spacing_m
+        self.actuators = np.empty(shape=1, dtype=Actuator)
+        self.sensors = np.empty(shape=number_of_sensors, dtype=Sensor)
+        self.actuators[ACTUATOR_1] = Actuator(coordinates=actuator_coordinates)
+        for i in range(number_of_sensors):
+            self.sensors[i] = Sensor(coordinates=(array_start_coordinates[0] + i * array_spacing_m,
+                                                  array_start_coordinates[1]),
+                                     name=f'Sensor {i + 1}')
