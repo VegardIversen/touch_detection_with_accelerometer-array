@@ -23,6 +23,7 @@ from data_viz_files.visualise_data import inspect_touch, figure_size_setup, to_d
 import data_processing.wave_properties as wp
 import data_processing.sensor_testing as st
 from matplotlib import style
+import data_viz_files.visualise_data as vd
 
 def results_setup1():
     ## Results for phase velocity test in the beginning of the thesis.
@@ -44,6 +45,15 @@ def results_setup1():
     print(wp.max_peak_velocity(df_PE, material='HDPE'))
     #print(wp.max_peak_velocity(df_teflon))
     #print(wp.max_peak_velocity(df_PE))
+
+def data_viz(viz_type, folder, filename, semester='thesis'):
+    if semester == 'thesis':
+        df = csv_to_df_thesis(folder, filename)
+    else:
+        df = csv_to_df(folder, filename)
+    if viz_type == 'scaleogram':
+        vd.plot_scaleogram(df)
+
 if __name__ == '__main__':
     CROSS_CORR_PATH1 = '\\Measurements\\setup2_korrelasjon\\'
     CROSS_CORR_PATH2 = '\\first_test_touch_passive_setup2\\'

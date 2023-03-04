@@ -16,6 +16,33 @@ from data_processing.detect_echoes import get_travel_times, get_hilbert_envelope
 from objects import Table, Actuator, Sensor
 #from setups import Setup2, Setup3, Setup3_2, Setup3_4, Setup6
 from data_viz_files.drawing import ax_legend_without_duplicates
+import scaleogram as scg
+
+def plot_scaleogram(df, sample_rate=150000, channels=['channel 1']):
+    chirp = df['wave_gen']
+    time_axis = np.linspace(0, len(df) // sample_rate, num=len(df))
+    data_df = df.drop(columns=['wave_gen'])
+    #create subplots for the lenght of channels
+
+    if len(channels) == 1:
+        channel = channels[0]
+        fig, axs = plt.subplots(1, 1, figsize=(20, 10))
+        data = data_df[channel].values
+        
+        scg.cws(time_axis, data)
+
+    else:
+        fig, axs = plt.subplots(len(channels), 1, figsize=(20, 10))
+        #loop over the channels
+        for i, channel in enumerate(channels):
+            #get the data for the channel
+            data = data_df[channel]
+            ax = axs[i]
+            #get the scaleogram
+            scg.cws(time_axis, data, scales='cmor1-1.5', ylabel=channel, xlabel='frequency [hz]', ax=ax)
+
+    
+
 
 def plot_fft(df, sample_rate=150000, window=False):
     if isinstance(df, pd.DataFrame) or isinstance(df, pd.Series):
