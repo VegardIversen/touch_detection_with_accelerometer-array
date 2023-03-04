@@ -39,18 +39,18 @@ def main():
         setup3_results()
     elif user_input == '0':
         actuator_x = np.random.uniform(0.05, 0.95)
-        actuator_y = np.random.uniform(0.05, 0.65)
-        SETUP = Setup_Linear_Array(number_of_sensors=4,
+        actuator_y = np.random.uniform(0.05, 0.60)
+        SETUP = Setup_Linear_Array(number_of_sensors=8,
                                    actuator_coordinates=np.array([actuator_x,
                                                                   actuator_y]),
                                    array_start_coordinates=np.array(
-                                       [0.4, 0.6]),
+                                       [0.46, 0.65]),
                                    array_spacing_m=0.01,)
         SETUP.draw()
         ideal_signal = generate_ideal_signal(setup=SETUP,
                                              propagation_speed_mps=600,
                                              attenuation_dBpm=20,
-                                             time_end=0.125,
+                                             chirp_length_s=0.125,
                                              frequency_start=1,
                                              frequency_stop=20000,)
         crop_measurements_to_signals_dataframe(ideal_signal)
@@ -65,7 +65,9 @@ def main():
                             for sensor in SETUP.sensors],
                         plots_to_plot=PLOTS_TO_PLOT)
         # Set the title to the actuator coordinates
-        fig.suptitle(f'Actuator coordinates: {actuator_x:.3f}, {actuator_y:.3f}')
+        fig.suptitle(
+            f'Actuator coordinates: ({actuator_x:.3f}, {actuator_y:.3f})')
+        [ax.set_ylabel('') for ax in axs[:, 0]]
 
     else:
         print('Please type 1, 2 or 3 for their respective setups '

@@ -53,7 +53,7 @@ def compare_to_ideal_signal(setup: Setup, measurements: pd.DataFrame):
 def generate_ideal_signal(setup: Setup,
                           propagation_speed_mps: float,
                           attenuation_dBpm: float,
-                          time_end: float,
+                          chirp_length_s: float,
                           frequency_start: float,
                           frequency_stop: float,):
     """Generate a test signal based on expected arrival times for a setup."""
@@ -63,7 +63,7 @@ def generate_ideal_signal(setup: Setup,
 
     # Generate a chirp for transmission
 
-    chirp = make_chirp(time_end, frequency_start, frequency_stop)
+    chirp = make_chirp(chirp_length_s, frequency_start, frequency_stop)
 
     # Initialize the superpositioned signal
     sensor_measurements = sum_signals(
