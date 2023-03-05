@@ -30,6 +30,7 @@ def plot_scaleogram(df, sample_rate=150000, channels=['channel 1']):
         data = data_df[channel].values
         
         scg.cws(time_axis, data)
+        plt.show()
 
     else:
         fig, axs = plt.subplots(len(channels), 1, figsize=(20, 10))
@@ -39,7 +40,7 @@ def plot_scaleogram(df, sample_rate=150000, channels=['channel 1']):
             data = data_df[channel]
             ax = axs[i]
             #get the scaleogram
-            scg.cws(time_axis, data, scales='cmor1-1.5', ylabel=channel, xlabel='frequency [hz]', ax=ax)
+            scg.cws(time_axis, data, wavelet='cmor1-1.5', ylabel=channel, xlabel='frequency [hz]', ax=ax)
 
     
 
