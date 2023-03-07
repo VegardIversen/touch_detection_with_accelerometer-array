@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
+from scipy import interpolate
 import pandas as pd
 from pathlib import Path
 import seaborn as sb
@@ -212,7 +213,7 @@ def phase_plotting_chirp(
                 method='div', 
                 n_pi=0, 
                 SAMPLE_RATE=150000, 
-                BANDWIDTH=None, 
+                BANDWIDTH=[100,40000], 
                 save_fig=False,
                 file_name='phase_difference.png',
                 file_format='png',
@@ -253,6 +254,53 @@ def phase_plotting_chirp(
                                     file_format=file_format,
                                     figsize=figsize)
     return phase, freq
+
+def group_velocity_theoretical(freqs, material='teflon', plot=False, kind='cubic'):
+
+    
+    omega  = 2*np.pi*freqs
+    wavenumbers = 2*np.pi*freqs/omega
+    phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear, material = theoretical_velocities(freqs, material=material)
+
+    univ_s = interpolate.InterpolatedUnivariateSpline(freqs, phase_velocities_flexural)
+    vp_prime = univ_s.derivative()     
+    vg = np.square(phase_velocities_flexural) * (1/(freqs - vp_prime(freqs)*freqs))
+    interp_vg = interpolate.interp1d(freqs, vg, kind=kind)
+
+    d_v_ph = np.gradient(corrected_phase_velocities, omega)
+    v_g_numpy = corrected_phase_velocities / (1 - (d_v_ph * omega/corrected_phase_velocities))
+    if plot:
+        plt.plot(freqs, v_g_numpy, label='Numpy')
+        plt.plot(freqs, vg, label='Interpolated')
+        plt.xlabel('Frequency [Hz]')
+        plt.ylabel('Group velocity [m/s]')
+        plt.legend()
+        plt.show()
+    return v_g_numpy
+
+
+def group_velocity_phase(vph, freqs, method='t', distance=0.1, material='teflon', plot=False):
+    '''
+    Function for calulating the group velocity of a signal.
+    phase is the phase of the signal. freqs is the frequency range you are interested in.
+    method is either 't' for theoretical or 'e' experimental. 
+    Material is important to define if you want to use the theoretical method.
+
+    '''
+    omega  = 2*np.pi*freqs
+    d_v_ph = np.gradient(vph, omega)
+    v_g_numpy = vph / (1 - (d_v_ph * omega/vph))
+
+    if plot:
+        plt.plot(freqs, v_g_numpy)
+        plt.xlabel('Frequency [Hz]')
+        plt.ylabel('Group velocity [m/s]')
+        plt.show()
+    return v_g_numpy
+
+
+
+
 
 def phase_velocity(phase, freq, distance, plot=False):
     phase_vel = 2*np.pi*freq*distance/np.abs(phase)
@@ -298,6 +346,8 @@ def theoretical_velocities(freq, material='teflon'):
                             np.sqrt((1 - poisson_ratio) / 2))
     phase_velocities_flexural = np.sqrt(1.8 * phase_velocity_longitudinal *
                                         plate_thickness * freq)
+
+
     # group_velocity_flexural = (2 * np.sqrt(2 * np.pi * freq) *
     #                            (youngs_modulus) ** (1 / 4))
     """As the plate is not considered 'thin', we need to correct the
@@ -315,14 +365,35 @@ def theoretical_velocities(freq, material='teflon'):
                                     (c_G ** 3))))) ** (1 / 3)
     return phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear, material
 
+def plot_theoretical_velocities(freq, material='teflon'):
+    phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear, material = theoretical_velocities(freq,material)
+    group_vel = group_velocity_theoretical(freq)
+    fig, axs = figure_size_setup()
+    axs.plot(freq, phase_velocities_flexural, label='Simulated velocity')
+    axs.plot(freq, corrected_phase_velocities, label='Simulated corrected velocity')
+    #axs.plot(freq, phase_velocity_shear, label='Simulated shear velocity')
+    axs.plot(freq, group_vel, label='Simulated group velocity')
+    axs.set_xlabel('Frequency [Hz]')
+    axs.set_ylabel('Velocity [m/s]')
+    axs.set_title('Theoretical velocities for ' + material)
+    axs.legend()
+    plt.show()
+
+    return axs
+
 def plot_velocities(phase, freq, distance, savefig=False, filename=None, file_format='png', material='teflon'):
     phase_vel = phase_velocity(phase, freq, distance)
     phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear, material = theoretical_velocities(freq,material)
+    vg_theoretical = group_velocity_theoretical(freq, material=material)
+
+    vg = group_velocity_phase(phase_vel, freq, distance)
     freq = freq/1000
     fig, axs = figure_size_setup()
-    axs.plot(freq, phase_vel, label='Measured velocity')
+    #axs.plot(freq, phase_vel, label='Measured velocity')
     axs.plot(freq, phase_velocities_flexural, label='Simulated velocity', linestyle='--')
     axs.plot(freq, corrected_phase_velocities, label='Simulated corrected velocity', linestyle='--')
+    #axs.plot(freq, vg, label='Measured group velocity')
+    axs.plot(freq, vg_theoretical, label='Simulated group velocity', linestyle='--')
     axs.set_xlabel('Frequency [kHz]')
     axs.set_ylabel('Phase velocity [m/s]')
     axs.set_title(f'Phase velocity for {material} plate')
@@ -330,6 +401,8 @@ def plot_velocities(phase, freq, distance, savefig=False, filename=None, file_fo
     if savefig:
         fig.savefig(filename, format=file_format, dpi=300)
     plt.show()
+
+
 def max_peak_velocity(df, distance=0.1, sampling_rate=150000, material='teflon'):
     #Test indicates that the pressure wave travels with 1000 m/s for teflon and 1500 m/s for PE
     # Extract the signal data from the DataFrame
@@ -375,6 +448,7 @@ def plot_velocities_2distance(phase1, freq1, distance1, phase2, freq2, distance2
     phase_vel1 = phase_velocity(phase1, freq1, distance1)
     phase_vel2 = phase_velocity(phase2, freq2, distance2)
     phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear = theoretical_velocities(freq1)
+    
     freq1 = freq1/1000
     fig, axs = figure_size_setup()
     axs.plot(freq1, phase_vel1, label=f'Measured velocity d={distance1}m')

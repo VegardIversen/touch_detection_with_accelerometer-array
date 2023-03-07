@@ -17,19 +17,33 @@ from objects import Table, Actuator, Sensor
 #from setups import Setup2, Setup3, Setup3_2, Setup3_4, Setup6
 from data_viz_files.drawing import ax_legend_without_duplicates
 import scaleogram as scg
+import pywt
 
 def plot_scaleogram(df, sample_rate=150000, channels=['channel 1']):
     chirp = df['wave_gen']
     time_axis = np.linspace(0, len(df) // sample_rate, num=len(df))
-    data_df = df.drop(columns=['wave_gen'])
+    #data_df = df.drop(columns=['wave_gen'])
+    data_df = df
     #create subplots for the lenght of channels
-
+    
     if len(channels) == 1:
         channel = channels[0]
         fig, axs = plt.subplots(1, 1, figsize=(20, 10))
         data = data_df[channel].values
+        print(f'the mean of the signal is: {np.mean(data)}')
+        print(scg.wfun.get_wavlist())
+        freq_start = 100  # Hz
+        freq_stop = 40000  # Hz
         
-        scg.cws(time_axis, data)
+        # Compute the associated scale range
+        period_start = 1 / freq_stop  # seconds
+        period_stop = 1 / freq_start  # seconds
+        #scales = scg.periods2scales(np.linspace(period_start, period_stop, num=1000))
+        #freqs = np.logspace(np.log10(100), np.log10(40000), num=4000)
+        #scales = scg.periods2scales(1 / freqs)
+        scg.cws(time_axis, data, wavelet='morl', yaxis='frequency')
+        #scg.cws(time_axis, data, wavelet='morl', yaxis='frequency', ylim=[100,50000])
+        plt.show()
 
     else:
         fig, axs = plt.subplots(len(channels), 1, figsize=(20, 10))
@@ -40,7 +54,7 @@ def plot_scaleogram(df, sample_rate=150000, channels=['channel 1']):
             ax = axs[i]
             #get the scaleogram
             scg.cws(time_axis, data, scales='cmor1-1.5', ylabel=channel, xlabel='frequency [hz]', ax=ax)
-
+            plt.show()
     
 
 

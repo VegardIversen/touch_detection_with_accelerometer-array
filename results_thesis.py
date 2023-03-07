@@ -52,7 +52,63 @@ def data_viz(viz_type, folder, filename, semester='thesis'):
     else:
         df = csv_to_df(folder, filename)
     if viz_type == 'scaleogram':
-        vd.plot_scaleogram(df)
+        
+        vd.plot_scaleogram(df, channels=['wave_gen'])
+
+
+def wave_type_plots():
+    df = csv_to_df_thesis('plate10mm\\setup2\\chirp', 'chirp3_v1')
+    df_no_wave = df.drop(['wave_gen'], axis=1)
+    time_axis = np.linspace(0, len(df) // 150e3, num=len(df))
+    plt.plot(time_axis, df_no_wave)
+    plt.show()
+
+    #plotting just above and under the plate
+    plt.plot(time_axis, df['channel 2'], label='channel 2')
+    plt.plot(time_axis, df['channel 3'], label='channel 3')
+    plt.legend()
+    plt.show()
+
+    #filter the signals
+    df_filt = filter_general(df_no_wave, filtertype='highpass', cutoff_highpass=100, cutoff_lowpass=15000, order=4)
+    plt.plot(time_axis, df_filt)
+    plt.show()
+
+    #plotting just above and under the plate
+    plt.plot(time_axis, df_filt['channel 2'], label='channel 2')
+    plt.plot(time_axis, df_filt['channel 3'], label='channel 3')
+    plt.legend()
+    plt.show()
+
+    #normalize channel 2 and 3 so that they are on the same scale
+    df_filt['channel 2'] = df_filt['channel 2'] / np.max(df_filt['channel 2'])
+    df_filt['channel 3'] = df_filt['channel 3'] / np.max(df_filt['channel 3'])
+    #plot the difference between the two signals
+    plt.plot(time_axis, df_filt['channel 2'] + df_filt['channel 3'], label='difference')
+    #plt.plot(time_axis, df_filt['channel 2'], label='channel 2')
+    #plt.plot(time_axis, df_filt['channel 3'], label='channel 3')
+    plt.legend()
+    plt.show()
+
+def velocities():
+    df = csv_to_df_thesis('plate20mm\\setup1\\chirp', 'chirp_100_40000_2s_v1')
+    #frequency range from 100 to 40000 Hz samplerate of 150000 Hz
+    freqs = np.linspace(100, 40000, 150000)
+    
+    #wp.plot_theoretical_velocities(freqs)
+    phase10, freq10  = wp.phase_plotting_chirp(df,
+                channels=['channel 2', 'channel 3'], 
+                detrend=True,
+                method='div', 
+                n_pi=0, 
+                SAMPLE_RATE=150000, 
+                BANDWIDTH=[100,40000], 
+                save_fig=False,
+                file_name='phase_difference.png',
+                file_format='png',
+                figsize=0.75,
+                use_recorded_chirp=True)
+    wp.plot_velocities(phase10, freq10, 0.10, savefig=False, filename='phase_velocity_10cm.svg', file_format='svg', material='HDPE')
 
 if __name__ == '__main__':
     CROSS_CORR_PATH1 = '\\Measurements\\setup2_korrelasjon\\'
