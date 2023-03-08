@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import scipy.signal as signal
 import matplotlib.pyplot as plt
+from utils.data_processing.preprocessing import window_signals
 
 from utils.global_constants import (SAMPLE_RATE,
                                     ACTUATOR_1,
@@ -65,9 +66,6 @@ class Setup:
 class Setup1(Setup):
     """Sensors in the middle of the table to
     separate direct signal and reflections.
-    NOTE:   Sensor 2 is not used in this setup,
-            but is included to make the code more
-            consistent with the measurement channels.
     """
     actuators = np.empty(shape=1, dtype=Actuator)
     sensors = np.empty(shape=3, dtype=Sensor)
@@ -160,30 +158,32 @@ class Setup2(Setup):
 
 
 class Setup3(Setup):
-    """Sensors in a straight line instead of a triangle in C2,
-    actuator placed in front of the sensors
-    """
+    """Inspecting touch signal right under the touch location
+    and over and under at """
     actuators = np.empty(shape=1, dtype=Actuator)
     sensors = np.empty(shape=3, dtype=Sensor)
-    actuators[0] = Actuator(coordinates=(np.array([1 / 3 * Table.LENGTH,
-                                                   5 / 6 * Table.WIDTH])))
-    sensors[SENSOR_1] = Sensor(coordinates=(Table.C2 + np.array([-0.035, 0])),
+    actuators[ACTUATOR_1] = Actuator(
+        coordinates=(np.array([0.45, Plate.WIDTH / 2])))
+    sensors[SENSOR_1] = Sensor(coordinates=actuators[ACTUATOR_1].coordinates,
                                name='Sensor 1')
-    sensors[SENSOR_2] = Sensor(coordinates=Table.C2,
+    sensors[SENSOR_2] = Sensor(coordinates=(Plate.LENGTH / 2, Plate.WIDTH / 2),
                                name='Sensor 2')
-    sensors[SENSOR_3] = Sensor(coordinates=(Table.C2 + np.array([0.03, 0])),
+    sensors[SENSOR_3] = Sensor(coordinates=(Plate.LENGTH / 2, Plate.WIDTH / 2),
                                name='Sensor 3')
 
     def __init__(self):
         pass
 
     def get_propagation_speed(self, measurements: pd.DataFrame):
-        """Use the cross correlation between the two channels
-        to find the propagation speed. Based on:
-        https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
-        """
         object_1 = self.sensors[SENSOR_1]
         object_2 = self.sensors[SENSOR_3]
+        envelopes = get_envelopes(measurements)
+        _, ax = plt.subplots()
+        first_peak_object1 = find_first_peak_index(envelopes[object_1.name],
+                                                   ax=ax)
+        measurements = window_signals(measurements,
+                                      length_of_signal_seconds=(0.384 - 0.378),
+                                      peak_index=first_peak_object1)
         n = len(measurements[object_1.name])
         corr = signal.correlate(measurements[object_1.name],
                                 measurements[object_2.name],

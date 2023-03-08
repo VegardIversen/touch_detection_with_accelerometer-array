@@ -15,38 +15,47 @@ from utils.data_processing.detect_echoes import get_envelopes, get_travel_times
 from utils.data_processing.preprocessing import (compress_chirps)
 
 
-def compare_to_ideal_signal(setup: Setup, measurements: pd.DataFrame):
+def compare_to_ideal_signal(setup: Setup,
+                            measurements: pd.DataFrame,
+                            attenuation_dBpm: float,
+                            chirp_length_s: float,
+                            frequency_start: float,
+                            frequency_stop: float,):
     """Calculate arrival times for sensor 1"""
     propagation_speed = setup.get_propagation_speed(measurements)
-    print(f'Propagation speed: {propagation_speed}')
-    ideal_signal = generate_ideal_signal(setup, propagation_speed)
+    print(f'Propagation speed: {propagation_speed:.2f}')
+    ideal_signal = generate_ideal_signal(setup,
+                                         propagation_speed,
+                                         attenuation_dBpm,
+                                         chirp_length_s,
+                                         frequency_start,
+                                         frequency_stop,)
 
     measurement_envelopes = get_envelopes(measurements)
     measurement_envelopes = normalize(measurement_envelopes)
     ideal_signal = align_signals_by_max_value(
         signals=ideal_signal, signals_to_align_with=measurement_envelopes)
     """Plot signals"""
-    CHANNELS_TO_PLOT = [measurements.columns]
+    CHANNELS_TO_PLOT = setup.sensors
     PLOTS_TO_PLOT = ['time', 'fft']
     fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
                             ncols=len(PLOTS_TO_PLOT),
                             squeeze=False)
     compare_signals(fig, axs,
                     [ideal_signal['Sensor 1'],
+                     ideal_signal['Sensor 2'],
                      ideal_signal['Sensor 3']],
                     plots_to_plot=PLOTS_TO_PLOT)
     compare_signals(fig, axs,
                     [measurement_envelopes['Sensor 1'],
+                     measurement_envelopes['Sensor 2'],
                      measurement_envelopes['Sensor 3'],],
                     plots_to_plot=PLOTS_TO_PLOT)
-    axs[0, 0].grid()
+    [ax.grid() for ax in axs[:, 0]]
     axs[0, 0].legend(['Ideal signal', 'Measurement envelope'],
                      loc='upper right')
-    axs[1, 0].grid()
-    axs[0, 1].grid()
     axs[0, 1].legend(['Ideal signal', 'Measurement envelope'],
                      loc='upper right')
-    axs[1, 1].grid()
     return 0
 
 
@@ -57,12 +66,7 @@ def generate_ideal_signal(setup: Setup,
                           frequency_start: float,
                           frequency_stop: float,):
     """Generate a test signal based on expected arrival times for a setup."""
-
-    # setup.draw()
-    # adjust_plot_margins()
-
     # Generate a chirp for transmission
-
     chirp = make_chirp(chirp_length_s, frequency_start, frequency_stop)
 
     # Initialize the superpositioned signal
@@ -97,7 +101,7 @@ def sum_signals(setup: Setup,
                 chirp: np.ndarray,
                 attenuation_dBpm: float = 0,
                 plot_signals: bool = False):
-    LENGTH_OF_SIGNAL_S = 0.2
+    LENGTH_OF_SIGNAL_S = 5
     ACTUATOR_CHANNEL = np.pad(
         chirp, (0, int(LENGTH_OF_SIGNAL_S * SAMPLE_RATE)))
     sensor_measurements = pd.DataFrame(data=ACTUATOR_CHANNEL,

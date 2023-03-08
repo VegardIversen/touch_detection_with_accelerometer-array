@@ -97,12 +97,13 @@ def crop_data(signals: pd.DataFrame or np.ndarray,
     return signals_cropped
 
 
-def crop_measurement_to_signal_ndarray(measurement: np.ndarray):
+def crop_ndarray_to_signal(measurement: np.ndarray,
+                           threshold_parameter: float = 0.05):
     """Crop the signal to the first and last value
     above a threshold given by the standard deviation.
     """
     # Find the first index where the signal is higher than the threshold
-    threshold = 0.05 * np.max(np.abs(measurement))
+    threshold = threshold_parameter * np.max(np.abs(measurement))
     start_index = np.argmax(np.abs(measurement) > threshold)
 
     # Find the last index where the signal is higher than the threshold
@@ -124,22 +125,26 @@ def crop_measurement_to_signal_ndarray(measurement: np.ndarray):
     return signal
 
 
-def crop_measurements_to_signals_dataframe(measurements: pd.DataFrame):
+def crop_dataframe_to_signals(measurements: pd.DataFrame,
+                              threshold_parameter: float = 0.05):
     """Crop the signal to the first and last value
     above a threshold given by the standard deviation.
     """
     for channel in measurements.columns:
-        measurements[channel] = crop_measurement_to_signal_ndarray(measurements[channel])
+        measurements[channel] = crop_ndarray_to_signal(
+            measurements[channel], threshold_parameter)
     return measurements
 
 
 def window_signals(signals: pd.DataFrame,
                    length_of_signal_seconds: float,
                    window_function: str = 'tukey',
-                   window_parameter: float = None):
+                   window_parameter: float = None,
+                   peak_index: int = None):
     """Takes in a dataframe and set silence around the signal to zero."""
     length_of_signal_samples = int(length_of_signal_seconds * SAMPLE_RATE)
-    peak_index = np.argmax(signals)
+    if peak_index is None:
+        peak_index = np.argmax(signals)
     if window_parameter:
         window = signal.get_window((window_function,
                                     window_parameter),

@@ -49,7 +49,7 @@ def normalize(signals: np.ndarray or pd.DataFrame) -> np.ndarray or pd.DataFrame
     if isinstance(signals, pd.DataFrame):
         for channel in signals:
             signals[channel] = normalize(signals[channel])
-            # signals.at[0, channel] = signal.detrend(signals.at[0, channel])
+            signals[channel] = signal.detrend(signals[channel])
     else:
         signals = signals - np.min(signals)
         if np.max(signals) != 0:
