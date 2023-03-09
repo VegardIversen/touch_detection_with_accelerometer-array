@@ -284,3 +284,34 @@ class Setup_Linear_Array(Setup):
             self.sensors[i] = Sensor(coordinates=(array_start_coordinates[0] + i * array_spacing_m,
                                                   array_start_coordinates[1]),
                                      name=f'Sensor {i + 1}')
+
+
+class Setup4(Setup_Linear_Array):
+    # Setup_Linear_Array with arugments for a 3 sensor array
+    def __init__(self,
+                 actuator_coordinates: np.ndarray):
+        super().__init__(number_of_sensors=3,
+                         actuator_coordinates=actuator_coordinates,
+                         array_start_coordinates=np.array([0.45, 0.65]),
+                         array_spacing_m=0.01)
+
+    def get_propagation_speed(self,
+                              measurements: pd.DataFrame,
+                              prominence: float = 0.001):
+        """Use the cross correlation between the two channels
+        to find the propagation speed. Based on:
+        https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
+        """
+        object_1 = self.sensors[SENSOR_1]
+        object_2 = self.sensors[SENSOR_3]
+        n = len(measurements[object_1.name])
+        corr = signal.correlate(measurements[object_1.name],
+                                measurements[object_2.name],
+                                mode='same')
+        delay_arr = np.linspace(start=-0.5 * n / SAMPLE_RATE,
+                                stop=0.5 * n / SAMPLE_RATE,
+                                num=n)
+        delay = delay_arr[np.argmax(corr)]
+        distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
+        propagation_speed = np.abs(distance / delay)
+        return propagation_speed
