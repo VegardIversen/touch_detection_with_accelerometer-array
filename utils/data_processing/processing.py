@@ -80,28 +80,6 @@ def interpolate_waveform(signals: pd.DataFrame) -> pd.DataFrame:
     return signals_interpolated
 
 
-def correct_drift(data_split: pd.DataFrame,
-                  data_to_sync_with: pd.DataFrame) -> pd.DataFrame:
-    """Align each chrip in a recording better when split into equal lengths.
-    NOTE:   Also normalizes output.
-    """
-    for channel in data_split:
-        for chirp in range(len(data_split['Sensor 1'])):
-            corr = signal.correlate(data_to_sync_with[channel][0],
-                                    data_split[channel][chirp],
-                                    mode='same')
-            delays = np.linspace(start=-0.5 * len(corr),
-                                 stop=0.5 * len(corr),
-                                 num=len(corr))
-            delay = delays[np.argmax(corr)]
-            SHIFT_BY = (np.rint(delay)).astype(int)
-            data_split.at[chirp, channel] = np.roll(data_split.at[chirp, channel],
-                                                    SHIFT_BY)
-            data_split.at[chirp, channel] = normalize(
-                data_split.at[chirp, channel])
-    return data_split
-
-
 def align_signals_by_correlation(signals: pd.DataFrame,
                                  signals_to_align_with: pd.DataFrame) -> pd.DataFrame:
     """Align signals to signals_to_align_with using their correlation"""
