@@ -282,8 +282,8 @@ class Setup_Linear_Array(Setup):
         self.sensors = np.empty(shape=number_of_sensors, dtype=Sensor)
         self.actuators[ACTUATOR_1] = Actuator(coordinates=actuator_coordinates)
         for i in range(number_of_sensors):
-            self.sensors[i] = Sensor(coordinates=(array_start_coordinates[0] + i * array_spacing_m,
-                                                  array_start_coordinates[1]),
+            self.sensors[i] = Sensor(coordinates=np.array([array_start_coordinates[0] + i * array_spacing_m,
+                                                           array_start_coordinates[1]]),
                                      name=f'Sensor {i + 1}')
 
 
