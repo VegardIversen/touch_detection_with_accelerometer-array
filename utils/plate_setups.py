@@ -7,6 +7,7 @@ import pandas as pd
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 from utils.data_processing.preprocessing import window_signals
+from utils.data_processing.processing import get_noise_max_value
 
 from utils.global_constants import (SAMPLE_RATE,
                                     ACTUATOR_1,

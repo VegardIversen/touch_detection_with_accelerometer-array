@@ -120,3 +120,12 @@ def to_dB(measurements: pd.DataFrame or np.ndarray):
     """Converts measurements to dB"""
     measurements_dB = 10 * np.log10(measurements)
     return measurements_dB
+
+
+def get_noise_max_value(measurement: np.ndarray, time_window_s: float):
+    """Characterize the noise of the measurement
+    in terms of the standard deviation and max value
+    based on the first 0.1 seconds of the measurement"""
+    envelope = get_envelopes(measurement)
+    noise_max_value = np.max(envelope[0:int(time_window_s * SAMPLE_RATE)])
+    return noise_max_value
