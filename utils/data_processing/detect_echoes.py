@@ -14,8 +14,6 @@ from utils.objects import (MirroredSensor,
                            Actuator,
                            Sensor)
 
-from utils.data_processing.processing import (to_dB)
-
 
 def find_indices_of_peaks(signal, height, plot=False, hilbert=True):
     """Find the indices of the peaks in the signal."""
