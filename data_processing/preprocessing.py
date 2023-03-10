@@ -135,27 +135,27 @@ def manual_cut_signal(signal):
     return start, end
 
 
-def cut_out_signal(df, rate, threshold):
-    """
-    Inputs audio data in the form of a numpy array. Converts to pandas series
-    to find the rolling average and apply the absolute value to the signal at all points.
+# def cut_out_signal(df, rate, threshold):
+#     """
+#     Inputs audio data in the form of a numpy array. Converts to pandas series
+#     to find the rolling average and apply the absolute value to the signal at all points.
 
-    Additionally takes in the sample rate and threshold (amplitude). Data below the threshold
-    will be filtered out. This is useful for filtering out environmental noise from recordings.
-    """
-    mask = []
-    """Convert to series to find rolling average and apply absolute value to the signal at all points."""
-    signal = df.apply(np.abs)
-    """Take the rolling average of the series within our specified window."""
-    signal_mean = signal.rolling(window = int(rate / 15), min_periods=1, center=True).mean()
-    for mean in signal_mean:
-        if mean > threshold:
-            mask.append(True)
-        else:
-            mask.append(False)
-    mask_arr = np.array(mask)
-    signal_focusing = df.loc[mask_arr]
-    return signal_focusing, mask_arr
+#     Additionally takes in the sample rate and threshold (amplitude). Data below the threshold
+#     will be filtered out. This is useful for filtering out environmental noise from recordings.
+#     """
+#     mask = []
+#     """Convert to series to find rolling average and apply absolute value to the signal at all points."""
+#     signal = df.apply(np.abs)
+#     """Take the rolling average of the series within our specified window."""
+#     signal_mean = signal.rolling(window = int(rate / 15), min_periods=1, center=True).mean()
+#     for mean in signal_mean:
+#         if mean > threshold:
+#             mask.append(True)
+#         else:
+#             mask.append(False)
+#     mask_arr = np.array(mask)
+#     signal_focusing = df.loc[mask_arr]
+#     return signal_focusing, mask_arr
 
 def cut_out_signal_df(df, rate, threshold):
 

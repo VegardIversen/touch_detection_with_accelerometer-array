@@ -18,6 +18,7 @@ from objects import Table, Actuator, Sensor
 from data_viz_files.drawing import ax_legend_without_duplicates
 import scaleogram as scg
 import pywt
+import tftb.processing as tfp
 
 def plot_scaleogram(df, sample_rate=150000, channels=['channel 1']):
     chirp = df['wave_gen']
@@ -55,6 +56,37 @@ def plot_scaleogram(df, sample_rate=150000, channels=['channel 1']):
             #get the scaleogram
             scg.cws(time_axis, data, scales='cmor1-1.5', ylabel=channel, xlabel='frequency [hz]', ax=ax)
             plt.show()
+
+def psudo_wigner_ville_dist(df, channel):
+    signal = df[channel].values
+    window_size = 1024
+    n_frequencies = 512
+    n_times = 512
+    segment_size = 1024
+
+    # Segment the signal into smaller chunks
+    segments = np.array_split(signal, len(signal) // segment_size)
+
+    # Apply transform to each segment separately
+    pwvd = []
+    for seg in segments:
+        pwvd_seg = PseudoWignerVilleDistribution(seg, window=window_size, n_frequencies=n_frequencies, n_times=n_times)
+        pwvd.append(pwvd_seg)
+
+    # Concatenate the segments to obtain the full transform
+    pwvd = np.concatenate(pwvd, axis=1)
+def wigner_ville_dist(df, channel):
+    z = df[channel]
+    z_cut = cut_out_signal(z, 150e3, 0.0012)
+    window_size = 1024
+    hop_size = 512
+    freq_range = (100, 40000)  # Limit the frequency range to relevant frequencies
+
+# Compute the Wigner-Ville distribution
+    wvd = tfp.WignerVilleDistribution(z_cut, window_size, hop_size, freq_range)
+    
+    #wvd.run()
+    #wvd.plot(kind='contour', show_tf=True, title='Wigner-Ville Distribution')
     
 
 

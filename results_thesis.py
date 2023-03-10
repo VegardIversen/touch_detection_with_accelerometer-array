@@ -46,7 +46,7 @@ def results_setup1():
     #print(wp.max_peak_velocity(df_teflon))
     #print(wp.max_peak_velocity(df_PE))
 
-def data_viz(viz_type, folder, filename, semester='thesis'):
+def data_viz(viz_type, folder, filename, semester='thesis', channel='wave_gen'):
     if semester == 'thesis':
         df = csv_to_df_thesis(folder, filename)
     else:
@@ -54,10 +54,11 @@ def data_viz(viz_type, folder, filename, semester='thesis'):
     if viz_type == 'scaleogram':
         
         vd.plot_scaleogram(df, channels=['wave_gen'])
-
+    elif viz_type == 'wvd':
+        vd.wigner_ville_dist(df, channel)
 
 def wave_type_plots():
-    df = csv_to_df_thesis('plate10mm\\setup2\\chirp', 'chirp3_v1')
+    df = csv_to_df_thesis('plate10mm\\setup2\\chirp', 'chirp3_ch3top_ch2bot_ch1_sidemid_v1')
     df_no_wave = df.drop(['wave_gen'], axis=1)
     time_axis = np.linspace(0, len(df) // 150e3, num=len(df))
     plt.plot(time_axis, df_no_wave)
