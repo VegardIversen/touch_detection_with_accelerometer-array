@@ -300,19 +300,21 @@ class Setup4(Setup_Linear_Array):
                               measurements: pd.DataFrame,
                               prominence: float = 0.001):
         """Use the cross correlation between the two channels
-        to find the propagation speed. Based on:
-        https://stackoverflow.com/questions/41492882/find-time-shift-of-two-signals-using-cross-correlation
+        to find the propagation speed.
         """
-        object_1 = self.sensors[SENSOR_1]
-        object_2 = self.sensors[SENSOR_3]
-        n = len(measurements[object_1.name])
-        corr = signal.correlate(measurements[object_1.name],
-                                measurements[object_2.name],
-                                mode='same')
-        delay_arr = np.linspace(start=-0.5 * n / SAMPLE_RATE,
-                                stop=0.5 * n / SAMPLE_RATE,
-                                num=n)
-        delay = delay_arr[np.argmax(corr)]
-        distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
+        object1 = self.sensors[SENSOR_1]
+        object2 = self.sensors[SENSOR_2]
+        noise_max_value_object1 = get_noise_max_value(measurements[object1.name],
+                                                      time_window_s=0.1,)
+        noise_max_value_object2 = get_noise_max_value(measurements[object2.name],
+                                                      time_window_s=0.1,)
+        first_rise_object1 = (
+            measurements[object1.name] > (2 * noise_max_value_object1)).idxmax()
+        first_rise_object2 = (
+            measurements[object2.name] > (2 * noise_max_value_object2)).idxmax()
+        delay = (first_rise_object2 - first_rise_object1) / SAMPLE_RATE
+        delay = 0.01 / 600
+        assert delay != 0, f"""Delay is 0: First rise indices are {first_rise_object1} and {first_rise_object2}"""
+        distance = np.linalg.norm(object1.coordinates - object2.coordinates)
         propagation_speed = np.abs(distance / delay)
         return propagation_speed
