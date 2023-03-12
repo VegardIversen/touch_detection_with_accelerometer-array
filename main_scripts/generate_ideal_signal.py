@@ -20,17 +20,13 @@ def compare_to_ideal_signal(setup: Setup,
                             attenuation_dBpm: float,
                             chirp_length_s: float,
                             frequency_start: float,
-                            frequency_stop: float,):
+                            frequency_stop: float,
+                            propagation_speed_mps: float = None,):
     """Calculate arrival times for sensor 1"""
-    propagation_speed = setup.get_propagation_speed(measurements)
-    print(f'Propagation speed: {propagation_speed:.2f}')
-    ideal_signal = generate_ideal_signal(setup,
-                                         propagation_speed,
-                                         attenuation_dBpm,
-                                         chirp_length_s,
-                                         frequency_start,
-                                         frequency_stop,)
-
+    if propagation_speed_mps is None:
+        # propagation_speed = setup.get_propagation_speed(measurements)
+        propagation_speed_mps = 897.27
+    print(f'Propagation speed: {propagation_speed_mps:.2f}')
     measurement_envelopes = get_envelopes(measurements)
     measurement_envelopes = normalize(measurement_envelopes)
     ideal_signal = align_signals_by_max_value(
