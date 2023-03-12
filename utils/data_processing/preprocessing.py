@@ -27,15 +27,10 @@ def filter(signals: pd.DataFrame or np.ndarray,
     NOTE:   q is a value that determines the width of the flat bandpass,
             and is a value between 0 and 1. order determines the slope.
     """
-    if filtertype == 'highpass':
+    if filtertype == 'highpass' or filtertype == 'lowpass':
         sos = signal.butter(order,
                             critical_frequency / (0.5 * SAMPLE_RATE),
-                            'highpass',
-                            output='sos')
-    elif filtertype == 'lowpass':
-        sos = signal.butter(order,
-                            critical_frequency / (0.5 * SAMPLE_RATE),
-                            'lowpass',
+                            filtertype,
                             output='sos')
     elif filtertype == 'bandpass':
         sos = signal.butter(order,
