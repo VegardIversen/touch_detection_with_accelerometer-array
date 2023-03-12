@@ -7,8 +7,10 @@ import numpy as np
 import pandas as pd
 from scipy import signal
 import matplotlib.pyplot as plt
+from utils.data_processing.detect_echoes import get_envelopes
+from utils.data_processing.processing import get_noise_max_value
 
-from utils.global_constants import SAMPLE_RATE
+from utils.global_constants import ORIGINAL_SAMPLE_RATE, SAMPLE_RATE
 from utils.data_visualization.visualize_data import (plot_filter_response)
 
 
@@ -86,29 +88,33 @@ def compress_chirps(measurements: pd.DataFrame or np.ndarray,
 
 def crop_data(signals: pd.DataFrame or np.ndarray,
               time_start: float = None,
-              time_end: float = None):
+              time_end: float = None,
+              sample_rate: int = SAMPLE_RATE):
     """Crop either DataFrame input, pandas series or a numpy array input."""
     if isinstance(signals, np.ndarray):
-        signals_cropped = signals[int(time_start * SAMPLE_RATE):
-                                  int(time_end * SAMPLE_RATE)]
+        signals_cropped = signals[int(time_start * sample_rate):
+                                  int(time_end * sample_rate)]
     else:
-        signals_cropped = signals.loc[time_start * SAMPLE_RATE:
-                                      time_end * SAMPLE_RATE]
+        signals_cropped = signals.loc[time_start * sample_rate:
+                                      time_end * sample_rate]
     return signals_cropped
 
 
-def crop_ndarray_to_signal(measurement: np.ndarray,
-                           threshold_parameter: float = 0.05):
+def crop_to_signal(measurement: np.ndarray,
+                   threshold_parameter: float = 0.05):
     """Crop the signal to the first and last value
     above a threshold given by the standard deviation.
     """
     # Find the first index where the signal is higher than the threshold
-    threshold = threshold_parameter * np.max(np.abs(measurement))
-    start_index = np.argmax(np.abs(measurement) > threshold)
+    envelope = get_envelopes(measurement)
+    noise_max_value = get_noise_max_value(measurement,
+                                          time_window_s=0.1,
+                                          sample_rate=ORIGINAL_SAMPLE_RATE)
+    threshold = 2 * noise_max_value
+    start_index = np.argmax(envelope > threshold)
 
     # Find the last index where the signal is higher than the threshold
-    end_index = len(measurement) - \
-        np.argmax(np.abs(measurement[::-1]) > threshold) - 1
+    end_index = len(measurement) - np.argmax(envelope[::-1] > (threshold))
 
     # Add 5% of the signal length to the start and end index
     signal_length = end_index - start_index
@@ -131,7 +137,7 @@ def crop_dataframe_to_signals(measurements: pd.DataFrame,
     above a threshold given by the standard deviation.
     """
     for channel in measurements.columns:
-        measurements[channel] = crop_ndarray_to_signal(
+        measurements[channel] = crop_to_signal(
             measurements[channel], threshold_parameter)
     return measurements
 

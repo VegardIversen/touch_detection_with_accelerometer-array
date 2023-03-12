@@ -18,7 +18,7 @@ from utils.objects import (Table,
                            Plate,
                            Actuator,
                            Sensor)
-
+from utils.little_helpers import (distance_between)
 from utils.data_visualization.drawing import plot_legend_without_duplicates
 from utils.data_processing.detect_echoes import (find_first_peak_index,
                                                  get_envelopes)
@@ -304,17 +304,31 @@ class Setup4(Setup_Linear_Array):
         """
         object1 = self.sensors[SENSOR_1]
         object2 = self.sensors[SENSOR_2]
-        noise_max_value_object1 = get_noise_max_value(measurements[object1.name],
-                                                      time_window_s=0.1,)
-        noise_max_value_object2 = get_noise_max_value(measurements[object2.name],
-                                                      time_window_s=0.1,)
-        first_rise_object1 = (
-            measurements[object1.name] > (2 * noise_max_value_object1)).idxmax()
-        first_rise_object2 = (
-            measurements[object2.name] > (2 * noise_max_value_object2)).idxmax()
-        delay = (first_rise_object2 - first_rise_object1) / SAMPLE_RATE
-        delay = 0.01 / 600
-        assert delay != 0, f"""Delay is 0: First rise indices are {first_rise_object1} and {first_rise_object2}"""
+        # noise_max_value_object1 = get_noise_max_value(measurements[object1.name],
+        #                                               time_window_s=0.1,)
+        # noise_max_value_object2 = get_noise_max_value(measurements[object2.name],
+        #                                               time_window_s=0.1,)
+        # first_rise_object1 = (
+        #     measurements[object1.name] > (2 * noise_max_value_object1)).idxmax()
+        # first_rise_object2 = (
+        #     measurements[object2.name] > (2 * noise_max_value_object2)).idxmax()
+        # first_rise_object1 = (
+        #     measurements[object1.name] > (np.max(measurements[object1.name]) / 2)).idxmax()
+        # first_rise_object2 = (
+        #     measurements[object2.name] > (np.max(measurements[object2.name]) / 2)).idxmax()
+        # delay = (first_rise_object2 - first_rise_object1) / SAMPLE_RATE
+        # assert delay != 0, f"""Delay is 0: First rise indices are {first_rise_object1} and {first_rise_object2}"""
         distance = np.linalg.norm(object1.coordinates - object2.coordinates)
-        propagation_speed = np.abs(distance / delay)
+        # propagation_speed = np.abs(distance / delay)
+        # Or by max value:
+        peak_object1 = np.argmax(
+            np.abs(signal.hilbert(measurements[object1.name])))
+        peak_object2 = np.argmax(
+            np.abs(signal.hilbert(measurements[object2.name])))
+        delay = (peak_object2 - peak_object1) / SAMPLE_RATE
+        souce_distance_cat = np.abs(self.actuators[0].x - object1.x)
+        source_distance_hyp = distance_between(
+            self.actuators[0].coordinates, object1.coordinates)
+        angle = np.arccos((souce_distance_cat / source_distance_hyp))
+        propagation_speed = np.abs(distance / (delay / np.cos(angle)))
         return propagation_speed

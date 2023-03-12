@@ -6,7 +6,10 @@ import numpy as np
 import pandas as pd
 import scipy.signal as signal
 from scipy import interpolate
-from utils.global_constants import CHIRP_CHANNEL_NAMES, INTERPOLATION_FACTOR
+from utils.data_processing.detect_echoes import get_envelopes
+from utils.global_constants import (CHIRP_CHANNEL_NAMES,
+                                    INTERPOLATION_FACTOR,
+                                    SAMPLE_RATE)
 
 
 def average_of_signals(measurements: pd.DataFrame,
@@ -49,15 +52,15 @@ def normalize(signals: np.ndarray or pd.DataFrame) -> np.ndarray or pd.DataFrame
     if isinstance(signals, pd.DataFrame):
         for channel in signals:
             signals[channel] = normalize(signals[channel])
-            signals[channel] = signal.detrend(signals[channel])
+        return signals
+
+    signals = signals - np.min(signals)
+    if np.max(signals) != 0:
+        signals = signals / np.max(signals)
     else:
-        signals = signals - np.min(signals)
-        if np.max(signals) != 0:
-            signals = signals / np.max(signals)
-        else:
-            signals = np.zeros(signals.size)
-            return signals
-        signals = signal.detrend(signals)
+        signals = np.zeros(signals.size)
+        return signals
+    signals = signal.detrend(signals)
     return signals
 
 
@@ -116,16 +119,12 @@ def align_signals_by_max_value(signals: pd.DataFrame,
     return shifted_signals
 
 
-def to_dB(measurements: pd.DataFrame or np.ndarray):
-    """Converts measurements to dB"""
-    measurements_dB = 10 * np.log10(measurements)
-    return measurements_dB
-
-
-def get_noise_max_value(measurement: np.ndarray, time_window_s: float):
+def get_noise_max_value(measurement: np.ndarray,
+                        time_window_s: float,
+                        sample_rate: int = SAMPLE_RATE):
     """Characterize the noise of the measurement
     in terms of the standard deviation and max value
     based on the first 0.1 seconds of the measurement"""
     envelope = get_envelopes(measurement)
-    noise_max_value = np.max(envelope[0:int(time_window_s * SAMPLE_RATE)])
+    noise_max_value = np.max(envelope[0:int(time_window_s * sample_rate)])
     return noise_max_value
