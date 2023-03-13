@@ -56,6 +56,8 @@ def data_viz(viz_type, folder, filename, semester='thesis', channel='wave_gen'):
         vd.plot_scaleogram(df, channels=['wave_gen'])
     elif viz_type == 'wvd':
         vd.wigner_ville_dist(df, channel)
+    elif viz_type == 'custom_wvd':
+        vd.custom_wigner_ville_batch(df, channel)
 
 def wave_type_plots():
     df = csv_to_df_thesis('plate10mm\\setup2\\chirp', 'chirp3_ch3top_ch2bot_ch1_sidemid_v1')

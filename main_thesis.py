@@ -9,7 +9,7 @@ def main():
     #r.data_viz('scaleogram', 'plate10mm\\setup1\\chirp', 'chirp_100_40000_2s_v1')
     #r.velocities()
     #r.wave_type_plots()
-    r.data_viz('wvd', 'plate10mm\\setup1\\touch', 'nik_touch_v1', channel='channel 1')
+    r.data_viz('custom_wvd', 'plate10mm\\setup1\\touch', 'nik_touch_v1', channel='channel 1')
     
 if __name__ == '__main__':
     main()

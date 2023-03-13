@@ -83,12 +83,55 @@ def wigner_ville_dist(df, channel):
     freq_range = (100, 40000)  # Limit the frequency range to relevant frequencies
 
 # Compute the Wigner-Ville distribution
-    wvd = tfp.WignerVilleDistribution(z_cut, window_size, hop_size, freq_range)
     
+    #wvd = tfp.WignerVilleDistribution(z_cut, window_size, hop_size, freq_range)
+    wvd = tfp.WignerVilleDistribution(z_cut)
     #wvd.run()
     #wvd.plot(kind='contour', show_tf=True, title='Wigner-Ville Distribution')
     
+def custom_wigner_ville_batch(df, channel, batch_size=100000):
+    
+    # Define the signal parameters
+    duration = 5  # seconds
+    sampling_rate = 150000  # Hz
+    
+    signal_data = df[channel].values
+    
+    # Define the WVD parameters
+    window_size = 0.1  # seconds
+    n_fft = int(2 ** np.ceil(np.log2(window_size * sampling_rate)))
+    n_overlap = n_fft // 2
 
+    # Calculate the number of batches
+    n_samples = signal_data.shape[0]
+    n_batches = (n_samples - n_fft) // batch_size + 1
+
+    # Process each batch separately
+    wvd_segments = []
+    for i in range(n_batches):
+        start_idx = i * batch_size
+        end_idx = min(start_idx + batch_size + n_fft, n_samples)
+        segment = signal_data[start_idx:end_idx]
+        wvd_segment = signal.welch(segment, fs=sampling_rate, nperseg=n_fft, noverlap=n_overlap, nfft=n_fft, return_onesided=False, detrend=False)
+        wvd_segments.append(wvd_segment[1] * np.conj(wvd_segment[1]))
+
+    # Combine the WVD segments
+    wvd = np.concatenate(wvd_segments, axis=0)
+
+    # Reshape wvd to be a 2D array
+    n_segments = len(wvd_segments)
+    n_freqs = len(np.fft.fftfreq(n_fft+1, 1/sampling_rate))
+    wvd_2d = np.real(wvd).reshape((n_segments, n_freqs))
+
+    # Create the meshgrid for the WVD
+    time_wvd, freq_wvd = np.meshgrid(np.linspace(0, duration, n_segments+1), np.fft.fftfreq(n_fft+1, 1/sampling_rate))
+
+    # Plot the Wigner-Ville distribution
+    plt.pcolormesh(time_wvd, freq_wvd, wvd_2d.T, shading='auto')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Frequency (Hz)')
+    plt.colorbar()
+    plt.show()
 
 def plot_fft(df, sample_rate=150000, window=False):
     if isinstance(df, pd.DataFrame) or isinstance(df, pd.Series):
