@@ -84,7 +84,8 @@ def interpolate_waveform(signals: pd.DataFrame) -> pd.DataFrame:
 
 
 def align_signals_by_correlation(signals: pd.DataFrame,
-                                 signals_to_align_with: pd.DataFrame) -> pd.DataFrame:
+                                 signals_to_align_with: pd.DataFrame,
+                                 align_to_first_channel: bool = False) -> pd.DataFrame:
     """Align signals to signals_to_align_with using their correlation"""
     shifted_signals = signals.copy()
     for channel in signals:
