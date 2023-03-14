@@ -293,8 +293,8 @@ class Setup4(Setup_Linear_Array):
                  actuator_coordinates: np.ndarray):
         super().__init__(number_of_sensors=3,
                          actuator_coordinates=actuator_coordinates,
-                         array_start_coordinates=np.array([0.45, 0.65]),
-                         array_spacing_m=0.01)
+                         array_start_coordinates=np.array([0.47, 0.65]),
+                         array_spacing_m=-0.01)
 
     def get_propagation_speed(self,
                               measurements: pd.DataFrame,

@@ -26,7 +26,7 @@ def compare_to_ideal_signal(setup: Setup,
     """Calculate arrival times for sensor 1"""
     if propagation_speed_mps is None:
         # propagation_speed = setup.get_propagation_speed(measurements)
-        propagation_speed_mps = 897.27
+        propagation_speed_mps = 164.05
     print(f'Propagation speed: {propagation_speed_mps:.2f}')
     signal_length_s = float(measurements.shape[0] / SAMPLE_RATE,)
     ideal_signal, distances = generate_ideal_signal(setup,
@@ -43,18 +43,18 @@ def compare_to_ideal_signal(setup: Setup,
     """Plot signals"""
     CHANNELS_TO_PLOT = setup.sensors
     PLOTS_TO_PLOT = ['time']
-    fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
+    fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT) - 1,
                             ncols=len(PLOTS_TO_PLOT),
                             squeeze=False)
     compare_signals(fig, axs,
-                    [ideal_signal['Sensor 1'],
-                     ideal_signal['Sensor 2'],
-                     ideal_signal['Sensor 3']],
+                    [ideal_signal['Sensor 3'],
+                     #  ideal_signal['Sensor 2'],
+                     ideal_signal['Sensor 2']],
                     plots_to_plot=PLOTS_TO_PLOT)
     compare_signals(fig, axs,
-                    [measurement_envelopes['Sensor 1'],
-                     measurement_envelopes['Sensor 2'],
-                     measurement_envelopes['Sensor 3'],],
+                    [measurement_envelopes['Sensor 3'],
+                     #  measurement_envelopes['Sensor 2'],
+                     measurement_envelopes['Sensor 2'],],
                     plots_to_plot=PLOTS_TO_PLOT)
     [ax.grid() for ax in axs[:, 0]]
     axs[0, 0].legend(['Ideal signal', 'Measurement envelope'],
@@ -131,8 +131,6 @@ def sum_signals(setup: Setup,
                                                       travel_distance_m / 20)
         sensor_measurements[f'Sensor {sensor_i + 1}'] = measurement_i
         travel_distances.append(distances[:2])
-        print(
-            f'First two distances for sensor {sensor_i + 1}: {distances[:2]}')
 
     if plot_signals:
         PLOTS_TO_PLOT = ['time', 'fft']
