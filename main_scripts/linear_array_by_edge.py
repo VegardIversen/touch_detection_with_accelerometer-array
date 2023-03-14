@@ -1,15 +1,18 @@
-from matplotlib import pyplot as plt
 import numpy as np
+from matplotlib import pyplot as plt
 from scipy import signal
+
 from main_scripts.generate_ideal_signal import compare_to_ideal_signal
 from utils.csv_to_df import csv_to_df
 from utils.data_processing.detect_echoes import get_envelopes
-from utils.data_processing.preprocessing import (crop_data, filter,
-                                                 crop_dataframe_to_signals)
+from utils.data_processing.preprocessing import (crop_data,
+                                                 crop_dataframe_to_signals,
+                                                 filter)
 from utils.data_processing.processing import interpolate_waveform
 from utils.data_visualization.drawing import plot_legend_without_duplicates
 from utils.data_visualization.visualize_data import compare_signals
-from utils.global_constants import ORIGINAL_SAMPLE_RATE, SAMPLE_RATE
+from utils.global_constants import ASSERTIONS, ORIGINAL_SAMPLE_RATE, SAMPLE_RATE, SENSOR_2
+from utils.little_helpers import distance_between
 from utils.plate_setups import Setup4
 
 
