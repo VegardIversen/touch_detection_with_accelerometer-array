@@ -6,7 +6,10 @@ import numpy as np
 import pandas as pd
 import scipy.signal as signal
 from scipy import interpolate
-from utils.global_constants import CHIRP_CHANNEL_NAMES, INTERPOLATION_FACTOR
+from utils.data_processing.detect_echoes import get_envelopes
+from utils.global_constants import (CHIRP_CHANNEL_NAMES,
+                                    INTERPOLATION_FACTOR,
+                                    SAMPLE_RATE)
 
 
 def average_of_signals(measurements: pd.DataFrame,
@@ -49,15 +52,15 @@ def normalize(signals: np.ndarray or pd.DataFrame) -> np.ndarray or pd.DataFrame
     if isinstance(signals, pd.DataFrame):
         for channel in signals:
             signals[channel] = normalize(signals[channel])
-            signals[channel] = signal.detrend(signals[channel])
+        return signals
+
+    signals = signals - np.min(signals)
+    if np.max(signals) != 0:
+        signals = signals / np.max(signals)
     else:
-        signals = signals - np.min(signals)
-        if np.max(signals) != 0:
-            signals = signals / np.max(signals)
-        else:
-            signals = np.zeros(signals.size)
-            return signals
-        signals = signal.detrend(signals)
+        signals = np.zeros(signals.size)
+        return signals
+    signals = signal.detrend(signals)
     return signals
 
 
@@ -78,28 +81,6 @@ def interpolate_waveform(signals: pd.DataFrame) -> pd.DataFrame:
         x_new = np.linspace(0, old_length, new_length)
         signals_interpolated[channel] = f(x_new)
     return signals_interpolated
-
-
-def correct_drift(data_split: pd.DataFrame,
-                  data_to_sync_with: pd.DataFrame) -> pd.DataFrame:
-    """Align each chrip in a recording better when split into equal lengths.
-    NOTE:   Also normalizes output.
-    """
-    for channel in data_split:
-        for chirp in range(len(data_split['Sensor 1'])):
-            corr = signal.correlate(data_to_sync_with[channel][0],
-                                    data_split[channel][chirp],
-                                    mode='same')
-            delays = np.linspace(start=-0.5 * len(corr),
-                                 stop=0.5 * len(corr),
-                                 num=len(corr))
-            delay = delays[np.argmax(corr)]
-            SHIFT_BY = (np.rint(delay)).astype(int)
-            data_split.at[chirp, channel] = np.roll(data_split.at[chirp, channel],
-                                                    SHIFT_BY)
-            data_split.at[chirp, channel] = normalize(
-                data_split.at[chirp, channel])
-    return data_split
 
 
 def align_signals_by_correlation(signals: pd.DataFrame,
@@ -138,7 +119,12 @@ def align_signals_by_max_value(signals: pd.DataFrame,
     return shifted_signals
 
 
-def to_dB(measurements: pd.DataFrame or np.ndarray):
-    """Converts measurements to dB"""
-    measurements_dB = 10 * np.log10(measurements)
-    return measurements_dB
+def get_noise_max_value(measurement: np.ndarray,
+                        time_window_s: float,
+                        sample_rate: int = SAMPLE_RATE):
+    """Characterize the noise of the measurement
+    in terms of the standard deviation and max value
+    based on the first 0.1 seconds of the measurement"""
+    envelope = get_envelopes(measurement)
+    noise_max_value = np.max(envelope[0:int(time_window_s * sample_rate)])
+    return noise_max_value

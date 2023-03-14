@@ -12,7 +12,6 @@ def generate_chirp(sample_rate=150000,
                    time_end_s=0.125,
                    chirp_method='linear',
                    save_to_file=False):
-    print(f"Fs: {sample_rate}, freq_start: {frequency_start}, freq_stop: {frequency_stop}, t_max: {time_end_s} s")
 
     time_axis = np.linspace(0, time_end_s, int(time_end_s * sample_rate))
     generated_chirp = signal.chirp(t=time_axis,

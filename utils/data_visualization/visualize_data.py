@@ -2,17 +2,18 @@
 Date: 2022-01-09
 """
 
-import scipy
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-
-from utils.objects import Sensor
-from utils.global_constants import SAMPLE_RATE
+import scipy
 
 from utils.data_processing.detect_echoes import get_envelopes
+from utils.data_processing.processing import (average_of_signals,
+                                              variance_of_signals)
 from utils.data_visualization.drawing import plot_legend_without_duplicates
-from utils.data_processing.processing import average_of_signals, variance_of_signals, to_dB
+from utils.global_constants import SAMPLE_RATE
+from utils.little_helpers import to_dB
+from utils.objects import Sensor
 
 
 def compare_signals(fig, axs,

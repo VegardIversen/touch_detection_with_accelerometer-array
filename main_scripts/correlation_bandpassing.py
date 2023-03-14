@@ -21,9 +21,7 @@ from utils.data_processing.preprocessing import (compress_chirps,
 from utils.data_processing.processing import (average_of_signals,
                                               interpolate_waveform,
                                               normalize,
-                                              variance_of_signals,
-                                              correct_drift,
-                                              to_dB)
+                                              variance_of_signals,)
 from utils.data_visualization.visualize_data import (compare_signals,
                                                      wave_statistics,
                                                      envelope_with_lines,
