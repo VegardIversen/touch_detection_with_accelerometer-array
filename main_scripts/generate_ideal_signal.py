@@ -1,19 +1,18 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy.signal as signal
-import matplotlib.pyplot as plt
-from utils.data_processing.processing import align_signals_by_max_value, normalize
 
-from utils.plate_setups import Setup
-from utils.generate_chirp import generate_chirp
-from utils.global_constants import (SAMPLE_RATE,
-                                    ACTUATOR_1,
-                                    SENSOR_1,)
-from utils.data_visualization.visualize_data import (compare_signals,
-                                                     set_window_size,
-                                                     adjust_plot_margins)
 from utils.data_processing.detect_echoes import get_envelopes, get_travel_times
-from utils.data_processing.preprocessing import (compress_chirps)
+from utils.data_processing.preprocessing import compress_chirps
+from utils.data_processing.processing import (align_signals_by_max_value,
+                                              normalize)
+from utils.data_visualization.visualize_data import (adjust_plot_margins,
+                                                     compare_signals,
+                                                     set_window_size)
+from utils.generate_chirp import generate_chirp
+from utils.global_constants import ACTUATOR_1, SAMPLE_RATE, SENSOR_1
+from utils.plate_setups import Setup
 
 
 def compare_to_ideal_signal(setup: Setup,
@@ -25,8 +24,7 @@ def compare_to_ideal_signal(setup: Setup,
                             propagation_speed_mps: float = None,):
     """Calculate arrival times for sensor 1"""
     if propagation_speed_mps is None:
-        # propagation_speed = setup.get_propagation_speed(measurements)
-        propagation_speed_mps = 164.05
+        propagation_speed_mps = setup.get_propagation_speed(measurements)
     print(f'Propagation speed: {propagation_speed_mps:.2f}')
     signal_length_s = float(measurements.shape[0] / SAMPLE_RATE,)
     ideal_signal, distances = generate_ideal_signal(setup,
@@ -81,9 +79,9 @@ def generate_ideal_signal(setup: Setup,
                                                  signal_length_s,)
 
     # Compress the test signal
-    compressed_ideal_signal = compress_chirps(sensor_measurements)
+    ideal_signal = compress_chirps(sensor_measurements)
     # crop_measurement_to_signal_ndarray(compressed_ideal_signal)
-    return compressed_ideal_signal, distances
+    return ideal_signal, distances
 
 
 def make_chirp(time_end: float,

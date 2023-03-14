@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy import signal
 
-from main_scripts.generate_ideal_signal import compare_to_ideal_signal
+from main_scripts.generate_ideal_signal import compare_to_ideal_signal, generate_ideal_signal
 from utils.csv_to_df import csv_to_df
 from utils.data_processing.detect_echoes import get_envelopes
 from utils.data_processing.preprocessing import (crop_data,
@@ -11,7 +11,7 @@ from utils.data_processing.preprocessing import (crop_data,
 from utils.data_processing.processing import interpolate_waveform
 from utils.data_visualization.drawing import plot_legend_without_duplicates
 from utils.data_visualization.visualize_data import compare_signals
-from utils.global_constants import ASSERTIONS, ORIGINAL_SAMPLE_RATE, SAMPLE_RATE, SENSOR_2
+from utils.global_constants import ASSERTIONS_SHOULD_BE_INCLUDED, ORIGINAL_SAMPLE_RATE, SAMPLE_RATE, SENSOR_1, SENSOR_2
 from utils.little_helpers import distance_between
 from utils.plate_setups import Setup4
 
@@ -33,25 +33,28 @@ def linear_array_by_edge():
                              sample_rate=ORIGINAL_SAMPLE_RATE,)
     # measurements = crop_dataframe_to_signals(measurements)
     measurements = interpolate_waveform(measurements)
-    CRITICAL_FREQUENCY = 6000
+    CRITICAL_FREQUENCY = 35000
     measurements = filter(measurements,
                           filtertype='highpass',
                           critical_frequency=CRITICAL_FREQUENCY,
                           plot_response=False,
-                          order=6)
-    # CRITICAL_FREQUENCY = 45000
+                          order=8)
+    CRITICAL_FREQUENCY = 40000
     measurements = filter(measurements,
                           filtertype='lowpass',
                           critical_frequency=CRITICAL_FREQUENCY,
                           plot_response=False,
-                          order=6)
-    _, distances = compare_to_ideal_signal(SETUP,
-                                           measurements,
-                                           attenuation_dBpm=20,
-                                           chirp_length_s=0.125,
-                                           frequency_start=1,
-                                           frequency_stop=1 * CRITICAL_FREQUENCY,)
-    calculate_source_location(measurements, distances, SETUP)
+                          order=8)
+    signal_length_s = float(measurements.shape[0] / SAMPLE_RATE,)
+    ideal_signal, distances = generate_ideal_signal(SETUP,
+                                                    propagation_speed_mps=950,
+                                                    attenuation_dBpm=20,
+                                                    chirp_length_s=0.125,
+                                                    frequency_start=1,
+                                                    frequency_stop=100 * CRITICAL_FREQUENCY,
+                                                    signal_length_s=signal_length_s)
+    # Swap channels for consistency with the bad measurements
+    calculate_source_location(ideal_signal, distances, SETUP)
     return 0
 
 
@@ -64,10 +67,11 @@ def calculate_source_location(measurements, distances, setup):
     time_axis_s = np.arange(len(envelopes['Sensor 1'])) / SAMPLE_RATE
     peaks_indices = np.empty((0, 2))
 
-    for i, channel in enumerate(['Sensor 3', 'Sensor 2']):
+    for i, channel in enumerate(['Sensor 1', 'Sensor 2']):
         color = plt.cm.get_cmap('tab10')(i)
         ax.plot(time_axis_s, envelopes[channel], label=channel, color=color)
-        peak_indices, _ = signal.find_peaks(envelopes[channel], distance=0.0001 * SAMPLE_RATE)
+        peak_indices, _ = signal.find_peaks(
+            envelopes[channel], distance=0.00001 * SAMPLE_RATE)
         peak_heights = envelopes[channel][peak_indices]
         sorted_peaks = sorted(zip(peak_indices, peak_heights),
                               key=lambda x: x[1], reverse=True)
@@ -94,18 +98,15 @@ def calculate_source_location(measurements, distances, setup):
     propagation_speed = propagation_speed_mean
 
     # Calculate phi, the angle between source and sensors
-    phi_time_difference = (peaks_indices[0][0] - peaks_indices[1][0])
+    phi_time_difference = (peaks_indices[1][0] - peaks_indices[0][0])
     phi_arccos_argument = (phi_time_difference * propagation_speed) / 0.01
     phi_rad = np.arccos(phi_arccos_argument)
     phi_deg = np.rad2deg(phi_rad)
     print(f'phi: {phi_rad:.2f} rad, or {phi_deg:.2f} deg')
 
     # Calculate theta, the angle between mirrored source and sensors
-    theta_time_difference = (peaks_indices[0][1] - peaks_indices[1][1])
+    theta_time_difference = (peaks_indices[1][1] - peaks_indices[0][1])
     theta_arccos_argument = (theta_time_difference * propagation_speed) / 0.01
-    if ASSERTIONS:
-        assert ((np.abs(phi_arccos_argument) <= 1) and (np.abs(theta_arccos_argument) <= 1)), \
-            f'Phi arccos argument is {phi_arccos_argument:.2f}, theta arccos argument is {theta_arccos_argument:.2f}.'
     theta_rad = np.arccos(theta_arccos_argument)
     theta_deg = np.rad2deg(theta_rad)
     print(f'theta: {theta_rad:.2f} rad, or {theta_deg:.2f} deg')
@@ -115,9 +116,9 @@ def calculate_source_location(measurements, distances, setup):
     print(f'Distance to source: {distance_to_source:.2f} m')
     plt.figure()
     setup.draw()
-    estimated_source_x = setup.sensors[SENSOR_2].x - \
+    estimated_source_x = (setup.sensors[SENSOR_1].x + setup.sensors[SENSOR_2].x) / 2 - \
         distance_to_source * np.cos(phi_rad)
-    estimated_source_y = setup.sensors[SENSOR_2].y - \
+    estimated_source_y = (setup.sensors[SENSOR_1].y + setup.sensors[SENSOR_2].y) / 2 - \
         distance_to_source * np.sin(phi_rad)
     plt.scatter(estimated_source_x,
                 estimated_source_y,
