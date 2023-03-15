@@ -5,7 +5,7 @@ from scipy import signal
 from main_scripts.generate_ideal_signal import compare_to_ideal_signal, generate_ideal_signal
 from utils.csv_to_df import csv_to_df
 from utils.data_processing.detect_echoes import get_envelopes
-from utils.data_processing.preprocessing import (crop_data,
+from utils.data_processing.preprocessing import (crop_data, crop_to_signal,
                                                  filter)
 from utils.data_processing.processing import interpolate_waveform
 from utils.data_visualization.drawing import plot_legend_without_duplicates
@@ -26,24 +26,20 @@ def linear_array_by_edge():
     measurements['Actuator'] = 0
     # Swap the data in column 'Sensor 1' with the data in column 'Sensor 3'
     measurements['Sensor 1'], measurements['Sensor 3'] = measurements['Sensor 3'], measurements['Sensor 1'].copy()
-    measurements = crop_data(measurements,
-                             time_start=1.135,
-                             time_end=1.15,
-                             sample_rate=ORIGINAL_SAMPLE_RATE,)
-    # measurements = crop_dataframe_to_signals(measurements)
+    measurements = crop_to_signal(measurements)
+    # CRITICAL_FREQUENCY = 20000
+    # measurements = filter(measurements,
+    #                       filtertype='highpass',
+    #                       critical_frequency=CRITICAL_FREQUENCY,
+    #                       plot_response=False,
+    #                       order=8)
+    # CRITICAL_FREQUENCY = 40000
+    # measurements = filter(measurements,
+    #                       filtertype='lowpass',
+    #                       critical_frequency=CRITICAL_FREQUENCY,
+    #                       plot_response=False,
+    #                       order=8)
     measurements = interpolate_waveform(measurements)
-    CRITICAL_FREQUENCY = 35000
-    measurements = filter(measurements,
-                          filtertype='highpass',
-                          critical_frequency=CRITICAL_FREQUENCY,
-                          plot_response=False,
-                          order=8)
-    CRITICAL_FREQUENCY = 40000
-    measurements = filter(measurements,
-                          filtertype='lowpass',
-                          critical_frequency=CRITICAL_FREQUENCY,
-                          plot_response=False,
-                          order=8)
     signal_length_s = float(measurements.shape[0] / SAMPLE_RATE,)
     ideal_signal, distances = generate_ideal_signal(SETUP,
                                                     propagation_speed_mps=950,
@@ -53,7 +49,7 @@ def linear_array_by_edge():
                                                     frequency_stop=100 * CRITICAL_FREQUENCY,
                                                     signal_length_s=signal_length_s)
     # Swap channels for consistency with the bad measurements
-    calculate_source_location(ideal_signal, distances, SETUP)
+    calculate_source_location(measurements, distances, SETUP)
     return 0
 
 

@@ -24,7 +24,8 @@ def compare_to_ideal_signal(setup: Setup,
                             propagation_speed_mps: float = None,):
     """Calculate arrival times for sensor 1"""
     if propagation_speed_mps is None:
-        propagation_speed_mps = setup.get_propagation_speed(measurements)
+        # propagation_speed_mps = setup.get_propagation_speed(measurements)
+        propagation_speed_mps = 1000
     print(f'Propagation speed: {propagation_speed_mps:.2f}')
     signal_length_s = float(measurements.shape[0] / SAMPLE_RATE,)
     ideal_signal, distances = generate_ideal_signal(setup,
@@ -41,18 +42,18 @@ def compare_to_ideal_signal(setup: Setup,
     """Plot signals"""
     CHANNELS_TO_PLOT = setup.sensors
     PLOTS_TO_PLOT = ['time']
-    fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT) - 1,
+    fig, axs = plt.subplots(nrows=len(CHANNELS_TO_PLOT),
                             ncols=len(PLOTS_TO_PLOT),
                             squeeze=False)
     compare_signals(fig, axs,
-                    [ideal_signal['Sensor 3'],
-                     #  ideal_signal['Sensor 2'],
-                     ideal_signal['Sensor 2']],
+                    [ideal_signal['Sensor 1'],
+                     ideal_signal['Sensor 2'],
+                     ideal_signal['Sensor 3']],
                     plots_to_plot=PLOTS_TO_PLOT)
     compare_signals(fig, axs,
-                    [measurement_envelopes['Sensor 3'],
-                     #  measurement_envelopes['Sensor 2'],
-                     measurement_envelopes['Sensor 2'],],
+                    [measurement_envelopes['Sensor 1'],
+                     measurement_envelopes['Sensor 2'],
+                     measurement_envelopes['Sensor 3'],],
                     plots_to_plot=PLOTS_TO_PLOT)
     [ax.grid() for ax in axs[:, 0]]
     axs[0, 0].legend(['Ideal signal', 'Measurement envelope'],

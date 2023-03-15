@@ -22,20 +22,21 @@ def filter(signals: pd.DataFrame or np.ndarray,
            critical_frequency: int,
            q: float = 0.05,
            order: int = 4,
-           plot_response: bool = False):
+           plot_response: bool = False,
+           sample_rate: int = ORIGINAL_SAMPLE_RATE):
     """filtertype: 'highpass', 'lowpass' or 'bandpass.
     NOTE:   q is a value that determines the width of the flat bandpass,
             and is a value between 0 and 1. order determines the slope.
     """
     if filtertype == 'highpass' or filtertype == 'lowpass':
         sos = signal.butter(order,
-                            critical_frequency / (0.5 * SAMPLE_RATE),
+                            critical_frequency / (0.5 * sample_rate),
                             filtertype,
                             output='sos')
     elif filtertype == 'bandpass':
         sos = signal.butter(order,
-                            [critical_frequency * (1 - q) / (0.5 * SAMPLE_RATE),
-                             critical_frequency * (1 + q) / (0.5 * SAMPLE_RATE)],
+                            [critical_frequency * (1 - q) / (0.5 * sample_rate),
+                             critical_frequency * (1 + q) / (0.5 * sample_rate)],
                             'bandpass',
                             output='sos')
     else:
@@ -100,8 +101,7 @@ def crop_to_signal(measurements: pd.DataFrame or np.ndarray):
     above a threshold given by the standard deviation.
     """
     if isinstance(measurements, pd.DataFrame):
-        cropped_sensor1, start_index, end_index = crop_to_signal(
-            measurements['Sensor 1'])
+        _, start_index, end_index = crop_to_signal(measurements['Sensor 1'])
         cropped_measurements = measurements.iloc[start_index:end_index, :]
         cropped_measurements.reset_index(drop=True, inplace=True)
         return cropped_measurements
