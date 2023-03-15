@@ -19,6 +19,7 @@ from data_viz_files.drawing import ax_legend_without_duplicates
 import scaleogram as scg
 import pywt
 import tftb.processing as tfp
+import ssqueezepy as ssq
 
 def plot_scaleogram(df, sample_rate=150000, channels=['channel 1']):
     chirp = df['wave_gen']
@@ -57,7 +58,46 @@ def plot_scaleogram(df, sample_rate=150000, channels=['channel 1']):
             scg.cws(time_axis, data, scales='cmor1-1.5', ylabel=channel, xlabel='frequency [hz]', ax=ax)
             plt.show()
 
+
+def ssqueeze_spectrum(df, channel, sample_rate=150000, focus=True):
+    
+
+    def viz(x, Tx, Wx):
+        #plt.imshow(np.abs(Wx), aspect='auto', cmap='turbo')
+        plt.imshow(np.abs(Tx), aspect='auto', cmap='hot')
+        plt.show()
+        #plt.imshow(np.abs(Tx), aspect='auto', vmin=0, vmax=.2, cmap='turbo')
+        plt.imshow(np.abs(Wx),aspect='auto', cmap='hot')
+        plt.show()
+
+    #%%# Define signal ####################################
+    time_axis = np.linspace(0, len(df) // sample_rate, num=len(df))
+    data = df[channel]
+    if focus:
+        data = cut_out_signal(data, 150e3, 0.00012)
+        time_axis = np.linspace(0, len(data) // sample_rate, num=len(data))
+        plt.plot(time_axis, data)
+        plt.show()
+    data = data.values
+    #plt.plot(data)
+    #plt.show()
+
+    #%%# CWT + SSQ CWT ####################################
+    Twx, Wx, *_ = ssq.ssq_cwt(data)
+    print(f'Wx shape: {Wx.shape}')
+    print(f'Twx shape: {Twx.shape}')
+    viz(data, Twx, Wx)
+
+    #%%# STFT + SSQ STFT ##################################
+    Tsx, Sx, *_ = ssq.ssq_stft(data)
+    print(f'Sx shape: {Sx.shape}')
+    print(f'Tsx shape: {Tsx.shape}')
+    viz(data, np.flipud(Tsx), np.flipud(Sx))
+
+
 def psudo_wigner_ville_dist(df, channel):
+    #wigner ville is outdated and struggles with large data
+    pass
     signal = df[channel].values
     window_size = 1024
     n_frequencies = 512
@@ -76,6 +116,8 @@ def psudo_wigner_ville_dist(df, channel):
     # Concatenate the segments to obtain the full transform
     pwvd = np.concatenate(pwvd, axis=1)
 def wigner_ville_dist(df, channel):
+    #wigner ville is outdated and struggles with large data
+    pass
     z = df[channel]
     z_cut = cut_out_signal(z, 150e3, 0.0012)
     window_size = 1024
@@ -90,6 +132,8 @@ def wigner_ville_dist(df, channel):
     #wvd.plot(kind='contour', show_tf=True, title='Wigner-Ville Distribution')
     
 def custom_wigner_ville_batch(df, channel, batch_size=100000):
+    #wigner ville is outdated and struggles with large data
+    pass
     
     # Define the signal parameters
     duration = 5  # seconds
