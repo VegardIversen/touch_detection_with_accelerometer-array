@@ -6,7 +6,6 @@ from main_scripts.generate_ideal_signal import compare_to_ideal_signal, generate
 from utils.csv_to_df import csv_to_df
 from utils.data_processing.detect_echoes import get_envelopes
 from utils.data_processing.preprocessing import (crop_data,
-                                                 crop_dataframe_to_signals,
                                                  filter)
 from utils.data_processing.processing import interpolate_waveform
 from utils.data_visualization.drawing import plot_legend_without_duplicates
