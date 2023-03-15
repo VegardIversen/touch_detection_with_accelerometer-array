@@ -9,17 +9,18 @@ import matplotlib.patches as patches
 
 class Table:
     """Represents the table and its edges."""
+
     """Table dimensions"""
-    LENGTH = 0.80   # m
-    WIDTH = 0.60    # m
+    LENGTH = 0.80  # m
+    WIDTH = 0.60  # m
     """Enum for representing edges"""
     TOP_EDGE = 1
     RIGHT_EDGE = 2
     BOTTOM_EDGE = 3
     LEFT_EDGE = 4
     """Colour settings for drawing"""
-    SURFACE_COLOUR = '#fbe5b6'
-    LINE_COLOUR = '#f0c18b'
+    SURFACE_COLOUR = "#fbe5b6"
+    LINE_COLOUR = "#f0c18b"
 
     """A selection of table locations, in the middle of each block"""
     A1 = np.array([1 / 6 * LENGTH, 1 / 6 * WIDTH])
@@ -34,33 +35,48 @@ class Table:
 
     def draw(self):
         "Draw the table with the real dimensions, including the lines."
-        table = patches.Rectangle((0, 0),
-                                  self.LENGTH,
-                                  self.WIDTH,
-                                  fc=self.SURFACE_COLOUR,
-                                  ec=self.LINE_COLOUR,
-                                  lw=2,
-                                  zorder=0)
+        table = patches.Rectangle(
+            (0, 0),
+            self.LENGTH,
+            self.WIDTH,
+            fc=self.SURFACE_COLOUR,
+            ec=self.LINE_COLOUR,
+            lw=2,
+            zorder=0,
+        )
 
         plt.gca().add_patch(table)
 
         for i in range(1, 3):
-            line_x = patches.Rectangle((i / 3 * self.LENGTH, 0), 0, self.WIDTH,
-                                       linewidth=0.75, linestyle='--',
-                                       edgecolor=self.LINE_COLOUR, facecolor='none',
-                                       zorder=1)
-            line_y = patches.Rectangle((0, i / 3 * self.WIDTH), self.LENGTH, 0,
-                                       linewidth=0.75, linestyle='--',
-                                       edgecolor=self.LINE_COLOUR, facecolor='none',
-                                       zorder=1)
+            line_x = patches.Rectangle(
+                (i / 3 * self.LENGTH, 0),
+                0,
+                self.WIDTH,
+                linewidth=0.75,
+                linestyle="--",
+                edgecolor=self.LINE_COLOUR,
+                facecolor="none",
+                zorder=1,
+            )
+            line_y = patches.Rectangle(
+                (0, i / 3 * self.WIDTH),
+                self.LENGTH,
+                0,
+                linewidth=0.75,
+                linestyle="--",
+                edgecolor=self.LINE_COLOUR,
+                facecolor="none",
+                zorder=1,
+            )
             plt.gca().add_patch(line_x)
             plt.gca().add_patch(line_y)
 
 
 class Plate:
     """Represents the table and its edges."""
+
     """Table dimensions"""
-    LENGTH = 1   # m
+    LENGTH = 1  # m
     WIDTH = 0.7  # m
     """Enum for representing edges"""
     TOP_EDGE = 1
@@ -68,8 +84,8 @@ class Plate:
     BOTTOM_EDGE = 3
     LEFT_EDGE = 4
     """Colour settings for drawing"""
-    SURFACE_COLOUR = '#f8f8f8'
-    LINE_COLOUR = 'lightgrey'
+    SURFACE_COLOUR = "#f8f8f8"
+    LINE_COLOUR = "lightgrey"
 
     """A selection of table locations, in the middle of each block"""
     A1 = np.array([1 / 6 * LENGTH, 1 / 6 * WIDTH])
@@ -84,25 +100,39 @@ class Plate:
 
     def draw(self):
         "Draw the table with the real dimensions, including the lines."
-        table = patches.Rectangle((0, 0),
-                                  self.LENGTH,
-                                  self.WIDTH,
-                                  fc=self.SURFACE_COLOUR,
-                                  ec=self.LINE_COLOUR,
-                                  lw=2,
-                                  zorder=0)
+        table = patches.Rectangle(
+            (0, 0),
+            self.LENGTH,
+            self.WIDTH,
+            fc=self.SURFACE_COLOUR,
+            ec=self.LINE_COLOUR,
+            lw=2,
+            zorder=0,
+        )
 
         plt.gca().add_patch(table)
 
         for i in range(1, 3):
-            line_x = patches.Rectangle((i / 3 * self.LENGTH, 0), 0, self.WIDTH,
-                                       linewidth=0.75, linestyle='--',
-                                       edgecolor=self.LINE_COLOUR, facecolor='none',
-                                       zorder=1)
-            line_y = patches.Rectangle((0, i / 3 * self.WIDTH), self.LENGTH, 0,
-                                       linewidth=0.75, linestyle='--',
-                                       edgecolor=self.LINE_COLOUR, facecolor='none',
-                                       zorder=1)
+            line_x = patches.Rectangle(
+                (i / 3 * self.LENGTH, 0),
+                0,
+                self.WIDTH,
+                linewidth=0.75,
+                linestyle="--",
+                edgecolor=self.LINE_COLOUR,
+                facecolor="none",
+                zorder=1,
+            )
+            line_y = patches.Rectangle(
+                (0, i / 3 * self.WIDTH),
+                self.LENGTH,
+                0,
+                linewidth=0.75,
+                linestyle="--",
+                edgecolor=self.LINE_COLOUR,
+                facecolor="none",
+                zorder=1,
+            )
             plt.gca().add_patch(line_x)
             plt.gca().add_patch(line_y)
 
@@ -112,6 +142,7 @@ class Sensor:
     NOTE:   Not sure just how to represent coordinates yet,
             or if get_/set_coordinates() are necessary.
     """
+
     radius = 0.0035
 
     def __init__(self, coordinates: np.ndarray, name: str, plot: bool = True):
@@ -128,12 +159,14 @@ class Sensor:
 
     def draw(self):
         """Draw the sensor."""
-        sensor = plt.Circle(self.coordinates,
-                            radius=self.radius,
-                            fc='#AEAFA7',
-                            ec='dimgray',
-                            label='Sensor',
-                            zorder=10)
+        sensor = plt.Circle(
+            self.coordinates,
+            radius=self.radius,
+            fc="#AEAFA7",
+            ec="dimgray",
+            label="Sensor",
+            zorder=10,
+        )
         plt.gca().add_patch(sensor)
 
     def __str__(self):
@@ -142,9 +175,10 @@ class Sensor:
 
 class Actuator:
     """Represents an actuator"""
+
     RADIUS = 0.005  # m
 
-    def __init__(self, coordinates: np.ndarray, name: str = 'Actuator'):
+    def __init__(self, coordinates: np.ndarray, name: str = "Actuator"):
         self.coordinates = coordinates
         self.x = coordinates[0]
         self.y = coordinates[1]
@@ -161,12 +195,14 @@ class Actuator:
 
     def draw(self):
         """Draw the actuator"""
-        actuator = plt.Circle(self.coordinates,
-                              radius=self.RADIUS,
-                              fc='#D4434A',
-                              ec='darkred',
-                              label=self.name,
-                              zorder=10)
+        actuator = plt.Circle(
+            self.coordinates,
+            radius=self.RADIUS,
+            fc="#D4434A",
+            ec="darkred",
+            label=self.name,
+            zorder=10,
+        )
         plt.gca().add_patch(actuator)
 
     def __str__(self):
@@ -181,12 +217,14 @@ class MirroredSource(Actuator):
 
     def draw(self):
         """Draw the mirrored source."""
-        mirrored_source = plt.Circle(self.coordinates,
-                                     radius=self.RADIUS,
-                                     fc='pink',
-                                     ec='dimgray',
-                                     label='Mirrored source',
-                                     zorder=10)
+        mirrored_source = plt.Circle(
+            self.coordinates,
+            radius=self.RADIUS,
+            fc="pink",
+            ec="dimgray",
+            label="Mirrored source",
+            zorder=10,
+        )
         plt.gca().add_patch(mirrored_source)
 
 
@@ -198,11 +236,13 @@ class MirroredSensor(Sensor):
 
     def draw(self):
         """Draw the mirrored sensor."""
-        mirrored_sensor = plt.Circle(self.coordinates,
-                                     radius=self.radius,
-                                     fc='white',
-                                     ec='dimgray',
-                                     #  label=f'Mirrored {self.name}',
-                                     label='Mirrored sensor',
-                                     zorder=10)
+        mirrored_sensor = plt.Circle(
+            self.coordinates,
+            radius=self.radius,
+            fc="white",
+            ec="dimgray",
+            #  label=f'Mirrored {self.name}',
+            label="Mirrored sensor",
+            zorder=10,
+        )
         plt.gca().add_patch(mirrored_sensor)

@@ -11,45 +11,48 @@ from utils.data_processing.detect_echoes import get_envelopes
 from utils.data_processing.processing import get_noise_max_value
 
 from utils.global_constants import ORIGINAL_SAMPLE_RATE, SAMPLE_RATE
-from utils.data_visualization.visualize_data import (plot_filter_response)
+from utils.data_visualization.visualize_data import plot_filter_response
 
 
 """FILTERING"""
 
 
-def filter(signals: pd.DataFrame or np.ndarray,
-           filtertype: str,
-           critical_frequency: int,
-           q: float = 0.05,
-           order: int = 4,
-           plot_response: bool = False,
-           sample_rate: int = ORIGINAL_SAMPLE_RATE):
+def filter(
+    signals: pd.DataFrame or np.ndarray,
+    filtertype: str,
+    critical_frequency: int,
+    q: float = 0.05,
+    order: int = 4,
+    plot_response: bool = False,
+    sample_rate: int = ORIGINAL_SAMPLE_RATE,
+):
     """filtertype: 'highpass', 'lowpass' or 'bandpass.
     NOTE:   q is a value that determines the width of the flat bandpass,
             and is a value between 0 and 1. order determines the slope.
     """
-    if filtertype == 'highpass' or filtertype == 'lowpass':
-        sos = signal.butter(order,
-                            critical_frequency / (0.5 * sample_rate),
-                            filtertype,
-                            output='sos')
-    elif filtertype == 'bandpass':
-        sos = signal.butter(order,
-                            [critical_frequency * (1 - q) / (0.5 * sample_rate),
-                             critical_frequency * (1 + q) / (0.5 * sample_rate)],
-                            'bandpass',
-                            output='sos')
+    if filtertype == "highpass" or filtertype == "lowpass":
+        sos = signal.butter(
+            order, critical_frequency / (0.5 * sample_rate), filtertype, output="sos"
+        )
+    elif filtertype == "bandpass":
+        sos = signal.butter(
+            order,
+            [
+                critical_frequency * (1 - q) / (0.5 * sample_rate),
+                critical_frequency * (1 + q) / (0.5 * sample_rate),
+            ],
+            "bandpass",
+            output="sos",
+        )
     else:
-        raise ValueError('Filtertype not recognized')
+        raise ValueError("Filtertype not recognized")
 
     signals_filtered = signals.copy()
     if isinstance(signals, pd.DataFrame):
         for channel in signals_filtered:
-            signals_filtered[channel] = signal.sosfilt(sos,
-                                                       signals[channel].values)
+            signals_filtered[channel] = signal.sosfilt(sos, signals[channel].values)
     else:
-        signals_filtered = signal.sosfilt(sos,
-                                          signals)
+        signals_filtered = signal.sosfilt(sos, signals)
 
     if plot_response:
         plot_filter_response(sos, critical_frequency, critical_frequency)
@@ -57,42 +60,45 @@ def filter(signals: pd.DataFrame or np.ndarray,
     return signals_filtered
 
 
-def compress_chirps(measurements: pd.DataFrame or np.ndarray,
-                    custom_reference: np.ndarray = None):
+def compress_chirps(
+    measurements: pd.DataFrame or np.ndarray, custom_reference: np.ndarray = None
+):
     """Compresses a chirp with cross correlation"""
     if isinstance(measurements, np.ndarray):
         # Add the measurements array and the actuator signal as columns to the measurements
-        measurements = pd.DataFrame(measurements, columns=['Sensor 1'])
+        measurements = pd.DataFrame(measurements, columns=["Sensor 1"])
 
     compressed_chirps = measurements.copy()
     if custom_reference is None:
         for channel in measurements:
-            compressed_chirps[channel] = signal.correlate(measurements[channel],
-                                                          measurements['Actuator'],
-                                                          mode='same')
+            compressed_chirps[channel] = signal.correlate(
+                measurements[channel], measurements["Actuator"], mode="same"
+            )
         return compressed_chirps
 
     for channel in measurements:
-        compressed_chirps[channel] = signal.correlate(measurements[channel],
-                                                      custom_reference,
-                                                      mode='same')
+        compressed_chirps[channel] = signal.correlate(
+            measurements[channel], custom_reference, mode="same"
+        )
     return compressed_chirps
 
 
 """CROPPING"""
 
 
-def crop_data(signals: pd.DataFrame or np.ndarray,
-              time_start: float = None,
-              time_end: float = None,
-              sample_rate: int = SAMPLE_RATE):
+def crop_data(
+    signals: pd.DataFrame or np.ndarray,
+    time_start: float = None,
+    time_end: float = None,
+    sample_rate: int = SAMPLE_RATE,
+):
     """Crop either DataFrame input, pandas series or a numpy array input."""
     if isinstance(signals, np.ndarray):
-        signals_cropped = signals[int(time_start * sample_rate):
-                                  int(time_end * sample_rate)]
+        signals_cropped = signals[
+            int(time_start * sample_rate) : int(time_end * sample_rate)
+        ]
     else:
-        signals_cropped = signals.loc[time_start * sample_rate:
-                                      time_end * sample_rate]
+        signals_cropped = signals.loc[time_start * sample_rate : time_end * sample_rate]
     return signals_cropped
 
 
@@ -101,22 +107,21 @@ def crop_to_signal(measurements: pd.DataFrame or np.ndarray):
     above a threshold given by the standard deviation.
     """
     if isinstance(measurements, pd.DataFrame):
-        _, start_index, end_index = crop_to_signal(measurements['Sensor 1'])
+        _, start_index, end_index = crop_to_signal(measurements["Sensor 1"])
         cropped_measurements = measurements.iloc[start_index:end_index, :]
         cropped_measurements.reset_index(drop=True, inplace=True)
         return cropped_measurements
     # Find the first index where the signal is higher than the threshold
     envelope = get_envelopes(measurements)
-    noise_max_value = get_noise_max_value(envelope,
-                                          time_window_s=0.01,
-                                          sample_rate=ORIGINAL_SAMPLE_RATE)
+    noise_max_value = get_noise_max_value(
+        envelope, time_window_s=0.01, sample_rate=ORIGINAL_SAMPLE_RATE
+    )
     threshold = 2 * noise_max_value
     # Find the first index in the signal where the signal is higher than the threshold
     start_index = np.argmax(np.abs(envelope) > threshold)
 
     # Find the last index where the signal is higher than the threshold
-    end_index = len(measurements) - \
-        np.argmax(np.abs(envelope)[::-1] > (threshold))
+    end_index = len(measurements) - np.argmax(np.abs(envelope)[::-1] > (threshold))
 
     # Add 5% of the signal length to the start and end index
     signal_length = end_index - start_index
@@ -133,25 +138,31 @@ def crop_to_signal(measurements: pd.DataFrame or np.ndarray):
     return signal, start_index, end_index
 
 
-def window_signals(signals: pd.DataFrame,
-                   length_of_signal_seconds: float,
-                   window_function: str = 'tukey',
-                   window_parameter: float = None,
-                   peak_index: int = None):
+def window_signals(
+    signals: pd.DataFrame,
+    length_of_signal_seconds: float,
+    window_function: str = "tukey",
+    window_parameter: float = None,
+    peak_index: int = None,
+):
     """Takes in a dataframe and set silence around the signal to zero."""
     length_of_signal_samples = int(length_of_signal_seconds * SAMPLE_RATE)
     if peak_index is None:
         peak_index = np.argmax(signals)
     if window_parameter:
-        window = signal.get_window((window_function,
-                                    window_parameter),
-                                   length_of_signal_samples)
+        window = signal.get_window(
+            (window_function, window_parameter), length_of_signal_samples
+        )
     else:
         window = signal.get_window(window_function, length_of_signal_samples)
-    window = np.pad(window,
-                    (peak_index - int(length_of_signal_samples / 2),
-                     len(signals) - peak_index - int(length_of_signal_samples / 2)),
-                    'edge')
+    window = np.pad(
+        window,
+        (
+            peak_index - int(length_of_signal_samples / 2),
+            len(signals) - peak_index - int(length_of_signal_samples / 2),
+        ),
+        "edge",
+    )
     """Plot the window function"""
     # _, ax = plt.subplots(nrows=1, ncols=1)
     # ax.plot(np.linspace(0, len(window) / SAMPLE_RATE, len(window)), window)
@@ -167,5 +178,5 @@ def window_signals(signals: pd.DataFrame,
     return signals
 
 
-if __name__ == '__main__':
-    raise RuntimeError('This module is not intended to be ran from CLI')
+if __name__ == "__main__":
+    raise RuntimeError("This module is not intended to be ran from CLI")
