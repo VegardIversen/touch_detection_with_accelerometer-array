@@ -3,7 +3,7 @@ import numpy as np
 from main_scripts.generate_ideal_signal import compare_to_ideal_signal
 from utils.csv_to_df import csv_to_df
 from utils.data_processing.detect_echoes import get_envelopes
-from utils.data_processing.preprocessing import (crop_dataframe_to_signals,
+from utils.data_processing.preprocessing import (crop_to_signal,
                                                  filter)
 from utils.data_processing.processing import interpolate_waveform
 from utils.data_visualization.visualize_data import compare_signals
@@ -25,8 +25,8 @@ def inspect_touch():
     measurements = filter(measurements,
                           filtertype='highpass',
                           critical_frequency=CUTOFF_FREQUENCY,)
+    measurements = crop_to_signal(measurements)
     envelopes = get_envelopes(measurements)
-    # crop_dataframe_to_signals(measurements, threshold_parameter=0.0001)
     PLOTS_TO_PLOT = ['time']
     fig, axs = plt.subplots(nrows=3,
                             ncols=len(PLOTS_TO_PLOT),
