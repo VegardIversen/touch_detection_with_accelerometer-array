@@ -4,15 +4,27 @@ import pandas as pd
 from utils.csv_to_df import make_dataframe_from_csv
 
 from utils.data_processing.detect_echoes import get_envelopes, get_travel_times
-from utils.data_processing.preprocessing import compress_chirps
-from utils.data_processing.processing import align_signals_by_max_value, normalize
+from utils.data_processing.preprocessing import (
+    compress_chirps,
+    crop_data,
+    crop_to_signal,
+    filter_signal,
+)
+from utils.data_processing.processing import (
+    align_signals_by_max_value,
+    interpolate_signal,
+    normalize,
+)
 from utils.data_visualization.visualize_data import (
-    adjust_plot_margins,
     compare_signals,
     set_window_size,
 )
 from utils.generate_chirp import generate_chirp
-from utils.global_constants import ACTUATOR_1, SAMPLE_RATE, SENSOR_1
+from utils.global_constants import (
+    ACTUATOR_1,
+    ORIGINAL_SAMPLE_RATE,
+    SAMPLE_RATE,
+)
 from utils.plate_setups import Setup
 
 
@@ -20,15 +32,13 @@ def compare_to_ideal_signal(
     setup: Setup,
     measurements: pd.DataFrame,
     attenuation_dBpm: float,
-    chirp_length_s: float,
-    frequency_start: float,
-    frequency_stop: float,
     propagation_speed_mps: float = None,
+    cutoff_frequency: float = 0,
 ):
     """Calculate arrival times for sensor 1"""
     if propagation_speed_mps is None:
         # propagation_speed_mps = setup.get_propagation_speed(measurements)
-        propagation_speed_mps = 1000
+        propagation_speed_mps = 300
     print(f"Propagation speed: {propagation_speed_mps:.2f}")
     signal_length_s = float(
         measurements.shape[0] / SAMPLE_RATE,
@@ -37,10 +47,8 @@ def compare_to_ideal_signal(
         setup,
         propagation_speed_mps,
         attenuation_dBpm,
-        chirp_length_s,
-        frequency_start,
-        frequency_stop,
         signal_length_s,
+        cutoff_frequency,
     )
     measurement_envelopes = get_envelopes(measurements)
     measurement_envelopes = normalize(measurement_envelopes)
@@ -56,7 +64,11 @@ def compare_to_ideal_signal(
     compare_signals(
         fig,
         axs,
-        [ideal_signal["Sensor 1"], ideal_signal["Sensor 2"], ideal_signal["Sensor 3"]],
+        [
+            get_envelopes(ideal_signal["Sensor 1"]),
+            get_envelopes(ideal_signal["Sensor 2"]),
+            get_envelopes(ideal_signal["Sensor 3"]),
+        ],
         plots_to_plot=PLOTS_TO_PLOT,
     )
     compare_signals(
@@ -71,6 +83,7 @@ def compare_to_ideal_signal(
     )
     [ax.grid() for ax in axs[:, 0]]
     axs[0, 0].legend(["Ideal signal", "Measurement envelope"], loc="upper right")
+    fig.suptitle("Ideal signal vs. measurement envelope")
     return ideal_signal, distances
 
 
@@ -78,10 +91,8 @@ def generate_ideal_signal(
     setup: Setup,
     propagation_speed_mps: float,
     attenuation_dBpm: float,
-    chirp_length_s: float,
-    frequency_start: float,
-    frequency_stop: float,
     signal_length_s: float,
+    cutoff_frequency: float = 0,
 ):
     """Generate a test signal based on expected arrival times for a setup."""
     touch_signal = extract_touch_signal(filter_critical_frequency=cutoff_frequency)
@@ -97,7 +108,6 @@ def generate_ideal_signal(
 
     # Compress the test signal
     ideal_signal = compress_chirps(sensor_measurements)
-    # crop_measurement_to_signal_ndarray(compressed_ideal_signal)
     return ideal_signal, distances
 
 
@@ -121,20 +131,21 @@ def make_chirp(
         compare_signals(
             fig,
             axs,
-            data=[chirp],
+            measurements=[chirp],
         )
+        fig.suptitle("The generated chirp")
     return chirp
 
 
 def sum_signals(
     setup: Setup,
     propagation_speed_mps: float,
-    chirp: np.ndarray,
+    touch_signal: np.ndarray,
     attenuation_dBpm: float = 0,
     signal_length_s: float = 5,
-    plot_signals: bool = False,
+    plot_signals: bool = True,
 ):
-    ACTUATOR_CHANNEL = np.pad(chirp, (0, int(signal_length_s * SAMPLE_RATE)))
+    ACTUATOR_CHANNEL = np.pad(touch_signal, (0, int(signal_length_s * SAMPLE_RATE)))
     sensor_measurements = pd.DataFrame(data=ACTUATOR_CHANNEL, columns=["Actuator"])
     travel_distances = []
 
@@ -153,8 +164,8 @@ def sum_signals(
             arrival_time_index = int(arrival_time * SAMPLE_RATE)
             travel_distance_m = arrival_time * propagation_speed_mps
             measurement_i[
-                arrival_time_index : arrival_time_index + len(chirp)
-            ] += chirp * 10 ** (-attenuation_dBpm * travel_distance_m / 20)
+                arrival_time_index : arrival_time_index + len(touch_signal)
+            ] += touch_signal * 10 ** (-attenuation_dBpm * travel_distance_m / 20)
         sensor_measurements[f"Sensor {sensor_i + 1}"] = measurement_i
         travel_distances.append(distances[:2])
 
@@ -164,7 +175,7 @@ def sum_signals(
         compare_signals(
             fig,
             axs,
-            data=[
+            measurements=[
                 sensor_measurements["Actuator"],
                 sensor_measurements["Sensor 1"],
                 sensor_measurements["Sensor 2"],
@@ -172,6 +183,7 @@ def sum_signals(
             ],
             plots_to_plot=PLOTS_TO_PLOT,
         )
+        fig.suptitle("The generated signals")
     return sensor_measurements, travel_distances
 
 

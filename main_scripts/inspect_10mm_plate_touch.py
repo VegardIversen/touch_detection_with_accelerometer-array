@@ -1,12 +1,12 @@
 from matplotlib import pyplot as plt
 import numpy as np
 from main_scripts.generate_ideal_signal import compare_to_ideal_signal
-from utils.csv_to_df import csv_to_df
+from utils.csv_to_df import make_dataframe_from_csv
 from utils.data_processing.detect_echoes import get_envelopes
-from utils.data_processing.preprocessing import crop_to_signal, filter
-from utils.data_processing.processing import interpolate_waveform
+from utils.data_processing.preprocessing import crop_data, crop_to_signal, filter_signal
+from utils.data_processing.processing import interpolate_signal
 from utils.data_visualization.visualize_data import compare_signals
-from utils.global_constants import SAMPLE_RATE
+from utils.global_constants import ORIGINAL_SAMPLE_RATE, SAMPLE_RATE
 from utils.plate_setups import Setup3
 
 
@@ -26,7 +26,6 @@ def inspect_touch():
         order=4,
     )
     measurements = interpolate_signal(measurements)
-    envelopes = get_envelopes(measurements)
     PLOTS_TO_PLOT = ["time", "spectrogram"]
     fig, axs = plt.subplots(
         nrows=3,
@@ -38,41 +37,17 @@ def inspect_touch():
         axs,
         [measurements["Sensor 1"], measurements["Sensor 2"], measurements["Sensor 3"]],
         plots_to_plot=PLOTS_TO_PLOT,
-        nfft=2**14,
-        freq_max=10000,
+        nfft=2**5,
+        freq_max=40000,
+        dynamic_range_db=14,
     )
-    # compare_signals(fig, axs,
-    #                 [envelopes['Sensor 1'],
-    #                  envelopes['Sensor 2'],
-    #                  envelopes['Sensor 3']],
-    #                 plots_to_plot=PLOTS_TO_PLOT,
-    #                 nfft=2**10,
-    #                 freq_max=10000)
-    fig, axs = plt.subplots(
-        nrows=1,
-        ncols=len(PLOTS_TO_PLOT),
-        squeeze=False,
-    )
-    time_axis = np.linspace(
-        0, measurements.shape[0] / SAMPLE_RATE, measurements.shape[0]
-    )
-    axs[0, 0].plot(time_axis, measurements["Sensor 1"])
-    # axs[0, 0].plot(time_axis, measurements['Sensor 2'])
-    # axs[0, 0].plot(time_axis, measurements['Sensor 3'])
-    [ax.grid() for ax in axs[:, 0]]
-    [ax.set_xlabel("Time [s]") for ax in axs[:, 0]]
-    [ax.set_ylabel("Amplitude") for ax in axs[:, 0]]
-    axs[0, 0].legend(["Sensor 1"], loc="upper right")
+    fig.suptitle("Measurements")
     compare_to_ideal_signal(
         SETUP,
         measurements,
         attenuation_dBpm=15,
         cutoff_frequency=CRITICAL_FREQUENCY,
     )
-
-    # Set the title to the actuator coordinates
-    # [ax.set_ylabel('') for ax in axs[:, 0]]
-
 
 if __name__ == "__main__":
     raise RuntimeError("This script is not meant to run standalone.")

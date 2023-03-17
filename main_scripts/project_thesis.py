@@ -18,7 +18,7 @@ from utils.global_constants import (
     SENSOR_3,
     FIGURES_SAVE_PATH,
 )
-from utils.csv_to_df import csv_to_df
+from utils.csv_to_df import make_dataframe_from_csv
 from utils.simulations import simulated_phase_velocities
 from utils.data_processing.detect_echoes import (
     get_envelopes,
@@ -29,13 +29,13 @@ from utils.data_processing.preprocessing import (
     compress_chirps,
     crop_data,
     window_signals,
-    filter,
+    filter_signal,
 )
 from utils.data_processing.processing import (
     align_signals_by_correlation,
     align_signals_by_max_value,
     average_of_signals,
-    interpolate_waveform,
+    interpolate_signal,
     normalize,
     variance_of_signals,
 )
@@ -95,16 +95,16 @@ def setup1_plot_touch_signals():
     FILE_FOLDER = "Table/Setup1/touch"
     FILE_NAME = "touch_v1"
     """Open file"""
-    measurements = csv_to_df(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     """Interpolate waveforms"""
-    measurements = interpolate_waveform(measurements)
+    measurements = interpolate_signal(measurements)
 
     """Crop data to the full touch signal"""
     measurements_full_touch = crop_data(measurements, time_start=2.05, time_end=2.5075)
 
     """Filter signals to remove 50 Hz and other mud"""
-    measurements_full_touch = filter(
+    measurements_full_touch = filter_signal(
         measurements_full_touch, filtertype="highpass", critical_frequency=100
     )
 
@@ -161,10 +161,10 @@ def setup1_plot_chirp_signals():
     FILE_FOLDER = "Table/Setup1/chirp/100Hz_to_40kHz_single_chirp"
     FILE_NAME = "chirp_v1"
     """Open file"""
-    measurements = csv_to_df(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     """Interpolate waveforms"""
-    measurements = interpolate_waveform(measurements)
+    measurements = interpolate_signal(measurements)
 
     """Crop data to the full touch signal"""
     measurements_raw = crop_data(measurements, time_start=1.38, time_end=3.531)
@@ -395,10 +395,10 @@ def setup1_transfer_function(setup: Setup):
     FILE_NAME = "chirp_v1"
 
     """Open file"""
-    measurements = csv_to_df(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     """Interpolate waveforms"""
-    measurements = interpolate_waveform(measurements)
+    measurements = interpolate_signal(measurements)
 
     """Compress chirps"""
     measurements = compress_chirps(measurements)
@@ -568,9 +568,9 @@ def setup1_scattering():
     """Open file"""
     FILE_FOLDER = "Table/Setup1/scattering_tests/15kHz_to_40kHz_125ms"
     FILE_NAME = "no_touch_v1"
-    measurements = csv_to_df(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
-    measurements = interpolate_waveform(measurements)
+    measurements = interpolate_signal(measurements)
 
     """Plot measurements"""
     CHANNELS_TO_PLOT = ["Sensor 1", "Sensor 3"]
@@ -676,16 +676,16 @@ def setup1_predict_reflections(setup: Setup):
     """Open file"""
     FILE_FOLDER = "Table/Setup1/touch"
     FILE_NAME = "touch_v1"
-    measurements = csv_to_df(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     """Interpolate waveforms"""
-    measurements = interpolate_waveform(measurements)
+    measurements = interpolate_signal(measurements)
 
     """Compress chirps"""
     # measurements = compress_chirps(measurements)
 
     """Filter signals by a correlation based bandpass filter"""
-    measurements = filter(measurements, filtertype="highpass", critical_frequency=1000)
+    measurements = filter_signal(measurements, filtertype="highpass", critical_frequency=1000)
 
     setup1_predict_reflections_in_envelopes(setup, measurements)
     setup1_predict_reflections_in_spectrograms(setup, measurements)
@@ -788,7 +788,7 @@ def setup2_results():
     FILE_FOLDER = "Setup2"
     FILE_NAME = "prop_speed_chirp3_setup3_2_v2"
     """Open file"""
-    measurements = csv_to_df(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     """Delete sensor 2 as it doesn't have the required bandwidth"""
     measurements = measurements.drop(["Sensor 2"], axis="columns")
@@ -988,10 +988,10 @@ def setup2_transfer_function(setup: Setup):
     FILE_NAME = "prop_speed_chirp3_setup3_2_v1"
 
     """Open file"""
-    measurements = csv_to_df(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     """Interpolate waveforms"""
-    measurements = interpolate_waveform(measurements)
+    measurements = interpolate_signal(measurements)
 
     """Compress chirps"""
     measurements = compress_chirps(measurements)
@@ -1172,7 +1172,7 @@ def setup3_plot_raw_time_signal():
     """Open file"""
     FILE_FOLDER = "Setup3"
     FILE_NAME = "notouch_20to40khz_1s_10vpp_v1"
-    measurements = csv_to_df(
+    measurements = make_dataframe_from_csv(
         file_folder=FILE_FOLDER, file_name=FILE_NAME, channel_names=CHIRP_CHANNEL_NAMES
     )
 
@@ -1180,7 +1180,7 @@ def setup3_plot_raw_time_signal():
     TIME_START = 0.114 + 0.0036  # s
     TIME_END = 0.246 - 0.0035  # s
 
-    measurements = interpolate_waveform(measurements)
+    measurements = interpolate_signal(measurements)
     measurements = crop_data(measurements, time_start=TIME_START, time_end=TIME_END)
 
     """Plot raw signal"""
@@ -1203,9 +1203,9 @@ def setup3_scattering():
     """Open file"""
     FILE_FOLDER = "Setup3"
     FILE_NAME = "notouchThenHoldB2_20to40khz_125ms_10vpp_v1"
-    measurements = csv_to_df(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
-    measurements = interpolate_waveform(measurements)
+    measurements = interpolate_signal(measurements)
 
     """Plot measurements"""
     CHANNELS_TO_PLOT = ["Sensor 1", "Sensor 3"]
@@ -1345,7 +1345,7 @@ def custom_plots():
 def scattering_figure_3():
     """Use coordinates of points along a graph to make a plot"""
     print("Scattering figure 3")
-    ka_1 = csv_to_df(
+    ka_1 = make_dataframe_from_csv(
         file_folder="Data visualisation/Figure datasets/scattering_figure_3",
         file_name="ka_1",
         channel_names=["r", "theta"],
@@ -1366,31 +1366,31 @@ def scattering_figure_3():
 def scattering_figure_5():
     """Use coordinates of points along a graph to make a plot"""
     print("Scattering figure 5")
-    rigid_inlcusion = csv_to_df(
+    rigid_inlcusion = make_dataframe_from_csv(
         file_folder="Data visualisation/Figure datasets/scattering_figure_5",
         file_name="rigid_inclusion",
         channel_names=["x", "y"],
     )
-    steel_thickness_50in = csv_to_df(
+    steel_thickness_50in = make_dataframe_from_csv(
         file_folder="Data visualisation/Figure datasets/scattering_figure_5",
         file_name="steel_thickness_50in",
         channel_names=["x", "y"],
     )
-    hole = csv_to_df(
+    hole = make_dataframe_from_csv(
         file_folder="Data visualisation/Figure datasets/scattering_figure_5",
         file_name="hole",
         channel_names=["x", "y"],
     )
-    bonded_steel_inclusion_thickness_0_5in = csv_to_df(
+    bonded_steel_inclusion_thickness_0_5in = make_dataframe_from_csv(
         file_folder="Data visualisation/Figure datasets/scattering_figure_5",
         file_name="bonded_steel_inclusion_thickness_0_5in",
         channel_names=["x", "y"],
     )
     """Interpolate points"""
-    rigid_inlcusion = interpolate_waveform(rigid_inlcusion)
-    steel_thickness_50in = interpolate_waveform(steel_thickness_50in)
-    hole = interpolate_waveform(hole)
-    bonded_steel_inclusion_thickness_0_5in = interpolate_waveform(
+    rigid_inlcusion = interpolate_signal(rigid_inlcusion)
+    steel_thickness_50in = interpolate_signal(steel_thickness_50in)
+    hole = interpolate_signal(hole)
+    bonded_steel_inclusion_thickness_0_5in = interpolate_signal(
         bonded_steel_inclusion_thickness_0_5in
     )
 
