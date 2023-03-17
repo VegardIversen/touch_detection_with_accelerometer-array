@@ -7,10 +7,10 @@ ASSERTIONS_SHOULD_BE_INCLUDED = False
 
 """Settings"""
 ORIGINAL_SAMPLE_RATE = 150_000
-INTERPOLATION_FACTOR = 512
+INTERPOLATION_FACTOR = 16
 SAMPLE_RATE = ORIGINAL_SAMPLE_RATE * INTERPOLATION_FACTOR
-CHANNEL_NAMES = ['Sensor 1', 'Sensor 2', 'Sensor 3']
-CHIRP_CHANNEL_NAMES = ['Actuator', 'Sensor 1', 'Sensor 2', 'Sensor 3']
+CHANNEL_NAMES = ["Sensor 1", "Sensor 2", "Sensor 3"]
+CHIRP_CHANNEL_NAMES = ["Actuator", "Sensor 1", "Sensor 2", "Sensor 3"]
 
 """Sensor int values, e.g. for use with sensors[SENSOR_1]"""
 ACTUATOR_1 = 0
@@ -19,4 +19,6 @@ SENSOR_2 = 1
 SENSOR_3 = 2
 
 """Saving figures"""
-FIGURES_SAVE_PATH = '/home/niklast/Documents/GitHub/Specialization-Project-LaTeX/Figures/'
+FIGURES_SAVE_PATH = (
+    "/home/niklast/Documents/GitHub/Specialization-Project-LaTeX/Figures/"
+)
