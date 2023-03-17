@@ -2,11 +2,9 @@ from matplotlib import pyplot as plt
 import numpy as np
 from main_scripts.generate_ideal_signal import compare_to_ideal_signal
 from utils.csv_to_df import make_dataframe_from_csv
-from utils.data_processing.detect_echoes import get_envelopes
-from utils.data_processing.preprocessing import crop_data, crop_to_signal, filter_signal
+from utils.data_processing.preprocessing import crop_to_signal, filter_signal
 from utils.data_processing.processing import interpolate_signal
 from utils.data_visualization.visualize_data import compare_signals
-from utils.global_constants import ORIGINAL_SAMPLE_RATE, SAMPLE_RATE
 from utils.plate_setups import Setup3
 
 
@@ -18,7 +16,7 @@ def inspect_touch():
     FILE_NAME = "nik_touch_v1"
     measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
     measurements = crop_to_signal(measurements)
-    CRITICAL_FREQUENCY = 15000
+    CRITICAL_FREQUENCY = 5000
     measurements = filter_signal(
         measurements,
         filtertype="highpass",

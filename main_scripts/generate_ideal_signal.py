@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy import signal
 from utils.csv_to_df import make_dataframe_from_csv
 
 from utils.data_processing.detect_echoes import get_envelopes, get_travel_times
@@ -37,8 +38,7 @@ def compare_to_ideal_signal(
 ):
     """Calculate arrival times for sensor 1"""
     if propagation_speed_mps is None:
-        # propagation_speed_mps = setup.get_propagation_speed(measurements)
-        propagation_speed_mps = 300
+        propagation_speed_mps = 950
     print(f"Propagation speed: {propagation_speed_mps:.2f}")
     signal_length_s = float(
         measurements.shape[0] / SAMPLE_RATE,
@@ -117,6 +117,7 @@ def make_chirp(
     frequency_stop: float,
     plot_chirp: bool = False,
 ):
+    """An alternative to using the touch signal for the ideal signal"""
     chirp = generate_chirp(
         sample_rate=SAMPLE_RATE,
         frequency_start=frequency_start,
@@ -191,13 +192,14 @@ def extract_touch_signal(
     filter_critical_frequency: float = 0,
     plot_signal: bool = True,
     interpolate: bool = True,
+    window: bool = True,
 ):
     FILE_FOLDER = "Plate_10mm/Setup3/touch"
     FILE_NAME = "nik_touch_v1"
     measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
     measurements = crop_to_signal(measurements)
     measurements = crop_data(
-        measurements, time_start=0.013, time_end=0.015, sample_rate=ORIGINAL_SAMPLE_RATE
+        measurements, time_start=0.05645, time_end=0.05667, sample_rate=ORIGINAL_SAMPLE_RATE
     )
     touch_signal = measurements["Sensor 1"].values
 
@@ -211,6 +213,9 @@ def extract_touch_signal(
     if interpolate:
         touch_signal = interpolate_signal(touch_signal)
 
+    if window:
+        touch_signal = signal.windows.hann(len(touch_signal)) * touch_signal
+
     if plot_signal:
         fig, axs = plt.subplots(
             nrows=1,
@@ -221,9 +226,8 @@ def extract_touch_signal(
             fig,
             axs,
             measurements=[touch_signal],
-            nfft=2**10,
+            nfft=2**7,
         )
-        # Set title for the figure
         fig.suptitle("Touch signal used for ideal measurement", fontsize=16)
 
     return touch_signal
