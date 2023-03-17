@@ -9,8 +9,7 @@ import pandas as pd
 
 from utils.global_constants import SAMPLE_RATE
 
-from utils.csv_to_df import csv_to_df
-from utils.data_processing.preprocessing import filter
+from utils.data_processing.preprocessing import filter_signal
 from utils.data_processing.detect_echoes import (
     find_first_peak_index,
     find_indices_of_peaks,
@@ -46,7 +45,7 @@ def find_propagation_speed_plot(chirp_df, start_freq, end_freq, steps=1000):
     chirp_bps = np.array([])
 
     for freq in range(start_freq, end_freq, steps):
-        chirp_bp = filter(
+        chirp_bp = filter_signal(
             signals=chirp_df,
             filtertype="bandpass",
             critical_frequency=freq * 0.9,

@@ -17,7 +17,7 @@ from utils.data_visualization.visualize_data import plot_filter_response
 """FILTERING"""
 
 
-def filter(
+def filter_signal(
     signals: pd.DataFrame or np.ndarray,
     filtertype: str,
     critical_frequency: int,

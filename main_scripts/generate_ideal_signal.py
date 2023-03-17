@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import scipy.signal as signal
+from utils.csv_to_df import make_dataframe_from_csv
 
 from utils.data_processing.detect_echoes import get_envelopes, get_travel_times
 from utils.data_processing.preprocessing import compress_chirps

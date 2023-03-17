@@ -6,10 +6,10 @@ from main_scripts.generate_ideal_signal import (
     compare_to_ideal_signal,
     generate_ideal_signal,
 )
-from utils.csv_to_df import csv_to_df
+from utils.csv_to_df import make_dataframe_from_csv
 from utils.data_processing.detect_echoes import get_envelopes
-from utils.data_processing.preprocessing import crop_data, crop_to_signal, filter
-from utils.data_processing.processing import interpolate_waveform
+from utils.data_processing.preprocessing import crop_data, crop_to_signal, filter_signal
+from utils.data_processing.processing import interpolate_signal
 from utils.data_visualization.drawing import plot_legend_without_duplicates
 from utils.data_visualization.visualize_data import compare_signals
 from utils.global_constants import (
@@ -28,7 +28,7 @@ def linear_array_by_edge():
 
     FILE_FOLDER = "Plate_10mm/Setup4/"
     FILE_NAME = "nik_touch_35_35_v1"
-    measurements = csv_to_df(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     measurements["Actuator"] = 0
     # Swap the data in column 'Sensor 1' with the data in column 'Sensor 3'
@@ -49,7 +49,7 @@ def linear_array_by_edge():
     #                       critical_frequency=CRITICAL_FREQUENCY,
     #                       plot_response=False,
     #                       order=8)
-    measurements = interpolate_waveform(measurements)
+    measurements = interpolate_signal(measurements)
     signal_length_s = float(
         measurements.shape[0] / SAMPLE_RATE,
     )

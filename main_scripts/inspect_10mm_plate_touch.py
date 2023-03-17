@@ -16,16 +16,16 @@ def inspect_touch():
 
     FILE_FOLDER = "Plate_10mm/Setup3/touch"
     FILE_NAME = "nik_touch_v1"
-    measurements = csv_to_df(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
     measurements = crop_to_signal(measurements)
-    CUTOFF_FREQUENCY = 5000
-    measurements = filter(
+    CRITICAL_FREQUENCY = 15000
+    measurements = filter_signal(
         measurements,
         filtertype="highpass",
-        critical_frequency=CUTOFF_FREQUENCY,
+        critical_frequency=CRITICAL_FREQUENCY,
         order=4,
     )
-    measurements = interpolate_waveform(measurements)
+    measurements = interpolate_signal(measurements)
     envelopes = get_envelopes(measurements)
     PLOTS_TO_PLOT = ["time", "spectrogram"]
     fig, axs = plt.subplots(
@@ -67,9 +67,7 @@ def inspect_touch():
         SETUP,
         measurements,
         attenuation_dBpm=15,
-        chirp_length_s=0.125,
-        frequency_start=1,
-        frequency_stop=40000,
+        cutoff_frequency=CRITICAL_FREQUENCY,
     )
 
     # Set the title to the actuator coordinates

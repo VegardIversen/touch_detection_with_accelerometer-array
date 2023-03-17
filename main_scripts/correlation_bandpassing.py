@@ -11,7 +11,7 @@ from utils.global_constants import (
     SENSOR_3,
     FIGURES_SAVE_PATH,
 )
-from utils.csv_to_df import csv_to_df
+from utils.csv_to_df import make_dataframe_from_csv
 from utils.simulations import simulated_phase_velocities
 from utils.data_processing.detect_echoes import (
     get_envelopes,
@@ -22,11 +22,11 @@ from utils.data_processing.preprocessing import (
     compress_chirps,
     crop_data,
     window_signals,
-    filter,
+    filter_signal,
 )
 from utils.data_processing.processing import (
     average_of_signals,
-    interpolate_waveform,
+    interpolate_signal,
     normalize,
     variance_of_signals,
 )
@@ -47,10 +47,10 @@ def setup1_predict_reflections(setup: Setup):
     """Open file"""
     FILE_FOLDER = "Table/Setup1/touch"
     FILE_NAME = "touch_v1"
-    measurements = csv_to_df(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     """Interpolate waveforms"""
-    measurements = interpolate_waveform(measurements)
+    measurements = interpolate_signal(measurements)
 
     """Compress chirps"""
     # measurements = compress_chirps(measurements)

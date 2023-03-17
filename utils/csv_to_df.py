@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 
-def csv_to_df(
+def make_dataframe_from_csv(
     file_folder: str,
     file_name: str,
     channel_names: np.ndarray = np.array(
@@ -30,4 +30,4 @@ def csv_to_df(
 
 
 if __name__ == "__main__":
-    csv_to_df("base_data", "df_average_noise")
+    make_dataframe_from_csv("base_data", "df_average_noise")
