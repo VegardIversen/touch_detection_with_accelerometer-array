@@ -4,7 +4,7 @@
     "python.linting.pylamaEnabled": true,
 
     "python.linting.pylamaArgs": [
-        "--max-line-length=79"
+        "--max-line-length=88"
     ],
     "python.formatting.provider": "black",
 }
