@@ -84,14 +84,13 @@ def generate_ideal_signal(
     signal_length_s: float,
 ):
     """Generate a test signal based on expected arrival times for a setup."""
-    # Generate a chirp for transmission
-    chirp = make_chirp(chirp_length_s, frequency_start, frequency_stop)
+    touch_signal = extract_touch_signal(filter_critical_frequency=cutoff_frequency)
 
     # Initialize the superpositioned signal
     sensor_measurements, distances = sum_signals(
         setup,
         propagation_speed_mps,
-        chirp,
+        touch_signal,
         attenuation_dBpm,
         signal_length_s,
     )
@@ -174,6 +173,48 @@ def sum_signals(
             plots_to_plot=PLOTS_TO_PLOT,
         )
     return sensor_measurements, travel_distances
+
+
+def extract_touch_signal(
+    filter_critical_frequency: float = 0,
+    plot_signal: bool = True,
+    interpolate: bool = True,
+):
+    FILE_FOLDER = "Plate_10mm/Setup3/touch"
+    FILE_NAME = "nik_touch_v1"
+    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = crop_to_signal(measurements)
+    measurements = crop_data(
+        measurements, time_start=0.013, time_end=0.015, sample_rate=ORIGINAL_SAMPLE_RATE
+    )
+    touch_signal = measurements["Sensor 1"].values
+
+    if filter_critical_frequency:
+        touch_signal = filter_signal(
+            touch_signal,
+            filtertype="highpass",
+            critical_frequency=filter_critical_frequency,
+        )
+
+    if interpolate:
+        touch_signal = interpolate_signal(touch_signal)
+
+    if plot_signal:
+        fig, axs = plt.subplots(
+            nrows=1,
+            ncols=3,
+            squeeze=False,
+        )
+        compare_signals(
+            fig,
+            axs,
+            measurements=[touch_signal],
+            nfft=2**10,
+        )
+        # Set title for the figure
+        fig.suptitle("Touch signal used for ideal measurement", fontsize=16)
+
+    return touch_signal
 
 
 if __name__ == "__main__":
