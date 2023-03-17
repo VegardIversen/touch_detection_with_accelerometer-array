@@ -65,11 +65,18 @@ def normalize(signals: np.ndarray or pd.DataFrame) -> np.ndarray or pd.DataFrame
     return signals
 
 
-def interpolate_waveform(signals: pd.DataFrame) -> pd.DataFrame:
+def interpolate_signal(
+    signals: pd.DataFrame or np.ndarray,
+) -> pd.DataFrame or np.ndarray:
     """Interpolate waveform to have new_length with numpy"""
     new_length = signals.shape[0] * INTERPOLATION_FACTOR
-    # measurements_interp = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES,
-    #                                    data=np.empty((new_length, measurements.shape[1]), np.ndarray))
+
+    if isinstance(signals, np.ndarray):
+        x = np.linspace(0, signals.size, signals.size)
+        f = interpolate.interp1d(x, signals, kind="cubic")
+        x_new = np.linspace(0, signals.size, new_length)
+        return f(x_new)
+
     signals_interpolated = pd.DataFrame(
         data=np.empty((new_length, signals.shape[1]), np.ndarray),
         columns=signals.columns,
