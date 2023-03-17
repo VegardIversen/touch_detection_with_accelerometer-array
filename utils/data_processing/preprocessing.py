@@ -114,7 +114,8 @@ def crop_to_signal(measurements: pd.DataFrame or np.ndarray):
     # Find the first index where the signal is higher than the threshold
     envelope = get_envelopes(measurements)
     noise_max_value = get_noise_max_value(
-        envelope, time_window_s=0.01, sample_rate=ORIGINAL_SAMPLE_RATE
+        envelope,
+        time_window_percentage=0.02,
     )
     threshold = 2 * noise_max_value
     # Find the first index in the signal where the signal is higher than the threshold

@@ -133,11 +133,12 @@ def align_signals_by_max_value(
 
 
 def get_noise_max_value(
-    measurement: np.ndarray, time_window_s: float, sample_rate: int = SAMPLE_RATE
+    envelope: np.ndarray,
+    time_window_percentage: float = 0.02,
 ):
     """Characterize the noise of the measurement
     in terms of the standard deviation and max value
     based on the first 0.1 seconds of the measurement"""
-    envelope = get_envelopes(measurement)
-    noise_max_value = np.max(envelope[0 : int(time_window_s * sample_rate)])
+    window_index_end = int(time_window_percentage * len(envelope))
+    noise_max_value = np.max(envelope[0 : window_index_end])
     return noise_max_value
