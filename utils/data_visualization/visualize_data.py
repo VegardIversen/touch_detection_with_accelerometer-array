@@ -18,7 +18,7 @@ from utils.objects import Sensor
 def compare_signals(
     fig,
     axs,
-    data: list,
+    measurements: list,
     nfft: int = 256,
     sharey: bool = False,
     freq_max: int = 45000,
@@ -33,7 +33,7 @@ def compare_signals(
     NOTE:   ['time', 'spectrogram', 'fft'] has to be in this order,
             but can be in any combination or subset of it.
     """
-    for i, channel in enumerate(data):
+    for i, channel in enumerate(measurements):
         """Convert to pd.Series if necessary"""
         if isinstance(channel, np.ndarray):
             channel = pd.Series(channel, name="Sensor " + str(i + 1))
@@ -68,7 +68,7 @@ def compare_signals(
             else:
                 axs[i, 0].plot(time_axis, channel)
             # axs[i, 0].set_title(f'{channel.name}, time signal')
-            axs[len(data) - 1, 0].set_xlabel("Time [s]")
+            axs[len(measurements) - 1, 0].set_xlabel("Time [s]")
             axs[i, 0].plot()
 
         if "spectrogram" in plots_to_plot:
@@ -108,7 +108,7 @@ def compare_signals(
                 axs[i, axs_index].sharey(axs[0, axs_index])
             axs[i, axs_index].axis(ymax=freq_max)
             # axs[i, axs_index].set_title(f'{channel.name}, spectrogram')
-            axs[len(data) - 1, axs_index].set_xlabel("Time [s]")
+            axs[len(measurements) - 1, axs_index].set_xlabel("Time [s]")
             axs[i, axs_index].set_ylabel("Frequency [Hz]")
             axs[i, axs_index].plot(sharex=axs[0, 0])
 
@@ -129,7 +129,7 @@ def compare_signals(
             axs[i, axs_index].sharey(axs[0, axs_index])
             axs[i, axs_index].grid()
             # axs[i, axs_index].set_title(f'{channel.name}, FFT')
-            axs[len(data) - 1, axs_index].set_xlabel("Frequency [kHz]")
+            axs[len(measurements) - 1, axs_index].set_xlabel("Frequency [kHz]")
             axs[i, axs_index].set_ylabel("Amplitude [dB]")
             axs[i, axs_index].set_xlim(left=0, right=freq_max / 1000)
             axs[i, axs_index].set_ylim(bottom=-25, top=80)
