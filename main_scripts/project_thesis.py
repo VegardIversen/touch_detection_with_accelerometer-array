@@ -2,55 +2,27 @@
 Date: 2022-01-09
 """
 
-import scipy
-import scipy.signal as signal
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from main_scripts.generate_ideal_signal import generate_ideal_signal
+import scipy
+import scipy.signal as signal
 
-from utils.global_constants import (
-    CHIRP_CHANNEL_NAMES,
-    SAMPLE_RATE,
-    ACTUATOR_1,
-    SENSOR_1,
-    SENSOR_2,
-    SENSOR_3,
-    FIGURES_SAVE_PATH,
-)
 from utils.csv_to_df import make_dataframe_from_csv
+from utils.data_processing.detect_echoes import get_envelopes, get_travel_times
+from utils.data_processing.preprocessing import (compress_chirps, crop_data,
+                                                 filter_signal, window_signals)
+from utils.data_processing.processing import interpolate_signal
+from utils.data_visualization.visualize_data import (adjust_plot_margins,
+                                                     compare_signals,
+                                                     envelope_with_lines,
+                                                     set_window_size,
+                                                     spectrogram_with_lines)
+from utils.global_constants import (ACTUATOR_1, CHIRP_CHANNEL_NAMES,
+                                    FIGURES_SAVE_PATH, SAMPLE_RATE, SENSOR_1,
+                                    SENSOR_3)
 from utils.simulations import simulated_phase_velocities
-from utils.data_processing.detect_echoes import (
-    get_envelopes,
-    get_travel_times,
-    find_first_peak_index,
-)
-from utils.data_processing.preprocessing import (
-    compress_chirps,
-    crop_data,
-    window_signals,
-    filter_signal,
-)
-from utils.data_processing.processing import (
-    align_signals_by_correlation,
-    align_signals_by_max_value,
-    average_of_signals,
-    interpolate_signal,
-    normalize,
-    variance_of_signals,
-)
-from utils.data_visualization.visualize_data import (
-    compare_signals,
-    wave_statistics,
-    envelope_with_lines,
-    spectrogram_with_lines,
-    set_window_size,
-    adjust_plot_margins,
-)
-from main_scripts.correlation_bandpassing import make_gaussian_cosine
-
 from utils.table_setups import Setup, Setup1, Setup2, Setup3
-
 
 """Setup 1"""
 
