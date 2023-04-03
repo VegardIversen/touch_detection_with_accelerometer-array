@@ -24,6 +24,7 @@ import data_processing.wave_properties as wp
 import data_processing.sensor_testing as st
 from matplotlib import style
 import data_viz_files.visualise_data as vd
+import os
 
 def results_setup1():
     ## Results for phase velocity test in the beginning of the thesis.
@@ -61,6 +62,35 @@ def data_viz(viz_type, folder, filename, semester='thesis', channel='wave_gen'):
     elif viz_type == 'ssq':
         vd.ssqueeze_spectrum(df, channel)
 
+
+def load_simulated_data1():
+    signals = ['sg8.txt','sg28.txt', 'sg108.txt']
+    freq_signals = ['wt8.txt','wt28.txt', 'wt108.txt']
+    channels = []
+    for sig in signals:
+        path = os.path.join(r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_7mm', sig)
+        data = np.loadtxt(path)
+        channels.append(data)
+    return channels
+
+def simulated_data_vel():
+    distances = [0.173, 0.41, 1.359]
+    channels = load_simulated_data1()
+    for ch in channels:
+        plt.plot(ch)
+    plt.show()
+    fft1 = np.fft.fft(channels[0])
+    fft2 = np.fft.fft(channels[1])
+    freq = np.fft.fftfreq(len(channels[1]), d=1000)
+    plt.plot(freq, fft1)
+    plt.plot(freq, fft2)
+    plt.show()
+    phase = wp.phase_difference_sub(channels[0], channels[1])
+
+    freq = np.linspace(1000,50000,1000)
+    plt.plot(phase)
+    plt.show()
+    
 def wave_type_plots():
     df = csv_to_df_thesis('plate10mm\\setup2\\chirp', 'chirp3_ch3top_ch2bot_ch1_sidemid_v1')
     df_no_wave = df.drop(['wave_gen'], axis=1)
