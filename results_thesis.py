@@ -25,6 +25,7 @@ import data_processing.sensor_testing as st
 from matplotlib import style
 import data_viz_files.visualise_data as vd
 import os
+import mph
 
 def results_setup1():
     ## Results for phase velocity test in the beginning of the thesis.
@@ -90,7 +91,61 @@ def simulated_data_vel():
     freq = np.linspace(1000,50000,1000)
     plt.plot(phase)
     plt.show()
-    
+
+def comsol_data():
+    path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_7mm\Disp_on_plate_top_case3_15kHz_pulse.txt'
+    f1 = open(path, 'r')
+    i = 0
+    time_axis = np.linspace(0, 1000, num=501)
+    # x_pos = np.zeros(192)
+    # y_pos = np.zeros(192)
+    # z_pos = np.zeros(192)
+    x_pos = []
+    y_pos = []
+    z_pos = []
+    #data = np.zeros((192, 501))
+    data = []
+    # x_pos = np.linspace(0, 0.345, num=504)
+    # y_pos = np.full(504, 0.2)
+    # z_pos = np.full(504, 0.007)
+    data = np.zeros((200, 501))
+    # Reshape the data into a 2D array with shape (191, 504)
+    #data = data.reshape((191, 501))
+    for idx, line in enumerate(f1):
+        tmp = line.split()
+        if tmp[0] != '%':
+            #print(idx)
+            i += 1
+            # x_pos[idx] = tmp[0]
+            # y_pos[idx] = tmp[1]
+            # z_pos[idx] = tmp[2]
+            x_pos.append(tmp[0])
+            y_pos.append(tmp[1])
+            z_pos.append(tmp[2])
+            #data[idx, :] = tmp[3:]
+            data.append(tmp[3:])
+    # Create a 3D figure
+    print(i)
+    # fig = plt.figure()
+    # ax = fig.gca(projection='3d')
+
+    # # Create a meshgrid of x and y positions
+    # X, Y = np.meshgrid(x_pos, y_pos)
+
+    # # Plot the surface
+    # surf = ax.plot_surface(X, Y, data.T, cmap='viridis', edgecolor='none')
+
+    # # Add a colorbar
+    # fig.colorbar(surf, ax=ax)
+
+    # # Set the axis labels
+    # ax.set_xlabel('X Position')
+    # ax.set_ylabel('Y Position')
+    # ax.set_zlabel('Data')
+
+    # # Show the plot
+    # plt.show()
+
 def wave_type_plots():
     df = csv_to_df_thesis('plate10mm\\setup2\\chirp', 'chirp3_ch3top_ch2bot_ch1_sidemid_v1')
     df_no_wave = df.drop(['wave_gen'], axis=1)
