@@ -25,7 +25,7 @@ import data_processing.sensor_testing as st
 from matplotlib import style
 import data_viz_files.visualise_data as vd
 import os
-import mph
+#import mph
 
 def results_setup1():
     ## Results for phase velocity test in the beginning of the thesis.
@@ -77,19 +77,76 @@ def load_simulated_data1():
 def simulated_data_vel():
     distances = [0.173, 0.41, 1.359]
     channels = load_simulated_data1()
-    for ch in channels:
-        plt.plot(ch)
+    for idx, ch in enumerate(channels):
+        plt.plot(ch, label=f'channel {idx+1}')
+    plt.legend()
     plt.show()
-    fft1 = np.fft.fft(channels[0])
-    fft2 = np.fft.fft(channels[1])
-    freq = np.fft.fftfreq(len(channels[1]), d=1000)
-    plt.plot(freq, fft1)
-    plt.plot(freq, fft2)
-    plt.show()
-    phase = wp.phase_difference_sub(channels[0], channels[1])
+    # Compute FFTs of the three data sets
+    data8 = channels[0]
+    data28 = channels[1]
+    data108 = channels[2]
+    fft8 = np.fft.fft(data8)
+    fft28 = np.fft.fft(data28)
+    fft108 = np.fft.fft(data108)
+    
+    # Create frequency axis
+    freq = np.fft.fftfreq(data8.size, d=1/1000)
 
-    freq = np.linspace(1000,50000,1000)
-    plt.plot(phase)
+    # Select positive-frequency values
+    pos_freq = freq > 0
+    freq = freq[pos_freq]
+    fft8 = np.abs(fft8[pos_freq]) / data8.size
+    fft28 = np.abs(fft28[pos_freq]) / data28.size
+    fft108 = np.abs(fft108[pos_freq]) / data108.size
+
+    # Convert to dB scale
+    fft8_db = 20*np.log10(fft8)
+    fft28_db = 20*np.log10(fft28)
+    fft108_db = 20*np.log10(fft108)
+
+    # Plot FFTs of the three data sets in dB scale
+    fig, axs = plt.subplots(3, 1, figsize=(8, 12))
+    axs[0].plot(freq, fft8_db)
+    axs[1].plot(freq, fft28_db)
+    axs[2].plot(freq, fft108_db)
+
+    # Set title and axis labels
+    axs[0].set_title('FFT for punkt 8')
+    axs[1].set_title('FFT for punkt 28')
+    axs[2].set_title('FFT for punkt 108')
+    for ax in axs:
+        ax.set_xlabel('Frekvens (kHz)')
+        ax.set_ylabel('Amplitude (dB)')
+    plt.tight_layout()
+    plt.show()
+    #phase = wp.phase_difference_sub(channels[0], channels[1])
+    # Compute complex transfer functions
+    tf28_8 = fft28 / fft8
+    tf108_8 = fft108 / fft8
+    print(f'the length of fft28 is {len(fft28)}')
+    # Compute phase differences between transfer functions
+    phase_diff_28_8 = np.unwrap(np.angle(tf28_8))
+    phase_diff_108_8 = np.unwrap(np.angle(tf108_8))
+
+    # Create frequency axis
+    #freq = np.fft.fftfreq(data8.size, d=1/1000)
+
+    # Select positive-frequency values
+    # pos_freq = freq >= 0
+    # freq = freq[pos_freq]
+    # phase_diff_28_8 = phase_diff_28_8[pos_freq]
+    # phase_diff_108_8 = phase_diff_108_8[pos_freq]
+
+    # Plot phase differences
+    fig, axs = plt.subplots(2, 1, figsize=(8, 8))
+    axs[0].plot(freq, phase_diff_28_8)
+    axs[0].set_title('Phase difference tf28/tf8')
+    axs[1].plot(freq, phase_diff_108_8)
+    axs[1].set_title('Phase difference tf108/tf8')
+    for ax in axs:
+        ax.set_xlabel('Frekvens (kHz)')
+        ax.set_ylabel('Faseforskyvning (rad)')
+    plt.tight_layout()
     plt.show()
 
 def comsol_data():
@@ -97,54 +154,55 @@ def comsol_data():
     f1 = open(path, 'r')
     i = 0
     time_axis = np.linspace(0, 1000, num=501)
-    # x_pos = np.zeros(192)
-    # y_pos = np.zeros(192)
-    # z_pos = np.zeros(192)
-    x_pos = []
-    y_pos = []
-    z_pos = []
-    #data = np.zeros((192, 501))
-    data = []
-    # x_pos = np.linspace(0, 0.345, num=504)
-    # y_pos = np.full(504, 0.2)
-    # z_pos = np.full(504, 0.007)
-    data = np.zeros((200, 501))
-    # Reshape the data into a 2D array with shape (191, 504)
-    #data = data.reshape((191, 501))
+    x_pos = np.zeros(200)
+    y_pos = np.zeros(200)
+    z_pos = np.zeros(200)
+    wave_data = np.zeros((200, 501))
+
     for idx, line in enumerate(f1):
         tmp = line.split()
         if tmp[0] != '%':
-            #print(idx)
+
+            x_index = int(float(tmp[0]) / 0.00173)# convert x coordinate to index
+            wave_data[x_index] = tmp[3:]
+            x_pos[i] = float(tmp[0])
+            y_pos[i] = float(tmp[1])
+            z_pos[i] = float(tmp[2])
             i += 1
-            # x_pos[idx] = tmp[0]
-            # y_pos[idx] = tmp[1]
-            # z_pos[idx] = tmp[2]
-            x_pos.append(tmp[0])
-            y_pos.append(tmp[1])
-            z_pos.append(tmp[2])
-            #data[idx, :] = tmp[3:]
-            data.append(tmp[3:])
+    
+    # Plot the data
+    plt.imshow(wave_data, aspect='auto', cmap='jet', extent=[0, 501, 0, 0.345])
+    plt.colorbar()
+    plt.title('Wave Through Plate at y=200mm')
+    plt.xlabel('Time (samples)')
+    plt.ylabel('Position (mm)')
+    plt.show()
+
     # Create a 3D figure
-    print(i)
-    # fig = plt.figure()
-    # ax = fig.gca(projection='3d')
+    x_index = np.linspace(0, 0.345, num=200)
 
-    # # Create a meshgrid of x and y positions
-    # X, Y = np.meshgrid(x_pos, y_pos)
+    # Create meshgrid for x and t
+    x, t = np.meshgrid(x_index, np.arange(501)) # Swap x and t
+    wave_data = wave_data.T
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    surf = ax.plot_surface(x, t, wave_data, cmap='jet')
+    # Set the axis labels and title
+    ax.set_xlabel('Position (mm)')
+    ax.set_ylabel('Time (samples)')
+    ax.set_zlabel('Amplitude')
+    ax.set_title('Wave Through Plate')
 
-    # # Plot the surface
-    # surf = ax.plot_surface(X, Y, data.T, cmap='viridis', edgecolor='none')
+    # Set the x and y axis limits
+    ax.set_xlim([x_index.min(), x_index.max()])
+    ax.set_ylim([0, 500])
 
-    # # Add a colorbar
-    # fig.colorbar(surf, ax=ax)
+    # Set the colorbar
+    fig.colorbar(surf)
 
-    # # Set the axis labels
-    # ax.set_xlabel('X Position')
-    # ax.set_ylabel('Y Position')
-    # ax.set_zlabel('Data')
-
-    # # Show the plot
-    # plt.show()
+    # Show the plot
+    plt.show()
+  
 
 def wave_type_plots():
     df = csv_to_df_thesis('plate10mm\\setup2\\chirp', 'chirp3_ch3top_ch2bot_ch1_sidemid_v1')
