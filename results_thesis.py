@@ -93,11 +93,11 @@ def simulated_data_vel():
     freq = np.fft.fftfreq(data8.size, d=1/1000)
 
     # Select positive-frequency values
-    pos_freq = freq > 0
-    freq = freq[pos_freq]
-    fft8 = np.abs(fft8[pos_freq]) / data8.size
-    fft28 = np.abs(fft28[pos_freq]) / data28.size
-    fft108 = np.abs(fft108[pos_freq]) / data108.size
+    # pos_freq = freq > 0
+    # freq = freq[pos_freq]
+    # fft8 = np.abs(fft8[pos_freq]) / data8.size
+    # fft28 = np.abs(fft28[pos_freq]) / data28.size
+    # fft108 = np.abs(fft108[pos_freq]) / data108.size
 
     # Convert to dB scale
     fft8_db = 20*np.log10(fft8)
@@ -119,7 +119,8 @@ def simulated_data_vel():
         ax.set_ylabel('Amplitude (dB)')
     plt.tight_layout()
     plt.show()
-    #phase = wp.phase_difference_sub(channels[0], channels[1])
+    phase = wp.phase_difference_div(channels[0], channels[1])
+    phase1 = wp.phase_difference_div(channels[0], channels[2])
     # Compute complex transfer functions
     tf28_8 = fft28 / fft8
     tf108_8 = fft108 / fft8
@@ -139,9 +140,9 @@ def simulated_data_vel():
 
     # Plot phase differences
     fig, axs = plt.subplots(2, 1, figsize=(8, 8))
-    axs[0].plot(freq, phase_diff_28_8)
+    axs[0].plot(freq, phase)
     axs[0].set_title('Phase difference tf28/tf8')
-    axs[1].plot(freq, phase_diff_108_8)
+    axs[1].plot(freq, phase1)
     axs[1].set_title('Phase difference tf108/tf8')
     for ax in axs:
         ax.set_xlabel('Frekvens (kHz)')
@@ -149,7 +150,7 @@ def simulated_data_vel():
     plt.tight_layout()
     plt.show()
 
-def comsol_data():
+def comsol_data200():
     path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_7mm\Disp_on_plate_top_case3_15kHz_pulse.txt'
     f1 = open(path, 'r')
     i = 0
@@ -158,12 +159,12 @@ def comsol_data():
     y_pos = np.zeros(200)
     z_pos = np.zeros(200)
     wave_data = np.zeros((200, 501))
-
+    xcorr_scale = 0.345/200
     for idx, line in enumerate(f1):
         tmp = line.split()
         if tmp[0] != '%':
 
-            x_index = int(float(tmp[0]) / 0.00173)# convert x coordinate to index
+            x_index = int(float(tmp[0]) / 0.00173)# convert x coordinate to index. comes from length of plate divided by number of points
             wave_data[x_index] = tmp[3:]
             x_pos[i] = float(tmp[0])
             y_pos[i] = float(tmp[1])
@@ -171,11 +172,29 @@ def comsol_data():
             i += 1
     
     # Plot the data
+    plt.plot(wave_data[3])
+    plt.show()
+    plt.plot(wave_data[199])
+    plt.show()
     plt.imshow(wave_data, aspect='auto', cmap='jet', extent=[0, 501, 0, 0.345])
     plt.colorbar()
     plt.title('Wave Through Plate at y=200mm')
     plt.xlabel('Time (samples)')
     plt.ylabel('Position (mm)')
+    plt.show()
+
+    #filter data
+    wave_3_filtered = filter_general(wave_data[3], 'highpass', 30000)
+    wave_100_filtered = filter_general(wave_data[100], 'highpass', 30000)
+    plt.plot(wave_3_filtered, label='Filtered data')
+    plt.plot(wave_data[3], label='Original data')
+    plt.title(label='Filtered data')
+    plt.legend()
+    plt.show()
+    plt.plot(wave_100_filtered, label='Filtered data')
+    plt.plot(wave_data[100], label='Original data')
+    plt.title(label='Filtered data')
+    plt.legend()
     plt.show()
 
     # Create a 3D figure
@@ -202,7 +221,98 @@ def comsol_data():
 
     # Show the plot
     plt.show()
-  
+
+def comsol_data50():
+    path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_7mm\az_on_plate_top_case3_15kHz_pulse_line1.txt'
+    f1 = open(path, 'r')
+    i = 0
+    time_axis = np.linspace(0, 1000, num=501)
+    x_pos = np.zeros(50)
+    y_pos = np.zeros(50)
+    z_pos = np.zeros(50)
+    wave_data = np.zeros((50, 501))
+    xcorr_scale = 0.345/50
+    print(f'xcorr scale is: {xcorr_scale}')
+    for idx, line in enumerate(f1):
+        tmp = line.split()
+        if tmp[0] != '%':
+
+            #x_index = int(float(tmp[0]) / 0.007)# convert x coordinate to index. Had to hardcode the values as the last value gives 50 as index and not 49
+            wave_data[i] = tmp[3:]
+            x_pos[i] = float(tmp[0])
+            y_pos[i] = float(tmp[1])
+            z_pos[i] = float(tmp[2])
+            i += 1
+   
+    # Plot the data
+    plt.plot(wave_data[3])
+    plt.show()
+    plt.plot(wave_data[10])
+    plt.show()
+    plt.imshow(wave_data, aspect='auto', cmap='jet', extent=[0, 501, 0, 0.345])
+    plt.colorbar()
+    plt.title('Wave Through Plate at y=200mm')
+    plt.xlabel('Time (samples)')
+    plt.ylabel('Position (mm)')
+    plt.show()
+
+    # Create a 3D figure
+    x_index = np.linspace(0, 0.345, num=50)
+
+    # Create meshgrid for x and t
+    x, t = np.meshgrid(x_index, np.arange(501)) # Swap x and t
+    wave_data = wave_data.T
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    surf = ax.plot_surface(x, t, wave_data, cmap='jet')
+    # Set the axis labels and title
+    ax.set_xlabel('Position (mm)')
+    ax.set_ylabel('Time (samples)')
+    ax.set_zlabel('Amplitude')
+    ax.set_title('Wave Through Plate')
+
+    # Set the x and y axis limits
+    ax.set_xlim([x_index.min(), x_index.max()])
+    ax.set_ylim([0, 500])
+
+    # Set the colorbar
+    fig.colorbar(surf)
+
+    # Show the plot
+    plt.show()
+
+def comsol_data200_phase_diff(idx1=1, idx2=10):
+    path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_7mm\Disp_on_plate_top_case3_15kHz_pulse.txt'
+    f1 = open(path, 'r')
+    i = 0
+    time_axis = np.linspace(0, 1000, num=501)
+    x_pos = np.zeros(200)
+    y_pos = np.zeros(200)
+    z_pos = np.zeros(200)
+    wave_data = np.zeros((200, 501))
+    
+    for idx, line in enumerate(f1):
+        tmp = line.split()
+        if tmp[0] != '%':
+
+            x_index = int(float(tmp[0]) / 0.00173)# convert x coordinate to index
+            wave_data[x_index] = tmp[3:]
+            x_pos[i] = float(tmp[0])
+            y_pos[i] = float(tmp[1])
+            z_pos[i] = float(tmp[2])
+            i += 1
+    phase = wp.phase_difference_div(wave_data[idx1], wave_data[idx2], pos_only=True)
+    plt.plot(wave_data[idx1], label=f'x1={round(x_pos[idx1])}mm')
+    plt.plot(wave_data[idx2], label=f'x2={round(x_pos[idx2])}mm')
+    plt.legend()
+    plt.show()
+    freq = np.fft.fftfreq(len(wave_data[idx1]))
+    freq = freq[freq > 0]
+    plt.plot(freq, phase, label=f'x1={round(x_pos[idx1])}mm and x2={round(x_pos[idx2])}mm')
+    plt.legend()
+    plt.show()
+    phase_vel = wp.phase_velocity(freq, phase, distance=x_pos[idx2] - x_pos[idx1], plot=True)
+    
 
 def wave_type_plots():
     df = csv_to_df_thesis('plate10mm\\setup2\\chirp', 'chirp3_ch3top_ch2bot_ch1_sidemid_v1')
@@ -235,6 +345,98 @@ def wave_type_plots():
     plt.plot(time_axis, df_filt['channel 2'] + df_filt['channel 3'], label='difference')
     #plt.plot(time_axis, df_filt['channel 2'], label='channel 2')
     #plt.plot(time_axis, df_filt['channel 3'], label='channel 3')
+    plt.legend()
+    plt.show()
+
+
+def show_S0_wave(normalize=False, plot=True):
+    df = csv_to_df_thesis('plate10mm\\setup2\\chirp', 'chirp3_ch3top_ch2bot_ch1_sidemid_v1')
+    df_no_wave = df.drop(['wave_gen'], axis=1)
+    time_axis = np.linspace(0, len(df) // 150e3, num=len(df))
+    if plot:
+        plt.plot(time_axis, df_no_wave, labels=['channel 1', 'channel 2', 'channel 3'])
+        plt.title('Raw data with all channels')
+        plt.legend()
+        plt.show()  
+
+        #plotting just above and under the plate
+        plt.plot(time_axis, df['channel 2'], label='channel 2')
+        plt.plot(time_axis, df['channel 3'], label='channel 3')
+        plt.title('Channel 3 is the top plate and channel 2 is the bottom plate')
+        plt.legend()
+        plt.show()
+
+    #filter the signals
+    df_filt = filter_general(df_no_wave, filtertype='highpass', cutoff_highpass=100, cutoff_lowpass=15000, order=4)
+    
+    if plot:
+        #plotting just above and under the plate
+        plt.plot(time_axis, df_filt['channel 2'], label='channel 2')
+        plt.plot(time_axis, df_filt['channel 3'], label='channel 3')
+        plt.title(label='Channel 3 is the top plate and channel 2 is the bottom plate, filtered')
+        plt.legend()
+        plt.show()
+
+    if normalize:
+        #normalize channel 2 and 3 so that they are on the same scale
+        df_filt['channel 2'] = df_filt['channel 2'] / np.max(df_filt['channel 2'])
+        df_filt['channel 3'] = df_filt['channel 3'] / np.max(df_filt['channel 3'])
+    S0 = df_filt['channel 2'] + df_filt['channel 3'] / 2
+    if plot:
+        plt.plot(time_axis, S0, label='S0')
+        plt.title(label='S0')
+        plt.legend()
+        plt.show()
+    return S0
+
+
+def show_A0_wave(normalize=False, plot=True):
+    df = csv_to_df_thesis('plate10mm\\setup2\\chirp', 'chirp3_ch3top_ch2bot_ch1_sidemid_v1')
+    df_no_wave = df.drop(['wave_gen'], axis=1)
+    time_axis = np.linspace(0, len(df) // 150e3, num=len(df))
+    if plot:
+        plt.plot(time_axis, df_no_wave, labels=['channel 1', 'channel 2', 'channel 3'])
+        plt.title('Raw data with all channels')
+        plt.legend()
+        plt.show()  
+
+        #plotting just above and under the plate
+        plt.plot(time_axis, df['channel 2'], label='channel 2')
+        plt.plot(time_axis, df['channel 3'], label='channel 3')
+        plt.title('Channel 3 is the top plate and channel 2 is the bottom plate')
+        plt.legend()
+        plt.show()
+
+    #filter the signals
+    df_filt = filter_general(df_no_wave, filtertype='highpass', cutoff_highpass=100, cutoff_lowpass=15000, order=4)
+    
+    if plot:
+        #plotting just above and under the plate
+        plt.plot(time_axis, df_filt['channel 2'], label='channel 2')
+        plt.plot(time_axis, df_filt['channel 3'], label='channel 3')
+        plt.title(label='Channel 3 is the top plate and channel 2 is the bottom plate, filtered')
+        plt.legend()
+        plt.show()
+
+    if normalize:
+        #normalize channel 2 and 3 so that they are on the same scale
+        df_filt['channel 2'] = df_filt['channel 2'] / np.max(df_filt['channel 2'])
+        df_filt['channel 3'] = df_filt['channel 3'] / np.max(df_filt['channel 3'])
+    A0 = df_filt['channel 3'] - df_filt['channel 2'] / 2
+    if plot:
+        plt.plot(time_axis, A0, label='A0')
+        plt.title(label='A0')
+        plt.legend()
+        plt.show()
+    return A0
+
+def show_A0_and_S0_wave(normalize=False):
+    S0 = show_S0_wave(normalize=normalize, plot=False)
+    A0 = show_A0_wave(normalize=normalize, plot=False)
+    time_axis = np.linspace(0, len(S0) // 150e3, num=len(S0))
+    plt.plot(time_axis, S0, label='S0')
+    plt.plot(time_axis, A0, label='A0')
+    plt.title(label='S0 and A0')
     plt.legend()
     plt.show()
 

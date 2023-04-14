@@ -32,9 +32,19 @@ def phase_difference_sub(sig1, sig2):
     phase_diff = sig1_fft - sig2_fft
     return phase_diff
 
-def phase_difference_div(sig1, sig2, n_pi=0):
+def phase_difference_div(sig1, sig2, n_pi=0, pos_only=False):
     S1f = np.fft.fft(sig1)
     S2f = np.fft.fft(sig2)
+    if pos_only:
+        freq = np.fft.fftfreq(len(sig1))
+        S1f = S1f[freq > 0]
+        S2f = S2f[freq > 0]
+        freq = freq[freq > 0]
+        plt.plot(freq, S1f, label='S1f')
+        plt.plot(freq, S2f, label='S2f')
+        plt.legend()
+        plt.show()
+
     phase = np.unwrap(np.angle(S2f/S1f)) +n_pi*np.pi
     return phase
 

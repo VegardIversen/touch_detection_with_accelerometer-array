@@ -10,7 +10,10 @@ def main():
     #r.velocities()
     #r.wave_type_plots()
     #r.data_viz('ssq', 'plate10mm\\setup1\\touch', 'nik_touch_v1', channel='channel 1')
-    r.simulated_data_vel()
-    #r.comsol_data()
+    #r.simulated_data_vel()
+    r.comsol_data200()
+    #r.comsol_data200_phase_diff()
+    #r.show_A0_and_S0_wave()
+    #r.comsol_data50()
 if __name__ == '__main__':
     main()
