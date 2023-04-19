@@ -1,5 +1,7 @@
 # Changelog
 
+## 6.1.0
+Export signals from setup 4 (three sensors 5 cm from edge, 1 cm apart), currently filtered at 30 kHz and cropped to (most likely) only include the direct signal (I think. If the wave travels at around 1000 m/s and it has to travel approximately 10 cm longer for the second reflection, it should appear 0.1 ms after).
 
 ## 5.1.0
 Looking at touch release and swiping. Really interesting to see the relative power in the touch release, and the energy in the swiping. Even at 30 kHz to 35 kHz bandpass the SNR is rather good, and promising for phase based DoA estimation.
