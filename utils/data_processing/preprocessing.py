@@ -104,7 +104,7 @@ def crop_data(
 
 def crop_to_signal(measurements: pd.DataFrame or np.ndarray):
     """Crop the signal to the first and last value
-    above a threshold given by the standard deviation.
+    above a threshold given by the max value in the noise .
     """
     if isinstance(measurements, pd.DataFrame):
         _, start_index, end_index = crop_to_signal(measurements["Sensor 1"])
