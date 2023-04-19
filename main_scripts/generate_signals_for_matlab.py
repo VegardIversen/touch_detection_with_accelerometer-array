@@ -21,27 +21,27 @@ def generate_signals_for_matlab():
     # measurements = crop_to_signal(measurements)
     measurements = crop_data(
         measurements,
-        time_start=1.14,
-        time_end=1.14072,
+        time_start=1.1403,
+        time_end=1.1404,
         sample_rate=ORIGINAL_SAMPLE_RATE,
     )
+    # CRITICAL_FREQUENCY = 30000
+    # measurements = filter_signal(
+    #     measurements,
+    #     filtertype="bandpass",
+    #     critical_frequency=CRITICAL_FREQUENCY,
+    #     plot_response=False,
+    #     order=2,
+    #     q=0.1,
+    # )
     CRITICAL_FREQUENCY = 30000
     measurements = filter_signal(
         measurements,
-        filtertype="bandpass",
+        filtertype="highpass",
         critical_frequency=CRITICAL_FREQUENCY,
         plot_response=False,
-        order=2,
-        q=0.05,
+        order=8,
     )
-    # CRITICAL_FREQUENCY = 6050
-    # measurements = filter_signal(
-    #     measurements,
-    #     filtertype="highpass",
-    #     critical_frequency=CRITICAL_FREQUENCY,
-    #     plot_response=False,
-    #     order=8,
-    # )
     # measurements = crop_to_signal(measurements)
     measurements = measurements.drop(columns=["Actuator"])
     measurements = interpolate_signal(measurements)
@@ -72,7 +72,7 @@ def generate_signals_for_matlab():
     axs[0, 0].legend(["Sensor 1", "Sensor 2", "Sensor 3"], loc="upper right")
 
     analytic_signals = get_analytic_signal(measurements)
-    analytic_signals.to_csv(
+    measurements.to_csv(
         "./matlab_signals.csv",
         index=False,
         header=False,
