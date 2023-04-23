@@ -106,7 +106,7 @@ class Setup1(Setup):
         distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
         propagation_speed_sensors_1_2 = np.abs(distance / delay)
         print(f"Propagation speed between sensors 1 and 2: {propagation_speed_sensors_1_2:.2f} m/s")
-        # Again, but with the other two sensors
+        # Again, but with sensors 2 and 3
         object_1 = self.sensors[SENSOR_2]
         object_2 = self.sensors[SENSOR_3]
         n = len(measurements[object_1.name])
@@ -122,7 +122,27 @@ class Setup1(Setup):
         print(
             f"Propagation speed between sensors 2 and 3: {propagation_speed_sensors_2_3:.2f} m/s"
         )
-        propagation_speed = np.mean([propagation_speed_sensors_1_2, propagation_speed_sensors_2_3])
+        # Again, but with sensors 1 and 3q
+        object_1 = self.sensors[SENSOR_1]
+        object_2 = self.sensors[SENSOR_3]
+        n = len(measurements[object_1.name])
+        corr = signal.correlate(
+            measurements[object_1.name], measurements[object_2.name], mode="same"
+        )
+        delay_arr = np.linspace(
+            start=-0.5 * n / SAMPLE_RATE, stop=0.5 * n / SAMPLE_RATE, num=n
+        )
+        delay = delay_arr[np.argmax(corr)]
+        distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
+        propagation_speed_sensors_1_3 = np.abs(distance / delay)
+        print(
+            f"Propagation speed between sensors 1 and 3: {propagation_speed_sensors_1_3:.2f} m/s"
+        )
+        propagation_speed = (
+            propagation_speed_sensors_1_2
+            + propagation_speed_sensors_2_3
+            + propagation_speed_sensors_1_3
+        ) / 3
         if plot_correlation:
             fig, ax = plt.subplots()
             ax.plot(delay_arr, corr)
