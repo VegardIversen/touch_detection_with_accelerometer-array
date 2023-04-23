@@ -102,7 +102,7 @@ def crop_data(
     return signals_cropped
 
 
-def crop_to_signal(measurements: pd.DataFrame or np.ndarray):
+def crop_to_signal(measurements: pd.DataFrame or np.ndarray, padding: float = 0.05):
     """Crop the signal to the first and last value
     above a threshold given by the max value in the noise .
     """
@@ -124,12 +124,11 @@ def crop_to_signal(measurements: pd.DataFrame or np.ndarray):
     # Find the last index where the signal is higher than the threshold
     end_index = len(measurements) - np.argmax(np.abs(envelope)[::-1] > (threshold))
 
-    # Add 5% of the signal length to the start and end index
     signal_length = end_index - start_index
-    start_index -= int(signal_length * 0.05)
+    start_index -= int(signal_length * padding)
     if start_index < 0:
         start_index = 0
-    end_index += int(signal_length * 0.05)
+    end_index += int(signal_length * padding)
     if end_index > len(measurements):
         end_index = len(measurements)
 
@@ -145,9 +144,10 @@ def window_signals(
     window_function: str = "tukey",
     window_parameter: float = None,
     peak_index: int = None,
+    sample_rate: int = SAMPLE_RATE,
 ):
     """Takes in a dataframe and set silence around the signal to zero."""
-    length_of_signal_samples = int(length_of_signal_seconds * SAMPLE_RATE)
+    length_of_signal_samples = int(length_of_signal_seconds * sample_rate)
     if peak_index is None:
         peak_index = np.argmax(signals)
     if window_parameter:
@@ -166,7 +166,7 @@ def window_signals(
     )
     """Plot the window function"""
     # _, ax = plt.subplots(nrows=1, ncols=1)
-    # ax.plot(np.linspace(0, len(window) / SAMPLE_RATE, len(window)), window)
+    # ax.plot(np.linspace(0, len(window) / sample_rate, len(window)), window)
     # ax.set_title('Window function')
     # ax.set_xlabel('Samples')
     # ax.grid()
