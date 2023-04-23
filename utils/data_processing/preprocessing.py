@@ -144,9 +144,10 @@ def window_signals(
     window_function: str = "tukey",
     window_parameter: float = None,
     peak_index: int = None,
+    sample_rate: int = SAMPLE_RATE,
 ):
     """Takes in a dataframe and set silence around the signal to zero."""
-    length_of_signal_samples = int(length_of_signal_seconds * SAMPLE_RATE)
+    length_of_signal_samples = int(length_of_signal_seconds * sample_rate)
     if peak_index is None:
         peak_index = np.argmax(signals)
     if window_parameter:
@@ -165,7 +166,7 @@ def window_signals(
     )
     """Plot the window function"""
     # _, ax = plt.subplots(nrows=1, ncols=1)
-    # ax.plot(np.linspace(0, len(window) / SAMPLE_RATE, len(window)), window)
+    # ax.plot(np.linspace(0, len(window) / sample_rate, len(window)), window)
     # ax.set_title('Window function')
     # ax.set_xlabel('Samples')
     # ax.grid()
