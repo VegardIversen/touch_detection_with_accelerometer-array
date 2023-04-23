@@ -1,5 +1,8 @@
 # Changelog
 
+## 6.1.1
+Export analytic signals for use in DOA estimation functions. Currently cropped to what I believe to be the direct signal. The Matlab functions for DOA estimation result in around -17 degrees broadside angle, which is only a few percent off what it is expected to be (if the understanding of the broadside figure in the script is correct). Tried with cropping to two sources, not great results. Probably too few sensors to get a good estimate.
+
 ## 6.1.0
 Export signals from setup 4 (three sensors 5 cm from edge, 1 cm apart), currently filtered at 30 kHz and cropped to (most likely) only include the direct signal (I think. If the wave travels at around 1000 m/s and it has to travel approximately 10 cm longer for the second reflection, it should appear 0.1 ms after).
 
