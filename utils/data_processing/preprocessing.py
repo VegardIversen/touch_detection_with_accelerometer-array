@@ -102,7 +102,7 @@ def crop_data(
     return signals_cropped
 
 
-def crop_to_signal(measurements: pd.DataFrame or np.ndarray):
+def crop_to_signal(measurements: pd.DataFrame or np.ndarray, padding: float = 0.05):
     """Crop the signal to the first and last value
     above a threshold given by the max value in the noise .
     """
@@ -124,12 +124,11 @@ def crop_to_signal(measurements: pd.DataFrame or np.ndarray):
     # Find the last index where the signal is higher than the threshold
     end_index = len(measurements) - np.argmax(np.abs(envelope)[::-1] > (threshold))
 
-    # Add 5% of the signal length to the start and end index
     signal_length = end_index - start_index
-    start_index -= int(signal_length * 0.05)
+    start_index -= int(signal_length * padding)
     if start_index < 0:
         start_index = 0
-    end_index += int(signal_length * 0.05)
+    end_index += int(signal_length * padding)
     if end_index > len(measurements):
         end_index = len(measurements)
 
