@@ -93,9 +93,15 @@ def generate_ideal_signal(
     attenuation_dBpm: float,
     signal_length_s: float,
     cutoff_frequency: float = 0,
+    signal_model: str = "touch",
 ):
-    """Generate a test signal based on expected arrival times for a setup."""
-    touch_signal = extract_touch_signal(filter_critical_frequency=cutoff_frequency)
+    """Generate an "ideal" signal based on expected arrival times for a setup."""
+    if signal_model == "touch":
+        touch_signal = extract_touch_signal(filter_critical_frequency=cutoff_frequency)
+    elif signal_model == "line":
+        # Generate a dirac pulse
+        touch_signal = np.zeros(int(signal_length_s * SAMPLE_RATE))
+        touch_signal[int(signal_length_s * SAMPLE_RATE / 2)] = 1
 
     # Initialize the superpositioned signal
     sensor_measurements, distances = sum_signals(
@@ -171,20 +177,23 @@ def sum_signals(
         travel_distances.append(distances[:2])
 
     if plot_signals:
-        PLOTS_TO_PLOT = ["time", "fft"]
-        fig, axs = plt.subplots(4, len(PLOTS_TO_PLOT), squeeze=False)
+        PLOTS_TO_PLOT = ["time"]
+        fig, axs = plt.subplots(9, len(PLOTS_TO_PLOT), squeeze=False)
         compare_signals(
             fig,
             axs,
             measurements=[
-                sensor_measurements["Actuator"],
-                sensor_measurements["Sensor 1"],
-                sensor_measurements["Sensor 2"],
-                sensor_measurements["Sensor 3"],
+                sensor_measurements[sensor_i]
+                for sensor_i in sensor_measurements.columns
             ],
             plots_to_plot=PLOTS_TO_PLOT,
+            sharey=True,
         )
-        fig.suptitle("The generated signals")
+        # Set the y-axis labels
+        for ax in axs[:, 0]:
+            ax.set_ylabel(f"Sensor {axs[:, 0].tolist().index(ax)}")
+        # Set the first y-axis label to touch
+        axs[0, 0].set_ylabel("Touch")
     return sensor_measurements, travel_distances
 
 
@@ -199,7 +208,10 @@ def extract_touch_signal(
     measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
     measurements = crop_to_signal(measurements)
     measurements = crop_data(
-        measurements, time_start=0.05645, time_end=0.05667, sample_rate=ORIGINAL_SAMPLE_RATE
+        measurements,
+        time_start=0.05645,
+        time_end=0.05667,
+        sample_rate=ORIGINAL_SAMPLE_RATE,
     )
     touch_signal = measurements["Sensor 1"].values
 
