@@ -105,7 +105,9 @@ class Setup1(Setup):
         delay = delay_arr[np.argmax(corr)]
         distance = np.linalg.norm(object_1.coordinates - object_2.coordinates)
         propagation_speed_sensors_1_2 = np.abs(distance / delay)
-        print(f"Propagation speed between sensors 1 and 2: {propagation_speed_sensors_1_2:.2f} m/s")
+        print(
+            f"Propagation speed between sensors 1 and 2: {propagation_speed_sensors_1_2:.2f} m/s"
+        )
         # Again, but with sensors 2 and 3
         object_1 = self.sensors[SENSOR_2]
         object_2 = self.sensors[SENSOR_3]
@@ -397,3 +399,18 @@ class Setup4(Setup_Linear_Array):
         angle = np.arccos((souce_distance_cat / source_distance_hyp))
         propagation_speed = np.abs(distance / (delay / np.cos(angle)))
         return propagation_speed
+
+
+class Setup5(Setup_Linear_Array):
+    # Setup_Linear_Array with arugments for a 3 sensor array
+    def __init__(
+        self,
+        actuator_coordinates: np.ndarray,
+        array_start_coordinates: np.ndarray = np.array([0.05, 0.65]),
+    ):
+        super().__init__(
+            number_of_sensors=8,
+            actuator_coordinates=actuator_coordinates,
+            array_start_coordinates=array_start_coordinates,
+            array_spacing_m=0.01,
+        )
