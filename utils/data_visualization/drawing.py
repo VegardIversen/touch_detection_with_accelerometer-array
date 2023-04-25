@@ -42,4 +42,4 @@ def plot_legend_without_duplicates_ax(ax):
     by_label = OrderedDict(zip(labels, handles))
     ax.legend(by_label.values(), by_label.keys(), loc="upper right")
 
-    return actuator, sensor_1, sensor_2, sensor_3
+    return
