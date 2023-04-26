@@ -1,5 +1,4 @@
 from matplotlib import pyplot as plt
-import numpy as np
 from main_scripts.generate_ideal_signal import compare_to_ideal_signal
 from utils.csv_to_df import make_dataframe_from_csv
 from utils.data_processing.preprocessing import crop_to_signal, filter_signal
@@ -44,8 +43,9 @@ def inspect_touch():
         SETUP,
         measurements,
         attenuation_dBpm=15,
-        cutoff_frequency=CRITICAL_FREQUENCY,
+        critical_frequency=CRITICAL_FREQUENCY,
     )
+
 
 if __name__ == "__main__":
     raise RuntimeError("This script is not meant to run standalone.")
