@@ -34,7 +34,9 @@ def compare_to_ideal_signal(
     measurements: pd.DataFrame,
     attenuation_dBpm: float,
     propagation_speed_mps: float = None,
-    cutoff_frequency: float = 0,
+    filtertype: str = "highpass",
+    critical_frequency: float = 0,
+    signal_model: str = "touch",
 ):
     """Calculate arrival times for sensor 1"""
     if propagation_speed_mps is None:
@@ -48,7 +50,17 @@ def compare_to_ideal_signal(
         propagation_speed_mps,
         attenuation_dBpm,
         signal_length_s,
-        cutoff_frequency,
+        critical_frequency,
+        signal_model,
+    )
+    measurements = filter_signal(
+        measurements,
+        filtertype=filtertype,
+        critical_frequency=critical_frequency,
+        plot_response=False,
+        order=2,
+        sample_rate=SAMPLE_RATE,
+        q=0.05,
     )
     measurement_envelopes = get_envelopes(measurements)
     measurement_envelopes = normalize(measurement_envelopes)
@@ -92,16 +104,38 @@ def generate_ideal_signal(
     propagation_speed_mps: float,
     attenuation_dBpm: float,
     signal_length_s: float,
-    cutoff_frequency: float = 0,
+    critical_frequency: float = 0,
     signal_model: str = "touch",
 ):
     """Generate an "ideal" signal based on expected arrival times for a setup."""
     if signal_model == "touch":
-        touch_signal = extract_touch_signal(filter_critical_frequency=cutoff_frequency)
+        touch_signal = extract_touch_signal(
+            filter_critical_frequency=critical_frequency
+        )
     elif signal_model == "line":
         # Generate a dirac pulse
         touch_signal = np.zeros(int(signal_length_s * SAMPLE_RATE))
         touch_signal[int(signal_length_s * SAMPLE_RATE / 2)] = 1
+    elif signal_model == "gaussian":
+        # Generate a gaussian modulated pulse with frequency critical_frequency and duration 10 periods
+        t_var = 1e-9
+        t = np.linspace(
+            -signal_length_s / 2,
+            signal_length_s / 2,
+            int(signal_length_s * SAMPLE_RATE),
+        )
+        # The function Tonni uses for the simulations
+        touch_signal = -np.exp(-((t) ** 2) / (2 * t_var)) * np.sin(
+            2 * np.pi * critical_frequency * (t)
+        )
+        # Plot the signal
+        fig, ax = plt.subplots()
+        ax.plot(t, touch_signal)
+        ax.set_xlabel("Time [s]")
+        ax.set_ylabel("Amplitude")
+        ax.set_title("Gaussian modulated pulse")
+    else:
+        raise ValueError("Invalid signal model")
 
     # Initialize the superpositioned signal
     sensor_measurements, distances = sum_signals(
