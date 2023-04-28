@@ -20,5 +20,5 @@ SENSOR_3 = 2
 
 """Saving figures"""
 FIGURES_SAVE_PATH = (
-    "/home/niklast/Documents/GitHub/Specialization-Project-LaTeX/Figures/"
+    "/home/niklast/Documents/GitHub/Master-Thseis-NTNU/Figures/"
 )
