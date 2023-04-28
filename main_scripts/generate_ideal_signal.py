@@ -106,6 +106,7 @@ def generate_ideal_signal(
     signal_length_s: float,
     critical_frequency: float = 0,
     signal_model: str = "touch",
+    snr_dB: float = 0,
 ):
     """Generate an "ideal" signal based on expected arrival times for a setup."""
     if signal_model == "touch":
@@ -128,9 +129,15 @@ def generate_ideal_signal(
         touch_signal = -np.exp(-((t) ** 2) / (2 * t_var)) * np.sin(
             2 * np.pi * critical_frequency * (t)
         )
+        # Add some noise to allow crop_to_signal() to work properly
+        touch_signal_with_noise = add_noise(touch_signal, critical_frequency, snr_dB=50)
+        touch_signal_with_noise, _, _ = crop_to_signal(touch_signal_with_noise)
+        time_axis_for_plotting = np.linspace(
+            0, len(touch_signal_with_noise) / SAMPLE_RATE, len(touch_signal_with_noise)
+        )
         # Plot the signal
         fig, ax = plt.subplots()
-        ax.plot(t, touch_signal)
+        ax.plot(time_axis_for_plotting, touch_signal_with_noise)
         ax.set_xlabel("Time [s]")
         ax.set_ylabel("Amplitude")
         ax.set_title("Gaussian modulated pulse")
@@ -138,7 +145,7 @@ def generate_ideal_signal(
         raise ValueError("Invalid signal model")
 
     # Initialize the superpositioned signal
-    sensor_measurements, distances = sum_signals(
+    ideal_signals, distances = sum_signals(
         setup,
         propagation_speed_mps,
         touch_signal,
@@ -146,9 +153,28 @@ def generate_ideal_signal(
         signal_length_s,
     )
 
-    # Compress the test signal
-    ideal_signal = compress_chirps(sensor_measurements)
-    return ideal_signal, distances
+    ideal_signals = add_noise(ideal_signals, critical_frequency, snr_dB)
+    return ideal_signals, distances
+
+
+def add_noise(
+    ideal_signals: pd.DataFrame or np.ndarray,
+    critical_frequency: float,
+    snr_dB: float = 0,
+):
+    if isinstance(ideal_signals, pd.DataFrame):
+        # Call the function recursively for each channel
+        for channel in ideal_signals.columns:
+            ideal_signals[channel] = add_noise(
+                ideal_signals[channel], critical_frequency, snr_dB
+            )
+        return ideal_signals
+
+    ideal_signal_power = np.sum(ideal_signals ** 2) / len(ideal_signals)
+    noise_power = ideal_signal_power / (10 ** (snr_dB / 10))
+    noise = np.random.normal(0, np.sqrt(noise_power), len(ideal_signals))
+    noisy_signal = ideal_signals + noise
+    return noisy_signal
 
 
 def make_chirp(
@@ -184,7 +210,7 @@ def sum_signals(
     touch_signal: np.ndarray,
     attenuation_dBpm: float = 0,
     signal_length_s: float = 5,
-    plot_signals: bool = True,
+    plot_signals: bool = False,
 ):
     ACTUATOR_CHANNEL = np.pad(touch_signal, (0, int(signal_length_s * SAMPLE_RATE)))
     sensor_measurements = pd.DataFrame(data=ACTUATOR_CHANNEL, columns=["Actuator"])
