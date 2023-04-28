@@ -6,9 +6,23 @@ import pandas as pd
 from pathlib import Path
 import seaborn as sb
 from data_processing.preprocessing import get_first_index_above_threshold, compress_single_touch, compress_chirp, manual_cut_signal
+import data_processing.preprocessing as pp
 #sb.set_theme(style="darkgrid")
 #sb.set(font_scale=12/10)
 from data_viz_files.visualise_data import figure_size_setup
+
+def get_estimated_gamma_correction(nu):
+    nu_true = np.array([0.2, 0.3, 0.4, 0.5])
+    gamma_true = np.array([0.689, 0.841, 0.919, 0.955])
+
+    # Interpolate to estimate gamma for nu = 0.45
+    
+    gamma_interp = np.interp(nu, nu_true, gamma_true)
+
+    # Print the estimated value of gamma at nu = 0.45
+    print(f"Estimated value of gamma at nu = {nu}: {gamma_interp}")
+    return gamma_interp
+
 
 def phase_difference_sub(sig1, sig2):
     """
@@ -32,16 +46,39 @@ def phase_difference_sub(sig1, sig2):
     phase_diff = sig1_fft - sig2_fft
     return phase_diff
 
-def phase_difference_div(sig1, sig2, n_pi=0, pos_only=False):
+def phase_difference_div_improved(sig1, sig2, fs, n_pi=0, improved_fft=True, pos_only=False, min_freq=0, max_freq=30000):
+
+    S1f, freq, _ = pp.improved_fft(sig1, fs=fs, interpolation_factor=8, methods=['zero_padding', 'windowing', 'interpolation'])
+    S2f, freq, _  = pp.improved_fft(sig2, fs=fs, interpolation_factor=8, methods=['zero_padding', 'windowing', 'interpolation'])
+    
+    if pos_only:
+        #freq = np.fft.fftfreq(len(sig1), 1/fs)
+        slices = (freq > min_freq) & (freq < max_freq)
+        S1f = S1f[slices]
+        S2f = S2f[slices]
+        freq = freq[slices]
+        plt.plot(freq, np.abs(S1f), label='S1f')
+        plt.plot(freq, np.abs(S2f), label='S2f')
+        plt.xlabel(xlabel='Frequency (Hz)')
+        plt.ylabel(ylabel='Amplitude')
+        plt.legend()
+        plt.show()
+
+    phase = np.unwrap(np.angle(S2f/S1f)) +n_pi*np.pi
+    return phase, freq
+
+def phase_difference_div(sig1, sig2,fs=501000, n_pi=0, pos_only=False, freq_min=0, freq_max=30000):
+   
     S1f = np.fft.fft(sig1)
     S2f = np.fft.fft(sig2)
     if pos_only:
-        freq = np.fft.fftfreq(len(sig1))
-        S1f = S1f[freq > 0]
-        S2f = S2f[freq > 0]
-        freq = freq[freq > 0]
-        plt.plot(freq, S1f, label='S1f')
-        plt.plot(freq, S2f, label='S2f')
+        freq = np.fft.fftfreq(len(sig1), 1/fs)
+        slices = (freq > freq_min) & (freq < freq_max) 
+        S1f = S1f[slices]
+        S2f = S2f[slices]
+        freq = freq[slices]
+        plt.plot(freq, np.abs(S1f), label='S1f')
+        plt.plot(freq, np.abs(S2f), label='S2f')
         plt.legend()
         plt.show()
 
@@ -265,17 +302,39 @@ def phase_plotting_chirp(
                                     figsize=figsize)
     return phase, freq
 
+def theoretical_group_phase_vel(freqs, material='teflon', plot=False, kind='cubic'):
+    omega  = 2*np.pi*freqs
+    phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear, material = theoretical_velocities(freqs, material=material)
+
+    #univ_s = interpolate.InterpolatedUnivariateSpline(freqs, phase_velocities_flexural)
+    #vp_prime = univ_s.derivative()     
+    #vg = np.square(phase_velocities_flexural) * (1/(freqs - vp_prime(freqs)*freqs))
+    #interp_vg = interpolate.interp1d(freqs, vg, kind=kind)
+
+
+    d_v_ph = np.gradient(corrected_phase_velocities, omega)
+    v_g_numpy = corrected_phase_velocities / (1 - (d_v_ph * omega/corrected_phase_velocities))
+    if plot:
+        plt.plot(freqs, v_g_numpy, label='Group velocity')
+        #plt.plot(freqs, interp_vg, label='Interpolated')
+        plt.plot(freqs, corrected_phase_velocities, label='Phase velocity' )
+        plt.xlabel('Frequency [Hz]')
+        plt.ylabel('velocity [m/s]')
+        plt.legend()
+        plt.show()
+    return v_g_numpy, corrected_phase_velocities
+
 def group_velocity_theoretical(freqs, material='teflon', plot=False, kind='cubic'):
 
     
     omega  = 2*np.pi*freqs
-    wavenumbers = 2*np.pi*freqs/omega
     phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear, material = theoretical_velocities(freqs, material=material)
 
     univ_s = interpolate.InterpolatedUnivariateSpline(freqs, phase_velocities_flexural)
     vp_prime = univ_s.derivative()     
     vg = np.square(phase_velocities_flexural) * (1/(freqs - vp_prime(freqs)*freqs))
     interp_vg = interpolate.interp1d(freqs, vg, kind=kind)
+
 
     d_v_ph = np.gradient(corrected_phase_velocities, omega)
     v_g_numpy = corrected_phase_velocities / (1 - (d_v_ph * omega/corrected_phase_velocities))
@@ -330,16 +389,33 @@ def theoretical_velocities(freq, material='teflon'):
         youngs_modulus = 0.475e9
         plate_thickness = 0.01
         density = 2170
+        correction_factor = get_estimated_gamma_correction(poisson_ratio)
     elif material == 'HDPE':
         poisson_ratio = 0.361337
         youngs_modulus = 3.49897e9
         plate_thickness = 0.02
         density = 940
+        correction_factor = get_estimated_gamma_correction(poisson_ratio)
     elif material == 'LDPE':
         poisson_ratio = 0.348275
         youngs_modulus = 3.82535e9
         plate_thickness = 0.02
         density = 910
+        correction_factor = get_estimated_gamma_correction(poisson_ratio)
+        print('LDPE')
+    elif material == 'LDPE_tonni7mm':
+        density = 920 
+        poisson_ratio = 0.45
+        youngs_modulus = 1e9
+        plate_thickness = 0.007
+        correction_factor = get_estimated_gamma_correction(poisson_ratio)
+    elif material == 'LDPE_tonni20mm':
+        density = 920 
+        poisson_ratio = 0.45
+        youngs_modulus = 1e9
+        plate_thickness = 0.02
+        correction_factor = get_estimated_gamma_correction(poisson_ratio)
+
     # plate_thickness = 0.02  # m
     # youngs_modulus = 3.8 * 10 ** 9  # Pa
     # density = (650 + 800) / 2  # kg/m^3
@@ -367,7 +443,7 @@ def theoretical_velocities(freq, material='teflon'):
     poisson_ratio = 0.3: correction_factor = 0.841
     (according to Vigran's 'Building acoustics').
     """
-    correction_factor = 0.689
+    #correction_factor = 0.689
     c_G = phase_velocity_shear  # mysterious factor that the source doesnt explain
     corrected_phase_velocities = (1 /
                                   ((1 / (phase_velocities_flexural ** 3)) +
@@ -395,8 +471,9 @@ def plot_velocities(phase, freq, distance, savefig=False, filename=None, file_fo
     phase_vel = phase_velocity(phase, freq, distance)
     phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear, material = theoretical_velocities(freq,material)
     vg_theoretical = group_velocity_theoretical(freq, material=material)
-
     vg = group_velocity_phase(phase_vel, freq, distance)
+    wavenumbers_measured = 2*np.pi*freq/phase_vel
+    wavenumbers_theoretical = 2*np.pi*freq/corrected_phase_velocities
     freq = freq/1000
     fig, axs = figure_size_setup()
     #axs.plot(freq, phase_vel, label='Measured velocity')
@@ -411,6 +488,19 @@ def plot_velocities(phase, freq, distance, savefig=False, filename=None, file_fo
     if savefig:
         fig.savefig(filename, format=file_format, dpi=300)
     plt.show()
+    fig, axs = figure_size_setup()
+    #axs.plot(freq, phase_vel, label='Measured velocity')
+    axs.plot(freq, wavenumbers_measured, label='Simulated wavenumber', linestyle='--')
+    axs.plot(freq, wavenumbers_theoretical, label='theoretical wavenumber', linestyle='--')
+    axs.set_xlabel('Frequency [kHz]')
+    axs.set_ylabel('wavenumber')
+    axs.set_title(f'Wavenumbers for {material} plate')
+    axs.legend()
+    plt.show()
+    if savefig:
+        filename = filename[:-4] + '_wavenumber' + filename[-4:]
+        fig.savefig(filename, format=file_format, dpi=300)
+    
 
 
 def max_peak_velocity(df, distance=0.1, sampling_rate=150000, material='teflon'):

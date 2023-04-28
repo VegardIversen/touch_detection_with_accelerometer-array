@@ -63,6 +63,56 @@ def cut_out_signal(df, rate, threshold):
     signal_focusing = df.loc[mask_arr]
     return signal_focusing #, mask_arr
 
+def improved_fft(signal, fs=1, methods=['windowing','zero_padding', 'interpolation'], window='hamming', zero_padding=0, interpolation_factor=1):
+    """
+    Improve the FFT of a signal using different methods.
+
+    Args:
+        signal (array-like): Input signal to be transformed.
+        fs (float, optional): Sampling rate of the input signal. Defaults to 1.
+        methods (tuple, optional): Tuple of method names to be used for improving the FFT.
+                                   Choices: 'windowing', 'zero_padding', 'interpolation'
+                                   Defaults to ('windowing',).
+        window (str, optional): Window function to be applied if 'windowing' method is used.
+                                Choices: 'hamming', 'hann', 'blackman', 'bartlett', 'flattop'
+                                Defaults to 'hamming'.
+        zero_padding (int, optional): Number of zero padding points to be added if 'zero_padding' method is used.
+                                      Defaults to 0.
+        interpolation_factor (int, optional): Factor by which to interpolate the signal if 'interpolation' method is used.
+                                             Defaults to 1.
+
+    Returns:
+        tuple: A tuple containing the improved FFT result as a complex-valued array, the frequency axis, and the signal used in the FFT.
+    """
+
+    # Apply windowing
+    if 'windowing' in methods:
+        window_func = getattr(np, window)
+        signal = signal * window_func(len(signal))
+
+    # Zero-padding
+    if 'zero_padding' in methods:
+        if zero_padding == 0:
+            zero_padding = len(signal)
+        signal = np.pad(signal, (0, zero_padding), mode='constant')
+
+    # Interpolation
+    if 'interpolation' in methods:
+        signal = np.interp(np.arange(0, len(signal), 1/interpolation_factor), np.arange(0, len(signal)), signal)
+    else:
+        interpolation_factor = 1
+
+    # Perform FFT
+    fft_result = np.fft.fft(signal)
+
+    # Compute frequency axis
+    freq_axis = np.fft.fftfreq(len(fft_result), d=1/fs)*interpolation_factor
+
+    
+        
+
+    return fft_result, freq_axis, signal
+
 def shift_signal(signal, index):
     return np.roll(signal, -index)
 

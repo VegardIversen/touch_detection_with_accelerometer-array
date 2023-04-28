@@ -150,27 +150,365 @@ def simulated_data_vel():
     plt.tight_layout()
     plt.show()
 
+def un_reassigned_spectrogram():
+    import libtfr
+    from librosa import display
+    import librosa
+    position = 10
+    # Generate sample data
+    wave_data, x_pos, y_pos, z_pos, time_axis = get_comsol_data()
+    sr = 501000
+    # Compute the Un-reassigned spectrogram
+    x = wave_data[position]
+    # Compute the Un-reassigned spectrogram
+    nfft = 4096
+    Np = nfft
+    shift = nfft/16
+    K = 6
+    tm = 6.0
+    flock = 0.01
+    tlock = 5
+    S = np.abs(libtfr.tfr_spec(s=x, N=nfft, step=shift, Np=Np, K=K, tm=tm, flock=flock, tlock=tlock))
+    print(np.shape(S), np.max(S), np.min(S))
+    S = librosa.amplitude_to_db(S, ref=np.max, top_db =100)
+    print(np.shape(S), np.max(S), np.min(S))
+    fig, ax = plt.subplots(figsize=(20,5))
+    display.specshow(D, y_axis='log', cmap='viridis')
+
+def wave_number_graph(number=1):
+    # Given data points
+    # Given data points
+    
+    fs = 501000
+    data, x_pos, y_pos, z_pos, time_axis = get_comsol_data(number)
+    phase = wp.phase_difference_div(data[10], data[20], fs, pos_only=True)
+    freq = np.fft.fftfreq(data[0].size, 1/fs)
+    freq = freq[freq>0]
+    fig, ax = plt.subplots()
+    ax.plot(freq, phase)
+    ax.set_xlabel('Frekvens (Hz)')
+    ax.set_ylabel('Faseforskyvning (rad)')
+    ax.set_title('Faseforskyvning mellom punkt 10 og 20')
+    plt.show()
+    distance = x_pos[20]-x_pos[10]
+    #phase_vel = wp.phase_velocity(phase, freq, distance)
+    wp.plot_velocities(phase, freq, distance, material='LDPE_tonni7mm')
+
+
+def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.001):
+    """
+    Performs dispersion compensation on the input signal.
+
+    Args:
+        signal (ndarray): The input time-domain signal.
+        postion (int): The postion we want to use.
+        dx (float): Distance step of the final distance-trace.
+        mode (float): Desired mode of the guided wave.
+        vmax (float): Maximum group velocity of the guided wave.
+
+    Returns:
+        ndarray: The dispersion compensated distance-trace.
+    """
+    wave_data, x_pos, y_pos, z_pos, time_axis = get_comsol_data(file_n)
+    signal = wave_data[postion]
+
+
+    m = len(signal)
+    n_fft = 2 ** int(np.ceil(np.log2(8 * m)))
+    print(f'length of signal before padding: {m}, length of signal after padding {n_fft}')
+    signal_padded = np.pad(signal, (0, n_fft - m), mode='constant')
+    desired_sampling_rate = 40000
+    downsample_factor = int(round(m / (fs / desired_sampling_rate)))
+    
+    G_w = np.fft.fft(signal_padded)
+    
+    dt = 1/fs
+    freq_vel = np.fft.fftfreq(G_w.size, dt)
+    freq_vel = freq_vel[freq_vel>0]
+    v_gr, v_ph = wp.theoretical_group_phase_vel(freq_vel, material='LDPE_tonni20mm', plot=True)
+    k = (2*np.pi*freq_vel)/v_ph
+    plt.plot(freq_vel, k)
+    plt.show()
+    f_nyq = freq_vel[-1]/2
+    # Perform FFT on the padded signal
+
+    print(len(k))
+    
+    k_nyq = 1/(2*dt)
+    # Calculate wavenumber step and number of points in the wavenumber domain
+    print(f'Checking if n*delta_x is larger than m*delta_t*v_max. m*delta_x is {n_fft*dx}, m*delta_t*v_max is {m*dt*np.max(v_gr)}')
+    #k_nyq = #k[round(1/(2*dt))]
+    print(f'Checking if Delta x is less or equal to 1/(2k_nyq). Delta x is {dx}, 1/(2k_nyq) is {1/(2*k[-1])}')
+    dk = 1 / (n_fft * dx)
+
+    print(f'n should be larger than 2 * k_nyq / dk, n is {n_fft}, 2 * k_nyq / dk is {2 * k_nyq / dk}')
+    #print(f'this number of points in the wavenumber domain is {n}')
+    exit()
+    # Calculate the desired wavenumber points equally spaced in k
+    k = np.arange(0, m) * dk
+
+    # Interpolate G(w) to find G(k)
+    G_k = np.interp(k, np.arange(0, n_fft) * dk, G_w)
+
+    # Calculate the group velocity of the guided wave mode at the wavenumber points
+    vgr_k = mode * vmax
+
+    # Compute H(k) = G(k) * vgr(k)
+    H_k = G_k * vgr_k
+
+    # Apply inverse FFT to H(k) to obtain the dispersion compensated distance-trace
+    h_x = ifft(H_k)
+
+    # Remove zero-padding from the compensated signal
+    h_x = h_x[:n]
+
+    return h_x.real
+
+def read_DC_files(file_n=1):
+    """
+    Reads the dispersion compensated files.
+
+    Args:
+        file_n (int): The file number.
+
+    Returns:
+        ndarray: The dispersion compensated distance-trace.
+    """
+    path_A = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\LDPE20_A_Lamb.xlsx' 
+    path_S = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\LDPE20_S_Lamb.xlsx'
+    dc_A0 = pd.read_excel(path_A)
+    dc_S0 = pd.read_excel(path_S)
+    return dc_A0, dc_S0
+            
+def get_velocity_at_freq(freq, meter_per_second=True):
+    ''' 
+    This returns the group and phase velocity of the A0 and S0 mode at a given frequency.
+    The velocities are in m/ms. 
+
+    '''
+    A0, S0 = read_DC_files()
+    idx = (A0['A0 f (kHz)'] - freq).abs().idxmin()
+    group_velocity_A0 = A0.loc[idx, 'A0 Energy velocity (m/ms)']
+    phase_velocity_A0 = A0.loc[idx, 'A0 Phase velocity (m/ms)']
+    group_velocity_S0 = S0.loc[idx, 'S0 Energy velocity (m/ms)']
+    phase_velocity_S0 = S0.loc[idx, 'S0 Phase velocity (m/ms)']
+    if meter_per_second:
+        group_velocity_A0 = group_velocity_A0 * 1000
+        phase_velocity_A0 = phase_velocity_A0 * 1000
+        group_velocity_S0 = group_velocity_S0 * 1000
+        phase_velocity_S0 = phase_velocity_S0 * 1000
+    velocities = {'A0': {'group_velocity': group_velocity_A0, 'phase_velocity': phase_velocity_A0},
+                  'S0': {'group_velocity': group_velocity_S0, 'phase_velocity': phase_velocity_S0}}
+    print(velocities)
+    return velocities
+
+def velocites_modes():
+    plate_width = 0.35  # meters
+    plate_height = 0.25  # meters
+    plate_thickness = 0.007  # meters
+    samplerate = 501000  # Hz
+    num_samples = 501
+    delta_i = plate_height / (num_samples - 1)
+    freq = 30000  # Hz
+
+    # Generate example signal data
+    wave_top, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(number=9)
+    wave_bottom, x_pos_bottom, y_pos_bottom, z_pos_bottom, time_axis_bottom = get_comsol_data(number=10)
+    wavelength  = get_velocity_at_freq(freq=freq)['A0']['phase_velocity']/freq
+    print(wavelength)   
+    distances = np.sqrt((x_pos_bottom[19] - x_pos_bottom[10])**2 + (y_pos_bottom[19] - y_pos_bottom[10])**2)
+    print(distances)
+    S0 = (wave_top - wave_bottom) / 2
+    A0 = (wave_top + wave_bottom) / 2
+    plt.plot(S0[19], label='S0_19')
+    plt.plot(S0[10], label='S0_10')
+    plt.legend()
+    plt.show()
+    plt.plot(A0[19], label='A0_19')
+    plt.plot(A0[10], label='A0_10')
+    plt.legend()
+    plt.show()
+    S0_cut = cut_out_signal(S0, 501000, 0.1)
+    A0_cut = cut_out_signal(A0, 501000, 0.1)
+    plt.plot(S0_cut[19], label='S0_19')
+    plt.plot(S0_cut[10], label='S0_10')
+    plt.legend()
+    plt.show()
+    plt.plot(A0_cut[19], label='A0_19')
+    plt.plot(A0_cut[10], label='A0_10')
+    plt.legend()
+    plt.show()
+
+
+    
+    
+
+
+def wave_number_to_omega():
+    plate_width = 0.35  # meters
+    plate_height = 0.25  # meters
+    plate_thickness = 0.007  # meters
+    samplerate = 501000  # Hz
+    num_samples = 501
+    delta_i = plate_height / (num_samples - 1)
+
+    # Generate example signal data
+    wave_top, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(number=9)
+    wave_bottom, x_pos_bottom, y_pos_bottom, z_pos_bottom, time_axis_bottom = get_comsol_data(number=10)
+    
+    # Calculate S0 and A0 modes
+    S0 = (wave_top - wave_bottom) / 2
+    A0 = (wave_top + wave_bottom) / 2
+    
+    # Perform 2D FFT
+    S0_fft = np.fft.fft2(S0)
+    A0_fft = np.fft.fft2(A0)
+
+    # Obtain frequency and wavenumber information
+    sampling_period = 1 / samplerate
+    omega = (2 * np.pi / sampling_period) * np.arange(num_samples)
+    k_expected = omega / v_s  # Expected wavenumber using phase velocity (v_s) of S0 mode
+
+    # Calculate wavenumbers from 2D FFT
+    k_fft = np.fft.fftshift(np.fft.fftfreq(num_samples, delta_i)) * 2 * np.pi
+
+    # Plot Omega to K (Wavenumber) relationship for S0 mode
+    plt.plot(omega, k_expected, label='Expected')
+    plt.plot(omega, k_fft, label='FFT')
+    plt.xlabel('Angular Frequency (omega)')
+    plt.ylabel('Wavenumber (k)')
+    plt.title('Omega to K (Wavenumber) Plot - S0 Mode')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+def warping_map():
+    # Given data points
+    fs = 501000
+    min_freq = 0
+    max_freq = 30000
+    x_line_data = [2, 8]
+    positions = [12,30]
+    file_number = 2
+    data, x_pos, y_pos, z_pos, time_axis = get_comsol_data(file_number)
+    phase, freq = wp.phase_difference_div_improved(data[positions[0]], data[positions[1]], fs, pos_only=True, n_pi=-1)
+    #phase = wp.phase_difference_div(data[positions[0]], data[positions[1]], pos_only=True)
+    #freq = np.fft.fftfreq(data[positions[0]].size, 1/fs)
+    slices = (freq>min_freq) & (freq<max_freq)
+    #freq = freq[slices]
+    #phase = phase[slices]
+    plt.plot(freq, phase)
+    plt.xlabel('Frekvens (Hz)')
+    plt.ylabel('Faseforskyvning (rad)')
+    plt.show()
+    if file_number in x_line_data:
+        distance = y_pos[positions[1]]-y_pos[positions[0]]
+        print('x_line_data')
+        print(f'distance is {distance}')
+    else:
+        distance = x_pos[positions[1]]-x_pos[positions[0]]
+        print('y_line_data')
+        print(f'distance is {distance}')
+    phase_vel = wp.phase_velocity(phase, freq, distance, plot=True)
+    phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear, material = wp.theoretical_velocities(freq, material='LDPE_tonni7mm')
+    vg_theoretical = wp.group_velocity_theoretical(freq, material=material)
+    vg = wp.group_velocity_phase(phase_vel, freq, distance)
+    wavenumber_measured = 2 * np.pi * freq / phase_vel
+    wavenumber_theoretical = 2 * np.pi * freq / corrected_phase_velocities
+    # Define the normalization parameter
+    K_measured = 0.5 * (1 / (np.max(freq) * vg))
+    K_theoretical = 0.5 * (1 / (np.max(freq) * vg_theoretical))
+    w_inv_measured = freq / phase_vel
+    w_inv_theoretical = freq / corrected_phase_velocities
+    plt.plot(freq, phase_vel, label='Measured')
+    plt.plot(freq, corrected_phase_velocities, label='Theoretical')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Phase Velocity (m/s)')
+    plt.title('Phase Velocity (Unknown Wavenumbers)')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+    warping_map_measured = K_measured * w_inv_measured
+    warping_map_theoretical = K_theoretical * w_inv_theoretical
+    plt.plot(freq, warping_map_measured, label='Measured')
+    plt.plot(freq, warping_map_theoretical, label='Theoretical')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Warping Map')
+    plt.title('Warping Map (Unknown Wavenumbers)')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+def get_comsol_data(number=2):
+    if number == 1:
+        path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_7mm\Disp_on_plate_top_case3_15kHz_pulse.txt' #y=0.2 this not acceleration data
+        data_nodes = 200
+    elif number == 2:
+        path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_7mm\az_on_plate_top_case3_15kHz_pulse_line3.txt' #x=0.075, starting in the middle of the source
+        data_nodes = 50
+    elif number == 3:
+        path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_7mm\az_on_plate_top_case3_15kHz_pulse_line2.txt' #y=0.1
+        data_nodes = 50
+    elif number == 4:
+        path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_7mm\az_on_plate_top_case3_15kHz_pulse_line1.txt'#y=0.2
+        data_nodes = 50
+    elif number == 5:
+        path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\az_on_plate_bottom_LDPE20mm_15kHz_pulse_line1.txt'#y=0.2
+        data_nodes = 50
+    elif number == 6:
+        path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\az_on_plate_top_LDPE20mm_15kHz_pulse_line1.txt' #y=0.2
+        data_nodes = 50
+    elif number == 7:
+        path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\az_on_plate_top_LDPE20mm_15kHz_pulse_line2.txt' #y=0.1
+        data_nodes = 50
+    elif number == 8:
+        path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\az_on_plate_top_LDPE20mm_15kHz_pulse_line3.txt' #x=0.075
+        data_nodes = 50
+    elif number == 9:
+        path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\az_on_plate_top_LDPE20mm_15kHz_pulse_diagonal.txt' #diagonal
+        data_nodes = 100
+    elif number == 10:
+        path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\az_on_plate_bottom_LDPE20mm_15kHz_pulse_diagonal.txt' #diagonal
+        data_nodes = 100
+
+    with open(path, 'r') as f1:
+        i = 0
+        time_axis = np.linspace(0, 1000, num=501)
+        x_pos = np.zeros(data_nodes)
+        y_pos = np.zeros(data_nodes)
+        z_pos = np.zeros(data_nodes)
+        wave_data = np.zeros((data_nodes, 501))
+            
+        for idx, line in enumerate(f1):
+            tmp = line.split()
+            if tmp[0] != '%':
+
+                wave_data[i] = tmp[3:]
+                x_pos[i] = float(tmp[0])
+                y_pos[i] = float(tmp[1])
+                z_pos[i] = float(tmp[2])
+                i += 1
+    return wave_data, x_pos, y_pos, z_pos, time_axis
 def comsol_data200():
     path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_7mm\Disp_on_plate_top_case3_15kHz_pulse.txt'
-    f1 = open(path, 'r')
-    i = 0
-    time_axis = np.linspace(0, 1000, num=501)
-    x_pos = np.zeros(200)
-    y_pos = np.zeros(200)
-    z_pos = np.zeros(200)
-    wave_data = np.zeros((200, 501))
-    xcorr_scale = 0.345/200
-    for idx, line in enumerate(f1):
-        tmp = line.split()
-        if tmp[0] != '%':
+    with open(path, 'r') as f1:
+        i = 0
+        time_axis = np.linspace(0, 1000, num=501)
+        x_pos = np.zeros(200)
+        y_pos = np.zeros(200)
+        z_pos = np.zeros(200)
+        wave_data = np.zeros((200, 501))
+        xcorr_scale = 0.345/200
+        for idx, line in enumerate(f1):
+            tmp = line.split()
+            if tmp[0] != '%':
 
-            x_index = int(float(tmp[0]) / 0.00173)# convert x coordinate to index. comes from length of plate divided by number of points
-            wave_data[x_index] = tmp[3:]
-            x_pos[i] = float(tmp[0])
-            y_pos[i] = float(tmp[1])
-            z_pos[i] = float(tmp[2])
-            i += 1
-    
+                x_index = int(float(tmp[0]) / 0.00173)# convert x coordinate to index. comes from length of plate divided by number of points
+                wave_data[x_index] = tmp[3:]
+                x_pos[i] = float(tmp[0])
+                y_pos[i] = float(tmp[1])
+                z_pos[i] = float(tmp[2])
+                i += 1
+        
     # Plot the data
     plt.plot(wave_data[3])
     plt.show()
@@ -224,25 +562,25 @@ def comsol_data200():
 
 def comsol_data50():
     path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_7mm\az_on_plate_top_case3_15kHz_pulse_line1.txt'
-    f1 = open(path, 'r')
-    i = 0
-    time_axis = np.linspace(0, 1000, num=501)
-    x_pos = np.zeros(50)
-    y_pos = np.zeros(50)
-    z_pos = np.zeros(50)
-    wave_data = np.zeros((50, 501))
-    xcorr_scale = 0.345/50
-    print(f'xcorr scale is: {xcorr_scale}')
-    for idx, line in enumerate(f1):
-        tmp = line.split()
-        if tmp[0] != '%':
+    with open(path, 'r') as f1:
+        i = 0
+        time_axis = np.linspace(0, 1000, num=501)
+        x_pos = np.zeros(50)
+        y_pos = np.zeros(50)
+        z_pos = np.zeros(50)
+        wave_data = np.zeros((50, 501))
+        xcorr_scale = 0.345/50
+        print(f'xcorr scale is: {xcorr_scale}')
+        for idx, line in enumerate(f1):
+            tmp = line.split()
+            if tmp[0] != '%':
 
-            #x_index = int(float(tmp[0]) / 0.007)# convert x coordinate to index. Had to hardcode the values as the last value gives 50 as index and not 49
-            wave_data[i] = tmp[3:]
-            x_pos[i] = float(tmp[0])
-            y_pos[i] = float(tmp[1])
-            z_pos[i] = float(tmp[2])
-            i += 1
+                #x_index = int(float(tmp[0]) / 0.007)# convert x coordinate to index. Had to hardcode the values as the last value gives 50 as index and not 49
+                wave_data[i] = tmp[3:]
+                x_pos[i] = float(tmp[0])
+                y_pos[i] = float(tmp[1])
+                z_pos[i] = float(tmp[2])
+                i += 1
    
     # Plot the data
     plt.plot(wave_data[3])
@@ -283,24 +621,24 @@ def comsol_data50():
 
 def comsol_data200_phase_diff(idx1=1, idx2=10):
     path = r'C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_7mm\Disp_on_plate_top_case3_15kHz_pulse.txt'
-    f1 = open(path, 'r')
-    i = 0
-    time_axis = np.linspace(0, 1000, num=501)
-    x_pos = np.zeros(200)
-    y_pos = np.zeros(200)
-    z_pos = np.zeros(200)
-    wave_data = np.zeros((200, 501))
-    
-    for idx, line in enumerate(f1):
-        tmp = line.split()
-        if tmp[0] != '%':
+    with open(path, 'r') as f1:
+        i = 0
+        time_axis = np.linspace(0, 1000, num=501)
+        x_pos = np.zeros(200)
+        y_pos = np.zeros(200)
+        z_pos = np.zeros(200)
+        wave_data = np.zeros((200, 501))
+        
+        for idx, line in enumerate(f1):
+            tmp = line.split()
+            if tmp[0] != '%':
 
-            x_index = int(float(tmp[0]) / 0.00173)# convert x coordinate to index
-            wave_data[x_index] = tmp[3:]
-            x_pos[i] = float(tmp[0])
-            y_pos[i] = float(tmp[1])
-            z_pos[i] = float(tmp[2])
-            i += 1
+                x_index = int(float(tmp[0]) / 0.00173)# convert x coordinate to index
+                wave_data[x_index] = tmp[3:]
+                x_pos[i] = float(tmp[0])
+                y_pos[i] = float(tmp[1])
+                z_pos[i] = float(tmp[2])
+                i += 1
     phase = wp.phase_difference_div(wave_data[idx1], wave_data[idx2], pos_only=True)
     plt.plot(wave_data[idx1], label=f'x1={round(x_pos[idx1])}mm')
     plt.plot(wave_data[idx2], label=f'x2={round(x_pos[idx2])}mm')
@@ -347,6 +685,33 @@ def wave_type_plots():
     #plt.plot(time_axis, df_filt['channel 3'], label='channel 3')
     plt.legend()
     plt.show()
+
+def show_A0_and_S0_wave_comsol_y0_2(position):
+    top_data, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(6)
+    bot_data, x_pos_bot, y_pos_bot, z_pos_bot, time_axis_bot = get_comsol_data(5)
+    plt.plot(time_axis_top, top_data[position], label='top raw data')
+    plt.plot(time_axis_bot, bot_data[position], label='bottom raw data')
+    plt.title(f'Raw data at x={x_pos_top[position]}mm')
+    plt.legend()
+    plt.show()
+    S0 = (top_data[position] + bot_data[position])/2
+    A0 = (top_data[position] - bot_data[position])/2
+    plt.plot(time_axis_top, S0, label='S0')
+    plt.plot(time_axis_top, top_data[position], label='top raw data')
+    plt.title(label=f'S0 at x={x_pos_top[position]}mm')
+    plt.legend()
+    plt.show()
+    plt.plot(time_axis_top, A0, label='A0')
+    plt.plot(time_axis_top, top_data[position], label='top raw data')
+    plt.title(label=f'A0 at x={x_pos_top[position]}mm')
+    plt.legend()
+    plt.show()
+    plt.plot(time_axis_top, A0, label='A0')
+    plt.plot(time_axis_top, S0, label='S0')
+    plt.title(label=f'A0 and S0 at x={x_pos_top[position]}mm')
+    plt.legend()
+    plt.show()
+
 
 
 def show_S0_wave(normalize=False, plot=True):
