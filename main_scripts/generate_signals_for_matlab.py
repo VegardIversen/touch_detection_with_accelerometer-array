@@ -111,14 +111,18 @@ def plot_them_envelopes(envelopes):
 
 
 def make_a_nice_csv_file(FILE_NAME, analytic_signals):
-    analytic_signals.to_csv(
-        f"{FILE_NAME}_analytic_signals.csv",
-        index=False,
-        header=False,
-    )
-    # Remove all parenthesis from the file
-    with open(f"{FILE_NAME}_analytic_signals.csv", "r") as f:
+    # Make a full file name that is "FILE_NAME + today's date and time as HH-MM-SS"
+    TODAYS_DATE = pd.Timestamp.now().strftime("%Y_%m_%d")
+    TODAYS_TIME = pd.Timestamp.now().strftime("%H_%M_%S")
+    FILE_NAME = f"{FILE_NAME}_{TODAYS_DATE}_{TODAYS_TIME}_analytic"
+    # Save the analytic signals in a csv file
+    analytic_signals.to_csv(f"{FILE_NAME}.csv")
+
+    """Save the analytic signals in a csv file
+    without parenthesis around the complex numbers.
+    """
+    with open(f"{FILE_NAME}.csv", "r") as f:
         lines = f.readlines()
-    with open(f"{FILE_NAME}_analytic_signals.csv", "w") as f:
+    with open(f"{FILE_NAME}.csv", "w") as f:
         for line in lines:
             f.write(line.replace("(", "").replace(")", ""))
