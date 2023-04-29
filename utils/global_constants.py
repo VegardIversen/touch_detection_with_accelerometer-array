@@ -18,7 +18,8 @@ SENSOR_1 = 0
 SENSOR_2 = 1
 SENSOR_3 = 2
 
+x = 0
+y = 1
+
 """Saving figures"""
-FIGURES_SAVE_PATH = (
-    "/home/niklast/Documents/GitHub/Master-Thseis-NTNU/Figures/"
-)
+FIGURES_SAVE_PATH = "/home/niklast/Documents/GitHub/Master-Thseis-NTNU/Figures/"
