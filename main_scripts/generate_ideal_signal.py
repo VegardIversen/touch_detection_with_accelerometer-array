@@ -6,7 +6,6 @@ from utils.csv_to_df import make_dataframe_from_csv
 
 from utils.data_processing.detect_echoes import get_envelopes, get_travel_times
 from utils.data_processing.preprocessing import (
-    compress_chirps,
     crop_data,
     crop_to_signal,
     filter_signal,
@@ -105,7 +104,7 @@ def generate_ideal_signal(
     attenuation_dBpm: float,
     signal_length_s: float,
     critical_frequency: float = 0,
-    signal_model: str = "touch",
+    signal_model: str = "line",
     snr_dB: float = 0,
 ):
     """Generate an "ideal" signal based on expected arrival times for a setup."""
@@ -170,7 +169,7 @@ def add_noise(
             )
         return ideal_signals
 
-    ideal_signal_power = np.sum(ideal_signals ** 2) / len(ideal_signals)
+    ideal_signal_power = np.sum(ideal_signals**2) / len(ideal_signals)
     noise_power = ideal_signal_power / (10 ** (snr_dB / 10))
     noise = np.random.normal(0, np.sqrt(noise_power), len(ideal_signals))
     noisy_signal = ideal_signals + noise
