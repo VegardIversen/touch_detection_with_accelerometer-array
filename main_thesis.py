@@ -21,6 +21,7 @@ def main():
     #r.dispersion_compensation_Wilcox()
     #r.wave_number_to_omega()
     #r.velocites_modes()
-    r.velocites_modes()
+    #r.velocites_modes()
+    r.get_wavelength_DC()
 if __name__ == '__main__':
     main()

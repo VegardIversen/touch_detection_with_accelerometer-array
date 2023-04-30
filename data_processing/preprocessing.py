@@ -63,6 +63,19 @@ def cut_out_signal(df, rate, threshold):
     signal_focusing = df.loc[mask_arr]
     return signal_focusing #, mask_arr
 
+def cut_out_signal_numpy(arr, rate, threshold):
+    """
+    Inputs audio data in the form of a numpy array. 
+    Takes in the sample rate and threshold (amplitude). 
+    Data below the threshold will be filtered out. 
+    This is useful for filtering out environmental noise from recordings. 
+    """
+    signal = np.abs(arr) # apply absolute value to the signal at all points.
+    signal_mean = np.convolve(signal, np.ones(int(rate/50))/int(rate/50), mode='same') # Take the rolling average of the series within our specified window.
+    mask_arr = signal_mean > threshold # create a boolean mask array based on the threshold value.
+    signal_focusing = arr[mask_arr]
+    return signal_focusing #, mask_arr
+
 def improved_fft(signal, fs=1, methods=['windowing','zero_padding', 'interpolation'], window='hamming', zero_padding=0, interpolation_factor=1):
     """
     Improve the FFT of a signal using different methods.

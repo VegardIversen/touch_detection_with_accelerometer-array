@@ -102,7 +102,7 @@ def phase_difference_gpt(sig1, sig2):
 
     return phi
 
-def phase_difference(sig1, sig2, method='sub', n_pi=0):
+def phase_difference(sig1, sig2, method='div', n_pi=0):
     if method == 'sub':
         return phase_difference_sub(sig1, sig2)
     elif method == 'div':
@@ -122,7 +122,8 @@ def phase_difference_plot(
                         save_fig=False,
                         file_name='phase_difference.png',
                         file_format='png',
-                        figsize=0.75):
+                        figsize=0.75,
+                        title=None):
     phase_diff = phase_difference(sig1, sig2, method=method, n_pi=n_pi)
     
     freq = np.fft.fftfreq(len(sig1), 1/SAMPLE_RATE)
@@ -133,6 +134,8 @@ def phase_difference_plot(
         phase_diff = phase_diff[slices]
         freq = freq[slices]
     axs.plot(freq, phase_diff)
+    if title is not None:
+        axs.set_title(title)
     axs.set_xlabel('Frequency [Hz]')
     axs.set_ylabel('Phase difference [rad]')
     if save_fig:
@@ -371,11 +374,13 @@ def group_velocity_phase(vph, freqs, method='t', distance=0.1, material='teflon'
 
 
 
-def phase_velocity(phase, freq, distance, plot=False):
+def phase_velocity(phase, freq, distance, plot=False, title=None):
     phase_vel = 2*np.pi*freq*distance/np.abs(phase)
     if plot:
         fig3=plt.Figure(figsize=(16, 14))
         plt.plot(freq, phase_vel)
+        if title is not None:
+            plt.title(title)
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('Phase velocity [m/s]')
         plt.show()

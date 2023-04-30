@@ -22,6 +22,7 @@ import data_processing.sensor_testing as st
 from data_viz_files.visualise_data import inspect_touch, figure_size_setup, to_dB
 import data_processing.wave_properties as wp
 import data_processing.sensor_testing as st
+import data_processing.preprocessing as pp
 from matplotlib import style
 import data_viz_files.visualise_data as vd
 import os
@@ -279,6 +280,21 @@ def read_DC_files(file_n=1):
     dc_A0 = pd.read_excel(path_A)
     dc_S0 = pd.read_excel(path_S)
     return dc_A0, dc_S0
+
+def get_wavelength_DC(plot=True):
+    A0, S0 = read_DC_files()
+    wavelength_A0 = A0['A0 Wavelength (mm)']
+    wavelength_S0 = S0['S0 Wavelength (mm)']
+    freq = A0['A0 f (kHz)']
+    if plot:
+        plt.plot(freq, wavelength_A0, label='A0')
+        plt.plot(freq, wavelength_S0, label='S0')
+        plt.xlabel('Frequency [kHz]')
+        plt.ylabel('Wavelength [mm]')
+        plt.title('Wavelength of A0 and S0 mode')
+        plt.legend()
+        plt.show()
+    return wavelength_A0, wavelength_S0
             
 def get_velocity_at_freq(freq, meter_per_second=True):
     ''' 
@@ -328,16 +344,43 @@ def velocites_modes():
     plt.plot(A0[10], label='A0_10')
     plt.legend()
     plt.show()
-    S0_cut = cut_out_signal(S0, 501000, 0.1)
-    A0_cut = cut_out_signal(A0, 501000, 0.1)
-    plt.plot(S0_cut[19], label='S0_19')
-    plt.plot(S0_cut[10], label='S0_10')
+    A0_19, A0_10 = A0[19], A0[10]
+    S0_19, S0_10 = S0[19], S0[10]
+    A0_10_cutted = A0_10[25:142]
+    A0_19_cutted = A0_19[36:153]
+    S0_10_cutted = S0_10[28:137]
+    S0_19_cutted = S0_19[34:153]
+    window_A0_10 = np.hamming(len(A0_10_cutted))
+    window_A0_19 = np.hamming(len(A0_19_cutted))
+    window_S0_10 = np.hamming(len(S0_10_cutted))
+    window_S0_19 = np.hamming(len(S0_19_cutted))
+    A0_10_cutted = A0_10_cutted * window_A0_10
+    A0_19_cutted = A0_19_cutted * window_A0_19
+    S0_10_cutted = S0_10_cutted * window_S0_10
+    S0_19_cutted = S0_19_cutted * window_S0_19
+
+    S0_cut_10 = np.zeros(len(S0_10))
+    S0_cut_19 = np.zeros(len(S0_19))
+    A0_cut_10 = np.zeros(len(A0_10))
+    A0_cut_19 = np.zeros(len(A0_19))
+    S0_cut_10[28:137] = S0_10_cutted
+    S0_cut_19[34:153] = S0_19_cutted
+    A0_cut_10[25:142] = A0_10_cutted
+    A0_cut_19[36:153] = A0_19_cutted
+    #plot the cut
+    plt.plot(S0_cut_19, label='S0_19')
+    plt.plot(S0_cut_10, label='S0_10')
     plt.legend()
     plt.show()
-    plt.plot(A0_cut[19], label='A0_19')
-    plt.plot(A0_cut[10], label='A0_10')
+    plt.plot(A0_cut_19, label='A0_19')
+    plt.plot(A0_cut_10, label='A0_10')
     plt.legend()
     plt.show()
+    phase_AO, freq_AO = wp.phase_difference_plot(A0_cut_19, A0_cut_10, SAMPLE_RATE=501000, BANDWIDTH=[0,30000], title=f'A0 Phase difference, distance: {distances} ')
+    phase_SO, freq_SO = wp.phase_difference_plot(S0_cut_19, S0_cut_10, SAMPLE_RATE=501000, BANDWIDTH=[0,30000], title=f'S0 Phase difference, distance: {distances} ')
+    phase_velocity_A0 = wp.phase_velocity(phase_AO, freq_AO, distance=distances, plot=True, title=f'A0 Phase velocity, distance: {distances} ')
+    phase_velocity_S0 = wp.phase_velocity(phase_SO, freq_SO, distance=distances, plot=True, title=f'S0 Phase velocity, distance: {distances} ')
+    
 
 
     
