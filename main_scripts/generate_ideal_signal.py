@@ -103,8 +103,9 @@ def generate_ideal_signal(
     propagation_speed_mps: float,
     attenuation_dBpm: float,
     signal_length_s: float,
-    critical_frequency: float = 0,
     signal_model: str = "line",
+    critical_frequency: float = 0,
+    t_var: float = 1e-9,
     snr_dB: float = 0,
 ):
     """Generate an "ideal" signal based on expected arrival times for a setup."""
@@ -118,7 +119,6 @@ def generate_ideal_signal(
         touch_signal[int(signal_length_s * SAMPLE_RATE / 2)] = 1
     elif signal_model == "gaussian":
         # Generate a gaussian modulated pulse with frequency critical_frequency and duration 10 periods
-        t_var = 1e-9
         t = np.linspace(
             -signal_length_s / 2,
             signal_length_s / 2,

@@ -6,18 +6,19 @@ from utils.data_processing.detect_echoes import get_analytic_signal, get_envelop
 from utils.data_processing.preprocessing import crop_data, crop_to_signal, filter_signal
 from utils.data_processing.processing import interpolate_signal
 from utils.data_visualization.visualize_data import compare_signals
-from utils.global_constants import ORIGINAL_SAMPLE_RATE
+from utils.global_constants import ORIGINAL_SAMPLE_RATE, SAMPLE_RATE
 
 
 def generate_signals_for_matlab(
     measurements: pd.DataFrame = None,
     center_frequency: float = 25000,
+    t_var: float = 0.0001,
 ):
     if measurements is None:
         FILE_NAME, measurements = import_the_data()
         measurements = do_measurement_preprocessing(measurements)
     else:
-        FILE_NAME = f"generated_signal_{center_frequency // 1000}kHz"
+        FILE_NAME = f"generated_signal_{center_frequency // 1000}kHz_{t_var}s_{SAMPLE_RATE}"
         measurements = crop_data(
             measurements,
             time_start=0,
@@ -104,11 +105,13 @@ def plot_them_envelopes(
 def make_a_nice_csv_file(
     FILE_NAME,
     analytic_signals,
+    add_timestamp=False,
 ):
+    if add_timestamp:
     # Make a full file name that is "FILE_NAME + today's date and time as HH-MM-SS"
-    TODAYS_DATE = pd.Timestamp.now().strftime("%Y_%m_%d")
-    TODAYS_TIME = pd.Timestamp.now().strftime("%H_%M_%S")
-    FILE_NAME = f"{FILE_NAME}_{TODAYS_DATE}_{TODAYS_TIME}_analytic"
+        TODAYS_DATE = pd.Timestamp.now().strftime("%Y_%m_%d")
+        TODAYS_TIME = pd.Timestamp.now().strftime("%H_%M_%S")
+        FILE_NAME = f"{FILE_NAME}_{TODAYS_DATE}_{TODAYS_TIME}_analytic"
     # Save the analytic signals in a csv file
     analytic_signals.to_csv(
         f"{FILE_NAME}.csv",
