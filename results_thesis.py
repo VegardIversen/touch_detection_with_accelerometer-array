@@ -210,59 +210,95 @@ def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.001):
     Returns:
         ndarray: The dispersion compensated distance-trace.
     """
-    wave_data, x_pos, y_pos, z_pos, time_axis = get_comsol_data(file_n)
-    signal = wave_data[postion]
-
+    upper_freq = 40000
+    lower_freq = 0
+    wave_data_top, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(9)
+    wave_data_bottom, x_pos_bottom, y_pos_bottom, z_pos_bottom, time_axis_bottom = get_comsol_data(10)
+    signal = (wave_data_top[postion]+wave_data_bottom[postion])/2 #A0 mode
+    plt.plot(signal)
+    plt.show()
+    n_times = 8 #number of points that is an integral power of two and at least eight times as many as in the original signal.
 
     m = len(signal)
-    n_fft = 2 ** int(np.ceil(np.log2(8 * m)))
+    n_fft = 2 ** int(np.ceil(np.log2(n_times * m)))
     print(f'length of signal before padding: {m}, length of signal after padding {n_fft}')
     signal_padded = np.pad(signal, (0, n_fft - m), mode='constant')
-    desired_sampling_rate = 40000
-    downsample_factor = int(round(m / (fs / desired_sampling_rate)))
+    plt.plot(signal_padded)
+    plt.show()
+    #desired_sampling_rate = 40000
+    #downsample_factor = int(round(m / (fs / desired_sampling_rate)))
     
     G_w = np.fft.fft(signal_padded)
-    
+    print(f'shape of G_w: {G_w.shape}')
     dt = 1/fs
     freq_vel = np.fft.fftfreq(G_w.size, dt)
-    freq_vel = freq_vel[freq_vel>0]
-    v_gr, v_ph = wp.theoretical_group_phase_vel(freq_vel, material='LDPE_tonni20mm', plot=True)
-    k = (2*np.pi*freq_vel)/v_ph
-    plt.plot(freq_vel, k)
-    plt.show()
+    freq_range = (freq_vel>lower_freq) & (freq_vel<upper_freq)
+    freq_vel = freq_vel[freq_range]
     f_nyq = freq_vel[-1]/2
+    G_w = G_w[freq_range]
+    print(f'freq_vel: {freq_vel.shape}')
+    dt = 1/upper_freq
+    v_gr, v_ph = wp.theoretical_group_phase_vel(freq_vel, material='LDPE_tonni20mm', plot=True)
+    print(f'v_gr: {v_gr.shape}')
+    print(f'v_ph: {v_ph.shape}')
+    k = (2*np.pi*freq_vel)/v_ph
+    print(f'k: {k.shape}')
+    v_nyq = get_velocity_at_freq(f_nyq)['A0']['phase_velocity']
+    #print(f'k_max = {k[-1]}') 
+    v_max = get_velocity_at_freq(upper_freq)['A0']['phase_velocity']
+    k_nyq = (2*np.pi*f_nyq)/v_nyq
+    k_max = k[-1] #doesnt matter if i use this or this 2*np.pi*upper_freq/v_max since both are equal or 2 times k_nyq
+    print(f'k_nyq: {k_nyq}')
+    w = 2*np.pi*freq_vel
+    print(f'shape of w: {w.shape}')
+    n = len(k)
+    print(f'length of k: {n}')
+    #print(f'altnerative length of k: {int(np.ceil(2 * f_nyq / (1 / (dx * m))))}')
+    plt.plot(k, freq_vel)
+    plt.title('Wavenumber vs frequency')
+    plt.show()
     # Perform FFT on the padded signal
 
-    print(len(k))
+    #print(len(k))
     
-    k_nyq = 1/(2*dt)
     # Calculate wavenumber step and number of points in the wavenumber domain
-    print(f'Checking if n*delta_x is larger than m*delta_t*v_max. m*delta_x is {n_fft*dx}, m*delta_t*v_max is {m*dt*np.max(v_gr)}')
+    #print(f'Checking if n*delta_x is larger than m*delta_t*v_max. n*delta_x is {n_fft*dx}, m*delta_t*v_max is {m*dt*np.max(v_gr)}')
     #k_nyq = #k[round(1/(2*dt))]
-    print(f'Checking if Delta x is less or equal to 1/(2k_nyq). Delta x is {dx}, 1/(2k_nyq) is {1/(2*k[-1])}')
+    #print(f'Checking if Delta x is less or equal to 1/(2k_nyq). Delta x is {dx}, 1/(2k_nyq) is {1/(2*k_nyq)}')
     dk = 1 / (n_fft * dx)
 
-    print(f'n should be larger than 2 * k_nyq / dk, n is {n_fft}, 2 * k_nyq / dk is {2 * k_nyq / dk}')
+    #print(f'n should be larger than 2 * k_nyq / dk, n is {n_fft}, 2 * k_nyq / dk is {2 * k_nyq / dk}')
     #print(f'this number of points in the wavenumber domain is {n}')
-    exit()
-    # Calculate the desired wavenumber points equally spaced in k
-    k = np.arange(0, m) * dk
-
+    
+    # Interpolate the FFT to equally spaced k values
+    k_new = np.arange(0, k_max + dk, dk)
+    print(f'shape of k new: {k.shape}')
     # Interpolate G(w) to find G(k)
-    G_k = np.interp(k, np.arange(0, n_fft) * dk, G_w)
-
+    G_interp = interpolate.interp1d(k, G_w, kind='linear', bounds_error=False, fill_value=0)(k_new)
+    print('G_interp created')
     # Calculate the group velocity of the guided wave mode at the wavenumber points
-    vgr_k = mode * vmax
+    v_gr_interp = interpolate.interp1d(k, v_gr, kind='linear', bounds_error=False, fill_value=0)(k_new)
+
+    print(f'shape of G_interp: {G_interp.shape}')
+    print(f'shape of v_gr_interp: {v_gr_interp.shape}')
+  
 
     # Compute H(k) = G(k) * vgr(k)
-    H_k = G_k * vgr_k
+    H_k = G_interp * v_gr_interp
 
     # Apply inverse FFT to H(k) to obtain the dispersion compensated distance-trace
-    h_x = ifft(H_k)
+    h_x = np.fft.ifft(H_k)
 
     # Remove zero-padding from the compensated signal
     h_x = h_x[:n]
-
+    #normalize h_x and signal
+    h_x = h_x/np.max(h_x)
+    signal = signal/np.max(signal)
+    
+    plt.plot(h_x, label='h_x')
+    plt.plot(signal, label='signal')
+    plt.legend()
+    plt.show()
     return h_x.real
 
 def read_DC_files(file_n=1):
@@ -315,7 +351,7 @@ def get_velocity_at_freq(freq, meter_per_second=True):
         phase_velocity_S0 = phase_velocity_S0 * 1000
     velocities = {'A0': {'group_velocity': group_velocity_A0, 'phase_velocity': phase_velocity_A0},
                   'S0': {'group_velocity': group_velocity_S0, 'phase_velocity': phase_velocity_S0}}
-    print(velocities)
+    #print(velocities)
     return velocities
 
 def velocites_modes():
@@ -424,6 +460,7 @@ def wave_number_to_omega():
     plt.legend()
     plt.grid(True)
     plt.show()
+    
 def warping_map():
     # Given data points
     fs = 501000
@@ -433,6 +470,7 @@ def warping_map():
     positions = [12,30]
     file_number = 2
     data, x_pos, y_pos, z_pos, time_axis = get_comsol_data(file_number)
+   
     phase, freq = wp.phase_difference_div_improved(data[positions[0]], data[positions[1]], fs, pos_only=True, n_pi=-1)
     #phase = wp.phase_difference_div(data[positions[0]], data[positions[1]], pos_only=True)
     #freq = np.fft.fftfreq(data[positions[0]].size, 1/fs)
@@ -472,10 +510,10 @@ def warping_map():
     plt.show()
     warping_map_measured = K_measured * w_inv_measured
     warping_map_theoretical = K_theoretical * w_inv_theoretical
-    plt.plot(freq, warping_map_measured, label='Measured')
-    plt.plot(freq, warping_map_theoretical, label='Theoretical')
-    plt.xlabel('Frequency (Hz)')
-    plt.ylabel('Warping Map')
+    plt.plot(warping_map_measured, freq, label='Measured')
+    plt.plot(warping_map_theoretical, freq, label='Theoretical')
+    plt.ylabel('Frequency (Hz)')
+    plt.xlabel('Warping Map')
     plt.title('Warping Map (Unknown Wavenumbers)')
     plt.grid(True)
     plt.legend()
