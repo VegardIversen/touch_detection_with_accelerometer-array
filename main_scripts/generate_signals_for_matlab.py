@@ -18,11 +18,11 @@ def generate_signals_for_matlab(
         FILE_NAME, measurements = import_the_data()
         measurements = do_measurement_preprocessing(measurements)
     else:
-        FILE_NAME = f"generated_signal_{center_frequency // 1000}kHz_{t_var}s_{SAMPLE_RATE}"
+        FILE_NAME = f"generated_signal_{center_frequency // 1000}kHz_{t_var}s_{SAMPLE_RATE // 1000}kHz"
         measurements = crop_data(
             measurements,
             time_start=0,
-            time_end=0.005,
+            time_end=0.000656,
         )
     measurements = drop_actuator_channel(measurements)
     plot_them_time_signals(measurements)
@@ -108,7 +108,7 @@ def make_a_nice_csv_file(
     add_timestamp=False,
 ):
     if add_timestamp:
-    # Make a full file name that is "FILE_NAME + today's date and time as HH-MM-SS"
+        # Make a full file name that is "FILE_NAME + today's date and time as HH-MM-SS"
         TODAYS_DATE = pd.Timestamp.now().strftime("%Y_%m_%d")
         TODAYS_TIME = pd.Timestamp.now().strftime("%H_%M_%S")
         FILE_NAME = f"{FILE_NAME}_{TODAYS_DATE}_{TODAYS_TIME}_analytic"

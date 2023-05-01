@@ -13,10 +13,13 @@ from utils.plate_setups import Setup5
 from utils.global_constants import x, y
 
 
-def estimate_touch_location():
-    set_fontsizes()
-    # Call one of the functions found in /main_scripts
-
+def estimate_touch_location(
+    center_frequency: int = 25000,
+    t_var: float = 4e-9,
+    propagation_speed_mps: float = 992,
+    snr_dB: float = 10,
+    attenuation_dBpm: float = 15,
+):
     SENSOR_CENTER_COORDINATES = np.array([0.05, 0.085])
     ACTUATOR_COORDINATES = np.array([0.50, 0.35])
     y_s_a = ACTUATOR_COORDINATES[y] - SENSOR_CENTER_COORDINATES[y]
@@ -26,19 +29,15 @@ def estimate_touch_location():
         actuator_coordinates=ACTUATOR_COORDINATES,
     )
 
-    # Parameters for the Gaussian-modulated pulse
-    CENTER_FREQUENCY = 35000
-    T_VAR = 1e-9
-
     ideal_signals, _ = generate_ideal_signal(
         setup=SETUP,
-        critical_frequency=CENTER_FREQUENCY,
-        attenuation_dBpm=15,
+        critical_frequency=center_frequency,
+        attenuation_dBpm=attenuation_dBpm,
         signal_length_s=5,
-        propagation_speed_mps=1000,
+        propagation_speed_mps=propagation_speed_mps,
         signal_model="gaussian",
-        t_var=T_VAR,
-        snr_dB=10,
+        t_var=t_var,
+        snr_dB=snr_dB,
     )
     ideal_signals = crop_to_signal(
         ideal_signals,
@@ -46,8 +45,8 @@ def estimate_touch_location():
     )
     generate_signals_for_matlab(
         ideal_signals,
-        center_frequency=CENTER_FREQUENCY,
-        t_var=T_VAR,
+        center_frequency=center_frequency,
+        t_var=t_var,
     )
 
     # Real angles:
@@ -74,10 +73,10 @@ def estimate_touch_location():
     # Angles from Root-WSF, sorted from lowest to highest:
     SORTED_ANGLES = np.array(
         [
-            -42.539838862910912,
-            -31.990446448370097,
-            24.412457820142198,
-            29.912970224888895,
+            -36.118717217294261,
+            -26.931505811061221,
+            14.961171186980419,
+            22.877396133641259,
         ]
     )
     phi_1 = np.abs(SORTED_ANGLES[3])
