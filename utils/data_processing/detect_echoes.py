@@ -247,9 +247,13 @@ def get_travel_times(
     relative_first_reflection: bool = True,
 ):
     """Get the travel distance from first and second reflections.
-    TODO:   Add logic for not calculating physically impossible reflections.
-            This is not necessary for predicting WHEN the reflections will
-            arrive, but to visualise which reflections we are seeing.
+    The table edges are numbered as:
+         _______1_______
+        |               |
+      4 |               | 2
+        |               |
+        |_______________|
+                3
     """
     arrival_times = np.array([])
     travel_distances = np.array([])
@@ -261,24 +265,13 @@ def get_travel_times(
     arrival_times = np.append(arrival_times, direct_travel_time)
 
     if print_info and not relative_first_reflection:
-        print(
-            f"\nDirect travel distance: \
-              {np.round(direct_travel_distance, 5)} m"
-        )
-        print(f"\nDirect travel time: {np.round(direct_travel_time, 6)} s")
+        print_direct_travel_info(direct_travel_distance, direct_travel_time)
 
     EDGES = np.array([1, 2, 3, 4])
     # Iterate thorugh all combinations of edges to reflect from
     for edge_1 in range(0, EDGES.size + 1):
         for edge_2 in range(0, EDGES.size + 1):
-            if edge_1 == edge_2:
-                # Can't reflect from the same edge twice
-                continue
-            elif edge_1 and not edge_2:
-                # To avoid repeating first reflection calculations
-                continue
-            elif (edge_1 - edge_2) == 1 or (edge_1 == 4 and edge_2 == 1):
-                # Check if edges are adjacent to remove unphysical combinations
+            if ignore_edge_combination(edge_1, edge_2):
                 continue
             mirrored_source = find_mirrored_source(
                 actuator, np.array([edge_1, edge_2]), surface
@@ -289,20 +282,9 @@ def get_travel_times(
             if relative_first_reflection:
                 distance_to_sensor -= direct_travel_distance
             time_to_sensors = distance_to_sensor / propagation_speed
-            if not edge_1:
-                if print_info:
-                    print(
-                        f"\nReflecting from {edge_2}: \t \
-                              Distance: {np.round(distance_to_sensor, 5)} m \t\
-                              Time: {np.round(time_to_sensors, 6)} s"
-                    )
-            else:
-                if print_info:
-                    print(
-                        f"\nReflecting from {edge_1}, then {edge_2}:      \
-                            \t Distance: {np.round(distance_to_sensor, 5)} m\
-                            \t Time: {np.round(time_to_sensors, 6)} s"
-                    )
+            print_reflections_info(
+                print_info, edge_1, edge_2, distance_to_sensor, time_to_sensors
+            )
             travel_distances = np.append(travel_distances, distance_to_sensor)
             arrival_times = np.append(arrival_times, time_to_sensors)
 
@@ -313,6 +295,47 @@ def get_travel_times(
         arrival_times[0] = 0
 
     return arrival_times, travel_distances
+
+
+def ignore_edge_combination(edge_1, edge_2):
+    if edge_1 == edge_2:
+        # Can't reflect from the same edge twice
+        return True
+    elif edge_1 and not edge_2:
+        # To avoid repeating first reflection calculations
+        return True
+    elif (edge_1 - edge_2) == 1 or (edge_1 == 4 and edge_2 == 1):
+        # Check if edges are adjacent to remove unphysical combinations
+        return True
+    else:
+        return False
+
+
+def print_reflections_info(
+    print_info, edge_1, edge_2, distance_to_sensor, time_to_sensors
+):
+    if not edge_1:
+        if print_info:
+            print(
+                f"\nReflecting from {edge_2}: \t \
+                              Distance: {np.round(distance_to_sensor, 5)} m \t\
+                              Time: {np.round(time_to_sensors, 6)} s"
+            )
+    else:
+        if print_info:
+            print(
+                f"\nReflecting from {edge_1}, then {edge_2}:      \
+                            \t Distance: {np.round(distance_to_sensor, 5)} m\
+                            \t Time: {np.round(time_to_sensors, 6)} s"
+            )
+
+
+def print_direct_travel_info(direct_travel_distance, direct_travel_time):
+    print(
+        f"\nDirect travel distance: \
+              {np.round(direct_travel_distance, 5)} m"
+    )
+    print(f"\nDirect travel time: {np.round(direct_travel_time, 6)} s")
 
 
 if __name__ == "__main__":

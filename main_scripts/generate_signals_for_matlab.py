@@ -1,4 +1,4 @@
-import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 
 from utils.csv_to_df import make_dataframe_from_csv
@@ -6,26 +6,37 @@ from utils.data_processing.detect_echoes import get_analytic_signal, get_envelop
 from utils.data_processing.preprocessing import crop_data, crop_to_signal, filter_signal
 from utils.data_processing.processing import interpolate_signal
 from utils.data_visualization.visualize_data import compare_signals
-from utils.global_constants import ORIGINAL_SAMPLE_RATE
-from utils.plate_setups import Setup4
+from utils.global_constants import ORIGINAL_SAMPLE_RATE, SAMPLE_RATE
 
 
-def generate_signals_for_matlab():
-    SETUP = Setup4(actuator_coordinates=np.array([0.35, 0.35]))
-    FILE_NAME, measurements = import_the_data()
-    measurements = do_the_preprocessing(measurements)
-    plot_them_time_signals(measurements)
-
+def generate_signals_for_matlab(
+    measurements: pd.DataFrame = None,
+    center_frequency: float = 25000,
+    t_var: float = 0.0001,
+):
+    if measurements is None:
+        FILE_NAME, measurements = import_the_data()
+        measurements = do_measurement_preprocessing(measurements)
+    else:
+        FILE_NAME = f"generated_signal_{center_frequency // 1000}kHz_{t_var}s_{SAMPLE_RATE}"
+        measurements = crop_data(
+            measurements,
+            time_start=0,
+            time_end=0.005,
+        )
     measurements = drop_actuator_channel(measurements)
+    plot_them_time_signals(measurements)
     analytic_signals = get_analytic_signal(measurements)
-    # Save the analytic signals in a csv file without parenthesis around the complex numbers
-    make_a_nice_csv_file(FILE_NAME, analytic_signals)
-
+    # Ask user if they want to save the analytic signals
+    if input("Save analytic signals? y/n: ") == "y":
+        make_a_nice_csv_file(FILE_NAME, analytic_signals)
     envelopes = get_envelopes(measurements)
     plot_them_envelopes(envelopes)
 
 
-def drop_actuator_channel(measurements):
+def drop_actuator_channel(
+    measurements,
+):
     return measurements.drop(columns=["Actuator"])
 
 
@@ -36,14 +47,16 @@ def import_the_data():
     return FILE_NAME, measurements
 
 
-def do_the_preprocessing(measurements):
+def do_measurement_preprocessing(
+    measurements,
+    frequency,
+):
     measurements["Actuator"] = 0
     measurements = crop_to_signal(measurements)
-    CRITICAL_FREQUENCY = 35000
     measurements = filter_signal(
         measurements,
         filtertype="bandpass",
-        critical_frequency=CRITICAL_FREQUENCY,
+        critical_frequency=frequency,
         plot_response=False,
         order=2,
         sample_rate=ORIGINAL_SAMPLE_RATE,
@@ -59,66 +72,58 @@ def do_the_preprocessing(measurements):
     return measurements
 
 
-def plot_them_time_signals(measurements):
+def plot_them_time_signals(
+    measurements,
+):
     fig, axs = plt.subplots(1, 2, squeeze=False)
-    compare_signals(
-        fig,
-        axs,
-        [measurements["Sensor 1"]],
-        plots_to_plot=["time", "fft"],
-        sharey=True,
-    )
-    compare_signals(
-        fig,
-        axs,
-        [measurements["Sensor 2"]],
-        plots_to_plot=["time", "fft"],
-        sharey=True,
-    )
-    compare_signals(
-        fig,
-        axs,
-        [measurements["Sensor 3"]],
-        plots_to_plot=["time", "fft"],
-        sharey=True,
-    )
-    axs[0, 0].legend(["Sensor 1", "Sensor 2", "Sensor 3"], loc="upper right")
+    for sensor in measurements.columns:
+        compare_signals(
+            fig,
+            axs,
+            [measurements[sensor]],
+            plots_to_plot=["time", "fft"],
+            sharey=True,
+        )
+    fig.suptitle("Signals before analytic signal processing")
 
 
-def plot_them_envelopes(envelopes):
+def plot_them_envelopes(
+    envelopes,
+):
     fig, axs = plt.subplots(1, 1, squeeze=False)
-    compare_signals(
-        fig,
-        axs,
-        [envelopes["Sensor 1"]],
-        plots_to_plot=["time"],
-        sharey=True,
-    )
-    compare_signals(
-        fig,
-        axs,
-        [envelopes["Sensor 2"]],
-        plots_to_plot=["time"],
-        sharey=True,
-    )
-    compare_signals(
-        fig,
-        axs,
-        [envelopes["Sensor 3"]],
-        plots_to_plot=["time"],
-        sharey=True,
-    )
+    for sensor in envelopes.columns:
+        compare_signals(
+            fig,
+            axs,
+            [envelopes[sensor]],
+            plots_to_plot=["time"],
+            sharey=True,
+        )
+    fig.suptitle("Envelopes of exported analytic signals")
 
 
-def make_a_nice_csv_file(FILE_NAME, analytic_signals):
+def make_a_nice_csv_file(
+    FILE_NAME,
+    analytic_signals,
+    add_timestamp=False,
+):
+    if add_timestamp:
+    # Make a full file name that is "FILE_NAME + today's date and time as HH-MM-SS"
+        TODAYS_DATE = pd.Timestamp.now().strftime("%Y_%m_%d")
+        TODAYS_TIME = pd.Timestamp.now().strftime("%H_%M_%S")
+        FILE_NAME = f"{FILE_NAME}_{TODAYS_DATE}_{TODAYS_TIME}_analytic"
+    # Save the analytic signals in a csv file
     analytic_signals.to_csv(
-        f"{FILE_NAME}_analytic_signals.csv",
+        f"{FILE_NAME}.csv",
         index=False,
         header=False,
     )
-    # Remove all parenthesis from the file
-    with open(f"{FILE_NAME}_analytic_signals.csv", "r") as f:
+
+    """Save the analytic signals in a csv file
+    without parenthesis around the complex numbers.
+    """
+    with open(f"{FILE_NAME}.csv", "r") as f:
         lines = f.readlines()
-    with open(f"{FILE_NAME}_analytic_signals.csv", "w") as f:
+    with open(f"{FILE_NAME}.csv", "w") as f:
         for line in lines:
             f.write(line.replace("(", "").replace(")", ""))

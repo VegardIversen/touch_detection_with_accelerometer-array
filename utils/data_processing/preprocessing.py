@@ -102,9 +102,13 @@ def crop_data(
     return signals_cropped
 
 
-def crop_to_signal(measurements: pd.DataFrame or np.ndarray, padding: float = 0.05):
+def crop_to_signal(
+    measurements: pd.DataFrame or np.ndarray,
+    padding: float = 0.05,
+    threshold: float = None,
+):
     """Crop the signal to the first and last value
-    above a threshold given by the max value in the noise .
+    above a threshold given by the max value in the noise.
     """
     if isinstance(measurements, pd.DataFrame):
         _, start_index, end_index = crop_to_signal(measurements["Sensor 1"])
@@ -113,11 +117,12 @@ def crop_to_signal(measurements: pd.DataFrame or np.ndarray, padding: float = 0.
         return cropped_measurements
     # Find the first index where the signal is higher than the threshold
     envelope = get_envelopes(measurements)
-    noise_max_value = get_noise_max_value(
-        envelope,
-        time_window_percentage=0.02,
-    )
-    threshold = 2 * noise_max_value
+    if threshold is None:
+        noise_max_value = get_noise_max_value(
+            envelope,
+            time_window_percentage=0.02,
+        )
+        threshold = 2 * noise_max_value
     # Find the first index in the signal where the signal is higher than the threshold
     start_index = np.argmax(np.abs(envelope) > threshold)
 

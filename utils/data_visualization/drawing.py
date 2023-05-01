@@ -2,17 +2,10 @@
 Date: 2022-01-09
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 from collections import OrderedDict
 
-from utils.data_processing.detect_echoes import (
-    find_mirrored_source,
-    flip_sensors,
-    flip_sources,
-)
-from utils.objects import MirroredSensor, MirroredSource, Table, Actuator, Sensor
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 
 
 def plot_legend_without_duplicates(placement: str = None):
@@ -42,4 +35,4 @@ def plot_legend_without_duplicates_ax(ax):
     by_label = OrderedDict(zip(labels, handles))
     ax.legend(by_label.values(), by_label.keys(), loc="upper right")
 
-    return actuator, sensor_1, sensor_2, sensor_3
+    return

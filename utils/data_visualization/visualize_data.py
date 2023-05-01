@@ -82,7 +82,7 @@ def time_plotting(
         axs[i, 0].set_ylabel("Correlation coefficient [-]")
     else:
         time_axis = make_time_signal_for_uncompressed_signal(channel)
-        axs[i, 0].set_ylabel("Amplitude [V]")
+        axs[i, 0].set_ylabel("Acceleration [$\mathregular{m/s^2}$]")
     share_x_axis_time(axs, i)
     if sharey:
         share_y_axis(axs, i)
@@ -359,7 +359,7 @@ def envelope_with_lines(
     ]
     # ax.set_title(f'Expected wave arrival times for {sensor.name}')
     ax.set_xlabel("Time [s]")
-    ax.set_ylabel("Amplitude [V]")
+    ax.set_ylabel("Acceleration [$\mathregular{m/s^2}$]")
     # ax.set_xlim(0, 5)
     """Use scientific notation"""
     ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
@@ -395,7 +395,7 @@ def set_fontsizes():
     plt.rc("xtick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
     plt.rc("ytick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
     plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
-    plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
+    plt.rc("figure", titlesize=MEDIUM_SIZE)  # fontsize of the figure title
 
 
 def set_window_size(rows: int = 1, cols: int = 1):

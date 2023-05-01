@@ -7,7 +7,7 @@ ASSERTIONS_SHOULD_BE_INCLUDED = False
 
 """Settings"""
 ORIGINAL_SAMPLE_RATE = 150_000
-INTERPOLATION_FACTOR = 16
+INTERPOLATION_FACTOR = 8
 SAMPLE_RATE = ORIGINAL_SAMPLE_RATE * INTERPOLATION_FACTOR
 CHANNEL_NAMES = ["Sensor 1", "Sensor 2", "Sensor 3"]
 CHIRP_CHANNEL_NAMES = ["Actuator", "Sensor 1", "Sensor 2", "Sensor 3"]
@@ -18,7 +18,8 @@ SENSOR_1 = 0
 SENSOR_2 = 1
 SENSOR_3 = 2
 
+x = 0
+y = 1
+
 """Saving figures"""
-FIGURES_SAVE_PATH = (
-    "/home/niklast/Documents/GitHub/Specialization-Project-LaTeX/Figures/"
-)
+FIGURES_SAVE_PATH = "/home/niklast/Documents/GitHub/Master-Thseis-NTNU/Figures/"

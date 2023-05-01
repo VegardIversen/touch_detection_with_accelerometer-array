@@ -346,8 +346,8 @@ class Setup_Linear_Array(Setup):
             self.sensors[i] = Sensor(
                 coordinates=np.array(
                     [
-                        array_start_coordinates[0] + i * array_spacing_m,
-                        array_start_coordinates[1],
+                        array_start_coordinates[0],
+                        array_start_coordinates[1] + i * array_spacing_m,
                     ]
                 ),
                 name=f"Sensor {i + 1}",
@@ -406,7 +406,7 @@ class Setup5(Setup_Linear_Array):
     def __init__(
         self,
         actuator_coordinates: np.ndarray,
-        array_start_coordinates: np.ndarray = np.array([0.05, 0.65]),
+        array_start_coordinates: np.ndarray = np.array([0.05, 0.05]),
     ):
         super().__init__(
             number_of_sensors=8,
