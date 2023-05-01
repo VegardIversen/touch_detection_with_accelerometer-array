@@ -1,9 +1,12 @@
 # Changelog
 
+### 7.1.0
+Use estimated angles from the Matlab Root-WSF to estimate the touch location based on the r_sa vector. Results vary with the chosen center frequency and t_var, but overall seems promising. Also comparing the estimated angles to the real anlges, calulcated given the location of the sensors and the actuator.
+
 ## 7.0.0
 Make setup 5: an 8-element ULA spaced by 1 cm starting at [0.05, 0.65]. Adding an option to generate_ideal_signal() for passing model type as a parameter, allowing for choosing between using dirac pulses and a measurement sample to delay.
 
-## 6.0.1
+#### 6.0.1
 Export analytic signals for use in DOA estimation functions. Currently cropped to what I believe to be the direct signal. The Matlab functions for DOA estimation result in around -17 degrees broadside angle, which is only a few percent off what it is expected to be (if the understanding of the broadside figure in the script is correct). Tried with cropping to two sources, not great results. Probably too few sensors to get a good estimate.
 
 ## 6.0.0
@@ -15,7 +18,7 @@ Looking at touch release and swiping. Really interesting to see the relative pow
 # 4.0.0
 Inspecting the immediate touch signal, before propagation using setup 3. Exporting the cropped touch to use for simulations.
 
-## 3.1.0
+### 3.1.0
 Same experiment as 3.1.0, but with results from applying the estimation to a simulation. Also great results.
 
 ## 3.0.0
@@ -24,7 +27,7 @@ Estimate touch location using ToA and two sensors at 6010 Hz. Good results.
 ## 2.0.0 - 2023-03-03
 Use a sensor array consisting of four sensors (or choose another amount) placed in a line, and simulate non-dispersive signals from a randomly placed actuator/touch on a 100x70 cm plate.
 
-## 1.1.0 - 2023-01-18
+### 1.1.0 - 2023-01-18
 Trying to make use of the correlation technique described by Ziola and Gorman in "Source location in thin plates using cross-correlation". The results did not yield any great results. Somewhat similar to using regular bandpassing, but I suspect it is limited by the triangular shape of pulse compression. Could however keep testing different frequencies and standard deviations for the gaussian pulse.
 
 ## 1.0.0 - 2023-01-09
