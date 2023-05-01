@@ -3,6 +3,12 @@
 ### 7.1.0
 Use estimated angles from the Matlab Root-WSF to estimate the touch location based on the r_sa vector. Results vary with the chosen center frequency and t_var, but overall seems promising. Also comparing the estimated angles to the real anlges, calulcated given the location of the sensors and the actuator.
 
+### 7.0.1
+Measure speed of the 25 kHz wave.
+This is approximately four times higher than the expected value.
+Not sure if it is S0 or A0, as it is both the first and the strongest wave to arrive.
+A similar result is found by ''eye'', i.e. the time between the first peaks. (991,85 m/s).
+
 ## 7.0.0
 Make setup 5: an 8-element ULA spaced by 1 cm starting at [0.05, 0.65]. Adding an option to generate_ideal_signal() for passing model type as a parameter, allowing for choosing between using dirac pulses and a measurement sample to delay.
 

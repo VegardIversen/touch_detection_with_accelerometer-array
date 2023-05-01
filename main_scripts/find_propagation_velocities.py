@@ -15,14 +15,14 @@ def find_propagation_velocities():
     SETUP = Setup1()
     SETUP.draw()
     measurements = interpolate_signal(measurements)
-    find_speed_for_5kHz(measurements, SETUP)
+    find_speed_for_25kHz(measurements, SETUP)
     # find_speed_for_15kHz(measurements, SETUP)
     # find_speed_for_35kHz(measurements, SETUP)
 
 
 def find_speed_for_5kHz(measurements, SETUP):
     # Keeping frequencies in separate functions as they need different cropping
-    CRITICAL_FREQUENCY = 20000
+    CRITICAL_FREQUENCY = 5000
     filtered_measurements = filter_signal(
         measurements,
         filtertype="bandpass",
@@ -174,6 +174,63 @@ def find_speed_for_15kHz(measurements, SETUP):
         filtered_measurements,
         time_start=TIME_START,
         time_end=TIME_END,
+        sample_rate=SAMPLE_RATE,
+    )
+    propagation_speed = SETUP.get_propagation_speed(filtered_measurements)
+    print(f"Propagation speed: {propagation_speed:.2f} m/s at {CRITICAL_FREQUENCY} Hz")
+
+    fig, axs = plt.subplots(3, 2, squeeze=False)
+    compare_signals(
+        fig,
+        axs,
+        [
+            filtered_measurements[sensor]
+            for sensor in ["Sensor 3", "Sensor 2", "Sensor 1"]
+        ],
+        plots_to_plot=["time", "fft"],
+        sharey=True,
+    )
+
+    fig, axs = plt.subplots(1, 2, squeeze=False)
+    compare_signals(
+        fig,
+        axs,
+        [filtered_measurements["Sensor 1"]],
+        plots_to_plot=["time", "fft"],
+        sharey=True,
+    )
+    compare_signals(
+        fig,
+        axs,
+        [filtered_measurements["Sensor 2"]],
+        plots_to_plot=["time", "fft"],
+        sharey=True,
+    )
+    compare_signals(
+        fig,
+        axs,
+        [filtered_measurements["Sensor 3"]],
+        plots_to_plot=["time", "fft"],
+        sharey=True,
+    )
+
+
+def find_speed_for_25kHz(measurements, SETUP):
+    # Keeping frequencies in separate functions as they need different cropping
+    CRITICAL_FREQUENCY = 25000
+    filtered_measurements = filter_signal(
+        measurements,
+        filtertype="bandpass",
+        critical_frequency=CRITICAL_FREQUENCY,
+        plot_response=False,
+        order=2,
+        sample_rate=SAMPLE_RATE,
+    )
+    # filtered_measurements = crop_to_signal(filtered_measurements)
+    filtered_measurements = crop_data(
+        filtered_measurements,
+        time_start=0.00 + 0,
+        time_end=0.04825 + 0.001,
         sample_rate=SAMPLE_RATE,
     )
     propagation_speed = SETUP.get_propagation_speed(filtered_measurements)
