@@ -281,7 +281,7 @@ def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.001):
     v_max = get_velocity_at_freq(upper_freq)['A0']['phase_velocity']
     k_nyq = (2*np.pi*f_nyq)/v_nyq
     k_max = k[-1] #doesnt matter if i use this or this 2*np.pi*upper_freq/v_max since both are equal or 2 times k_nyq
-    print(f'k_nyq: {k_nyq} or {k[f_nyq]}')
+    print(f'k_nyq: {k_nyq} ')
     w = 2*np.pi*freq_vel
     print(f'shape of w: {w.shape}')
     n = len(k)
