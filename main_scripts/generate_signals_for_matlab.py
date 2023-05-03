@@ -120,9 +120,10 @@ def make_a_nice_csv_file(
         TODAYS_DATE = pd.Timestamp.now().strftime("%Y_%m_%d")
         TODAYS_TIME = pd.Timestamp.now().strftime("%H_%M_%S")
         FILE_NAME = f"{FILE_NAME}_{TODAYS_DATE}_{TODAYS_TIME}_analytic"
+    FOLDER_NAME = "generated_signals"
     # Save the analytic signals in a csv file
     analytic_signals.to_csv(
-        f"{FILE_NAME}.csv",
+        f"{FOLDER_NAME}/{FILE_NAME}.csv",
         index=False,
         header=False,
     )
@@ -130,8 +131,8 @@ def make_a_nice_csv_file(
     """Save the analytic signals in a csv file
     without parenthesis around the complex numbers.
     """
-    with open(f"{FILE_NAME}.csv", "r") as f:
+    with open(f"{FOLDER_NAME}/{FILE_NAME}.csv", "r") as f:
         lines = f.readlines()
-    with open(f"{FILE_NAME}.csv", "w") as f:
+    with open(f"{FOLDER_NAME}/{FILE_NAME}.csv", "w") as f:
         for line in lines:
             f.write(line.replace("(", "").replace(")", ""))
