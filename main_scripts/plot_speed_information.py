@@ -19,7 +19,7 @@ def plot_speed_information():
         ylabel="Phase velocity (m/ms)",
         legend=True,
         grid=True,
-        xlim=(0, 50),
+        xlim=(0, 60),
         style={
             "A0 Energy velocity (m/ms)": "--",
             "A0 Phase velocity (m/ms)": "C0",
@@ -34,7 +34,7 @@ def plot_speed_information():
         ylabel="Phase velocity (m/ms)",
         legend=True,
         grid=True,
-        xlim=(0, 50),
+        xlim=(0, 60),
         style={
             "S0 Energy velocity (m/ms)": "--",
             "S0 Phase velocity (m/ms)": "C1",
@@ -53,7 +53,7 @@ def plot_speed_information():
         ylabel="Wavelength (mm)",
         legend=True,
         grid=True,
-        xlim=(0, 100),
+        xlim=(0, 60),
         ylim=(0, 50),
     )
 
@@ -65,7 +65,7 @@ def plot_speed_information():
         ylabel="Wavelength (mm)",
         legend=True,
         grid=True,
-        xlim=(0, 100),
+        xlim=(0, 60),
         ylim=(0, 50),
     )
     fig.savefig(f"{FIGURES_SAVE_PATH}/wavelengths_for_A0_and_S0.pdf")
