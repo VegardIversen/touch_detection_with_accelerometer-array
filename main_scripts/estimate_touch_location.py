@@ -13,41 +13,56 @@ from utils.plate_setups import Setup5
 from utils.global_constants import x, y
 
 
-def estimate_touch_location():
-    set_fontsizes()
-    # Call one of the functions found in /main_scripts
-
-    SENSOR_CENTER_COORDINATES = np.array([0.05, 0.085])
-    ACTUATOR_COORDINATES = np.array([0.50, 0.35])
-    y_s_a = ACTUATOR_COORDINATES[y] - SENSOR_CENTER_COORDINATES[y]
-    x_s_a = ACTUATOR_COORDINATES[x] - SENSOR_CENTER_COORDINATES[x]
+def estimate_touch_location(
+    sorted_estimated_angles: list,
+    center_frequency: int = 25000,
+    t_var: float = 4e-9,
+    propagation_speed_mps: float = 992,
+    snr_dB: float = 10,
+    attenuation_dBpm: float = 15,
+    crop_end: float = 0.001,
+    number_of_sensors: int = 8,
+    sensor_spacing_m: float = 0.01,
+    actuator_coordinates: np.ndarray = np.array([0.50, 0.35]),
+):
+    SENSORS_START_COORDINATES = np.array([0.05, 0.05])
+    SENSORS_CENTER_COORDINATES = np.array(
+        [
+            SENSORS_START_COORDINATES[x],
+            SENSORS_START_COORDINATES[y]
+            + sensor_spacing_m * (number_of_sensors - 1) / 2,
+        ]
+    )
+    y_s_a = actuator_coordinates[y] - SENSORS_CENTER_COORDINATES[y]
+    x_s_a = actuator_coordinates[x] - SENSORS_CENTER_COORDINATES[x]
 
     SETUP = Setup5(
-        actuator_coordinates=ACTUATOR_COORDINATES,
+        actuator_coordinates=actuator_coordinates,
+        number_of_sensors=number_of_sensors,
+        array_spacing_m=sensor_spacing_m,
     )
-
-    # Parameters for the Gaussian-modulated pulse
-    CENTER_FREQUENCY = 35000
-    T_VAR = 1e-9
 
     ideal_signals, _ = generate_ideal_signal(
         setup=SETUP,
-        critical_frequency=CENTER_FREQUENCY,
-        attenuation_dBpm=15,
-        signal_length_s=5,
-        propagation_speed_mps=1000,
+        critical_frequency=center_frequency,
+        attenuation_dBpm=attenuation_dBpm,
+        signal_length_s=1,
+        propagation_speed_mps=propagation_speed_mps,
         signal_model="gaussian",
-        t_var=T_VAR,
-        snr_dB=10,
+        t_var=t_var,
+        snr_dB=snr_dB,
     )
     ideal_signals = crop_to_signal(
         ideal_signals,
-        threshold=0.2,
+        # threshold=0.2,
     )
     generate_signals_for_matlab(
         ideal_signals,
-        center_frequency=CENTER_FREQUENCY,
-        t_var=T_VAR,
+        center_frequency=center_frequency,
+        t_var=t_var,
+        propagation_speed_mps=propagation_speed_mps,
+        crop_end=crop_end,
+        number_of_sensors=number_of_sensors,
     )
 
     # Real angles:
@@ -57,33 +72,32 @@ def estimate_touch_location():
     )
     real_phi_2 = calculate_phi_2(
         y_s_a=y_s_a,
-        y_s_c=SENSOR_CENTER_COORDINATES[y],
+        y_s_c=SENSORS_CENTER_COORDINATES[y],
         x_s_a=x_s_a,
     )
     real_phi_3 = calculate_phi_3(
         y_s_a=y_s_a,
         x_s_a=x_s_a,
-        x_s_c=SENSOR_CENTER_COORDINATES[x],
+        x_s_c=SENSORS_CENTER_COORDINATES[x],
     )
     real_phi_4 = calculate_phi_4(
         y_s_a=y_s_a,
-        y_s_c=SENSOR_CENTER_COORDINATES[y],
+        y_s_c=SENSORS_CENTER_COORDINATES[y],
         x_s_a=x_s_a,
-        x_s_c=SENSOR_CENTER_COORDINATES[x],
+        x_s_c=SENSORS_CENTER_COORDINATES[x],
     )
-    # Angles from Root-WSF, sorted from lowest to highest:
-    SORTED_ANGLES = np.array(
-        [
-            -42.539838862910912,
-            -31.990446448370097,
-            24.412457820142198,
-            29.912970224888895,
-        ]
-    )
-    phi_1 = np.abs(SORTED_ANGLES[3])
-    phi_2 = np.abs(SORTED_ANGLES[0])
-    phi_3 = np.abs(SORTED_ANGLES[2])
-    phi_4 = np.abs(SORTED_ANGLES[1])
+    if all([angle < 0 for angle in sorted_estimated_angles]):
+        # All angles are negative if y_s_a < y_s_c,
+        # and a different order should be used
+        phi_1 = sorted_estimated_angles[1]
+        phi_2 = sorted_estimated_angles[3]
+        phi_3 = sorted_estimated_angles[0]
+        phi_4 = sorted_estimated_angles[2]
+    else:
+        phi_1 = sorted_estimated_angles[3]
+        phi_2 = sorted_estimated_angles[0]
+        phi_3 = sorted_estimated_angles[2]
+        phi_4 = sorted_estimated_angles[1]
     print_angles_info(
         real_phi_1,
         real_phi_2,
@@ -98,18 +112,19 @@ def estimate_touch_location():
     plt.figure()
     SETUP.draw()
     r_sa = calculate_r_sa(
-        x_s_c=SENSOR_CENTER_COORDINATES[x],
-        y_s_c=SENSOR_CENTER_COORDINATES[y],
-        phi_1=np.abs(phi_1),
-        phi_2=np.abs(phi_2),
-        phi_3=np.abs(phi_3),
+        x_s_c=SENSORS_CENTER_COORDINATES[x],
+        y_s_c=SENSORS_CENTER_COORDINATES[y],
+        phi_1=phi_1,
+        phi_2=phi_2,
+        phi_3=phi_3,
     )
+    r_sa = np.array(r_sa)
     print(f"r_sa: [{r_sa[x]:.3f}, {r_sa[y]:.3f}]")
     estimated_location_error = np.linalg.norm(
-        r_sa - (ACTUATOR_COORDINATES - SENSOR_CENTER_COORDINATES)
+        r_sa - (actuator_coordinates - SENSORS_CENTER_COORDINATES)
     )
     print(f"Estimated location error: {estimated_location_error:.3f} m")
-    touch_location = np.array([0.05, 0.085]) + r_sa
+    touch_location = SENSORS_CENTER_COORDINATES + r_sa
     plot_estimated_location(touch_location)
     plt.show()
     return 0
@@ -161,6 +176,7 @@ def calculate_phi_1(
     y_s_a,
     x_s_a,
 ):
+    # Will return +/- 90 degrees if x_s_a == 0
     radians = np.arctan2(
         y_s_a,
         x_s_a,
@@ -173,7 +189,8 @@ def calculate_phi_2(
     y_s_c,
     x_s_a,
 ):
-    radians = np.arctan2(y_s_a + 2 * y_s_c, x_s_a)
+    # Will return +/- 90 degrees if x_s_a == 0
+    radians = np.arctan2(-y_s_a - 2 * y_s_c, x_s_a)
     return radians_to_degrees(radians)
 
 
@@ -192,7 +209,7 @@ def calculate_phi_4(
     x_s_a,
     x_s_c,
 ):
-    radians = np.arctan2(y_s_a + 2 * y_s_c, x_s_a + 2 * x_s_c)
+    radians = np.arctan2(-y_s_a - 2 * y_s_c, x_s_a + 2 * x_s_c)
     return radians_to_degrees(radians)
 
 
@@ -203,19 +220,22 @@ def radians_to_degrees(radians):
 def calculate_r_sa(x_s_c, y_s_c, phi_1, phi_2, phi_3):
     # Calculates the vector r_sa
     if abs(phi_1) == 90 or abs(phi_2) == 90:
-        raise ValueError("Phi1 and Phi2 should not be 90 degrees.")
+        r_sa = [
+            0,
+            np.tan(np.radians(phi_3)) * (2 * x_s_c),
+        ]
+        return r_sa
 
     r_sa = [
-        2 * y_s_c / (np.tan(np.radians(phi_2)) - np.tan(np.radians(phi_1))),
+        -2 * y_s_c / (np.tan(np.radians(phi_2)) + np.tan(np.radians(phi_1))),
         np.tan(np.radians(phi_3))
         * (
-            2 * y_s_c / (np.tan(np.radians(phi_2)) - np.tan(np.radians(phi_1)))
+            -2 * y_s_c / (np.tan(np.radians(phi_2)) + np.tan(np.radians(phi_1)))
             + 2 * x_s_c
         ),
     ]
-
     return r_sa
 
 
 if __name__ == "__main__":
-    main()
+    raise NotImplementedError

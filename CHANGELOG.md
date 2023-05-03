@@ -1,7 +1,12 @@
 # Changelog
 
+# 8.0.0
+Plot the phase velocities, energy (group) velocities and the wavelengths of A0 and S0 waves.
+Concluding that the best frequency band should be around 25 kHz as this allows for the A0 waves to arrive ahead of the S0 waves with the best margin (the group velocity is lower for S0 than A0), while still having a relatively short wavelength of ~1 cm.
+
 ### 7.1.0
 Use estimated angles from the Matlab Root-WSF to estimate the touch location based on the r_sa vector. Results vary with the chosen center frequency and t_var, but overall seems promising. Also comparing the estimated angles to the real anlges, calulcated given the location of the sensors and the actuator.
+
 
 ### 7.0.1
 Measure speed of the 25 kHz wave.

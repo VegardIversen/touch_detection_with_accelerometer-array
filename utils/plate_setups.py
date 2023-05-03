@@ -407,10 +407,12 @@ class Setup5(Setup_Linear_Array):
         self,
         actuator_coordinates: np.ndarray,
         array_start_coordinates: np.ndarray = np.array([0.05, 0.05]),
+        number_of_sensors: int = 8,
+        array_spacing_m: float = 0.01,
     ):
         super().__init__(
-            number_of_sensors=8,
+            number_of_sensors=number_of_sensors,
             actuator_coordinates=actuator_coordinates,
             array_start_coordinates=array_start_coordinates,
-            array_spacing_m=0.01,
+            array_spacing_m=array_spacing_m,
         )
