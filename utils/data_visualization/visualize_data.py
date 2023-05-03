@@ -66,16 +66,32 @@ def compare_signals(
                 channel,
             )
         if "fft" in plots_to_plot:
-            fft_plotting(axs, measurements, freq_max, plots_to_plot, i, channel)
+            fft_plotting(
+                axs,
+                measurements,
+                freq_max,
+                plots_to_plot,
+                i,
+                channel,
+            )
 
 
-def convert_ndarray_to_pdseries(i, channel):
+def convert_ndarray_to_pdseries(
+    i,
+    channel,
+):
     channel = pd.Series(channel, name="Sensor " + str(i + 1))
     return channel
 
 
 def time_plotting(
-    axs, measurements, sharey, log_time_signal, compressed_chirps, i, channel
+    axs,
+    measurements,
+    sharey,
+    log_time_signal,
+    compressed_chirps,
+    i,
+    channel,
 ):
     if compressed_chirps:
         time_axis = make_time_signal_for_compressed_signal(channel)
@@ -96,23 +112,43 @@ def time_plotting(
     axs[i, 0].plot()
 
 
-def share_x_axis_time(axs, i):
+def share_x_axis_time(
+    axs,
+    i,
+):
     axs[i, 0].sharex(axs[0, 0])
 
 
-def share_y_axis(axs, i):
+def share_y_axis(
+    axs,
+    i,
+):
     axs[i, 0].sharey(axs[0, 0])
 
 
-def plot_as_linear(axs, i, channel, time_axis):
+def plot_as_linear(
+    axs,
+    i,
+    channel,
+    time_axis,
+):
     axs[i, 0].plot(time_axis, channel)
 
 
-def plot_as_decibel(axs, i, channel, time_axis):
+def plot_as_decibel(
+    axs,
+    i,
+    channel,
+    time_axis,
+):
     axs[i, 0].plot(time_axis, to_dB(channel))
 
 
-def set_log_dynamic_range(axs, i, channel):
+def set_log_dynamic_range(
+    axs,
+    i,
+    channel,
+):
     axs[i, 0].set_ylim(bottom=np.max(to_dB(channel)) - 60)
 
 
@@ -144,10 +180,31 @@ def spectrogram_plotting(
 ):
     """Some logic for correct indexing of the axs array"""
     axs_index = axis_index(plots_to_plot)
-    spec = spectrogram_object(axs, nfft, compressed_chirps, i, channel, axs_index)
-    set_dynamic_range_of_spectrogram(dynamic_range_db, spec)
-    make_colorbar(fig, axs, set_index, i, axs_index, spec)
-    share_x_axis_spectrogram(axs, i, axs_index)
+    spec = spectrogram_object(
+        axs,
+        nfft,
+        compressed_chirps,
+        i,
+        channel,
+        axs_index,
+    )
+    set_dynamic_range_of_spectrogram(
+        dynamic_range_db,
+        spec,
+    )
+    make_colorbar(
+        fig,
+        axs,
+        set_index,
+        i,
+        axs_index,
+        spec,
+    )
+    share_x_axis_spectrogram(
+        axs,
+        i,
+        axs_index,
+    )
     if sharey:
         axs[i, axs_index].sharey(axs[0, axs_index])
     axs[i, axs_index].axis(ymax=freq_max)
@@ -157,51 +214,103 @@ def spectrogram_plotting(
     axs[i, axs_index].plot(sharex=axs[0, 0])
 
 
-def share_x_axis_spectrogram(axs, i, axs_index):
+def share_x_axis_spectrogram(
+    axs,
+    i,
+    axs_index,
+):
     axs[i, axs_index].sharex(axs[0, 0])
 
 
-def make_colorbar(fig, axs, set_index, i, axs_index, spec):
+def make_colorbar(
+    fig,
+    axs,
+    set_index,
+    i,
+    axs_index,
+    spec,
+):
     if set_index is not None:
         fig.colorbar(
-            spec[3], ax=axs[i, axs_index], pad=0.2, aspect=40, location="bottom"
+            spec[3],
+            ax=axs[i, axs_index],
+            pad=0.2,
+            aspect=40,
+            location="bottom",
         )
     else:
         fig.colorbar(spec[3], ax=axs[i, axs_index])
 
 
-def spectrogram_object(axs, nfft, compressed_chirps, i, channel, axs_index):
+def spectrogram_object(
+    axs,
+    nfft,
+    compressed_chirps,
+    i,
+    channel,
+    axs_index,
+):
     if compressed_chirps:
         xextent = set_x_extent(channel)
         spec = spectrogram_object_for_compressed_signals(
-            axs, nfft, i, channel, axs_index, xextent
+            axs,
+            nfft,
+            i,
+            channel,
+            axs_index,
+            xextent,
         )
         set_x_axis_limits(axs, i, axs_index)
     else:
         spec = spectrogram_object_for_uncompressed_signal(
-            axs, nfft, i, channel, axs_index
+            axs,
+            nfft,
+            i,
+            channel,
+            axs_index,
         )
 
     return spec
 
 
-def set_dynamic_range_of_spectrogram(dynamic_range_db, spec):
-    spec[3].set_clim(to_dB(np.max(spec[0])) - dynamic_range_db, to_dB(np.max(spec[0])))
+def set_dynamic_range_of_spectrogram(
+    dynamic_range_db,
+    spec,
+):
+    spec[3].set_clim(
+        to_dB(np.max(spec[0])) - dynamic_range_db,
+        to_dB(np.max(spec[0])),
+    )
 
 
-def spectrogram_object_for_uncompressed_signal(axs, nfft, i, channel, axs_index):
+def spectrogram_object_for_uncompressed_signal(
+    axs,
+    nfft,
+    i,
+    channel,
+    axs_index,
+):
     spec = axs[i, axs_index].specgram(
         channel, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2)
     )
     return spec
 
 
-def set_x_axis_limits(axs, i, axs_index):
+def set_x_axis_limits(
+    axs,
+    i,
+    axs_index,
+):
     axs[i, axs_index].set_xlim(left=-0.005, right=(-0.005 + 0.1))
 
 
 def spectrogram_object_for_compressed_signals(
-    axs, nfft, i, channel, axs_index, xextent
+    axs,
+    nfft,
+    i,
+    channel,
+    axs_index,
+    xextent,
 ):
     return axs[i, axs_index].specgram(
         channel,
@@ -225,7 +334,14 @@ def axis_index(plots_to_plot):
     return axs_index
 
 
-def fft_plotting(axs, measurements, freq_max, plots_to_plot, i, channel):
+def fft_plotting(
+    axs,
+    measurements,
+    freq_max,
+    plots_to_plot,
+    i,
+    channel,
+):
     """Some logic for correct indexing of the axs array"""
     if ("time" in plots_to_plot) and ("spectrogram" in plots_to_plot):
         axs_index = 2
@@ -249,7 +365,11 @@ def fft_plotting(axs, measurements, freq_max, plots_to_plot, i, channel):
     axs[i, axs_index].plot(fftfreq / 1000, data_fft_dB)
 
 
-def wave_statistics(fig, axs, data: pd.DataFrame):
+def wave_statistics(
+    fig,
+    axs,
+    data: pd.DataFrame,
+):
     """Plot average and variance of waveform.
     TODO:   Use confidence interval instead of variance?
     """
@@ -295,9 +415,15 @@ def spectrogram_with_lines(
     """Plot the spectrograms along with lines for expected reflections"""
     fig, ax = plt.subplots(figsize=set_window_size())
     spec = plt.specgram(
-        measurements[sensor.name], Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2)
+        measurements[sensor.name],
+        Fs=SAMPLE_RATE,
+        NFFT=nfft,
+        noverlap=(nfft // 2),
     )
-    spec[3].set_clim(to_dB(np.max(spec[0])) - dynamic_range_db, to_dB(np.max(spec[0])))
+    spec[3].set_clim(
+        to_dB(np.max(spec[0])) - dynamic_range_db,
+        to_dB(np.max(spec[0])),
+    )
     # ax.set_title(f'Expected wave arrival times for {sensor.name}')
     ax.set_xlabel("Time [s]")
     ax.set_ylabel("Frequency [Hz]")
@@ -329,7 +455,9 @@ def spectrogram_with_lines(
 
 
 def envelope_with_lines(
-    sensor: Sensor, measurements: pd.DataFrame, arrival_times: np.ndarray
+    sensor: Sensor,
+    measurements: pd.DataFrame,
+    arrival_times: np.ndarray,
 ):
     """Plot the correlation between the chirp signal and the measured signal"""
     time_axis = np.linspace(0, len(measurements) / SAMPLE_RATE, len(measurements))
@@ -367,7 +495,11 @@ def envelope_with_lines(
     ax.grid()
 
 
-def plot_filter_response(sos: np.ndarray, cutoff_highpass: int, cutoff_lowpass: int):
+def plot_filter_response(
+    sos: np.ndarray,
+    cutoff_highpass: int,
+    cutoff_lowpass: int,
+):
     w, h = scipy.signal.sosfreqz(sos, worN=2**15)
     _, ax = plt.subplots(figsize=set_window_size())
     ax.semilogx((SAMPLE_RATE * 0.5 / np.pi) * w, to_dB(abs(h)))
@@ -398,7 +530,10 @@ def set_fontsizes():
     plt.rc("figure", titlesize=MEDIUM_SIZE)  # fontsize of the figure title
 
 
-def set_window_size(rows: int = 1, cols: int = 1):
+def set_window_size(
+    rows: int = 1,
+    cols: int = 1,
+):
     """Set the window size for the plots"""
     figsize: tuple
     if rows == 1 and cols == 1:

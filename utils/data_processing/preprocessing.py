@@ -111,7 +111,11 @@ def crop_to_signal(
     above a threshold given by the max value in the noise.
     """
     if isinstance(measurements, pd.DataFrame):
-        _, start_index, end_index = crop_to_signal(measurements["Sensor 1"])
+        _, start_index, end_index = crop_to_signal(
+            measurements["Sensor 1"],
+            padding,
+            threshold,
+        )
         cropped_measurements = measurements.iloc[start_index:end_index, :]
         cropped_measurements.reset_index(drop=True, inplace=True)
         return cropped_measurements

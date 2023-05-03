@@ -109,39 +109,9 @@ def generate_ideal_signal(
     snr_dB: float = 0,
 ):
     """Generate an "ideal" signal based on expected arrival times for a setup."""
-    if signal_model == "touch":
-        touch_signal = extract_touch_signal(
-            filter_critical_frequency=critical_frequency
-        )
-    elif signal_model == "line":
-        # Generate a dirac pulse
-        touch_signal = np.zeros(int(signal_length_s * SAMPLE_RATE))
-        touch_signal[int(signal_length_s * SAMPLE_RATE / 2)] = 1
-    elif signal_model == "gaussian":
-        # Generate a gaussian modulated pulse with frequency critical_frequency and duration 10 periods
-        t = np.linspace(
-            -signal_length_s / 2,
-            signal_length_s / 2,
-            int(signal_length_s * SAMPLE_RATE),
-        )
-        # The function Tonni uses for the simulations
-        touch_signal = -np.exp(-((t) ** 2) / (2 * t_var)) * np.sin(
-            2 * np.pi * critical_frequency * (t)
-        )
-        # Add some noise to allow crop_to_signal() to work properly
-        touch_signal_with_noise = add_noise(touch_signal, critical_frequency, snr_dB=50)
-        touch_signal_with_noise, _, _ = crop_to_signal(touch_signal_with_noise)
-        time_axis_for_plotting = np.linspace(
-            0, len(touch_signal_with_noise) / SAMPLE_RATE, len(touch_signal_with_noise)
-        )
-        # Plot the signal
-        fig, ax = plt.subplots()
-        ax.plot(time_axis_for_plotting, touch_signal_with_noise)
-        ax.set_xlabel("Time [s]")
-        ax.set_ylabel("Amplitude")
-        ax.set_title("Gaussian modulated pulse")
-    else:
-        raise ValueError("Invalid signal model")
+    touch_signal = model_touch_signal(
+        signal_length_s, signal_model, critical_frequency, t_var
+    )
 
     # Initialize the superpositioned signal
     ideal_signals, distances = sum_signals(
@@ -156,6 +126,48 @@ def generate_ideal_signal(
     return ideal_signals, distances
 
 
+def model_touch_signal(signal_length_s, signal_model, critical_frequency, t_var):
+    if signal_model == "touch":
+        touch_signal = extract_touch_signal(
+            filter_critical_frequency=critical_frequency
+        )
+    elif signal_model == "line":
+        # Generate a dirac pulse
+        touch_signal = np.zeros(int(signal_length_s * SAMPLE_RATE))
+        touch_signal[int(signal_length_s * SAMPLE_RATE / 2)] = 1
+    elif signal_model == "gaussian":
+        touch_signal = model_gaussian_touch(signal_length_s, critical_frequency, t_var)
+    else:
+        raise ValueError("Invalid signal model")
+    return touch_signal
+
+
+def model_gaussian_touch(signal_length_s, critical_frequency, t_var):
+    # Generate a gaussian modulated pulse with frequency critical_frequency and duration 10 periods
+    t = np.linspace(
+        -signal_length_s / 2,
+        signal_length_s / 2,
+        int(signal_length_s * SAMPLE_RATE),
+    )
+    # The function Tonni uses for the simulations
+    touch_signal = -np.exp(-((t) ** 2) / (2 * t_var)) * np.sin(
+        2 * np.pi * critical_frequency * (t)
+    )
+    # Add some noise to allow crop_to_signal() to work properly
+    touch_signal_with_noise = add_noise(touch_signal, critical_frequency, snr_dB=50)
+    touch_signal_with_noise, _, _ = crop_to_signal(touch_signal_with_noise)
+    time_axis_for_plotting = np.linspace(
+        0, len(touch_signal_with_noise) / SAMPLE_RATE, len(touch_signal_with_noise)
+    )
+    # Plot the signal
+    fig, ax = plt.subplots()
+    ax.plot(time_axis_for_plotting, touch_signal_with_noise)
+    ax.set_xlabel("Time [s]")
+    ax.set_ylabel("Amplitude")
+    ax.set_title("Gaussian modulated pulse")
+    return touch_signal
+
+
 def add_noise(
     ideal_signals: pd.DataFrame or np.ndarray,
     critical_frequency: float,
@@ -165,7 +177,9 @@ def add_noise(
         # Call the function recursively for each channel
         for channel in ideal_signals.columns:
             ideal_signals[channel] = add_noise(
-                ideal_signals[channel], critical_frequency, snr_dB
+                ideal_signals[channel],
+                critical_frequency,
+                snr_dB,
             )
         return ideal_signals
 
@@ -226,6 +240,8 @@ def sum_signals(
             relative_first_reflection=False,
             print_info=False,
         )
+        # Hardcode the arrival times to be only the indices 0, 3, 4, and 11 of arrival_times
+        arrival_times = arrival_times[[0, 3, 4, 11]]
         for arrival_time in arrival_times:
             arrival_time_index = int(arrival_time * SAMPLE_RATE)
             travel_distance_m = arrival_time * propagation_speed_mps
@@ -299,7 +315,7 @@ def extract_touch_signal(
             measurements=[touch_signal],
             nfft=2**7,
         )
-        fig.suptitle("Touch signal used for ideal measurement", fontsize=16)
+        fig.suptitle("Touch signal used for ideal measurement")
 
     return touch_signal
 

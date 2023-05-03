@@ -6,24 +6,32 @@ from utils.data_processing.detect_echoes import get_analytic_signal, get_envelop
 from utils.data_processing.preprocessing import crop_data, crop_to_signal, filter_signal
 from utils.data_processing.processing import interpolate_signal
 from utils.data_visualization.visualize_data import compare_signals
-from utils.global_constants import ORIGINAL_SAMPLE_RATE, SAMPLE_RATE
+from utils.global_constants import (
+    INTERPOLATION_FACTOR,
+    ORIGINAL_SAMPLE_RATE,
+    SAMPLE_RATE,
+)
 
 
 def generate_signals_for_matlab(
     measurements: pd.DataFrame = None,
     center_frequency: float = 25000,
     t_var: float = 0.0001,
+    propagation_speed_mps: float = 1000,
+    crop_end: float = 0.000637,
+    number_of_sensors: int = 10,
 ):
     if measurements is None:
         FILE_NAME, measurements = import_the_data()
         measurements = do_measurement_preprocessing(measurements)
     else:
-        FILE_NAME = f"generated_signal_{center_frequency // 1000}kHz_{t_var}s_{SAMPLE_RATE // 1000}kHz"
-        measurements = crop_data(
-            measurements,
-            time_start=0,
-            time_end=0.000656,
-        )
+        FILE_NAME = f"generated_signal_{center_frequency // 1000}kHz_{t_var}s_{propagation_speed_mps}mps_{number_of_sensors}sensors_interp{INTERPOLATION_FACTOR}"
+        if crop_end is not None:
+            measurements = crop_data(
+                measurements,
+                time_start=2.5002,
+                time_end=2.5002 + crop_end,
+            )
     measurements = drop_actuator_channel(measurements)
     plot_them_time_signals(measurements)
     analytic_signals = get_analytic_signal(measurements)
