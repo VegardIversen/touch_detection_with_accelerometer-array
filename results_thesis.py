@@ -196,7 +196,7 @@ def wave_number_graph(number=1):
     wp.plot_velocities(phase, freq, distance, material='LDPE_tonni7mm')
 
 
-def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.001):
+def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.0001):
     """
     Performs dispersion compensation on the input signal.
 
@@ -236,7 +236,7 @@ def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.001):
     plt.title('A0 mode')
     plt.legend()
     plt.show()
-    n_times = 8 #number of points that is an integral power of two and at least eight times as many as in the original signal.
+    n_times = 16 #number of points that is an integral power of two and at least eight times as many as in the original signal.
     
     m = len(signal)
     n_fft = 2 ** int(np.ceil(np.log2(n_times * m)))
@@ -262,7 +262,9 @@ def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.001):
     #f_nyq = freq_vel[-1]/2
     #G_w = G_w[freq_range]
     G_w = G_w[freq_vel>0]
+    print(f'length of positive G_w: {G_w.shape}')
     freq_vel = freq_vel[freq_vel>0]
+    print(f'length of positive freq_vel: {freq_vel.shape}')
     f_nyq = fs/2
     print(f'f_nyq: {f_nyq}')
     print(f'last element in freq_vel: {freq_vel[-1]}')
@@ -271,17 +273,17 @@ def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.001):
     plt.show()
     print(f'freq_vel: {freq_vel.shape}')
     #dt = 1/upper_freq
-    v_gr, v_ph = wp.theoretical_group_phase_vel(freq_vel, material='LDPE_tonni20mm', plot=True)
+    v_gr, v_ph = wp.theoretical_group_phase_vel(freq_vel, material='LDPE_tonni20mm', plot=True) #group and phase velocity with the same length as freq_vel
     print(f'v_gr: {v_gr.shape}')
     print(f'v_ph: {v_ph.shape}')
-    k = (2*np.pi*freq_vel)/v_ph
+    k = (2*np.pi*freq_vel)/v_ph #same length as freq_vel. 
     print(f'k: {k.shape}')
-    v_nyq = get_velocity_at_freq(f_nyq)['A0']['phase_velocity']
+    v_nyq = get_velocity_at_freq(f_nyq)['A0']['phase_velocity'] #fetches the velocity at the nyquist frequency
     #print(f'k_max = {k[-1]}') 
-    v_max = get_velocity_at_freq(upper_freq)['A0']['phase_velocity']
+    v_max = get_velocity_at_freq(upper_freq)['A0']['phase_velocity'] #fetches the velocity at the upper frequency
     k_nyq = (2*np.pi*f_nyq)/v_nyq
     k_max = k[-1] #doesnt matter if i use this or this 2*np.pi*upper_freq/v_max since both are equal or 2 times k_nyq
-    print(f'k_nyq: {k_nyq} ')
+    print(f'k_nyq: {k_nyq}, kmax: {k_max}')
     w = 2*np.pi*freq_vel
     print(f'shape of w: {w.shape}')
     n = len(k)
@@ -301,12 +303,20 @@ def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.001):
     #k_nyq = #k[round(1/(2*dt))]
     print(f'Checking if Delta x is less or equal to 1/(2k_nyq). Delta x is {dx}, 1/(2k_nyq) is {1/(2*k_nyq)}')
     dk = 1 / (n_fft * dx)
-
+    print(f'dk: {dk}')
+    x = np.arange(0, n_fft * dx, dx)
+    print(f'shape of x: {x.shape}')
+    print(f'max of x: {x[-1]}')
     print(f'n should be larger than 2 * k_nyq / dk, n is {n_fft}, 2 * k_nyq / dk is {2 * k_nyq / dk}')
     #print(f'this number of points in the wavenumber domain is {n}')
     
     # Interpolate the FFT to equally spaced k values
     k_new = np.arange(0, k_max + dk, dk)
+    plt.plot(k_new ,label='k_new')
+    plt.plot(k, label='k')
+    plt.title('k_new vs k')
+    plt.legend()
+    plt.show()
     print(f'shape of k new: {k.shape}')
     # Interpolate G(w) to find G(k)
     G_interp = interpolate.interp1d(k, G_w, kind='linear', bounds_error=False, fill_value=0)(k_new)
