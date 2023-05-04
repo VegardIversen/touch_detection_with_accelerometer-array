@@ -196,7 +196,7 @@ def wave_number_graph(number=1):
     wp.plot_velocities(phase, freq, distance, material='LDPE_tonni7mm')
 
 
-def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.0001):
+def dispersion_compensation_Wilcox(file_n=2, postion=35, fs=501000, dx=0.0001):
     """
     Performs dispersion compensation on the input signal.
 
@@ -216,6 +216,12 @@ def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.0001):
     - Havent quite understood what the result is. In the paper it returns to a distance trace. But what does that mean?
     - Not quite sure if I can change the frequency like I have done now. The paper doesnt mention anything about tak
     """
+
+    def get_k_value(freq):
+        v_freq = get_velocity_at_freq(freq)['A0']['phase_velocity'] #fetches the velocity at the upper frequency
+        k_freq = (2*np.pi*freq)/v_freq
+        return k_freq
+
     upper_freq = 40000
     lower_freq = 0
     new_fs = 80000
@@ -223,44 +229,56 @@ def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.0001):
     #frequency axis from 0 to 40kHz with 80000 samples
     #freq = np.linspace(lower_freq, upper_freq, new_fs)
     
+    
 
-    wave_data_top, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(9)
-    wave_data_bottom, x_pos_bottom, y_pos_bottom, z_pos_bottom, time_axis_bottom = get_comsol_data(10)
+    wave_data_top, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(9) #fetches data from comsol files
+    wave_data_bottom, x_pos_bottom, y_pos_bottom, z_pos_bottom, time_axis_bottom = get_comsol_data(10) #fetches data from comsol files
+
+    #Plots raw data
     plt.title(f'Raw data for top and bottom at postion: {postion}')
     plt.plot(wave_data_top[postion], label='top')
     plt.plot(wave_data_bottom[postion], label='bottom')
     plt.legend()
     plt.show()
+
     signal = (wave_data_top[postion]+wave_data_bottom[postion])/2 #A0 mode
+    #plotting signal mode
     plt.plot(signal, label='A0 mode')
     plt.title('A0 mode')
     plt.legend()
     plt.show()
+
+
     n_times = 16 #number of points that is an integral power of two and at least eight times as many as in the original signal.
-    
     m = len(signal)
     n_fft = 2 ** int(np.ceil(np.log2(n_times * m)))
     print(f'length of signal before padding: {m}, length of signal after padding {n_fft}')
+    #padding signal with zeros, new length is n_fft
     signal_padded = np.pad(signal, (0, n_fft - m), mode='constant')
+    #plotting padded signal
     plt.plot(signal_padded)
     plt.title('Padded signal')
     plt.show()
-    #desired_sampling_rate = 40000
-    #downsample_factor = int(round(m / (fs / desired_sampling_rate)))
-    
+
+    #computing fft of padded signal
     G_w = np.fft.fft(signal_padded)
     print(f'shape of G_w: {G_w.shape}')
-    dt = 1/fs
+    dt = 1/fs # 1/501000
     print(f'dt: {dt}')
+    #computing frequency axis, will have length G_w.size
     freq_vel = np.fft.fftfreq(G_w.size, dt)
+    #plotting fft of padded signal
     plt.plot(freq_vel, np.abs(G_w))
     plt.title('Fourier transform of padded signal')
     plt.show()
     print(f'shape of freq_vel: {freq_vel.shape}')
+
     #freq_range = (freq_vel>lower_freq) & (freq_vel<upper_freq)
     #freq_vel = freq_vel[freq_range]
     #f_nyq = freq_vel[-1]/2
     #G_w = G_w[freq_range]
+
+    #only looking at positive frequencies
     G_w = G_w[freq_vel>0]
     print(f'length of positive G_w: {G_w.shape}')
     freq_vel = freq_vel[freq_vel>0]
@@ -268,6 +286,7 @@ def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.0001):
     f_nyq = fs/2
     print(f'f_nyq: {f_nyq}')
     print(f'last element in freq_vel: {freq_vel[-1]}')
+    #plotting fft of padded signal after frequency range
     plt.plot(freq_vel, np.abs(G_w))
     plt.title('Fourier transform of padded signal after frequency range')
     plt.show()
@@ -276,12 +295,15 @@ def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.0001):
     v_gr, v_ph = wp.theoretical_group_phase_vel(freq_vel, material='LDPE_tonni20mm', plot=True) #group and phase velocity with the same length as freq_vel
     print(f'v_gr: {v_gr.shape}')
     print(f'v_ph: {v_ph.shape}')
-    k = (2*np.pi*freq_vel)/v_ph #same length as freq_vel. 
+    k = (2*np.pi*freq_vel)/v_ph #same length as freq_vel. Wavenumber domain 
     print(f'k: {k.shape}')
     v_nyq = get_velocity_at_freq(f_nyq)['A0']['phase_velocity'] #fetches the velocity at the nyquist frequency
     #print(f'k_max = {k[-1]}') 
     v_max = get_velocity_at_freq(upper_freq)['A0']['phase_velocity'] #fetches the velocity at the upper frequency
-    k_nyq = (2*np.pi*f_nyq)/v_nyq
+    k_nyq = get_k_value(f_nyq)
+    dx = 1/(2*k_nyq)
+    print(f'dx: {dx}')
+    dk = 1/(n_fft*dx)
     k_max = k[-1] #doesnt matter if i use this or this 2*np.pi*upper_freq/v_max since both are equal or 2 times k_nyq
     print(f'k_nyq: {k_nyq}, kmax: {k_max}')
     w = 2*np.pi*freq_vel
@@ -289,6 +311,7 @@ def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.0001):
     n = len(k)
     print(f'length of k: {n}')
     #print(f'altnerative length of k: {int(np.ceil(2 * f_nyq / (1 / (dx * m))))}')
+    #plotting wavenumber vs frequency
     plt.plot(k, freq_vel)
     plt.xlabel('Wavenumber')
     plt.ylabel('Frequency')
@@ -302,8 +325,11 @@ def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.0001):
     print(f'Checking if n*delta_x is larger than m*delta_t*v_max. n*delta_x is {n_fft*dx}, m*delta_t*v_max is {m*dt*np.max(v_gr)}')
     #k_nyq = #k[round(1/(2*dt))]
     print(f'Checking if Delta x is less or equal to 1/(2k_nyq). Delta x is {dx}, 1/(2k_nyq) is {1/(2*k_nyq)}')
-    dk = 1 / (n_fft * dx)
-    print(f'dk: {dk}')
+    dk1 = 1 / (n_fft * dx) #wavenumber step
+    #creating new k axis
+    k_new = np.arange(0, k_max + dk, dk)
+    print(f'shape of k new: {k_new.shape}')
+    print(f'dk1: {dk1}, dk: {dk}')
     x = np.arange(0, n_fft * dx, dx)
     print(f'shape of x: {x.shape}')
     print(f'max of x: {x[-1]}')
@@ -311,13 +337,14 @@ def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.0001):
     #print(f'this number of points in the wavenumber domain is {n}')
     
     # Interpolate the FFT to equally spaced k values
-    k_new = np.arange(0, k_max + dk, dk)
-    plt.plot(k_new ,label='k_new')
+    # print(f'shape of k: {k.shape}, k_new: {k_new.shape}, freq_vel: {freq_vel.shape}')
+    plt.plot(k_new,label='k_new')
     plt.plot(k, label='k')
+    #plt.xlabel('Wavenumber')
+    #plt.ylabel('Frequency')
     plt.title('k_new vs k')
     plt.legend()
     plt.show()
-    print(f'shape of k new: {k.shape}')
     # Interpolate G(w) to find G(k)
     G_interp = interpolate.interp1d(k, G_w, kind='linear', bounds_error=False, fill_value=0)(k_new)
     plt.plot(k_new, G_interp.real, label='interpolated G(k)')
@@ -339,18 +366,20 @@ def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.0001):
 
     # Apply inverse FFT to H(k) to obtain the dispersion compensated distance-trace
     h_x = np.fft.ifft(H_k)
-
+    print(f'shape of h_x: {h_x.shape} before removing zero-padding')
     # Remove zero-padding from the compensated signal
     h_x = h_x[:m]
+    x = np.arange(len(h_x))*dx
     #normalize h_x and signal
     h_x = h_x/np.max(h_x)
     signal = signal/np.max(signal)
     print(f'shape of h_x: {h_x.shape}')
     print(f'shape of signal: {signal.shape}')
     #Create a subplot with the dispersion compensated signal and the original signal
+    #plotting the results
     plt.subplot(2, 1, 1)
-    plt.plot(h_x.real, label='Dispersion compensated signal')
-    plt.xlabel('sample')
+    plt.plot(x,h_x.real, label='Dispersion compensated signal')
+    plt.xlabel('distance [m]')
     plt.ylabel('Amplitude')
     plt.title('Dispersion compensated signal')
     plt.legend()
@@ -363,6 +392,43 @@ def dispersion_compensation_Wilcox(file_n=2, postion=5, fs=501000, dx=0.0001):
     plt.tight_layout()
     plt.show()
     
+    G_k = np.fft.fft(h_x)
+    g_disp = np.real(np.fft.ifft(G_k))
+    plt.subplot(2, 1, 1)
+    plt.plot(time_axis_top, g_disp, label='Dispersion compensated signal')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Amplitude')
+    plt.title('Dispersion compensated signal')
+    plt.legend()
+    plt.subplot(2, 1, 2)
+    plt.plot(time_axis_top,signal, label='Original signal')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Amplitude')
+    plt.title('Original signal')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+    #plot fft of dispersion compensated signal and original signal with the same frequency axis and padded
+    G_k_padded = np.pad(h_x, (0, n_fft - m), mode='constant')
+    print(f'shape of G_k_padded: {G_k_padded.shape}')
+    G_k_padded = np.fft.fft(G_k_padded)
+    G_k_padded = G_k_padded[:int(n_fft/2)]
+    
+    plt.subplot(2, 1, 1)
+    plt.plot(freq_vel, np.abs(G_k_padded[:-1]), label='Dispersion compensated signal')
+    plt.xlabel('Frequency [Hz]')
+    plt.ylabel('Amplitude')
+    plt.title('Dispersion compensated signal')
+    plt.legend()
+    plt.subplot(2, 1, 2)
+    plt.plot(freq_vel, np.abs(G_w), label='Original signal')
+    plt.xlabel('Frequency [Hz]')
+    plt.ylabel('Amplitude')
+    plt.title('Original signal')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
     return h_x.real
 
 def read_DC_files(file_n=1):
