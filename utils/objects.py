@@ -143,30 +143,54 @@ class Sensor:
             or if get_/set_coordinates() are necessary.
     """
 
-    radius = 0.0035
+    radius_m = 0.0035
+    type_MEMS = False
+    # If type_MEMS, use a square:
+    edge_length_m = 0.003
 
-    def __init__(self, coordinates: np.ndarray, name: str, plot: bool = True):
+    def __init__(
+        self,
+        coordinates: np.ndarray,
+        name: str,
+        plot: bool = True,
+        type_MEMS: bool = True,
+    ):
         self.coordinates = coordinates
         self.x = coordinates[0]
         self.y = coordinates[1]
         self.name = name
         self.plot = plot
+        self.type_MEMS = type_MEMS
 
-    def set_coordinates(self, coordinates: np.ndarray):
+    def set_coordinates(
+        self,
+        coordinates: np.ndarray,
+    ):
         self.coordinates = coordinates
         self.x = coordinates[0]
         self.y = coordinates[1]
 
     def draw(self):
-        """Draw the sensor."""
-        sensor = plt.Circle(
-            self.coordinates,
-            radius=self.radius,
-            fc="#AEAFA7",
-            ec="dimgray",
-            label="Sensor",
-            zorder=10,
-        )
+        """Draw the sensor as a square if type_MEMS is True, otherwise as a circle"""
+        if self.type_MEMS:
+            sensor = patches.Rectangle(
+                (self.x - self.edge_length_m / 2, self.y - self.edge_length_m / 2),
+                self.edge_length_m,
+                self.edge_length_m,
+                fc="#AEAFA7",
+                ec="dimgray",
+                label="Sensor",
+                zorder=10,
+            )
+        else:
+            sensor = plt.Circle(
+                self.coordinates,
+                radius=self.radius_m,
+                fc="#AEAFA7",
+                ec="dimgray",
+                label="Sensor",
+                zorder=10,
+            )
         plt.gca().add_patch(sensor)
 
     def __str__(self):
@@ -238,7 +262,7 @@ class MirroredSensor(Sensor):
         """Draw the mirrored sensor."""
         mirrored_sensor = plt.Circle(
             self.coordinates,
-            radius=self.radius,
+            radius=self.radius_m,
             fc="white",
             ec="dimgray",
             #  label=f'Mirrored {self.name}',
