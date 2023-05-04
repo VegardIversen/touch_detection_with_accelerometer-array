@@ -6,7 +6,7 @@ Date: 2022-01-09
 import numpy as np
 from matplotlib import pyplot as plt
 
-from main_scripts.estimate_touch_location import estimate_touch_location
+from main_scripts.test_on_real_simulations import test_on_real_simulations
 from utils.data_visualization.visualize_data import set_fontsizes
 
 
@@ -28,18 +28,7 @@ def main():
         -0.909610510877382,
         4.218204890523926,
     ]
-    estimate_touch_location(
-        sorted_estimated_angles_deg=SORTED_ESTIMATED_ANGLES,
-        center_frequency_Hz=25000,
-        t_var=1e-8,
-        propagation_speed_mps=250,
-        snr_dB=40,
-        attenuation_dBpm=0,
-        crop_end_s=None,
-        number_of_sensors=30,
-        sensor_spacing_m=0.005,
-        actuator_coordinates=np.array([0.50, 0.15]),
-    )
+    test_on_real_simulations()
 
     # Plot all figures at the same time
     plt.show()
