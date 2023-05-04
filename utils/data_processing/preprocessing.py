@@ -104,7 +104,7 @@ def crop_data(
 
 def crop_to_signal(
     measurements: pd.DataFrame or np.ndarray,
-    padding: float = 0.05,
+    padding_percent: float = 0.05,
     threshold: float = None,
 ):
     """Crop the signal to the first and last value
@@ -113,7 +113,7 @@ def crop_to_signal(
     if isinstance(measurements, pd.DataFrame):
         _, start_index, end_index = crop_to_signal(
             measurements["Sensor 1"],
-            padding,
+            padding_percent,
             threshold,
         )
         cropped_measurements = measurements.iloc[start_index:end_index, :]
@@ -133,11 +133,12 @@ def crop_to_signal(
     # Find the last index where the signal is higher than the threshold
     end_index = len(measurements) - np.argmax(np.abs(envelope)[::-1] > (threshold))
 
+    # Add padding to the signal
     signal_length = end_index - start_index
-    start_index -= int(signal_length * padding)
+    start_index -= int(signal_length * padding_percent)
     if start_index < 0:
         start_index = 0
-    end_index += int(signal_length * padding)
+    end_index += int(signal_length * padding_percent)
     if end_index > len(measurements):
         end_index = len(measurements)
 

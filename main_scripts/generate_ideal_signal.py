@@ -39,7 +39,7 @@ def compare_to_ideal_signal(
 ):
     """Calculate arrival times for sensor 1"""
     if propagation_speed_mps is None:
-        propagation_speed_mps = 950
+        propagation_speed_mps = 922
     print(f"Propagation speed: {propagation_speed_mps:.2f}")
     signal_length_s = float(
         measurements.shape[0] / SAMPLE_RATE,
@@ -104,13 +104,16 @@ def generate_ideal_signal(
     attenuation_dBpm: float,
     signal_length_s: float,
     signal_model: str = "line",
-    critical_frequency: float = 0,
+    critical_frequency_Hz: float = 0,
     t_var: float = 1e-9,
     snr_dB: float = 0,
 ):
     """Generate an "ideal" signal based on expected arrival times for a setup."""
     touch_signal = model_touch_signal(
-        signal_length_s, signal_model, critical_frequency, t_var
+        signal_length_s,
+        signal_model,
+        critical_frequency_Hz,
+        t_var,
     )
 
     # Initialize the superpositioned signal
@@ -122,11 +125,20 @@ def generate_ideal_signal(
         signal_length_s,
     )
 
-    ideal_signals = add_noise(ideal_signals, critical_frequency, snr_dB)
+    ideal_signals = add_noise(
+        ideal_signals,
+        critical_frequency_Hz,
+        snr_dB,
+    )
     return ideal_signals, distances
 
 
-def model_touch_signal(signal_length_s, signal_model, critical_frequency, t_var):
+def model_touch_signal(
+    signal_length_s,
+    signal_model,
+    critical_frequency,
+    t_var,
+):
     if signal_model == "touch":
         touch_signal = extract_touch_signal(
             filter_critical_frequency=critical_frequency
@@ -136,7 +148,11 @@ def model_touch_signal(signal_length_s, signal_model, critical_frequency, t_var)
         touch_signal = np.zeros(int(signal_length_s * SAMPLE_RATE))
         touch_signal[int(signal_length_s * SAMPLE_RATE / 2)] = 1
     elif signal_model == "gaussian":
-        touch_signal = model_gaussian_touch(signal_length_s, critical_frequency, t_var)
+        touch_signal = model_gaussian_touch(
+            signal_length_s,
+            critical_frequency,
+            t_var,
+        )
     else:
         raise ValueError("Invalid signal model")
     return touch_signal
