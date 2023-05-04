@@ -22,6 +22,17 @@ def plot_legend_without_duplicates(placement: str = None):
                 marker="o",
                 linestyle="None",
             )
+        if isinstance(handle, patches.Rectangle):
+            # Use a square with lengths 0.003 as the handle
+            handles[i] = plt.Line2D(
+                [],
+                [],
+                markerfacecolor=handle.get_facecolor(),
+                markeredgecolor=handle.get_edgecolor(),
+                marker="s",
+                linestyle="None",
+                markersize=3,
+            )
     by_label = OrderedDict(zip(labels, handles))
     if placement:
         plt.legend(by_label.values(), by_label.keys(), loc=placement)

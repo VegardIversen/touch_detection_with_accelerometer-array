@@ -15,22 +15,22 @@ from utils.global_constants import (
 
 def generate_signals_for_matlab(
     measurements: pd.DataFrame = None,
-    center_frequency: float = 25000,
+    center_frequency_Hz: float = 25000,
     t_var: float = 0.0001,
     propagation_speed_mps: float = 1000,
-    crop_end: float = 0.000637,
+    crop_end_s: float = 0.000637,
     number_of_sensors: int = 10,
 ):
     if measurements is None:
         FILE_NAME, measurements = import_the_data()
         measurements = do_measurement_preprocessing(measurements)
     else:
-        FILE_NAME = f"generated_signal_{center_frequency // 1000}kHz_{t_var}s_{propagation_speed_mps}mps_{number_of_sensors}sensors_interp{INTERPOLATION_FACTOR}"
-        if crop_end is not None:
+        FILE_NAME = f"generated_signal_{center_frequency_Hz // 1000}kHz_{t_var}s_{propagation_speed_mps}mps_{number_of_sensors}sensors_interp{INTERPOLATION_FACTOR}"
+        if crop_end_s is not None:
             measurements = crop_data(
                 measurements,
                 time_start=2.5002,
-                time_end=2.5002 + crop_end,
+                time_end=2.5002 + crop_end_s,
             )
     measurements = drop_actuator_channel(measurements)
     plot_them_time_signals(measurements)

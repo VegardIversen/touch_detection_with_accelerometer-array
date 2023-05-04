@@ -1,6 +1,11 @@
 # Changelog
 
-# 8.0.0
+
+## 9.0.0
+Not much, but some ok results with my simulations. Changed to using the MEMS accelerometers, which allowed for smaller sensors and can be placed at the distance required by the simulated phase velocity of 250 m/s at 25 kHz. Look more at this later. Should probably move to a model that simulates both group and phase velocity, maybe directly in sum_signals()?
+
+
+## 8.0.0
 Plot the phase velocities, energy (group) velocities and the wavelengths of A0 and S0 waves.
 Concluding that the best frequency band should be around 25 kHz as this allows for the A0 waves to arrive ahead of the S0 waves with the best margin (the group velocity is lower for S0 than A0), while still having a relatively short wavelength of ~1 cm.
 
@@ -26,7 +31,7 @@ Export signals from setup 4 (three sensors 5 cm from edge, 1 cm apart), currentl
 ## 5.0.0
 Looking at touch release and swiping. Really interesting to see the relative power in the touch release, and the energy in the swiping. Even at 30 kHz to 35 kHz bandpass the SNR is rather good, and promising for phase based DoA estimation.
 
-# 4.0.0
+## 4.0.0
 Inspecting the immediate touch signal, before propagation using setup 3. Exporting the cropped touch to use for simulations.
 
 ### 3.1.0

@@ -14,13 +14,13 @@ from utils.global_constants import x, y
 
 
 def estimate_touch_location(
-    sorted_estimated_angles: list,
-    center_frequency: int = 25000,
+    sorted_estimated_angles_deg: list,
+    center_frequency_Hz: int = 25000,
     t_var: float = 4e-9,
     propagation_speed_mps: float = 992,
     snr_dB: float = 10,
     attenuation_dBpm: float = 15,
-    crop_end: float = 0.001,
+    crop_end_s: float = 0.001,
     number_of_sensors: int = 8,
     sensor_spacing_m: float = 0.01,
     actuator_coordinates: np.ndarray = np.array([0.50, 0.35]),
@@ -44,7 +44,7 @@ def estimate_touch_location(
 
     ideal_signals, _ = generate_ideal_signal(
         setup=SETUP,
-        critical_frequency=center_frequency,
+        critical_frequency_Hz=center_frequency_Hz,
         attenuation_dBpm=attenuation_dBpm,
         signal_length_s=1,
         propagation_speed_mps=propagation_speed_mps,
@@ -55,56 +55,57 @@ def estimate_touch_location(
     ideal_signals = crop_to_signal(
         ideal_signals,
         # threshold=0.2,
+        padding_percent=0.5,
     )
     generate_signals_for_matlab(
         ideal_signals,
-        center_frequency=center_frequency,
+        center_frequency_Hz=center_frequency_Hz,
         t_var=t_var,
         propagation_speed_mps=propagation_speed_mps,
-        crop_end=crop_end,
+        crop_end_s=crop_end_s,
         number_of_sensors=number_of_sensors,
     )
 
     # Real angles:
-    real_phi_1 = calculate_phi_1(
+    real_phi_1_deg = calculate_phi_1(
         y_s_a=y_s_a,
         x_s_a=x_s_a,
     )
-    real_phi_2 = calculate_phi_2(
+    real_phi_2_deg = calculate_phi_2(
         y_s_a=y_s_a,
         y_s_c=SENSORS_CENTER_COORDINATES[y],
         x_s_a=x_s_a,
     )
-    real_phi_3 = calculate_phi_3(
+    real_phi_3_deg = calculate_phi_3(
         y_s_a=y_s_a,
         x_s_a=x_s_a,
         x_s_c=SENSORS_CENTER_COORDINATES[x],
     )
-    real_phi_4 = calculate_phi_4(
+    real_phi_4_deg = calculate_phi_4(
         y_s_a=y_s_a,
         y_s_c=SENSORS_CENTER_COORDINATES[y],
         x_s_a=x_s_a,
         x_s_c=SENSORS_CENTER_COORDINATES[x],
     )
-    if all([angle < 0 for angle in sorted_estimated_angles]):
+    if all([angle < 0 for angle in sorted_estimated_angles_deg]):
         # All angles are negative if y_s_a < y_s_c,
         # and a different order should be used
-        phi_1 = sorted_estimated_angles[1]
-        phi_2 = sorted_estimated_angles[3]
-        phi_3 = sorted_estimated_angles[0]
-        phi_4 = sorted_estimated_angles[2]
+        phi_1_deg = sorted_estimated_angles_deg[1]
+        phi_2_Deg = sorted_estimated_angles_deg[3]
+        phi_3 = sorted_estimated_angles_deg[0]
+        phi_4 = sorted_estimated_angles_deg[2]
     else:
-        phi_1 = sorted_estimated_angles[3]
-        phi_2 = sorted_estimated_angles[0]
-        phi_3 = sorted_estimated_angles[2]
-        phi_4 = sorted_estimated_angles[1]
+        phi_1_deg = sorted_estimated_angles_deg[3]
+        phi_2_Deg = sorted_estimated_angles_deg[0]
+        phi_3 = sorted_estimated_angles_deg[2]
+        phi_4 = sorted_estimated_angles_deg[1]
     print_angles_info(
-        real_phi_1,
-        real_phi_2,
-        real_phi_3,
-        real_phi_4,
-        phi_1,
-        phi_2,
+        real_phi_1_deg,
+        real_phi_2_deg,
+        real_phi_3_deg,
+        real_phi_4_deg,
+        phi_1_deg,
+        phi_2_Deg,
         phi_3,
         phi_4,
     )
@@ -114,8 +115,8 @@ def estimate_touch_location(
     r_sa = calculate_r_sa(
         x_s_c=SENSORS_CENTER_COORDINATES[x],
         y_s_c=SENSORS_CENTER_COORDINATES[y],
-        phi_1=phi_1,
-        phi_2=phi_2,
+        phi_1=phi_1_deg,
+        phi_2=phi_2_Deg,
         phi_3=phi_3,
     )
     r_sa = np.array(r_sa)
@@ -148,16 +149,16 @@ def print_angles_info(
 
     # Errors in angles:
     print(
-        f"Error in phi_1: {np.abs(real_phi_1 - phi_1):.3f} degrees, {np.abs(real_phi_1 - phi_1) / real_phi_1 * 100:.3f}%"
+        f"Error in phi_1: {np.abs(real_phi_1 - phi_1):.3f} degrees."
     )
     print(
-        f"Error in phi_2: {np.abs(real_phi_2 - phi_2):.3f} degrees, {np.abs(real_phi_2 - phi_2) / real_phi_2 * 100:.3f}%"
+        f"Error in phi_2: {np.abs(real_phi_2 - phi_2):.3f} degrees."
     )
     print(
-        f"Error in phi_3: {np.abs(real_phi_3 - phi_3):.3f} degrees, {np.abs(real_phi_3 - phi_3) / real_phi_3 * 100:.3f}%"
+        f"Error in phi_3: {np.abs(real_phi_3 - phi_3):.3f} degrees."
     )
     print(
-        f"Error in phi_4: {np.abs(real_phi_4 - phi_4):.3f} degrees, {np.abs(real_phi_4 - phi_4) / real_phi_4 * 100:.3f}%"
+        f"Error in phi_4: {np.abs(real_phi_4 - phi_4):.3f} degrees."
     )
 
 
