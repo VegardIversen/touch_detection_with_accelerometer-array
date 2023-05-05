@@ -109,6 +109,7 @@ def time_plotting(
     else:
         plot_as_linear(axs, i, channel, time_axis)
     axs[len(measurements) - 1, 0].set_xlabel("Time [s]")
+    axs[i, 0].legend([measurements[i].name])
     axs[i, 0].plot()
 
 
