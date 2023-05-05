@@ -21,11 +21,9 @@ def generate_signals_for_matlab(
     crop_end_s: float = 0.000637,
     number_of_sensors: int = 10,
 ):
+    FILE_NAME = f"comsol_simulations/simulations_10_mm_Teflon_COMSOL_{center_frequency_Hz // 1000}kHz_{number_of_sensors}sensors"
     if measurements is None:
-        FILE_NAME, measurements = import_the_data()
-        measurements = do_measurement_preprocessing(measurements)
-    else:
-        FILE_NAME = f"generated_signal_{center_frequency_Hz // 1000}kHz_{t_var}s_{propagation_speed_mps}mps_{number_of_sensors}sensors_interp{INTERPOLATION_FACTOR}"
+        FILE_NAME = f"niklas_simulations/generated_signal_{center_frequency_Hz // 1000}kHz_{t_var}s_{propagation_speed_mps}mps_{number_of_sensors}sensors_interp{INTERPOLATION_FACTOR}"
         if crop_end_s is not None:
             measurements = crop_data(
                 measurements,
@@ -45,10 +43,14 @@ def generate_signals_for_matlab(
 def drop_actuator_channel(
     measurements,
 ):
-    return measurements.drop(columns=["Actuator"])
+    # If there is a channel for the actuator, drop it
+    if "Actuator" in measurements.columns:
+        measurements = measurements.drop(columns=["Actuator"])
+    return measurements
 
 
 def import_the_data():
+    # TODO: Do this in main()
     FILE_FOLDER = "Plate_10mm/Setup4/touch"
     FILE_NAME = "nik_touch_35_35_v1"
     measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)

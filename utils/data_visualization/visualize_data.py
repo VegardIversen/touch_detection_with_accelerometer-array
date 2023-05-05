@@ -371,7 +371,9 @@ def wave_statistics(
     data: pd.DataFrame,
 ):
     """Plot average and variance of waveform.
-    TODO:   Use confidence interval instead of variance?
+    Only for use with the split signals.
+    TODO:   - Use confidence interval instead of variance?
+            - Fix or remove this function, no longer using split signals.
     """
     chirp_range = [0, len(data["Sensor 1"]) - 1]
     average = average_of_signals(data, chirp_range)

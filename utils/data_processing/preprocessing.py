@@ -91,14 +91,24 @@ def crop_data(
     time_start: float = None,
     time_end: float = None,
     sample_rate: int = SAMPLE_RATE,
+    apply_window_function: bool = False,
 ):
     """Crop either DataFrame input, pandas series or a numpy array input."""
     if isinstance(signals, np.ndarray):
         signals_cropped = signals[
             int(time_start * sample_rate) : int(time_end * sample_rate)
         ]
-    else:
+        if apply_window_function:
+            window = signal.windows.hamming(len(signals_cropped))
+    elif isinstance(signals, pd.DataFrame):
         signals_cropped = signals.loc[time_start * sample_rate : time_end * sample_rate]
+        if apply_window_function:
+            window = signal.windows.hamming(len(signals_cropped))
+            for channel in signals_cropped:
+                signals_cropped[channel] = signals_cropped[channel].values * window
+    else:
+        # Not implemented for other types
+        raise NotImplementedError
     return signals_cropped
 
 

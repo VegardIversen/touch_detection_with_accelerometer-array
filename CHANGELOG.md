@@ -1,5 +1,12 @@
 # Changelog
 
+## 10.0.0
+Trying to estimate touch location with S0 waves from the Comsol simulation.
+Testing at 25 kHz. Getting quite close, 6.4 cm off, with angles from Root-WSF.
+The issue is phi_4 seems to consistently be estimated to arrive from above instead of below.
+Not sure what is going on there.
+Root-MUSIC was way off on this one, only being able to detect three angles.
+
 ### 9.0.1
 Some edits to v8.0.0. Plot with the parameters Tonni sent in February, way higher velocities there. Fix ylabel to not say "Phase velocity".
 
