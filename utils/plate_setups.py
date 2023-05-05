@@ -24,14 +24,14 @@ class Setup:
         raise NameError("Setup version needs to be specified")
 
     def draw(self):
-        plt.axes()
-        plt.gcf().set_size_inches(5.5, 3.5)
+        _, ax = plt.subplots()
+        # fig.gcf().set_size_inches(5.5, 3.5)
         self.surface.draw()
         [actuator.draw() for actuator in self.actuators]
         [sensor.draw() for sensor in self.sensors if sensor.plot]
-        plt.axis("scaled")
-        plt.xlabel("x (m)")
-        plt.ylabel("y (m)")
+        ax.axis("scaled")
+        ax.set_xlabel("x (m)")
+        ax.set_ylabel("y (m)")
         plot_legend_without_duplicates()
 
     def get_propagation_speed(
