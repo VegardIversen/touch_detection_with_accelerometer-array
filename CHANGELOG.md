@@ -1,17 +1,18 @@
 # Changelog
 
+### 9.0.1
+Some edits to v8.0.0. Plot with the parameters Tonni sent in February, way higher velocities there. Fix ylabel to not say "Phase velocity".
 
 ## 9.0.0
 Not much, but some ok results with my simulations. Changed to using the MEMS accelerometers, which allowed for smaller sensors and can be placed at the distance required by the simulated phase velocity of 250 m/s at 25 kHz. Look more at this later. Should probably move to a model that simulates both group and phase velocity, maybe directly in sum_signals()?
 
-
 ## 8.0.0
+See v9.0.1 for the current version of this.
 Plot the phase velocities, energy (group) velocities and the wavelengths of A0 and S0 waves.
 Concluding that the best frequency band should be around 25 kHz as this allows for the A0 waves to arrive ahead of the S0 waves with the best margin (the group velocity is lower for S0 than A0), while still having a relatively short wavelength of ~1 cm.
 
 ### 7.1.0
 Use estimated angles from the Matlab Root-WSF to estimate the touch location based on the r_sa vector. Results vary with the chosen center frequency and t_var, but overall seems promising. Also comparing the estimated angles to the real anlges, calulcated given the location of the sensors and the actuator.
-
 
 ### 7.0.1
 Measure speed of the 25 kHz wave.
