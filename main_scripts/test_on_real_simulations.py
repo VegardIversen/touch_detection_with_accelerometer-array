@@ -21,11 +21,14 @@ def test_on_real_simulations(
         header=0,
     )
 
-    # Rename each column to name to start with "y="
-    [
-        simulation_data.rename(columns={column: f"y={column}"}, inplace=True)
-        for column in simulation_data.columns
-    ]
+    # Rename each column to name to start with "Sensor [column index + 1]"
+    simulation_data.rename(
+        columns={
+            column_name: f"Sensor {column_index + 1}"
+            for column_index, column_name in enumerate(simulation_data.columns)
+        },
+        inplace=True,
+    )
 
     CRITICAL_FREQUENCY = 25000
 
