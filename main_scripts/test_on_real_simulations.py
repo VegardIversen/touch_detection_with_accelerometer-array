@@ -8,18 +8,25 @@ from main_scripts.generate_ideal_signal import add_noise
 from main_scripts.generate_signals_for_matlab import generate_signals_for_matlab
 from utils.data_processing.detect_echoes import get_envelopes
 from utils.data_processing.preprocessing import filter_signal
+from utils.data_processing.processing import interpolate_signal
 from utils.data_visualization.visualize_data import compare_signals
 from utils.global_constants import SAMPLE_RATE
 
 
 def test_on_real_simulations(
-    noise: bool = True,
+    noise: bool = False,
+    filter_signals: bool = True,
+    number_of_sensors: int = 8,
 ):
     # Import the simulation_data_formatted.csv to a Pandas DataFrame
     simulation_data = pd.read_csv(
         "simulation_data_formatted.csv",
         header=0,
     )
+
+    simulation_data = simulation_data.iloc[:, 5 : (5 + number_of_sensors)]
+
+    simulation_data = interpolate_signal(simulation_data)
 
     # Rename each column to name to start with "Sensor [column index + 1]"
     simulation_data.rename(
@@ -40,36 +47,27 @@ def test_on_real_simulations(
             snr_dB=50,
         )
 
-    # Bandpass filter at 25 kHz
-    simulation_data = filter_signal(
-        simulation_data,
-        filtertype="bandpass",
-        critical_frequency=CRITICAL_FREQUENCY,
-        plot_response=False,
-        order=2,
-        sample_rate=SAMPLE_RATE,
-    )
+    if filter_signals:
+        simulation_data = filter_signal(
+            simulation_data,
+            filtertype="bandpass",
+            critical_frequency=CRITICAL_FREQUENCY,
+            plot_response=False,
+            order=2,
+            sample_rate=SAMPLE_RATE,
+        )
 
-    time_axis = np.linspace(
-        start=0,
-        stop=1e6 * simulation_data.shape[0] / SAMPLE_RATE,
-        num=simulation_data.shape[0],
-    )
-    simulation_data["Time [s]"] = time_axis
-
-    fig, axs = plt.subplots(3, 2, squeeze=False)
-
+    fig, axs = plt.subplots(number_of_sensors, 1, squeeze=False)
     envelopes = get_envelopes(simulation_data)
     compare_signals(
         fig,
         axs,
-        measurements=[
-            simulation_data["y=0.01"],
-            simulation_data["y=0.02"],
-            simulation_data["y=0.03"],
-        ],
-        plots_to_plot=["time", "fft"],
+        measurements=[simulation_data[sensor] for sensor in simulation_data.columns],
+        plots_to_plot=["time"],
+        sharey=True,
     )
+
+    return simulation_data
 
 
 def import_simulation_data():

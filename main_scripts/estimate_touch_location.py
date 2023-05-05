@@ -4,6 +4,7 @@ Date: 2022-01-09
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from main_scripts.generate_ideal_signal import generate_ideal_signal
 from main_scripts.generate_signals_for_matlab import generate_signals_for_matlab
@@ -14,7 +15,8 @@ from utils.global_constants import x, y
 
 
 def estimate_touch_location(
-    sorted_estimated_angles_deg: list,
+    measurements: pd.DataFrame = None,
+    sorted_estimated_angles_deg: list = None,
     center_frequency_Hz: int = 25000,
     t_var: float = 4e-9,
     propagation_speed_mps: float = 992,
@@ -41,30 +43,33 @@ def estimate_touch_location(
         number_of_sensors=number_of_sensors,
         array_spacing_m=sensor_spacing_m,
     )
+    SETUP.draw()
 
-    ideal_signals, _ = generate_ideal_signal(
-        setup=SETUP,
-        critical_frequency_Hz=center_frequency_Hz,
-        attenuation_dBpm=attenuation_dBpm,
-        signal_length_s=1,
-        propagation_speed_mps=propagation_speed_mps,
-        signal_model="gaussian",
-        t_var=t_var,
-        snr_dB=snr_dB,
-    )
-    ideal_signals = crop_to_signal(
-        ideal_signals,
-        # threshold=0.2,
-        padding_percent=0.5,
-    )
-    generate_signals_for_matlab(
-        ideal_signals,
-        center_frequency_Hz=center_frequency_Hz,
-        t_var=t_var,
-        propagation_speed_mps=propagation_speed_mps,
-        crop_end_s=crop_end_s,
-        number_of_sensors=number_of_sensors,
-    )
+    if measurements is None:
+        measurements, _ = generate_ideal_signal(
+            setup=SETUP,
+            critical_frequency_Hz=center_frequency_Hz,
+            attenuation_dBpm=attenuation_dBpm,
+            signal_length_s=1,
+            propagation_speed_mps=propagation_speed_mps,
+            signal_model="gaussian",
+            t_var=t_var,
+            snr_dB=snr_dB,
+        )
+        measurements = crop_to_signal(
+            measurements,
+            # threshold=0.2,
+            padding_percent=0.5,
+        )
+    if sorted_estimated_angles_deg is None:
+        generate_signals_for_matlab(
+            measurements,
+            center_frequency_Hz=center_frequency_Hz,
+            t_var=t_var,
+            propagation_speed_mps=propagation_speed_mps,
+            crop_end_s=crop_end_s,
+            number_of_sensors=number_of_sensors,
+        )
 
     # Real angles:
     real_phi_1_deg = calculate_phi_1(
@@ -87,37 +92,40 @@ def estimate_touch_location(
         x_s_a=x_s_a,
         x_s_c=SENSORS_CENTER_COORDINATES[x],
     )
+
+    if sorted_estimated_angles_deg is None:
+        return
+
     if all([angle < 0 for angle in sorted_estimated_angles_deg]):
         # All angles are negative if y_s_a < y_s_c,
         # and a different order should be used
         phi_1_deg = sorted_estimated_angles_deg[1]
-        phi_2_Deg = sorted_estimated_angles_deg[3]
-        phi_3 = sorted_estimated_angles_deg[0]
-        phi_4 = sorted_estimated_angles_deg[2]
+        phi_2_deg = sorted_estimated_angles_deg[3]
+        phi_3_deg = sorted_estimated_angles_deg[0]
+        phi_4_deg = sorted_estimated_angles_deg[2]
     else:
         phi_1_deg = sorted_estimated_angles_deg[3]
-        phi_2_Deg = sorted_estimated_angles_deg[0]
-        phi_3 = sorted_estimated_angles_deg[2]
-        phi_4 = sorted_estimated_angles_deg[1]
+        phi_2_deg = sorted_estimated_angles_deg[0]
+        phi_3_deg = sorted_estimated_angles_deg[2]
+        phi_4_deg = sorted_estimated_angles_deg[1]
     print_angles_info(
         real_phi_1_deg,
         real_phi_2_deg,
         real_phi_3_deg,
         real_phi_4_deg,
         phi_1_deg,
-        phi_2_Deg,
-        phi_3,
-        phi_4,
+        phi_2_deg,
+        phi_3_deg,
+        phi_4_deg,
     )
     # Plot estimation result
-    plt.figure()
     SETUP.draw()
     r_sa = calculate_r_sa(
         x_s_c=SENSORS_CENTER_COORDINATES[x],
         y_s_c=SENSORS_CENTER_COORDINATES[y],
         phi_1=phi_1_deg,
-        phi_2=phi_2_Deg,
-        phi_3=phi_3,
+        phi_2=phi_2_deg,
+        phi_3=phi_3_deg,
     )
     r_sa = np.array(r_sa)
     print(f"r_sa: [{r_sa[x]:.3f}, {r_sa[y]:.3f}]")
@@ -127,7 +135,6 @@ def estimate_touch_location(
     print(f"Estimated location error: {estimated_location_error:.3f} m")
     touch_location = SENSORS_CENTER_COORDINATES + r_sa
     plot_estimated_location(touch_location)
-    plt.show()
     return 0
 
 
@@ -148,18 +155,10 @@ def print_angles_info(
     print(f"Real phi_4: {real_phi_4:.3f}, Estimated phi_4: {phi_4:.3f}")
 
     # Errors in angles:
-    print(
-        f"Error in phi_1: {np.abs(real_phi_1 - phi_1):.3f} degrees."
-    )
-    print(
-        f"Error in phi_2: {np.abs(real_phi_2 - phi_2):.3f} degrees."
-    )
-    print(
-        f"Error in phi_3: {np.abs(real_phi_3 - phi_3):.3f} degrees."
-    )
-    print(
-        f"Error in phi_4: {np.abs(real_phi_4 - phi_4):.3f} degrees."
-    )
+    print(f"Error in phi_1: {np.abs(real_phi_1 - phi_1):.3f} degrees.")
+    print(f"Error in phi_2: {np.abs(real_phi_2 - phi_2):.3f} degrees.")
+    print(f"Error in phi_3: {np.abs(real_phi_3 - phi_3):.3f} degrees.")
+    print(f"Error in phi_4: {np.abs(real_phi_4 - phi_4):.3f} degrees.")
 
 
 def plot_estimated_location(touch_location):
