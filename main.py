@@ -16,7 +16,6 @@ def main():
     # * Call one of the functions found in /main_scripts
     plot_speed_information()
 
-
     # Plot all figures at the same time
     plt.show()
 
