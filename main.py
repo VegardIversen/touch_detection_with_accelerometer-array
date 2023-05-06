@@ -26,10 +26,10 @@ def main():
     # - Low attenuation
     NUMBER_OF_SENSORS = 10
     SORTED_ESTIMATED_ANGLES = [
-        -43.955253935908580,
-        -40.251032922742368,
-        22.943000307481149,
-        26.202125346341884,
+        -42.182571606842359,
+        -5.182571606842359,
+        25.477947317871088,
+        25.477947317872083,
     ]
 
     simulated_data = test_on_real_simulations(

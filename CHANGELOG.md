@@ -1,5 +1,23 @@
 # Changelog
 
+### 10.0.1
+0.9 cm off the correct touch location using Root-WSF set to detect 3 sources.
+Phase velocity still set to 954 m/s as from the calculation.
+Applying a Hamming window to the cropped signal, suspecting that this suppresses phi_4 signal quite a bit.
+Or perhaps it already is suppressed in the Comsol simulation.
+Still having the issue of wrong sign for phi_2 / phi_4, that is supposed to be negative.
+
+Info from run:
+
+Real phi_1: 29.539, Estimated phi_1: 25.478 \
+Real phi_2: -44.680, Estimated phi_2: -42.183 \
+Real phi_3: 24.874, Estimated phi_3: 25.478 \
+Error in phi_1: 4.061 degrees. \
+Error in phi_2: 2.497 degrees. \
+Error in phi_3: 0.604 degrees. \
+r_sa: [0.442, 0.258] \
+Estimated location error: 0.009 m
+
 ## 10.0.0
 Trying to estimate touch location with S0 waves from the Comsol simulation.
 Testing at 25 kHz. Getting quite close, 6.4 cm off, with angles from Root-WSF.
