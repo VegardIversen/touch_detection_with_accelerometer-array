@@ -24,7 +24,7 @@ def test_on_real_simulations(
         header=0,
     )
 
-    simulation_data = simulation_data.iloc[:, 5 : (5 + number_of_sensors)]
+    simulation_data = simulation_data.iloc[:, 4 : (4 + number_of_sensors)]
 
     simulation_data = interpolate_signal(simulation_data)
 
