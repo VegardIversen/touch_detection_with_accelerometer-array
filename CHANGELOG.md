@@ -1,6 +1,59 @@
 # Changelog
 
+### 10.0.2
+3.33 cm off with ESPRIT on full 22 kHz signal, PROPAGATION_SPEED = 443 for 22 kHz, 20.12 mm wavelength.
+Sharp tukey window (alpha=0.05), corrected array start position.
+
+Method: Root-WSF \
+Real phi_1: 27.072, Estimated phi_1: 26.221 \
+Real phi_2: -46.245, Estimated phi_2: -46.695 \
+Real phi_3: 22.694, Estimated phi_3: 19.778 \
+Real phi_4: -40.515, Estimated phi_4: -40.311 \
+Error in phi_1: 0.851 degrees. \
+Error in phi_2: 0.450 degrees. \
+Error in phi_3: 2.916 degrees. \
+Error in phi_4: 0.205 degrees. \
+r_sa: [0.422, 0.188] \
+Estimated location error: 0.051 m
+
+Method: Root-MUSIC  \
+Real phi_1: 27.072, Estimated phi_1: 26.654 \
+Real phi_2: -46.245, Estimated phi_2: -45.652 \
+Real phi_3: 22.694, Estimated phi_3: 18.785 \
+Real phi_4: -40.515, Estimated phi_4: -36.903 \
+Error in phi_1: 0.418 degrees. \
+Error in phi_2: 0.593 degrees. \
+Error in phi_3: 3.909 degrees. \
+Error in phi_4: 3.612 degrees. \
+r_sa: [0.461, 0.191] \
+Estimated location error: 0.041 m
+
+Method: MUSIC \
+Real phi_1: 27.072, Estimated phi_1: 39.000 \
+Real phi_2: -46.245, Estimated phi_2: -45.000 \
+Real phi_3: 22.694, Estimated phi_3: 27.000 \
+Real phi_4: -40.515, Estimated phi_4: 19.000 \
+Error in phi_1: 11.928 degrees. \
+Error in phi_2: 1.245 degrees. \
+Error in phi_3: 4.306 degrees. \
+Error in phi_4: 59.515 degrees. \
+r_sa: [1.262, 0.694] \
+Estimated location error: 0.935 m
+
+Method: ESPRIT \
+Real phi_1: 27.072, Estimated phi_1: 25.418 \
+Real phi_2: -46.245, Estimated phi_2: -46.197 \
+Real phi_3: 22.694, Estimated phi_3: 22.061 \
+Real phi_4: -40.515, Estimated phi_4: -35.408 \
+Error in phi_1: 1.654 degrees. \
+Error in phi_2: 0.049 degrees. \
+Error in phi_3: 0.633 degrees. \
+Error in phi_4: 5.108 degrees. \
+r_sa: [0.423, 0.212] \
+Estimated location error: 0.033 m
+
 ### 10.0.1
+EDIT: The array was starting at y=0.06 m instead of 0.05 as it should.
 0.9 cm off the correct touch location using Root-WSF set to detect 3 sources.
 Phase velocity still set to 954 m/s as from the calculation.
 Applying a Hamming window to the cropped signal, suspecting that this suppresses phi_4 signal quite a bit.
@@ -26,7 +79,8 @@ Not sure what is going on there.
 Root-MUSIC was way off on this one, only being able to detect three angles.
 
 ### 9.0.1
-Some edits to v8.0.0. Plot with the parameters Tonni sent in February, way higher velocities there. Fix ylabel to not say "Phase velocity".
+Some edits to v8.0.0.
+Plot with the parameters Tonni sent in February, way higher velocities there. Fix ylabel to not say "Phase velocity".
 
 ## 9.0.0
 Not much, but some ok results with my simulations. Changed to using the MEMS accelerometers, which allowed for smaller sensors and can be placed at the distance required by the simulated phase velocity of 250 m/s at 25 kHz. Look more at this later. Should probably move to a model that simulates both group and phase velocity, maybe directly in sum_signals()?
