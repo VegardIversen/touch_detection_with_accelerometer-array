@@ -9,7 +9,7 @@ import pandas as pd
 from main_scripts.generate_ideal_signal import generate_ideal_signal
 from main_scripts.generate_signals_for_matlab import generate_signals_for_matlab
 from utils.data_processing.preprocessing import crop_to_signal
-from utils.data_visualization.visualize_data import set_fontsizes
+from utils.data_visualization.drawing import plot_legend_without_duplicates
 from utils.plate_setups import Setup5
 from utils.global_constants import x, y
 
@@ -43,7 +43,6 @@ def estimate_touch_location(
         number_of_sensors=number_of_sensors,
         array_spacing_m=sensor_spacing_m,
     )
-    SETUP.draw()
 
     if measurements is None:
         measurements, _ = generate_ideal_signal(
@@ -96,49 +95,54 @@ def estimate_touch_location(
     if sorted_estimated_angles_deg is None:
         return
 
-    if all([angle < 0 for angle in sorted_estimated_angles_deg]):
-        # All angles are negative if y_s_a < y_s_c,
-        # and a different order should be used
-        phi_1_deg = sorted_estimated_angles_deg[1]
-        phi_2_deg = sorted_estimated_angles_deg[3]
-        phi_3_deg = sorted_estimated_angles_deg[0]
-        phi_4_deg = sorted_estimated_angles_deg[2]
-    else:
-        phi_1_deg = sorted_estimated_angles_deg[3]
-        phi_2_deg = sorted_estimated_angles_deg[0]
-        phi_3_deg = sorted_estimated_angles_deg[2]
-        phi_4_deg = sorted_estimated_angles_deg[1]
-    print_angles_info(
-        real_phi_1_deg,
-        real_phi_2_deg,
-        real_phi_3_deg,
-        real_phi_4_deg,
-        phi_1_deg,
-        phi_2_deg,
-        phi_3_deg,
-        phi_4_deg,
-    )
-    # Plot estimation result
-    SETUP.draw()
-    r_sa = calculate_r_sa(
-        x_s_c=SENSORS_CENTER_COORDINATES[x],
-        y_s_c=SENSORS_CENTER_COORDINATES[y],
-        phi_1=phi_1_deg,
-        phi_2=phi_2_deg,
-        phi_3=phi_3_deg,
-    )
-    r_sa = np.array(r_sa)
-    print(f"r_sa: [{r_sa[x]:.3f}, {r_sa[y]:.3f}]")
-    estimated_location_error = np.linalg.norm(
-        r_sa - (actuator_coordinates - SENSORS_CENTER_COORDINATES)
-    )
-    print(f"Estimated location error: {estimated_location_error:.3f} m")
-    touch_location = SENSORS_CENTER_COORDINATES + r_sa
-    plot_estimated_location(touch_location)
+    SETUP.draw(legend=False)
+    for method in sorted_estimated_angles_deg.keys():
+        if all([angle < 0 for angle in sorted_estimated_angles_deg[method]]):
+            # All angles are negative if y_s_a < y_s_c,
+            # and a different order should be used
+            phi_1_deg = sorted_estimated_angles_deg[method][1]
+            phi_2_deg = sorted_estimated_angles_deg[method][3]
+            phi_3_deg = sorted_estimated_angles_deg[method][0]
+            phi_4_deg = sorted_estimated_angles_deg[method][2]
+        else:
+            phi_1_deg = sorted_estimated_angles_deg[method][3]
+            phi_2_deg = sorted_estimated_angles_deg[method][0]
+            phi_3_deg = sorted_estimated_angles_deg[method][2]
+            phi_4_deg = sorted_estimated_angles_deg[method][1]
+        print_angles_info(
+            method,
+            real_phi_1_deg,
+            real_phi_2_deg,
+            real_phi_3_deg,
+            real_phi_4_deg,
+            phi_1_deg,
+            phi_2_deg,
+            phi_3_deg,
+            phi_4_deg,
+        )
+        r_sa = calculate_r_sa(
+            x_s_c=SENSORS_CENTER_COORDINATES[x],
+            y_s_c=SENSORS_CENTER_COORDINATES[y],
+            phi_1=phi_1_deg,
+            phi_2=phi_2_deg,
+            phi_3=phi_3_deg,
+        )
+        r_sa = np.array(r_sa)
+        print(f"r_sa: [{r_sa[x]:.3f}, {r_sa[y]:.3f}]")
+        estimated_location_error = np.linalg.norm(
+            r_sa - (actuator_coordinates - SENSORS_CENTER_COORDINATES)
+        )
+        print(f"Estimated location error: {estimated_location_error:.3f} m")
+        # Plot estimation result
+        touch_location = SENSORS_CENTER_COORDINATES + r_sa
+        plot_estimated_location(touch_location)
+        # Add legend that shows which color marker corresponds to which method
+        plot_legend_without_duplicates()
     return 0
 
 
 def print_angles_info(
+    method,
     real_phi_1,
     real_phi_2,
     real_phi_3,
@@ -149,6 +153,7 @@ def print_angles_info(
     phi_4,
 ):
     print()
+    print(f"Method: {method}")
     print(f"Real phi_1: {real_phi_1:.3f}, Estimated phi_1: {phi_1:.3f}")
     print(f"Real phi_2: {real_phi_2:.3f}, Estimated phi_2: {phi_2:.3f}")
     print(f"Real phi_3: {real_phi_3:.3f}, Estimated phi_3: {phi_3:.3f}")
@@ -166,7 +171,6 @@ def plot_estimated_location(touch_location):
         touch_location[x],
         touch_location[y],
         marker="x",
-        color="red",
         s=25,
         zorder=10,
     )
