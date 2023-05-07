@@ -95,7 +95,7 @@ def estimate_touch_location(
     if sorted_estimated_angles_deg is None:
         return
 
-    SETUP.draw(legend=False)
+    SETUP.draw()
     for method in sorted_estimated_angles_deg.keys():
         if all([angle < 0 for angle in sorted_estimated_angles_deg[method]]):
             # All angles are negative if y_s_a < y_s_c,
