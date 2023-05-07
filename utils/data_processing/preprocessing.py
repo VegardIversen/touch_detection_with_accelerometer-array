@@ -99,11 +99,13 @@ def crop_data(
             int(time_start * sample_rate) : int(time_end * sample_rate)
         ]
         if apply_window_function:
-            window = signal.windows.hamming(len(signals_cropped))
+            window = signal.windows.tukey(len(signals_cropped), alpha=0.05)
+            # window = signal.windows.hamming(len(signals_cropped))
     elif isinstance(signals, pd.DataFrame):
         signals_cropped = signals.loc[time_start * sample_rate : time_end * sample_rate]
         if apply_window_function:
-            window = signal.windows.hamming(len(signals_cropped))
+            window = signal.windows.tukey(len(signals_cropped), alpha=0.05)
+            # window = signal.windows.hamming(len(signals_cropped))
             for channel in signals_cropped:
                 signals_cropped[channel] = signals_cropped[channel].values * window
     else:
