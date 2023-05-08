@@ -11,7 +11,7 @@ from main_scripts.generate_signals_for_matlab import generate_signals_for_matlab
 from utils.data_processing.preprocessing import crop_to_signal
 from utils.data_visualization.drawing import plot_legend_without_duplicates
 from utils.plate_setups import Setup5
-from utils.global_constants import x, y
+from utils.global_constants import FIGURES_SAVE_PATH, x, y
 
 
 def estimate_touch_location(
@@ -60,15 +60,14 @@ def estimate_touch_location(
             # threshold=0.2,
             padding_percent=0.5,
         )
-    if sorted_estimated_angles_deg is None:
-        generate_signals_for_matlab(
-            measurements,
-            center_frequency_Hz=center_frequency_Hz,
-            t_var=t_var,
-            propagation_speed_mps=propagation_speed_mps,
-            crop_end_s=crop_end_s,
-            number_of_sensors=number_of_sensors,
-        )
+    generate_signals_for_matlab(
+        measurements,
+        center_frequency_Hz=center_frequency_Hz,
+        t_var=t_var,
+        propagation_speed_mps=propagation_speed_mps,
+        crop_end_s=crop_end_s,
+        number_of_sensors=number_of_sensors,
+    )
 
     # Real angles:
     real_phi_1_deg = calculate_phi_1(
@@ -91,9 +90,6 @@ def estimate_touch_location(
         x_s_a=x_s_a,
         x_s_c=SENSORS_CENTER_COORDINATES[x],
     )
-
-    if sorted_estimated_angles_deg is None:
-        return
 
     SETUP.draw()
     for method in sorted_estimated_angles_deg.keys():
@@ -138,6 +134,10 @@ def estimate_touch_location(
         plot_estimated_location(touch_location)
         # Add legend that shows which color marker corresponds to which method
         plot_legend_without_duplicates()
+    # Save plot as pdf
+    plt.savefig(
+        f"{FIGURES_SAVE_PATH}/{center_frequency_Hz // 1000}kHz_{number_of_sensors}sensors.pdf",
+    )
     return 0
 
 

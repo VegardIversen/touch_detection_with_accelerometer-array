@@ -27,10 +27,9 @@ def main():
     # - Low attenuation
     NUMBER_OF_SENSORS = 15
     estimated_angles_filename = (
-        "results_simulations_10_mm_Teflon_COMSOL_22kHz_15sensors"
+        "results_angles_estimation"
     )
     sorted_estimated_angles = import_estimated_angles(estimated_angles_filename)
-    # sorted_estimated_angles = None
 
     simulated_data = test_on_real_simulations(
         noise=False,
@@ -49,8 +48,8 @@ def main():
     estimate_touch_location(
         measurements=simulated_data,
         sorted_estimated_angles_deg=sorted_estimated_angles,
-        center_frequency_Hz=22000,
-        propagation_speed_mps=455,
+        center_frequency_Hz=23000,
+        propagation_speed_mps=434,
         crop_end_s=0.001,
         number_of_sensors=NUMBER_OF_SENSORS,
         sensor_spacing_m=0.01,
@@ -62,7 +61,7 @@ def main():
 
 
 def import_estimated_angles(
-    file_name: str = "results_simulations_10_mm_Teflon_COMSOL_25kHz_10sensors",
+    file_name: str,
 ):
     # Put the angles from results_simulations_10_mm_Teflon_COMSOL_25kHz_10sensors.csv into a dataframe
     estimated_angles = pd.read_csv(

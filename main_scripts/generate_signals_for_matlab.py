@@ -21,7 +21,7 @@ def generate_signals_for_matlab(
     crop_end_s: float = 0.000637,
     number_of_sensors: int = 10,
 ):
-    FILE_NAME = f"comsol_simulations/simulations_10_mm_Teflon_COMSOL_{center_frequency_Hz // 1000}kHz_{number_of_sensors}sensors"
+    FILE_NAME = f"comsol_simulations/comsol_simulations_analytic_signals"
     if measurements is None:
         FILE_NAME = f"niklas_simulations/generated_signal_{center_frequency_Hz // 1000}kHz_{t_var}s_{propagation_speed_mps}mps_{number_of_sensors}sensors_interp{INTERPOLATION_FACTOR}"
         if crop_end_s is not None:

@@ -37,7 +37,7 @@ def test_on_real_simulations(
         inplace=True,
     )
 
-    CRITICAL_FREQUENCY = 22000
+    CRITICAL_FREQUENCY = 23000
 
     if noise:
         # Add noise to the signal
@@ -53,7 +53,7 @@ def test_on_real_simulations(
             filtertype="bandpass",
             critical_frequency=CRITICAL_FREQUENCY,
             plot_response=False,
-            order=2,
+            order=4,
             sample_rate=SAMPLE_RATE,
         )
 
