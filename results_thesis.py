@@ -7,7 +7,7 @@ import seaborn as sns
 from matplotlib.widgets import Slider, Button
 from pathlib import Path
 from objects import Table, Actuator, Sensor
-from setups import Setup2, Setup3, Setup3_2, Setup3_4, Setup6, Setup9
+from setups import Setup2, Setup3, Setup3_2, Setup3_4, Setup6, Setup9, SimulatedSetup
 from constants import SAMPLE_RATE, CHANNEL_NAMES, CHIRP_CHANNEL_NAMES
 from data_processing import cross_correlation_position as ccp
 from csv_to_df import csv_to_df, csv_to_df_thesis
@@ -195,6 +195,21 @@ def wave_number_graph(number=1):
     #phase_vel = wp.phase_velocity(phase, freq, distance)
     wp.plot_velocities(phase, freq, distance, material='LDPE_tonni7mm')
 
+def draw_simulated_plate(comsolefile=9):
+    setup = SimulatedSetup(comsol_file=comsolefile, positions=[25])
+    setup.draw()
+    arrival_times, distances = setup.reflections()
+    h_x = dispersion_compensation_Wilcox()
+    dx = 0.00018507876875628913
+    x = np.arange(len(h_x))*dx
+    #plot h(x) and vertical lines at the distances
+    plt.plot(x, h_x, label='h(x)')
+    print(f'distances: {distances}')
+    print(f'x: {x}')
+    plt.vlines(distances[:4], ymin=0, ymax=1, label='reflections', colors='r')
+    plt.legend()
+    plt.show()
+
 
 def dispersion_compensation_Wilcox(file_n=2, postion=25, fs=500000, dx=0.0001):
     """
@@ -225,7 +240,7 @@ def dispersion_compensation_Wilcox(file_n=2, postion=25, fs=500000, dx=0.0001):
     upper_freq = 60000
     lower_freq = 0
     new_fs = 80000
-    
+    xmax = 1
     #frequency axis from 0 to 40kHz with 80000 samples
     #freq = np.linspace(lower_freq, upper_freq, new_fs)
     
@@ -244,7 +259,7 @@ def dispersion_compensation_Wilcox(file_n=2, postion=25, fs=500000, dx=0.0001):
     plt.plot(wave_data_bottom[postion], label='bottom')
     plt.legend()
     plt.show()
-
+    #signal = wave_data_top[postion]
     signal = (wave_data_top[postion]+wave_data_bottom[postion])/2 #A0 mode
     #plotting signal mode
     plt.plot(signal, label='A0 mode')
@@ -277,17 +292,17 @@ def dispersion_compensation_Wilcox(file_n=2, postion=25, fs=500000, dx=0.0001):
     plt.show()
     print(f'shape of freq_vel: {freq_vel.shape}')
 
-    freq_range = (freq_vel>lower_freq) & (freq_vel<upper_freq)
-    freq_vel = freq_vel[freq_range]
+    #freq_range = (freq_vel>lower_freq) & (freq_vel<upper_freq)
+    #freq_vel = freq_vel[freq_range]
     #f_nyq = freq_vel[-1]/2
-    G_w = G_w[freq_range]
+    #G_w = G_w[freq_range]
 
     #only looking at positive frequencies
-    #G_w = G_w[freq_vel>0]
+    G_w = G_w[freq_vel>0]
     print(f'length of positive G_w: {G_w.shape}')
-    #freq_vel = freq_vel[freq_vel>0]
+    freq_vel = freq_vel[freq_vel>0]
     print(f'length of positive freq_vel: {freq_vel.shape}')
-    f_nyq = upper_freq/2 #fs/2
+    f_nyq = fs/2
     print(f'f_nyq: {f_nyq}')
     print(f'last element in freq_vel: {freq_vel[-1]}')
     #plotting fft of padded signal after frequency range
@@ -308,16 +323,21 @@ def dispersion_compensation_Wilcox(file_n=2, postion=25, fs=500000, dx=0.0001):
     #print(f'k_max = {k[-1]}') 
     #v_max = get_velocity_at_freq(upper_freq)['A0']['phase_velocity'] #fetches the velocity at the upper frequency
     k_nyq = get_k_value(f_nyq)
+    n = len(k)
+    print(f'length of k: {n}')
     dx = 1/(2*k_nyq)
+    #dx = 0.001
     print(f'dx: {dx}')
+    k_min = 1/(2*dx*fs)
+    #dk = 1/(xmax)
+    #dk = 1/(n*dx)
     dk = 1/(n_fft*dx)
-    k_max = 2*k_nyq
+    #k_max = 2*k_nyq
+    k_max = 1/(2*dx)
     #k_max = k[-1] #doesnt matter if i use this or this 2*np.pi*upper_freq/v_max since both are equal or 2 times k_nyq
     print(f'k_nyq: {k_nyq}, kmax: {k_max}')
     w = 2*np.pi*freq_vel
     print(f'shape of w: {w.shape}')
-    n = len(k)
-    print(f'length of k: {n}')
     #print(f'altnerative length of k: {int(np.ceil(2 * f_nyq / (1 / (dx * m))))}')
     #plotting wavenumber vs frequency
     plt.plot(k, freq_vel)
@@ -335,12 +355,13 @@ def dispersion_compensation_Wilcox(file_n=2, postion=25, fs=500000, dx=0.0001):
     print(f'Checking if Delta x is less or equal to 1/(2k_nyq). Delta x is {dx}, 1/(2k_nyq) is {1/(2*k_nyq)}')
     dk1 = 1 / (n_fft * dx) #wavenumber step
     #creating new k axis
-    k_new = np.arange(0, k_nyq, dk)
-    x = np.arange(0, 1, dx)
+    #k_new = np.arange(k_min, k_max, dk)
+    k_new = np.arange(0, k_max + dk, dk)
+    x = np.arange(0, xmax, dx)
     print(f'shape of k new: {k_new.shape}')
     print(f'dk1: {dk1}, dk: {dk}')
-    print(f'shape of x: {x.shape}')
-    print(f'max of x: {x[-1]}')
+    #print(f'shape of x: {x.shape}')
+    #print(f'max of x: {x[-1]}')
     print(f'n should be larger than 2 * k_nyq / dk, n is {n_fft}, 2 * k_nyq / dk is {2 * k_nyq / dk}')
     #print(f'this number of points in the wavenumber domain is {n}')
     
@@ -350,6 +371,7 @@ def dispersion_compensation_Wilcox(file_n=2, postion=25, fs=500000, dx=0.0001):
     plt.plot(k, label='k')
     #plt.xlabel('Wavenumber')
     #plt.ylabel('Frequency')
+    plt.xlabel('sample')
     plt.title('k_new vs k')
     plt.legend()
     plt.show()
@@ -378,7 +400,9 @@ def dispersion_compensation_Wilcox(file_n=2, postion=25, fs=500000, dx=0.0001):
     # Remove zero-padding from the compensated signal
     h_x_padd = h_x
     h_x = h_x[:m]
-    #x = np.arange(len(h_x))*dx
+    x = np.arange(len(h_x))*dx
+    print(f'shape of x: {x.shape}')
+    print(f'max of x: {x[-1]}')
     #normalize h_x and signal
     h_x = h_x/np.max(h_x)
     signal = signal/np.max(signal)
@@ -387,8 +411,10 @@ def dispersion_compensation_Wilcox(file_n=2, postion=25, fs=500000, dx=0.0001):
     #Create a subplot with the dispersion compensated signal and the original signal
     #plotting the results
     plt.subplot(2, 1, 1)
-    plt.plot(x,h_x.real, label='Dispersion compensated signal')
-    plt.xlabel('distance [m]')
+    #plt.plot(x,h_x.real, label='Dispersion compensated signal')
+    plt.plot(h_x.real, label='Dispersion compensated signal')
+    #plt.xlabel('distance [m]')
+    plt.xlabel('sample')
     plt.ylabel('Amplitude')
     plt.title('Dispersion compensated signal')
     plt.legend()

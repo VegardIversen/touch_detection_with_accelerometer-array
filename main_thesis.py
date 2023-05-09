@@ -22,5 +22,6 @@ def main():
     #r.wave_number_to_omega()
     #r.velocites_modes()
     #r.velocites_modes()
+    #r.draw_simulated_plate()
 if __name__ == '__main__':
     main()
