@@ -106,6 +106,8 @@ def crop_data(
         if apply_window_function:
             window = signal.windows.tukey(len(signals_cropped), alpha=0.05)
             # window = signal.windows.hamming(len(signals_cropped))
+            _, ax = plt.subplots()
+            ax.plot(window)
             for channel in signals_cropped:
                 signals_cropped[channel] = signals_cropped[channel].values * window
     else:

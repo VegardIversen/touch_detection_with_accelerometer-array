@@ -39,6 +39,8 @@ def generate_signals_for_matlab(
     envelopes = get_envelopes(measurements)
     plot_them_envelopes(envelopes)
 
+    return analytic_signals
+
 
 def drop_actuator_channel(
     measurements,

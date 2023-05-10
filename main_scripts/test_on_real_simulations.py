@@ -7,7 +7,7 @@ from main_scripts.generate_ideal_signal import add_noise
 
 from main_scripts.generate_signals_for_matlab import generate_signals_for_matlab
 from utils.data_processing.detect_echoes import get_envelopes
-from utils.data_processing.preprocessing import filter_signal
+from utils.data_processing.preprocessing import crop_data, filter_signal
 from utils.data_processing.processing import interpolate_signal
 from utils.data_visualization.visualize_data import compare_signals
 from utils.global_constants import SAMPLE_RATE
@@ -15,8 +15,10 @@ from utils.global_constants import SAMPLE_RATE
 
 def test_on_real_simulations(
     noise: bool = False,
-    filter_signals: bool = True,
+    crop: bool = False,
     number_of_sensors: int = 8,
+    critical_frequency_Hz: int = 25000,
+    filter_order: int = 8,
 ):
     # Import the simulation_data_formatted.csv to a Pandas DataFrame
     simulation_data = pd.read_csv(
@@ -37,26 +39,50 @@ def test_on_real_simulations(
         inplace=True,
     )
 
-    CRITICAL_FREQUENCY = 23000
-
     if noise:
         # Add noise to the signal
         simulation_data = add_noise(
             simulation_data,
-            critical_frequency=CRITICAL_FREQUENCY,
+            critical_frequency=critical_frequency_Hz,
             snr_dB=50,
         )
 
-    if filter_signals:
+    if crop:
+        simulation_data = crop_data(
+            simulation_data,
+            time_start=0.0009,
+            time_end=0.0009 + 0.00085,
+            apply_window_function=True,
+        )
+
+    # Make a dataframe with 15 columns of 2 * simulation_data.size[0] rows of zeros
+    # simulation_data = simulation_data.append(
+    #     pd.DataFrame(
+    #         np.zeros((2 * simulation_data.shape[0], simulation_data.shape[1])),
+    #         columns=simulation_data.columns,
+    #     ),
+    #     ignore_index=True,
+    # )
+
+    if critical_frequency_Hz:
         simulation_data = filter_signal(
             simulation_data,
             filtertype="bandpass",
-            critical_frequency=CRITICAL_FREQUENCY,
+            critical_frequency=critical_frequency_Hz,
             plot_response=False,
-            order=4,
+            order=filter_order,
             sample_rate=SAMPLE_RATE,
+            q=0.04,
         )
 
+    # if crop:
+
+    #     simulation_data = crop_data(
+    #         simulation_data,
+    #         time_start=0.0006,
+    #         time_end=0.002,
+    #         apply_window_function=False,
+    #     )
     fig, axs = plt.subplots(number_of_sensors, 1, squeeze=False)
     envelopes = get_envelopes(simulation_data)
     compare_signals(
