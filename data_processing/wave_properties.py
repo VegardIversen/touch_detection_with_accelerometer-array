@@ -308,7 +308,6 @@ def phase_plotting_chirp(
 def theoretical_group_phase_vel(freqs, material='teflon', plot=False, kind='cubic'):
     omega  = 2*np.pi*freqs
     phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear, material = theoretical_velocities(freqs, material=material)
-
     #univ_s = interpolate.InterpolatedUnivariateSpline(freqs, phase_velocities_flexural)
     #vp_prime = univ_s.derivative()     
     #vg = np.square(phase_velocities_flexural) * (1/(freqs - vp_prime(freqs)*freqs))
@@ -317,6 +316,8 @@ def theoretical_group_phase_vel(freqs, material='teflon', plot=False, kind='cubi
 
     d_v_ph = np.gradient(corrected_phase_velocities, omega)
     v_g_numpy = corrected_phase_velocities / (1 - (d_v_ph * omega/corrected_phase_velocities))
+    v_g_numpy[np.isnan(v_g_numpy)] = 0
+
     if plot:
         plt.plot(freqs, v_g_numpy, label='Group velocity')
         #plt.plot(freqs, interp_vg, label='Interpolated')
@@ -325,6 +326,7 @@ def theoretical_group_phase_vel(freqs, material='teflon', plot=False, kind='cubi
         plt.ylabel('velocity [m/s]')
         plt.legend()
         plt.show()
+
     return v_g_numpy, corrected_phase_velocities
 
 def group_velocity_theoretical(freqs, material='teflon', plot=False, kind='cubic'):
@@ -454,6 +456,8 @@ def theoretical_velocities(freq, material='teflon'):
                                   ((1 / (phase_velocities_flexural ** 3)) +
                                    (1 / ((correction_factor ** 3) *
                                     (c_G ** 3))))) ** (1 / 3)
+    corrected_phase_velocities[np.isnan(corrected_phase_velocities)] = 0
+
     return phase_velocities_flexural, corrected_phase_velocities, phase_velocity_shear, material
 
 def plot_theoretical_velocities(freq, material='teflon'):
