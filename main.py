@@ -11,6 +11,7 @@ from main_scripts.estimate_touch_location import estimate_touch_location
 from main_scripts.generate_signals_for_matlab import generate_signals_for_matlab
 from main_scripts.test_on_real_simulations import test_on_real_simulations
 from utils.data_visualization.visualize_data import set_fontsizes
+from utils.global_constants import FIGURES_SAVE_PATH
 from utils.plate_setups import Setup5
 
 

@@ -41,7 +41,10 @@ def plot_speed_information():
         },
     )
     # Save figure as pdf file in the path specified by FIGURES_SAVE_PATH
-    fig.savefig(f"{FIGURES_SAVE_PATH}/phase_and_energy_speeds_for_A0_and_S0.pdf")
+    fig.savefig(
+        f"{FIGURES_SAVE_PATH}/phase_and_energy_speeds_for_A0_and_S0.pdf",
+        bbox_inches="tight",
+    )
 
     fig, ax = plt.subplots()
 
@@ -68,6 +71,8 @@ def plot_speed_information():
         xlim=(0, 60),
         ylim=(0, 50),
     )
-    fig.savefig(f"{FIGURES_SAVE_PATH}/wavelengths_for_A0_and_S0.pdf")
+    fig.savefig(
+        f"{FIGURES_SAVE_PATH}/wavelengths_for_A0_and_S0.pdf", bbox_inches="tight"
+    )
 
     return 0
