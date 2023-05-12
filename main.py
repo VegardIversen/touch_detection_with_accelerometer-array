@@ -89,5 +89,47 @@ def import_estimated_angles(
     return estimated_angles
 
 
+def plot_far_field():
+    # Plot the far field limit for multiple number of sensors, as a function of wavelength
+    WAVELENGTHS = np.linspace(0.008, 0.03, 1000)
+    NUMBER_OF_SENSORS = np.arange(3, 12, 2)
+    SENSOR_SPACING_M = WAVELENGTHS / 2
+    fig, ax = plt.subplots()
+    for number_of_sensors in NUMBER_OF_SENSORS:
+        ax.plot(
+            1000 * WAVELENGTHS,
+            1000
+            * (2 * ((number_of_sensors - 1) * SENSOR_SPACING_M) ** 2)
+            / WAVELENGTHS,
+            label=f"{number_of_sensors} sensors",
+            # Pick colors that can be reused later
+            color=f"C{list(NUMBER_OF_SENSORS).index(number_of_sensors)}",
+        )
+    WAVELENGTHS_DASHED = np.linspace(0, 0.008, 1000)
+    SENSOR_SPACING_M_DASHED = WAVELENGTHS_DASHED / 2
+    for number_of_sensors in NUMBER_OF_SENSORS:
+        ax.plot(
+            1000 * WAVELENGTHS_DASHED,
+            1000
+            * (2 * ((number_of_sensors - 1) * SENSOR_SPACING_M_DASHED) ** 2)
+            / WAVELENGTHS_DASHED,
+            linestyle="--",
+            # color=f"C{list(NUMBER_OF_SENSORS).index(number_of_sensors)}",
+            color="lightgray",
+        )
+    # Show x-axis in mm
+    ax.set_xlabel("Wavelength [mm]")
+    ax.set_ylabel("Far Field Limit [mm]")
+    ax.set_ylim(0, 500)
+    ax.set_xlim(0, 30)
+    ax.legend(loc="upper right")
+    ax.grid()
+    # Save figure as pdf
+    plt.savefig(
+        f"{FIGURES_SAVE_PATH}/far_field_limits.pdf",
+        bbox_inches="tight",
+    )
+
+    plt.show()
 if __name__ == "__main__":
     main()
