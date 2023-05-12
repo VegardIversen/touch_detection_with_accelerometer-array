@@ -12,7 +12,7 @@ from main_scripts.generate_signals_for_matlab import generate_signals_for_matlab
 from main_scripts.test_on_real_simulations import test_on_real_simulations
 from utils.data_visualization.visualize_data import set_fontsizes
 from utils.global_constants import FIGURES_SAVE_PATH
-from utils.plate_setups import Setup5
+from utils.plate_setups import Setup5, Setup6
 
 
 def main():
@@ -27,6 +27,15 @@ def main():
     # - Long signal length, so that many periods are present.
     # - High SNR
     # - Low attenuation
+
+    SETUP_UCA = Setup6(
+        actuator_coordinates=np.array([0.50, 0.35]),
+        number_of_sensors=8,
+        array_spacing_m=0.01,
+    )
+    SETUP_UCA.draw()
+    plt.show()
+
     NUMBER_OF_SENSORS = 7
     estimated_angles_filename = "results_angles_estimation"
     sorted_estimated_angles = import_estimated_angles(
