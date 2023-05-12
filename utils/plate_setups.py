@@ -437,7 +437,12 @@ class Setup_UCA(Setup):
         self.sensors = np.empty(shape=number_of_sensors, dtype=Sensor)
         self.actuators[ACTUATOR_1] = Actuator(coordinates=actuator_coordinates)
         angles_of_sensors = np.linspace(0, 2 * np.pi, number_of_sensors, endpoint=False)
-        radius = array_spacing_m * (number_of_sensors - 1) / (2 * np.pi)
+        angle_from_sensor_to_sensor = (np.pi - angles_of_sensors[1]) / 2
+        radius = (
+            array_spacing_m
+            * np.sin(angle_from_sensor_to_sensor)
+            / np.sin(angles_of_sensors[1])
+        )
         for i in range(number_of_sensors):
             self.sensors[i] = Sensor(
                 coordinates=np.array(
