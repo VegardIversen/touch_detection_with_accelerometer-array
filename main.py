@@ -131,5 +131,43 @@ def plot_far_field():
     )
 
     plt.show()
+
+
+def test_uca_points():
+    # Define the points as tuples
+    points = [
+        (6.307, 5),
+        (5.924, 5.924),
+        (5, 6.307),
+        (4.076, 5.924),
+        (3.693, 5),
+        (4.076, 4.076),
+        (5, 3.693),
+        (5.924, 4.076),
+    ]
+
+    # Extract the x and y coordinates into separate lists
+    x_coords = [p[0] for p in points]
+    y_coords = [p[1] for p in points]
+
+    # Create a new figure and axis
+    fig, ax = plt.subplots()
+
+    # Plot the points using a scatter plot
+    ax.scatter(x_coords, y_coords)
+
+    # Set the axis labels and title
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_ylim(0, 8)
+    ax.set_xlim(0, 8)
+    # Set figure size
+    fig.set_size_inches(5, 5)
+    ax.set_title("Scatter plot of points")
+
+    # Display the plot
+    plt.show()
+
+
 if __name__ == "__main__":
     main()
