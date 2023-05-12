@@ -323,7 +323,7 @@ class Setup_3x3(Setup):
         return propagation_speed
 
 
-class Setup_Linear_Array(Setup):
+class Setup_ULA(Setup):
     """A line of number_of_sensors sensors,
     with an actuator given by actuator_coordinates.
     """
@@ -354,7 +354,7 @@ class Setup_Linear_Array(Setup):
             )
 
 
-class Setup4(Setup_Linear_Array):
+class Setup4(Setup_ULA):
     # Setup_Linear_Array with arugments for a 3 sensor array
     def __init__(self, actuator_coordinates: np.ndarray):
         super().__init__(
@@ -401,7 +401,7 @@ class Setup4(Setup_Linear_Array):
         return propagation_speed
 
 
-class Setup5(Setup_Linear_Array):
+class Setup5(Setup_ULA):
     # Setup_Linear_Array with arugments for a 3 sensor array
     def __init__(
         self,
