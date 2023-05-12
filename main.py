@@ -8,8 +8,10 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 from main_scripts.estimate_touch_location import estimate_touch_location
+from main_scripts.generate_ideal_signal import generate_ideal_signal
 from main_scripts.generate_signals_for_matlab import generate_signals_for_matlab
 from main_scripts.test_on_real_simulations import test_on_real_simulations
+from utils.data_processing.preprocessing import crop_to_signal
 from utils.data_visualization.visualize_data import set_fontsizes
 from utils.global_constants import FIGURES_SAVE_PATH
 from utils.plate_setups import Setup5, Setup6
@@ -34,52 +36,26 @@ def main():
         array_spacing_m=0.01,
     )
     SETUP_UCA.draw()
-    plt.show()
 
-    NUMBER_OF_SENSORS = 7
-    estimated_angles_filename = "results_angles_estimation"
-    sorted_estimated_angles = import_estimated_angles(
-        estimated_angles_filename,
-        s0=False,
+    ideal_signals, _ = generate_ideal_signal(
+        setup=SETUP_UCA,
+        signal_model="line",
+        propagation_speed_mps=442.7,
+        attenuation_dBpm=10,
+        signal_length_s=1,
     )
 
-    CENTER_FREQUENCY_HZ = 22000
-
-    simulated_data = test_on_real_simulations(
-        noise=False,
-        crop=False,
-        number_of_sensors=NUMBER_OF_SENSORS,
-        critical_frequency_Hz=0,
-        filter_order=4,
+    ideal_signals = crop_to_signal(
+        ideal_signals,
     )
 
-    SENSOR_SPACING_M = 0.01
-    SETUP = Setup5(
-        actuator_coordinates=np.array([0.50, 0.35]),
-        number_of_sensors=NUMBER_OF_SENSORS,
-        array_spacing_m=SENSOR_SPACING_M,
-    )
+    # Plot each sensor in the ideal signal on a separate row
+    fig, ax = plt.subplots(SETUP_UCA.number_of_sensors, 1, sharex=True)
+    for i, sensor in enumerate(SETUP_UCA.sensors):
+        ax[i].plot(ideal_signals[sensor.name])
+        ax[i].set_ylabel(f"Sensor {sensor.name}")
+    ax[-1].set_xlabel("Time [s]")
 
-    analytic_signals = generate_signals_for_matlab(
-        simulated_data,
-        center_frequency_Hz=CENTER_FREQUENCY_HZ,
-        propagation_speed_mps=434,
-        crop_end_s=0.001,
-        number_of_sensors=NUMBER_OF_SENSORS,
-    )
-
-    # Pass sorted_estimated_angles_deg=None to export analytic signal,
-    # or pass the sorted_estimated_angles to estimate touch location
-    estimate_touch_location(
-        setup=SETUP,
-        sorted_estimated_angles_deg=sorted_estimated_angles,
-        center_frequency_Hz=CENTER_FREQUENCY_HZ,
-        number_of_sensors=NUMBER_OF_SENSORS,
-        sensor_spacing_m=SENSOR_SPACING_M,
-        actuator_coordinates=SETUP.actuator_coordinates,
-    )
-
-    # Plot all figures at the same time
     plt.show()
 
 
