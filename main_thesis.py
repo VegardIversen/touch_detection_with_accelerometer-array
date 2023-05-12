@@ -18,10 +18,10 @@ def main():
     #r.un_reassigned_spectrogram()
     #r.show_A0_and_S0_wave_comsol_y0_2(11)
     #r.warping_map()
-    #r.dispersion_compensation_Wilcox()
+    r.dispersion_compensation_Wilcox()
     #r.wave_number_to_omega()
     #r.velocites_modes()
     #r.velocites_modes()
-    r.draw_simulated_plate()
+    #r.draw_simulated_plate()
 if __name__ == '__main__':
     main()

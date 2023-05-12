@@ -302,19 +302,19 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001):
     # plt.show()
     print(f'shape of freq_vel: {freq_vel.shape}')
 
-    #freq_range = (freq_vel>lower_freq) & (freq_vel<upper_freq)
-    #freq_vel = freq_vel[freq_range]
+    freq_range = (freq_vel>=lower_freq) & (freq_vel<=upper_freq)
+    freq_vel = freq_vel[freq_range]
     #f_nyq = freq_vel[-1]/2
-    #G_w = G_w[freq_range]
+    G_w = G_w[freq_range]
 
     #only looking at positive frequencies
     #G_w = G_w[freq_vel>0]
-    G_w = G_w[:int(n_fft/2)]
+    #G_w = G_w[:int(n_fft/2)]
     print(f'length of positive G_w: {G_w.shape}')
     #freq_vel = freq_vel[freq_vel>0]
-    freq_vel = freq_vel[:int(n_fft/2)]
+    #freq_vel = freq_vel[:int(n_fft/2)]
     print(f'length of positive freq_vel: {freq_vel.shape}')
-    f_nyq = fs/2
+    f_nyq = 60000 #fs/2
     print(f'f_nyq: {f_nyq}')
     print(f'last element in freq_vel: {freq_vel[-1]}')
     #plotting fft of padded signal after frequency range
@@ -359,11 +359,11 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001):
     print(f'shape of w: {w.shape}')
     #print(f'altnerative length of k: {int(np.ceil(2 * f_nyq / (1 / (dx * m))))}')
     #plotting wavenumber vs frequency
-    # plt.plot(k, freq_vel)
-    # plt.xlabel('Wavenumber')
-    # plt.ylabel('Frequency')
-    # plt.title('Wavenumber vs frequency')
-    # plt.show()
+    plt.plot(k, freq_vel)
+    plt.xlabel('Wavenumber')
+    plt.ylabel('Frequency')
+    plt.title('Wavenumber vs frequency')
+    plt.show()
     # Perform FFT on the padded signal
 
     #print(len(k))
@@ -386,23 +386,23 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001):
     
     # Interpolate the FFT to equally spaced k values
     # print(f'shape of k: {k.shape}, k_new: {k_new.shape}, freq_vel: {freq_vel.shape}')
-    # plt.plot(k_new,label='k_new')
-    # plt.plot(k, label='k')
-    # #plt.xlabel('Wavenumber')
-    # #plt.ylabel('Frequency')
-    # plt.xlabel('sample')
-    # plt.title('k_new vs k')
-    # plt.legend()
-    # plt.show()
+    plt.plot(k_new,label='k_new')
+    plt.plot(k, label='k')
+    #plt.xlabel('Wavenumber')
+    #plt.ylabel('Frequency')
+    plt.xlabel('sample')
+    plt.title('k_new vs k')
+    plt.legend()
+    plt.show()
     # Interpolate G(w) to find G(k)
     G_interp = interpolate.interp1d(k, G_w, kind='linear', bounds_error=False, fill_value=0)(k_new)
-    # plt.plot(k_new, G_interp.real, label='interpolated G(k)')
-    # plt.plot(k, G_w.real, label='G(k)')
-    # plt.xlabel('Wavenumber')
-    # plt.ylabel('Amplitude')
-    # plt.title('Interpolated G(k)')
-    # plt.legend()
-    # plt.show()
+    plt.plot(k_new, G_interp.real, label='interpolated G(k)')
+    plt.plot(k, G_w.real, label='G(k)')
+    plt.xlabel('Wavenumber')
+    plt.ylabel('Amplitude')
+    plt.title('Interpolated G(k)')
+    plt.legend()
+    plt.show()
     print('G_interp created')
     # Calculate the group velocity of the guided wave mode at the wavenumber points
     v_gr_interp = interpolate.interp1d(k, v_gr, kind='linear', bounds_error=False, fill_value=0)(k_new)
