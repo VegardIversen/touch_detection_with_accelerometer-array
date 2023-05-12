@@ -257,7 +257,7 @@ def sum_signals(
             print_info=False,
         )
         # Hardcode the arrival times to be only the indices 0, 3, 4, and 11 of arrival_times
-        arrival_times = arrival_times[[0, 3, 4, 11]]
+        # arrival_times = arrival_times[[0, 3, 4, 11]]
         for arrival_time in arrival_times:
             arrival_time_index = int(arrival_time * SAMPLE_RATE)
             travel_distance_m = arrival_time * propagation_speed_mps

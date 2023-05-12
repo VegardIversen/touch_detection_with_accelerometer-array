@@ -41,8 +41,8 @@ def main():
         setup=SETUP_UCA,
         signal_model="line",
         propagation_speed_mps=442.7,
-        attenuation_dBpm=10,
-        signal_length_s=1,
+        attenuation_dBpm=15,
+        signal_length_s=0.1,
     )
 
     ideal_signals = crop_to_signal(
