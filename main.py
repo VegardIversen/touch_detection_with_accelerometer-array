@@ -7,14 +7,11 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from main_scripts.estimate_touch_location import estimate_touch_location
 from main_scripts.generate_ideal_signal import generate_ideal_signal
-from main_scripts.generate_signals_for_matlab import generate_signals_for_matlab
-from main_scripts.test_on_real_simulations import test_on_real_simulations
 from utils.data_processing.preprocessing import crop_to_signal
 from utils.data_visualization.visualize_data import set_fontsizes
 from utils.global_constants import FIGURES_SAVE_PATH
-from utils.plate_setups import Setup5, Setup6
+from utils.plate_setups import Setup6
 
 
 def main():
@@ -39,10 +36,13 @@ def main():
 
     ideal_signals, _ = generate_ideal_signal(
         setup=SETUP_UCA,
-        signal_model="line",
+        signal_model="gaussian",
         propagation_speed_mps=442.7,
-        attenuation_dBpm=15,
         signal_length_s=0.1,
+        center_frequency_Hz=25000,
+        t_var=0.5e-10,
+        snr_dB=40,
+        attenuation_dBpm=0,
     )
 
     ideal_signals = crop_to_signal(
@@ -50,7 +50,12 @@ def main():
     )
 
     # Plot each sensor in the ideal signal on a separate row
-    fig, ax = plt.subplots(SETUP_UCA.number_of_sensors, 1, sharex=True)
+    fig, ax = plt.subplots(
+        SETUP_UCA.number_of_sensors,
+        1,
+        sharex=True,
+        sharey=True,
+    )
     for i, sensor in enumerate(SETUP_UCA.sensors):
         ax[i].plot(ideal_signals[sensor.name])
         ax[i].set_ylabel(f"Sensor {sensor.name}")

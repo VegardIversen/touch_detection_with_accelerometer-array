@@ -104,7 +104,7 @@ def generate_ideal_signal(
     attenuation_dBpm: float,
     signal_length_s: float,
     signal_model: str = "line",
-    critical_frequency_Hz: float = 0,
+    center_frequency_Hz: float = 0,
     t_var: float = 1e-9,
     snr_dB: float = 0,
 ):
@@ -112,7 +112,7 @@ def generate_ideal_signal(
     touch_signal = model_touch_signal(
         signal_length_s,
         signal_model,
-        critical_frequency_Hz,
+        center_frequency_Hz,
         t_var,
     )
 
@@ -127,7 +127,7 @@ def generate_ideal_signal(
 
     ideal_signals = add_noise(
         ideal_signals,
-        critical_frequency_Hz,
+        center_frequency_Hz,
         snr_dB,
     )
     return ideal_signals, distances
