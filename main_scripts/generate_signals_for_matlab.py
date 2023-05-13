@@ -87,15 +87,18 @@ def do_measurement_preprocessing(
 def plot_them_time_signals(
     measurements,
 ):
-    fig, axs = plt.subplots(1, 2, squeeze=False)
-    for sensor in measurements.columns:
-        compare_signals(
-            fig,
-            axs,
-            [measurements[sensor]],
-            plots_to_plot=["time", "fft"],
-            sharey=True,
-        )
+    fig, axs = plt.subplots(
+        nrows=measurements.shape[1],
+        ncols=2,
+        squeeze=False,
+    )
+    compare_signals(
+        fig,
+        axs,
+        [measurements[channel] for channel in measurements.columns],
+        plots_to_plot=["time", "fft"],
+        sharey=True,
+    )
     fig.suptitle("Signals before analytic signal processing")
 
 
