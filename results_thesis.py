@@ -260,6 +260,7 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001):
     print(f'x_pos_top: {x_pos_top[position]}')
     print(f'y_pos_top: {y_pos_top[position]}')
     source_pos = [x_pos_top[0], y_pos_top[0]]
+    print(f'source_pos: {source_pos}')
     distanse = np.sqrt((x_pos_bottom[position]-source_pos[0])**2 + (y_pos_bottom[position]-source_pos[1])**2)
     print(f'distance: {distanse}')
     #Plots raw data
