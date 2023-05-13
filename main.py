@@ -6,12 +6,14 @@ Date: 2022-01-09
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from main_scripts.estimate_touch_location import estimate_touch_location
 
 from main_scripts.generate_ideal_signal import generate_ideal_signal
+from main_scripts.generate_signals_for_matlab import generate_signals_for_matlab
 from utils.data_processing.preprocessing import crop_to_signal
 from utils.data_visualization.visualize_data import set_fontsizes
 from utils.global_constants import FIGURES_SAVE_PATH
-from utils.plate_setups import Setup6
+from utils.plate_setups import Setup5, Setup6
 
 
 def main():
@@ -27,21 +29,35 @@ def main():
     # - High SNR
     # - Low attenuation
 
-    SETUP_UCA = Setup6(
-        actuator_coordinates=np.array([0.50, 0.35]),
-        number_of_sensors=8,
-        array_spacing_m=0.01,
-    )
-    SETUP_UCA.draw()
+    ARRAY_TYPE = "ula"
+    CENTER_FREQUENCY_HZ = 22000
+    PHASE_VELOCITY = 442.7
+    NUMBER_OF_SENSORS = 8
+    SENSOR_SPACING_M = 0.01
+    ACTUATOR_COORDINATES = np.array([0.50, 0.35])
+
+    if ARRAY_TYPE == "ula":
+        SETUP = Setup5(
+            actuator_coordinates=ACTUATOR_COORDINATES,
+            number_of_sensors=NUMBER_OF_SENSORS,
+            array_spacing_m=SENSOR_SPACING_M,
+        )
+    elif ARRAY_TYPE == "uca":
+        SETUP = Setup6(
+            actuator_coordinates=ACTUATOR_COORDINATES,
+            number_of_sensors=NUMBER_OF_SENSORS,
+            array_spacing_m=SENSOR_SPACING_M,
+        )
+    SETUP.draw()
 
     ideal_signals, _ = generate_ideal_signal(
-        setup=SETUP_UCA,
+        setup=SETUP,
         signal_model="gaussian",
-        propagation_speed_mps=442.7,
-        signal_length_s=0.1,
-        center_frequency_Hz=25000,
-        t_var=0.5e-10,
-        snr_dB=40,
+        propagation_speed_mps=PHASE_VELOCITY,
+        signal_length_s=0.2,
+        center_frequency_Hz=CENTER_FREQUENCY_HZ,
+        t_var=20e-8,
+        snr_dB=50,
         attenuation_dBpm=0,
     )
 
@@ -51,15 +67,35 @@ def main():
 
     # Plot each sensor in the ideal signal on a separate row
     fig, ax = plt.subplots(
-        SETUP_UCA.number_of_sensors,
-        1,
+        nrows=SETUP.number_of_sensors,
+        ncols=1,
         sharex=True,
         sharey=True,
     )
-    for i, sensor in enumerate(SETUP_UCA.sensors):
+    for i, sensor in enumerate(SETUP.sensors):
         ax[i].plot(ideal_signals[sensor.name])
         ax[i].set_ylabel(f"Sensor {sensor.name}")
     ax[-1].set_xlabel("Time [s]")
+
+    # Export the ideal signals
+    generate_signals_for_matlab(
+        measurements=ideal_signals,
+        center_frequency_Hz=CENTER_FREQUENCY_HZ,
+        number_of_sensors=NUMBER_OF_SENSORS,
+        array_type=ARRAY_TYPE,
+    )
+
+    estimated_angles_ula = import_estimated_angles("results_angles_estimation_ula")
+    estimated_angles_uca = import_estimated_angles("results_angles_estimation_uca")
+
+    estimate_touch_location(
+        setup=SETUP,
+        sorted_estimated_angles_deg=estimated_angles_ula,
+        center_frequency_Hz=CENTER_FREQUENCY_HZ,
+        number_of_sensors=NUMBER_OF_SENSORS,
+        sensor_spacing_m=SENSOR_SPACING_M,
+        actuator_coordinates=ACTUATOR_COORDINATES,
+    )
 
     plt.show()
 
@@ -73,7 +109,7 @@ def import_estimated_angles(
         f"{file_name}.csv",
     )
     if s0:
-        # Switch place between rows at index 1 and 3 in sorted_estimated_angles_deg
+        # Switch place between rows at index 1 and 3 in sorted_estimated_angles_deg, not sure why
         estimated_angles.iloc[[1, 3]] = estimated_angles.iloc[[3, 1]].values
         estimated_angles.iloc[[2, 3]] = estimated_angles.iloc[[3, 2]].values
 
