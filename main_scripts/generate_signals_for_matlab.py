@@ -20,8 +20,9 @@ def generate_signals_for_matlab(
     propagation_speed_mps: float = 1000,
     crop_end_s: float = 0.000637,
     number_of_sensors: int = 10,
+    array_type: str = "ula",
 ):
-    FILE_NAME = f"comsol_simulations/comsol_simulations_analytic_signals"
+    FILE_NAME = f"comsol_simulations/comsol_simulations_analytic_signals_{array_type}"
     if measurements is None:
         FILE_NAME = f"niklas_simulations/generated_signal_{center_frequency_Hz // 1000}kHz_{t_var}s_{propagation_speed_mps}mps_{number_of_sensors}sensors_interp{INTERPOLATION_FACTOR}"
         if crop_end_s is not None:
@@ -35,7 +36,10 @@ def generate_signals_for_matlab(
     analytic_signals = get_analytic_signal(measurements)
     # Ask user if they want to save the analytic signals
     if input("Save analytic signals? y/n: ") == "y":
-        make_a_nice_csv_file(FILE_NAME, analytic_signals)
+        make_a_nice_csv_file(
+            FILE_NAME,
+            analytic_signals,
+        )
     envelopes = get_envelopes(measurements)
     plot_them_envelopes(envelopes)
 
