@@ -6,7 +6,10 @@ Date: 2022-01-09
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from main_scripts.estimate_touch_location import estimate_touch_location
+from main_scripts.estimate_touch_location import (
+    estimate_touch_location_UCA,
+    estimate_touch_location_ULA,
+)
 
 from main_scripts.generate_ideal_signal import generate_ideal_signal
 from main_scripts.generate_signals_for_matlab import generate_signals_for_matlab
@@ -29,22 +32,25 @@ def main():
     # - High SNR
     # - Low attenuation
 
-    ARRAY_TYPE = "ula"
+    # ARRAY_TYPE = "ULA"
+    ARRAY_TYPE = "UCA"
     CENTER_FREQUENCY_HZ = 22000
     PHASE_VELOCITY = 442.7
     NUMBER_OF_SENSORS = 8
     SENSOR_SPACING_M = 0.01
     ACTUATOR_COORDINATES = np.array([0.50, 0.35])
+    UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
 
-    if ARRAY_TYPE == "ula":
+    if ARRAY_TYPE == "ULA":
         SETUP = Setup5(
             actuator_coordinates=ACTUATOR_COORDINATES,
             number_of_sensors=NUMBER_OF_SENSORS,
             array_spacing_m=SENSOR_SPACING_M,
         )
-    elif ARRAY_TYPE == "uca":
+    elif ARRAY_TYPE == "UCA":
         SETUP = Setup6(
             actuator_coordinates=ACTUATOR_COORDINATES,
+            array_center_coordinates=UCA_CENTER_COORDINATES,
             number_of_sensors=NUMBER_OF_SENSORS,
             array_spacing_m=SENSOR_SPACING_M,
         )
@@ -56,7 +62,7 @@ def main():
         propagation_speed_mps=PHASE_VELOCITY,
         signal_length_s=0.2,
         center_frequency_Hz=CENTER_FREQUENCY_HZ,
-        t_var=20e-8,
+        t_var=20e-7,
         snr_dB=50,
         attenuation_dBpm=0,
     )
@@ -85,17 +91,27 @@ def main():
         array_type=ARRAY_TYPE,
     )
 
-    estimated_angles_ula = import_estimated_angles("results_angles_estimation_ula")
-    estimated_angles_uca = import_estimated_angles("results_angles_estimation_uca")
+    estimated_angles_ULA = import_estimated_angles("results_angles_estimation_ULA")
+    estimated_angles_UCA = import_estimated_angles("results_angles_estimation_UCA")
 
-    estimate_touch_location(
-        setup=SETUP,
-        sorted_estimated_angles_deg=estimated_angles_ula,
-        center_frequency_Hz=CENTER_FREQUENCY_HZ,
-        number_of_sensors=NUMBER_OF_SENSORS,
-        sensor_spacing_m=SENSOR_SPACING_M,
-        actuator_coordinates=ACTUATOR_COORDINATES,
-    )
+    if ARRAY_TYPE == "ULA":
+        estimate_touch_location_ULA(
+            setup=SETUP,
+            sorted_estimated_angles_deg=estimated_angles_ULA,
+            center_frequency_Hz=CENTER_FREQUENCY_HZ,
+            number_of_sensors=NUMBER_OF_SENSORS,
+            sensor_spacing_m=SENSOR_SPACING_M,
+            actuator_coordinates=ACTUATOR_COORDINATES,
+        )
+    elif ARRAY_TYPE == "UCA":
+        estimate_touch_location_UCA(
+            setup=SETUP,
+            sorted_estimated_angles_deg=estimated_angles_UCA,
+            center_frequency_Hz=CENTER_FREQUENCY_HZ,
+            number_of_sensors=NUMBER_OF_SENSORS,
+            actuator_coordinates=ACTUATOR_COORDINATES,
+            uca_center_coordinates=UCA_CENTER_COORDINATES,
+        )
 
     plt.show()
 
@@ -104,7 +120,7 @@ def import_estimated_angles(
     file_name: str,
     s0: bool = False,
 ):
-    # Put the angles from results_simulations_10_mm_Teflon_COMSOL_25kHz_10sensors.csv into a dataframe
+    # Put the angles from results_simULAtions_10_mm_Teflon_COMSOL_25kHz_10sensors.csv into a dataframe
     estimated_angles = pd.read_csv(
         f"{file_name}.csv",
     )
@@ -160,7 +176,7 @@ def plot_far_field():
     plt.show()
 
 
-def test_uca_points():
+def test_UCA_points():
     # Define the points as tuples
     points = [
         (6.307, 5),
