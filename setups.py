@@ -110,11 +110,16 @@ class SimulatedSetup():
             plt.savefig(f'{fig_name}.{file_format}',dpi=300, format=file_format)
         if show_tab:
             plt.show()
+
+    def get_diagonal_distance(self, positions):
+        distance = np.sqrt((self.x_pos[positions[1]] - self.x_pos[positions[0]])**2 + (self.y_pos[positions[1]] - self.y_pos[positions[0]])**2)
+        print(f'distance: {distance}')
+        return distance
     
     def reflections(self):
         attenuation_dBpm = 0
         travel_distances = []
-
+        #NEED TO FIX THIS IF I EVER USE MORE THAN 1 SENSOR!!
         for sensor_i in range(len(self.sensors)):
             measurement_i = np.zeros(len(self.wave_data[0]))
             arrival_times, distances = de.get_travel_times(
@@ -126,6 +131,8 @@ class SimulatedSetup():
                 relative_first_reflection=False,
                 print_info=False,
             )
+            
+            
             #print(f'distances: {distances}')
             #print(f'arrival_times: {arrival_times}')
             # # Hardcode the arrival times to be only the indices 0, 3, 4, and 11 of arrival_times

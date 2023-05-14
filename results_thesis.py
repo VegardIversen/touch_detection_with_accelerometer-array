@@ -196,30 +196,49 @@ def wave_number_graph(number=1):
     wp.plot_velocities(phase, freq, distance, material='LDPE_tonni7mm')
 
 def draw_simulated_plate(comsolefile=9):
-    position = 70
+    position = 35
+    alpha = 0.4
     setup = SimulatedSetup(comsol_file=comsolefile, positions=[position])
     setup.draw()
     arrival_times, distances = setup.reflections()
     distances = sorted(distances)
+    theoretical_distances = setup.get_diagonal_distance(positions=[position, position+10])
+    print(f'distances from setup: {theoretical_distances}')
     h_x, x = dispersion_compensation_Wilcox(position=position)
+    #h_x1, x_1  = dispersion_compensation_Wilcox(position=position+10)
+    h_x1, x_1  = dispersion_compensation_Wilcox(position=position, pertubation=True, alpha=alpha)
     #dx = 0.00018507876875628913
     #x = np.arange(len(h_x))*dx
     #plot h(x) and vertical lines at the distances
     analytic_signal = signal.hilbert(h_x)
     envelope = np.abs(analytic_signal)
     peaks, _ = signal.find_peaks(envelope, prominence=0.3*envelope.max())
-    plt.plot(x, h_x, label='h(x)')
-    plt.plot(x, envelope, label='envelope')
-    plt.plot(x[peaks], envelope[peaks], "x", label='peaks')
+    analytic_signal1 = signal.hilbert(h_x1)
+    envelope1 = np.abs(analytic_signal1)
+    peaks1, _ = signal.find_peaks(envelope1, prominence=0.3*envelope1.max())
+
+    plt.plot(x, h_x, label=f'h(x) position: {position}')
+    #plt.plot(x_1, h_x1, label=f'h(x) postition: {position+10}')
+    plt.plot(x_1, h_x1, label=f'h(x) postition: {position} pertubation with alpha={alpha}')
+    #plt.plot(x, envelope, label='envelope')
+    #plt.plot(x[peaks], envelope[peaks], "x", label=f'peaks position: {position}')
+    #plt.plot(x_1, envelope1, label='envelope')
+    #plt.plot(x_1[peaks1], envelope1[peaks1], "x", label=f'peaks position: {position+10}')
     print(x[peaks])
     print(f'distances: {sorted(distances)}')
     #print(f'x: {x}')
     plt.vlines(distances[:7], ymin=0, ymax=1, label='reflections', colors='r')
+    plt.xlabel(xlabel='x (m)')
     plt.legend()
     plt.show()
+    peak_diff = x[peaks1[0]]-x[peaks[0]]
+    print(f'Distance between the peaks are {peak_diff} m')
+    print(f'theoretical distances: {theoretical_distances} m, peak distance: {peak_diff} m')
+    print(f'difference between the physical distance and the peak distance: {peak_diff-theoretical_distances} m')
 
 
-def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001):
+
+def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001, pertubation=False, alpha=0.2):
     """
     Performs dispersion compensation on the input signal.
 
@@ -249,12 +268,13 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001):
     lower_freq = 0
     new_fs = 80000
     tolerance = 1e-9
+    alpha = 0.9
     #xmax = 1
     #frequency axis from 0 to 40kHz with 80000 samples
     #freq = np.linspace(lower_freq, upper_freq, new_fs)
     
     
-
+    print('###############################################')
     wave_data_top, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(9) #fetches data from comsol files
     wave_data_bottom, x_pos_bottom, y_pos_bottom, z_pos_bottom, time_axis_bottom = get_comsol_data(10) #fetches data from comsol files
     print(f'x_pos_top: {x_pos_top[position]}')
@@ -303,19 +323,19 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001):
     # plt.show()
     print(f'shape of freq_vel: {freq_vel.shape}')
 
-    freq_range = (freq_vel>=lower_freq) & (freq_vel<=upper_freq)
-    freq_vel = freq_vel[freq_range]
+    #freq_range = (freq_vel>=lower_freq) & (freq_vel<=upper_freq)
+    #freq_vel = freq_vel[freq_range]
     #f_nyq = freq_vel[-1]/2
-    G_w = G_w[freq_range]
+    #G_w = G_w[freq_range]
 
     #only looking at positive frequencies
     #G_w = G_w[freq_vel>0]
-    #G_w = G_w[:int(n_fft/2)]
+    G_w = G_w[:int(n_fft/2)]
     print(f'length of positive G_w: {G_w.shape}')
     #freq_vel = freq_vel[freq_vel>0]
-    #freq_vel = freq_vel[:int(n_fft/2)]
+    freq_vel = freq_vel[:int(n_fft/2)]
     print(f'length of positive freq_vel: {freq_vel.shape}')
-    f_nyq = 60000 #fs/2
+    f_nyq = fs/2
     print(f'f_nyq: {f_nyq}')
     print(f'last element in freq_vel: {freq_vel[-1]}')
     #plotting fft of padded signal after frequency range
@@ -325,8 +345,15 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001):
     print(f'freq_vel: {freq_vel.shape}')
     #dt = 1/upper_freq
     v_gr, v_ph = wp.theoretical_group_phase_vel(freq_vel, material='LDPE_tonni20mm', plot=True) #group and phase velocity with the same length as freq_vel
-    print(f'v_gr: {v_gr.shape}')
-    print(f'v_ph: {v_ph.shape}')
+    if pertubation:
+        v_ph = (1+alpha)*v_ph
+        v_gr_old = v_gr
+        v_gr = wp.group_velocity_phase(v_ph, freq_vel)
+        plt.plot(freq_vel, v_gr_old, label='v_gr old')
+        plt.plot(freq_vel, v_gr, label='v_gr new')
+        plt.legend()
+        plt.show()
+
     print(f'max of v_gr: {np.max(v_gr)} and max of v_ph: {np.max(v_ph)}')
     v_max = np.max(v_gr)
     max_distance_wave = m*dt*np.max(v_gr)
@@ -343,6 +370,7 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001):
     n = len(k)
     print(f'length of k: {n}')
     dx = 1/(2*k_nyq)
+    #dx = 0.00121357285
     #dx = 0.001
     print(f'dx: {dx}')
     k_min = 1/(2*dx*fs)
@@ -373,13 +401,13 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001):
     print(f'Checking if n*delta_x is larger than m*delta_t*v_max. n*delta_x is {n_fft*dx}, m*delta_t*v_max is {m*dt*np.max(v_gr)}')
     #k_nyq = #k[round(1/(2*dt))]
     print(f'Checking if Delta x is less or equal to 1/(2k_nyq). Delta x is {dx}, 1/(2k_nyq) is {1/(2*k_nyq)}')
-    dk1 = 1 / (n_fft * dx) #wavenumber step
+    #dk1 = 1 / (n_fft * dx) #wavenumber step
     #creating new k axis
     #k_new = np.arange(k_min, k_max, dk)
     #k_new = np.arange(0, k_max + dk, dk)
     k_new = np.arange(0, k_max, dk)
     print(f'shape of k new: {k_new.shape}')
-    print(f'dk1: {dk1}, dk: {dk}')
+    #print(f'dk1: {dk1}, dk: {dk}')
     #print(f'shape of x: {x.shape}')
     #print(f'max of x: {x[-1]}')
     print(f'n should be larger than 2 * k_nyq / dk, n is {n_fft}, 2 * k_nyq / dk is {2 * k_nyq / dk}')
@@ -411,15 +439,31 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001):
     print(f'shape of G_interp: {G_interp.shape}')
     print(f'shape of v_gr_interp: {v_gr_interp.shape}')
   
+    plt.plot(k_new, v_gr_interp, label='v_gr_interp')
+    plt.plot(k, v_gr, label='v_gr')
+    plt.xlabel('Wavenumber')
+    plt.ylabel('Velocity')
+    plt.title('Interpolated v_gr')
+    plt.legend()
+    plt.show()
 
     # Compute H(k) = G(k) * vgr(k)
-    H_k = G_interp * v_gr_interp
-
+    H_k = G_interp * (v_gr_interp)
+    plt.plot(k_new, H_k, label='H_k')
+    plt.xlabel('Wavenumber')
+    plt.ylabel('Amplitude')
+    plt.title('H(k)')
+    plt.legend()
+    plt.show()
     # Apply inverse FFT to H(k) to obtain the dispersion compensated distance-trace
     h_x = np.fft.ifft(H_k)
     print(f'shape of h_x: {h_x.shape} before removing zero-padding')
     # Remove zero-padding from the compensated signal
     h_x_padd = h_x
+    print(h_x_padd)
+    plt.plot(h_x_padd, label='h_x_padd')
+    plt.legend()
+    plt.show()
     h_x = h_x[:m]
     #x = np.arange(len(h_x))*dx
     #normalize h_x and signal
@@ -428,6 +472,7 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001):
     xmax = 1/(dk) - dx
     #x = np.arange(0, xmax, dx)
     x = time_axis_top*1e-6*v_max
+    print(f'delta x in array is {x[1]-x[0]}')
     print(f'shape of h_x: {h_x.shape}')
     print(f'shape of x: {x.shape}')
     print(f'max of x: {x[-1]}')
@@ -489,6 +534,7 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001):
     # plt.legend()
     # plt.tight_layout()
     # plt.show()
+    print('###############################################')
     return h_x.real, x
 
 def dispersion_compensation_Wilcox_ref(file_n=2, postion=25, fs=500000, dx=0.0001):

@@ -364,6 +364,7 @@ def group_velocity_phase(vph, freqs, method='t', distance=0.1, material='teflon'
     omega  = 2*np.pi*freqs
     d_v_ph = np.gradient(vph, omega)
     v_g_numpy = vph / (1 - (d_v_ph * omega/vph))
+    v_g_numpy[np.isnan(v_g_numpy)] = 0
 
     if plot:
         plt.plot(freqs, v_g_numpy)
