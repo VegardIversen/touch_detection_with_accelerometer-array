@@ -32,7 +32,10 @@ def filter_signal(
     """
     if filtertype == "highpass" or filtertype == "lowpass":
         sos = signal.butter(
-            order, critical_frequency / (0.5 * sample_rate), filtertype, output="sos"
+            order,
+            critical_frequency / (0.5 * sample_rate),
+            filtertype,
+            output="sos",
         )
     elif filtertype == "bandpass":
         sos = signal.butter(
