@@ -95,10 +95,10 @@ def time_plotting(
 ):
     if compressed_chirps:
         time_axis = make_time_signal_for_compressed_signal(channel)
-        axs[i, 0].set_ylabel("Correlation coefficient [-]")
+        axs[i, 0].set_ylabel("Correlation coefficient (-)")
     else:
         time_axis = make_time_signal_for_uncompressed_signal(channel)
-        axs[i, 0].set_ylabel("Acceleration [$\mathregular{m/s^2}$]")
+        axs[i, 0].set_ylabel("Acceleration ($\mathregular{m/s^2}$)")
     share_x_axis_time(axs, i)
     if sharey:
         share_y_axis(axs, i)
@@ -108,7 +108,7 @@ def time_plotting(
         set_log_dynamic_range(axs, i, channel)
     else:
         plot_as_linear(axs, i, channel, time_axis)
-    axs[len(measurements) - 1, 0].set_xlabel("Time [s]")
+    axs[len(measurements) - 1, 0].set_xlabel("Time (s)")
     axs[i, 0].plot()
 
 
@@ -209,8 +209,8 @@ def spectrogram_plotting(
         axs[i, axs_index].sharey(axs[0, axs_index])
     axs[i, axs_index].axis(ymax=freq_max)
     # axs[i, axs_index].set_title(f'{channel.name}, spectrogram')
-    axs[len(measurements) - 1, axs_index].set_xlabel("Time [s]")
-    axs[i, axs_index].set_ylabel("Frequency [Hz]")
+    axs[len(measurements) - 1, axs_index].set_xlabel("Time (s)")
+    axs[i, axs_index].set_ylabel("Frequency (Hz)")
     axs[i, axs_index].plot(sharex=axs[0, 0])
 
 
@@ -358,8 +358,8 @@ def fft_plotting(
     axs[i, axs_index].sharey(axs[0, axs_index])
     axs[i, axs_index].grid()
     # axs[i, axs_index].set_title(f'{channel.name}, FFT')
-    axs[len(measurements) - 1, axs_index].set_xlabel("Frequency [kHz]")
-    axs[i, axs_index].set_ylabel("Amplitude [dB]")
+    axs[len(measurements) - 1, axs_index].set_xlabel("Frequency [kHz)")
+    axs[i, axs_index].set_ylabel("Amplitude [dB)")
     axs[i, axs_index].set_xlim(left=0, right=freq_max / 1000)
     axs[i, axs_index].set_ylim(bottom=-25, top=80)
     axs[i, axs_index].plot(fftfreq / 1000, data_fft_dB)
@@ -402,7 +402,7 @@ def wave_statistics(
             color="orange",
         )
         # axs[i].set_title(channel)
-        axs[i].set_xlabel("Time [s]")
+        axs[i].set_xlabel("Time [s)")
         axs[i].legend()
         axs[i].grid()
 
@@ -427,8 +427,8 @@ def spectrogram_with_lines(
         to_dB(np.max(spec[0])),
     )
     # ax.set_title(f'Expected wave arrival times for {sensor.name}')
-    ax.set_xlabel("Time [s]")
-    ax.set_ylabel("Frequency [Hz]")
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("Frequency (Hz)")
     ax.set_ylim(0, 5000)
     # ax.set_xlim(2.5, 2.505)
     fig.colorbar(spec[3])
@@ -488,8 +488,8 @@ def envelope_with_lines(
         for line in (arrival_times[5:])
     ]
     # ax.set_title(f'Expected wave arrival times for {sensor.name}')
-    ax.set_xlabel("Time [s]")
-    ax.set_ylabel("Acceleration [$\mathregular{m/s^2}$]")
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("Acceleration ($\mathregular{m/s^2}$)")
     # ax.set_xlim(0, 5)
     """Use scientific notation"""
     ax.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
@@ -505,7 +505,7 @@ def plot_filter_response(
     w, h = scipy.signal.sosfreqz(sos, worN=2**15)
     _, ax = plt.subplots(figsize=set_window_size())
     ax.semilogx((SAMPLE_RATE * 0.5 / np.pi) * w, to_dB(abs(h)))
-    ax.set_xlabel("Frequency [Hz]")
+    ax.set_xlabel("Frequency (Hz)")
     ax.set_ylabel("Amplitude")
     ax.margins(0, 0.1)
     ax.grid(which="both", axis="both")
