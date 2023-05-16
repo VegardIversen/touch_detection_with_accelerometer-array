@@ -110,15 +110,18 @@ def plot_them_time_signals(
 def plot_them_envelopes(
     envelopes,
 ):
-    fig, axs = plt.subplots(1, 1, squeeze=False)
-    for sensor in envelopes.columns:
-        compare_signals(
-            fig,
-            axs,
-            [envelopes[sensor]],
-            plots_to_plot=["time"],
-            sharey=True,
-        )
+    fig, axs = plt.subplots(
+        nrows=envelopes.shape[1],
+        ncols=1,
+        squeeze=False,
+    )
+    compare_signals(
+        fig,
+        axs,
+        [envelopes[channel] for channel in envelopes.columns],
+        plots_to_plot=["time"],
+        sharey=True,
+    )
     fig.suptitle("Envelopes of exported analytic signals")
 
 
