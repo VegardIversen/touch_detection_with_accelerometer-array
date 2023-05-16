@@ -34,15 +34,16 @@ def generate_signals_for_matlab(
     measurements = drop_actuator_channel(measurements)
     plot_them_time_signals(measurements)
     analytic_signals = get_analytic_signal(measurements)
+    envelopes = get_envelopes(measurements)
+    plot_them_envelopes(envelopes)
+
     # Ask user if they want to save the analytic signals
     if input("Save analytic signals? y/n: ") == "y":
         make_a_nice_csv_file(
             FILE_NAME,
             analytic_signals,
         )
-    envelopes = get_envelopes(measurements)
-    plot_them_envelopes(envelopes)
-
+        exit()
     return analytic_signals
 
 
