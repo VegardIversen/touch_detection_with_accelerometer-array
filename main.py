@@ -6,18 +6,17 @@ Date: 2022-01-09
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+
 from main_scripts.estimate_touch_location import (
     estimate_touch_location_UCA,
     estimate_touch_location_ULA,
 )
-
-from main_scripts.generate_ideal_signal import generate_ideal_signal
 from main_scripts.generate_signals_for_matlab import generate_signals_for_matlab
 from main_scripts.physical_measurements import (
     combine_measurements_into_dataframe,
     measure_phase_velocity,
 )
-from utils.data_processing.preprocessing import crop_data, crop_to_signal, filter_signal
+from utils.data_processing.preprocessing import crop_data, filter_signal
 from utils.data_processing.processing import interpolate_signal
 from utils.data_visualization.visualize_data import compare_signals, set_fontsizes
 from utils.global_constants import FIGURES_SAVE_PATH, SAMPLE_RATE
@@ -41,35 +40,34 @@ def main():
     ARRAY_TYPE = "ULA"
     # ARRAY_TYPE = "UCA"
     """Set parameters for the array"""
-    CENTER_FREQUENCY_HZ = 22000
+    CENTER_FREQUENCY_HZ = 15000
     PHASE_VELOCITY = 442.7
-    NUMBER_OF_SENSORS = 8
+    NUMBER_OF_SENSORS = 7
     SENSOR_SPACING_M = 0.01
     ACTUATOR_COORDINATES = np.array([0.50, 0.35])
     UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
 
     measurements = combine_measurements_into_dataframe(
-        "Plate_10mm/Setup5/22kHz",
+        "Plate_10mm/Setup5/15kHz",
         "1period_pulse_from_middle_to_sensors_123",
         "1period_pulse_from_middle_to_sensors_456",
         "1period_pulse_from_middle_to_sensors_78",
     )
 
-    # measurements = crop_to_signal(measurements)
-    measurements = interpolate_signal(measurements)
-    # measurements = filter_signal(
-    #     signals=measurements,
-    #     critical_frequency=CENTER_FREQUENCY_HZ,
-    #     filtertype="bandpass",
-    #     order=2,
-    #     q=0.05,
-    #     plot_response=True,
-    #     sample_rate=SAMPLE_RATE,
-    # )
     measurements = crop_data(
         signals=measurements,
         time_start=0.0005,
         time_end=0.001,
+    )
+
+    measurements = filter_signal(
+        signals=measurements,
+        critical_frequency=CENTER_FREQUENCY_HZ,
+        filtertype="bandpass",
+        order=1,
+        q=0.01,
+        plot_response=True,
+        sample_rate=SAMPLE_RATE,
     )
 
     fig, axs = plt.subplots(
@@ -85,7 +83,7 @@ def main():
         sharey=True,
     )
 
-    measure_phase_velocity(measurements=measurements)
+    # measure_phase _velocity(measurements=measurements)
 
     if ARRAY_TYPE == "ULA":
         SETUP = Setup5(
