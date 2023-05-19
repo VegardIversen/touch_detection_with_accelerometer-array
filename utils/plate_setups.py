@@ -323,7 +323,7 @@ class Setup_3x3(Setup):
         return propagation_speed
 
 
-class Setup_Linear_Array(Setup):
+class Setup_ULA(Setup):
     """A line of number_of_sensors sensors,
     with an actuator given by actuator_coordinates.
     """
@@ -354,7 +354,7 @@ class Setup_Linear_Array(Setup):
             )
 
 
-class Setup4(Setup_Linear_Array):
+class Setup4(Setup_ULA):
     # Setup_Linear_Array with arugments for a 3 sensor array
     def __init__(self, actuator_coordinates: np.ndarray):
         super().__init__(
@@ -401,7 +401,7 @@ class Setup4(Setup_Linear_Array):
         return propagation_speed
 
 
-class Setup5(Setup_Linear_Array):
+class Setup5(Setup_ULA):
     # Setup_Linear_Array with arugments for a 3 sensor array
     def __init__(
         self,
@@ -414,5 +414,60 @@ class Setup5(Setup_Linear_Array):
             number_of_sensors=number_of_sensors,
             actuator_coordinates=actuator_coordinates,
             array_start_coordinates=array_start_coordinates,
+            array_spacing_m=array_spacing_m,
+        )
+
+
+class Setup_UCA(Setup):
+    """A line of number_of_sensors sensors,
+    with an actuator given by actuator_coordinates.
+    """
+
+    def __init__(
+        self,
+        number_of_sensors: int,
+        actuator_coordinates: np.ndarray,
+        array_center_coordinates: np.ndarray,
+        array_spacing_m: float,
+    ):
+        self.number_of_sensors = number_of_sensors
+        self.array_start_coordinates = array_center_coordinates
+        self.array_spacing = array_spacing_m
+        self.actuators = np.empty(shape=1, dtype=Actuator)
+        self.sensors = np.empty(shape=number_of_sensors, dtype=Sensor)
+        self.actuators[ACTUATOR_1] = Actuator(coordinates=actuator_coordinates)
+        angles_of_sensors = np.linspace(0, 2 * np.pi, number_of_sensors, endpoint=False)
+        angle_from_sensor_to_sensor = (np.pi - angles_of_sensors[1]) / 2
+        radius = (
+            array_spacing_m
+            * np.sin(angle_from_sensor_to_sensor)
+            / np.sin(angles_of_sensors[1])
+        )
+        for i in range(number_of_sensors):
+            self.sensors[i] = Sensor(
+                coordinates=np.array(
+                    [
+                        array_center_coordinates[0]
+                        + radius * np.cos(angles_of_sensors[i]),
+                        array_center_coordinates[1]
+                        + radius * np.sin(angles_of_sensors[i]),
+                    ]
+                ),
+                name=f"Sensor {i + 1}",
+            )
+
+
+class Setup6(Setup_UCA):
+    def __init__(
+        self,
+        actuator_coordinates: np.ndarray,
+        array_center_coordinates: np.ndarray = np.array([0.05, 0.05]),
+        number_of_sensors: int = 8,
+        array_spacing_m: float = 0.01,
+    ):
+        super().__init__(
+            number_of_sensors=number_of_sensors,
+            actuator_coordinates=actuator_coordinates,
+            array_center_coordinates=array_center_coordinates,
             array_spacing_m=array_spacing_m,
         )

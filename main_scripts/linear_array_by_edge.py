@@ -55,7 +55,7 @@ def linear_array_by_edge():
     )
     ideal_signal, distances = generate_ideal_signal(
         SETUP,
-        propagation_speed_mps=950,
+        group_velocity_mps=950,
         attenuation_dBpm=20,
         chirp_length_s=0.125,
         frequency_start=1,

@@ -1,5 +1,145 @@
 # Changelog
 
+### 10.0.6
+Spot on result for Root-MUSIC, good results for Root-WSF and ESPRIT.
+MUSIC is way off and phi_4 is wrong, which is ok
+Using 35kHz and phase velocity 825 m/s, which makes sense as this gives a wavelength of 2.357 cm.
+Does not seem to be very dependent on the velocity from first tests, as in withing a cm or two for each 5 m/s.
+Not great, not terrible.
+
+This fits with the hypothesis in many ways:
+- Higher frequency yields better results, especially as the wavelength approaches 2 cm (for this setup).
+- Even though the phase velocity is not as calculated beforehand, it makes somewhat sense given the measured group velocity. Possible to estimate phase velocity from a measured group velocity? If it is easier.
+- Angles are quite accurate, and although the other methods are worse, they are still relatively close.
+
+
+
+### 10.0.5
+Good guess for both Root-WSF and Root-MUSIC, with angle errors less than 3.5 degrees off.
+Phi_4 is way off still.
+Estimating four angles at 725 m/s for 30 kHz.
+
+Method: Root-WSF \
+Real phi_1: 30.964, Estimated phi_1: 27.615 \
+Real phi_2: -43.698, Estimated phi_2: -41.216 \
+Real phi_3: 26.147, Estimated phi_3: 27.615 \
+Real phi_4: -38.019, Estimated phi_4: -12.521 \
+Error in phi_1: 3.349 degrees. \
+Error in phi_2: 2.482 degrees. \
+Error in phi_3: 1.468 degrees. \
+Error in phi_4: 25.498 degrees. \
+r_sa: [0.453, 0.290] \
+Estimated location error: 0.020 m
+
+Method: Root-MUSIC \
+Real phi_1: 30.964, Estimated phi_1: 31.059 \
+Real phi_2: -43.698, Estimated phi_2: -43.371 \
+Real phi_3: 26.147, Estimated phi_3: 29.236 \
+Real phi_4: -38.019, Estimated phi_4: -13.168 \
+Error in phi_1: 0.096 degrees. \
+Error in phi_2: 0.327 degrees. \
+Error in phi_3: 3.089 degrees. \
+Error in phi_4: 24.851 degrees. \
+r_sa: [0.467, 0.317] \
+Estimated location error: 0.051 m
+
+### 10.0.4
+Quite close guess for ESPRIT, despite angles being quite off.
+It finds three angles when asked to find 4, and all three angles are more than 3 degrees off.
+Certain that the cropping is correct, see v10.0.3.
+Results are from using 15kHz, 7 sensors, 2nd order filter, q=0.1, phase velocity 600 m/s.
+
+It may seem that an error in the guessed phase velocity is wrong, it may still be able to correct itself as long as the estimated angles are systematically wrong.
+This open up the ability for a potential user to manually tune the velocity to be correct.
+
+Method: ESPRIT \
+Real phi_1: 30.964, Estimated phi_1: 38.968 \
+Real phi_2: -43.698, Estimated phi_2: -49.475 \
+Real phi_3: 26.147, Estimated phi_3: 29.480 \
+Real phi_4: -38.019, Estimated phi_4: 0.000 \
+Error in phi_1: 8.004 degrees. \
+Error in phi_2: 5.777 degrees. \
+Error in phi_3: 3.333 degrees. \
+Error in phi_4: 38.019 degrees. \
+r_sa: [0.443, 0.307] \
+Estimated location error: 0.038 m
+
+### 10.0.3
+Nothing exciting really, plotting spectrograms and FFTs of measured signals from the 15 kHz pulse.
+The spectrogram relatively clearly shows the expected arrival times of the first four signals, considering that the last sensor has a higher concentration of the first arriving signals (before 1 ms).
+Confused about the group velocity, since it seems really high at around 1108 m/s.
+
+### 10.0.2
+3.33 cm off with ESPRIT on full 22 kHz signal, PROPAGATION_SPEED = 443 for 22 kHz, 20.12 mm wavelength.
+Sharp tukey window (alpha=0.05), corrected array start position.
+
+Method: Root-WSF \
+Real phi_1: 27.072, Estimated phi_1: 26.221 \
+Real phi_2: -46.245, Estimated phi_2: -46.695 \
+Real phi_3: 22.694, Estimated phi_3: 19.778 \
+Real phi_4: -40.515, Estimated phi_4: -40.311 \
+Error in phi_1: 0.851 degrees. \
+Error in phi_2: 0.450 degrees. \
+Error in phi_3: 2.916 degrees. \
+Error in phi_4: 0.205 degrees. \
+r_sa: [0.422, 0.188] \
+Estimated location error: 0.051 m
+
+Method: Root-MUSIC  \
+Real phi_1: 27.072, Estimated phi_1: 26.654 \
+Real phi_2: -46.245, Estimated phi_2: -45.652 \
+Real phi_3: 22.694, Estimated phi_3: 18.785 \
+Real phi_4: -40.515, Estimated phi_4: -36.903 \
+Error in phi_1: 0.418 degrees. \
+Error in phi_2: 0.593 degrees. \
+Error in phi_3: 3.909 degrees. \
+Error in phi_4: 3.612 degrees. \
+r_sa: [0.461, 0.191] \
+Estimated location error: 0.041 m
+
+Method: MUSIC \
+Real phi_1: 27.072, Estimated phi_1: 39.000 \
+Real phi_2: -46.245, Estimated phi_2: -45.000 \
+Real phi_3: 22.694, Estimated phi_3: 27.000 \
+Real phi_4: -40.515, Estimated phi_4: 19.000 \
+Error in phi_1: 11.928 degrees. \
+Error in phi_2: 1.245 degrees. \
+Error in phi_3: 4.306 degrees. \
+Error in phi_4: 59.515 degrees. \
+r_sa: [1.262, 0.694] \
+Estimated location error: 0.935 m
+
+Method: ESPRIT \
+Real phi_1: 27.072, Estimated phi_1: 25.418 \
+Real phi_2: -46.245, Estimated phi_2: -46.197 \
+Real phi_3: 22.694, Estimated phi_3: 22.061 \
+Real phi_4: -40.515, Estimated phi_4: -35.408 \
+Error in phi_1: 1.654 degrees. \
+Error in phi_2: 0.049 degrees. \
+Error in phi_3: 0.633 degrees. \
+Error in phi_4: 5.108 degrees. \
+r_sa: [0.423, 0.212] \
+Estimated location error: 0.033 m
+
+### 10.0.1
+EDIT: The array was starting at y=0.06 m instead of 0.05 as it should.
+0.9 cm off the correct touch location using Root-WSF set to detect 3 sources.
+Phase velocity still set to 954 m/s as from the calculation.
+Applying a Hamming window to the cropped signal, suspecting that this suppresses phi_4 signal quite a bit.
+Or perhaps it already is suppressed in the Comsol simulation.
+Still having the issue of wrong sign for phi_2 / phi_4, that is supposed to be negative.
+
+Info from run:
+
+Real phi_1: 29.539, Estimated phi_1: 25.478 \
+Real phi_2: -44.680, Estimated phi_2: -42.183 \
+Real phi_3: 24.874, Estimated phi_3: 25.478 \
+Error in phi_1: 4.061 degrees. \
+Error in phi_2: 2.497 degrees. \
+Error in phi_3: 0.604 degrees. \
+r_sa: [0.442, 0.258] \
+Estimated location error: 0.009 m
+
 ## 10.0.0
 Trying to estimate touch location with S0 waves from the Comsol simulation.
 Testing at 25 kHz. Getting quite close, 6.4 cm off, with angles from Root-WSF.
@@ -8,7 +148,8 @@ Not sure what is going on there.
 Root-MUSIC was way off on this one, only being able to detect three angles.
 
 ### 9.0.1
-Some edits to v8.0.0. Plot with the parameters Tonni sent in February, way higher velocities there. Fix ylabel to not say "Phase velocity".
+Some edits to v8.0.0.
+Plot with the parameters Tonni sent in February, way higher velocities there. Fix ylabel to not say "Phase velocity".
 
 ## 9.0.0
 Not much, but some ok results with my simulations. Changed to using the MEMS accelerometers, which allowed for smaller sensors and can be placed at the distance required by the simulated phase velocity of 250 m/s at 25 kHz. Look more at this later. Should probably move to a model that simulates both group and phase velocity, maybe directly in sum_signals()?

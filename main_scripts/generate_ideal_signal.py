@@ -100,11 +100,12 @@ def compare_to_ideal_signal(
 
 def generate_ideal_signal(
     setup: Setup,
-    propagation_speed_mps: float,
+    group_velocity_mps: float,
+    phase_velocity_mps: float,
     attenuation_dBpm: float,
     signal_length_s: float,
     signal_model: str = "line",
-    critical_frequency_Hz: float = 0,
+    center_frequency_Hz: float = 0,
     t_var: float = 1e-9,
     snr_dB: float = 0,
 ):
@@ -112,14 +113,14 @@ def generate_ideal_signal(
     touch_signal = model_touch_signal(
         signal_length_s,
         signal_model,
-        critical_frequency_Hz,
+        center_frequency_Hz,
         t_var,
     )
 
     # Initialize the superpositioned signal
     ideal_signals, distances = sum_signals(
         setup,
-        propagation_speed_mps,
+        group_velocity_mps,
         touch_signal,
         attenuation_dBpm,
         signal_length_s,
@@ -127,7 +128,7 @@ def generate_ideal_signal(
 
     ideal_signals = add_noise(
         ideal_signals,
-        critical_frequency_Hz,
+        center_frequency_Hz,
         snr_dB,
     )
     return ideal_signals, distances
@@ -257,7 +258,7 @@ def sum_signals(
             print_info=False,
         )
         # Hardcode the arrival times to be only the indices 0, 3, 4, and 11 of arrival_times
-        arrival_times = arrival_times[[0, 3, 4, 11]]
+        # arrival_times = arrival_times[[0, 3, 4, 11]]
         for arrival_time in arrival_times:
             arrival_time_index = int(arrival_time * SAMPLE_RATE)
             travel_distance_m = arrival_time * propagation_speed_mps

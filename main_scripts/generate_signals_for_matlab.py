@@ -20,8 +20,9 @@ def generate_signals_for_matlab(
     propagation_speed_mps: float = 1000,
     crop_end_s: float = 0.000637,
     number_of_sensors: int = 10,
+    array_type: str = "ula",
 ):
-    FILE_NAME = f"comsol_simulations/simulations_10_mm_Teflon_COMSOL_{center_frequency_Hz // 1000}kHz_{number_of_sensors}sensors"
+    FILE_NAME = f"comsol_simulations_analytic_signals_{array_type}"
     if measurements is None:
         FILE_NAME = f"niklas_simulations/generated_signal_{center_frequency_Hz // 1000}kHz_{t_var}s_{propagation_speed_mps}mps_{number_of_sensors}sensors_interp{INTERPOLATION_FACTOR}"
         if crop_end_s is not None:
@@ -33,11 +34,18 @@ def generate_signals_for_matlab(
     measurements = drop_actuator_channel(measurements)
     plot_them_time_signals(measurements)
     analytic_signals = get_analytic_signal(measurements)
-    # Ask user if they want to save the analytic signals
-    if input("Save analytic signals? y/n: ") == "y":
-        make_a_nice_csv_file(FILE_NAME, analytic_signals)
     envelopes = get_envelopes(measurements)
     plot_them_envelopes(envelopes)
+
+    # Ask user if they want to save the analytic signals
+    if input("Save analytic signals? y/n: ") == "y":
+        make_a_nice_csv_file(
+            FILE_NAME,
+            analytic_signals,
+        )
+        print(f"Saved analytic signals to {FILE_NAME}.csv")
+        exit()
+    return analytic_signals
 
 
 def drop_actuator_channel(
@@ -85,30 +93,36 @@ def do_measurement_preprocessing(
 def plot_them_time_signals(
     measurements,
 ):
-    fig, axs = plt.subplots(1, 2, squeeze=False)
-    for sensor in measurements.columns:
-        compare_signals(
-            fig,
-            axs,
-            [measurements[sensor]],
-            plots_to_plot=["time", "fft"],
-            sharey=True,
-        )
+    fig, axs = plt.subplots(
+        nrows=measurements.shape[1],
+        ncols=2,
+        squeeze=False,
+    )
+    compare_signals(
+        fig,
+        axs,
+        [measurements[channel] for channel in measurements.columns],
+        plots_to_plot=["time", "fft"],
+        sharey=True,
+    )
     fig.suptitle("Signals before analytic signal processing")
 
 
 def plot_them_envelopes(
     envelopes,
 ):
-    fig, axs = plt.subplots(1, 1, squeeze=False)
-    for sensor in envelopes.columns:
-        compare_signals(
-            fig,
-            axs,
-            [envelopes[sensor]],
-            plots_to_plot=["time"],
-            sharey=True,
-        )
+    fig, axs = plt.subplots(
+        nrows=envelopes.shape[1],
+        ncols=1,
+        squeeze=False,
+    )
+    compare_signals(
+        fig,
+        axs,
+        [envelopes[channel] for channel in envelopes.columns],
+        plots_to_plot=["time"],
+        sharey=True,
+    )
     fig.suptitle("Envelopes of exported analytic signals")
 
 

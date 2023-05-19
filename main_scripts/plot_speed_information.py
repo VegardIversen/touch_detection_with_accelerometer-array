@@ -43,7 +43,10 @@ def plot_speed_information(tonni_params: bool = True):
         },
     )
     # Save figure as pdf file in the path specified by FIGURES_SAVE_PATH
-    fig.savefig(f"{FIGURES_SAVE_PATH}/phase_and_energy_speeds_for_A0_and_S0_Tonni.pdf")
+    fig.savefig(
+        f"{FIGURES_SAVE_PATH}/phase_and_energy_speeds_for_A0_and_S0.pdf",
+        bbox_inches="tight",
+    )
 
     fig, ax = plt.subplots()
 
@@ -65,6 +68,8 @@ def plot_speed_information(tonni_params: bool = True):
         legend=True,
         grid=True,
     )
-    fig.savefig(f"{FIGURES_SAVE_PATH}/wavelengths_for_A0_and_S0_Tonni.pdf")
+    fig.savefig(
+        f"{FIGURES_SAVE_PATH}/wavelengths_for_A0_and_S0.pdf", bbox_inches="tight"
+    )
 
     return 0

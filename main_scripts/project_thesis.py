@@ -10,17 +10,28 @@ import scipy.signal as signal
 
 from utils.csv_to_df import make_dataframe_from_csv
 from utils.data_processing.detect_echoes import get_envelopes, get_travel_times
-from utils.data_processing.preprocessing import (compress_chirps, crop_data,
-                                                 filter_signal, window_signals)
+from utils.data_processing.preprocessing import (
+    compress_chirps,
+    crop_data,
+    filter_signal,
+    window_signals,
+)
 from utils.data_processing.processing import interpolate_signal
-from utils.data_visualization.visualize_data import (adjust_plot_margins,
-                                                     compare_signals,
-                                                     envelope_with_lines,
-                                                     set_window_size,
-                                                     spectrogram_with_lines)
-from utils.global_constants import (ACTUATOR_1, CHIRP_CHANNEL_NAMES,
-                                    FIGURES_SAVE_PATH, SAMPLE_RATE, SENSOR_1,
-                                    SENSOR_3)
+from utils.data_visualization.visualize_data import (
+    adjust_plot_margins,
+    compare_signals,
+    envelope_with_lines,
+    set_window_size,
+    spectrogram_with_lines,
+)
+from utils.global_constants import (
+    ACTUATOR_1,
+    CHIRP_CHANNEL_NAMES,
+    FIGURES_SAVE_PATH,
+    SAMPLE_RATE,
+    SENSOR_1,
+    SENSOR_3,
+)
 from utils.simulations import simulated_phase_velocities
 from utils.table_setups import Setup, Setup1, Setup2, Setup3
 
@@ -657,7 +668,9 @@ def setup1_predict_reflections(setup: Setup):
     # measurements = compress_chirps(measurements)
 
     """Filter signals by a correlation based bandpass filter"""
-    measurements = filter_signal(measurements, filtertype="highpass", critical_frequency=1000)
+    measurements = filter_signal(
+        measurements, filtertype="highpass", critical_frequency=1000
+    )
 
     setup1_predict_reflections_in_envelopes(setup, measurements)
     setup1_predict_reflections_in_spectrograms(setup, measurements)

@@ -32,7 +32,10 @@ def filter_signal(
     """
     if filtertype == "highpass" or filtertype == "lowpass":
         sos = signal.butter(
-            order, critical_frequency / (0.5 * sample_rate), filtertype, output="sos"
+            order,
+            critical_frequency / (0.5 * sample_rate),
+            filtertype,
+            output="sos",
         )
     elif filtertype == "bandpass":
         sos = signal.butter(
@@ -47,12 +50,14 @@ def filter_signal(
     else:
         raise ValueError("Filtertype not recognized")
 
-    signals_filtered = signals.copy()
     if isinstance(signals, pd.DataFrame):
-        for channel in signals_filtered:
-            signals_filtered[channel] = signal.sosfilt(sos, signals[channel].values)
+        signals_filtered = pd.DataFrame(
+            index=signals.index,
+            columns=signals.columns,
+            data=signal.sosfiltfilt(sos, signals.values, axis=0)
+        )
     else:
-        signals_filtered = signal.sosfilt(sos, signals)
+        signals_filtered = signal.sosfiltfilt(sos, signals, axis=0)
 
     if plot_response:
         plot_filter_response(sos, critical_frequency, critical_frequency)
@@ -99,11 +104,15 @@ def crop_data(
             int(time_start * sample_rate) : int(time_end * sample_rate)
         ]
         if apply_window_function:
-            window = signal.windows.hamming(len(signals_cropped))
+            window = signal.windows.tukey(len(signals_cropped), alpha=0.05)
+            # window = signal.windows.hamming(len(signals_cropped))
     elif isinstance(signals, pd.DataFrame):
         signals_cropped = signals.loc[time_start * sample_rate : time_end * sample_rate]
         if apply_window_function:
-            window = signal.windows.hamming(len(signals_cropped))
+            window = signal.windows.tukey(len(signals_cropped), alpha=0.05)
+            # window = signal.windows.hamming(len(signals_cropped))
+            _, ax = plt.subplots()
+            ax.plot(window)
             for channel in signals_cropped:
                 signals_cropped[channel] = signals_cropped[channel].values * window
     else:
