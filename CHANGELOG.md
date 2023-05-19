@@ -1,5 +1,26 @@
 # Changelog
 
+### 10.0.4
+Quite close guess for ESPRIT, despite angles being quite off.
+It finds three angles when asked to find 4, and all three angles are more than 3 degrees off.
+Certain that the cropping is correct, see v10.0.3.
+Results are from using 15kHz, 7 sensors, 2nd order filter, q=0.1, phase velocity 600 m/s.
+
+It may seem that an error in the guessed phase velocity is wrong, it may still be able to correct itself as long as the estimated angles are systematically wrong.
+This open up the ability for a potential user to manually tune the velocity to be correct.
+
+Method: ESPRIT \
+Real phi_1: 30.964, Estimated phi_1: 38.968 \
+Real phi_2: -43.698, Estimated phi_2: -49.475 \
+Real phi_3: 26.147, Estimated phi_3: 29.480 \
+Real phi_4: -38.019, Estimated phi_4: 0.000 \
+Error in phi_1: 8.004 degrees. \
+Error in phi_2: 5.777 degrees. \
+Error in phi_3: 3.333 degrees. \
+Error in phi_4: 38.019 degrees. \
+r_sa: [0.443, 0.307] \
+Estimated location error: 0.038 m
+
 ### 10.0.3
 Nothing exciting really, plotting spectrograms and FFTs of measured signals from the 15 kHz pulse.
 The spectrogram relatively clearly shows the expected arrival times of the first four signals, considering that the last sensor has a higher concentration of the first arriving signals (before 1 ms).
