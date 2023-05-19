@@ -41,7 +41,7 @@ def main():
     ARRAY_TYPE = "ULA"
     # ARRAY_TYPE = "UCA"
     """Set parameters for the array"""
-    CENTER_FREQUENCY_HZ = 30000
+    CENTER_FREQUENCY_HZ = 35000
     PHASE_VELOCITY_MPS = 442.7
     GROUP_VELOCITY_MPS = 557.7
     NUMBER_OF_SENSORS = 7
@@ -50,7 +50,7 @@ def main():
     UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
 
     measurements = combine_measurements_into_dataframe(
-        f"Plate_10mm/Setup5/{str(CENTER_FREQUENCY_HZ - 5000)[:2]}kHz",
+        f"Plate_10mm/Setup5/{str(CENTER_FREQUENCY_HZ - 10000)[:2]}kHz",
         "1period_pulse_from_middle_to_sensors_123",
         "1period_pulse_from_middle_to_sensors_456",
         "1period_pulse_from_middle_to_sensors_78",
@@ -97,17 +97,17 @@ def main():
             array_spacing_m=SENSOR_SPACING_M,
         )
 
-    ideal_signals, _ = generate_ideal_signal(
-        setup=SETUP,
-        signal_model="gaussian",
-        group_velocity_mps=GROUP_VELOCITY_MPS,
-        phase_velocity_mps=PHASE_VELOCITY_MPS,
-        signal_length_s=0.2,
-        center_frequency_Hz=CENTER_FREQUENCY_HZ,
-        t_var=20e-7,
-        snr_dB=50,
-        attenuation_dBpm=0,
-    )
+    # ideal_signals, _ = generate_ideal_signal(
+    #     setup=SETUP,
+    #     signal_model="gaussian",
+    #     group_velocity_mps=GROUP_VELOCITY_MPS,
+    #     phase_velocity_mps=PHASE_VELOCITY_MPS,
+    #     signal_length_s=0.2,
+    #     center_frequency_Hz=CENTER_FREQUENCY_HZ,
+    #     t_var=20e-7,
+    #     snr_dB=50,
+    #     attenuation_dBpm=0,
+    # )
 
     # ideal_signals = crop_to_signal(ideal_signals)
 
