@@ -50,7 +50,7 @@ def main():
     UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
 
     measurements = combine_measurements_into_dataframe(
-        "Plate_10mm/Setup5/15kHz",
+        f"Plate_10mm/Setup5/{str(CENTER_FREQUENCY_HZ)[:2]}kHz",
         "1period_pulse_from_middle_to_sensors_123",
         "1period_pulse_from_middle_to_sensors_456",
         "1period_pulse_from_middle_to_sensors_78",
