@@ -1,5 +1,19 @@
 # Changelog
 
+### 10.0.6
+Spot on result for Root-MUSIC, good results for Root-WSF and ESPRIT.
+MUSIC is way off and phi_4 is wrong, which is ok
+Using 35kHz and phase velocity 825 m/s, which makes sense as this gives a wavelength of 2.357 cm.
+Does not seem to be very dependent on the velocity from first tests, as in withing a cm or two for each 5 m/s.
+Not great, not terrible.
+
+This fits with the hypothesis in many ways:
+- Higher frequency yields better results, especially as the wavelength approaches 2 cm (for this setup).
+- Even though the phase velocity is not as calculated beforehand, it makes somewhat sense given the measured group velocity. Possible to estimate phase velocity from a measured group velocity? If it is easier.
+- Angles are quite accurate, and although the other methods are worse, they are still relatively close.
+
+
+
 ### 10.0.5
 Good guess for both Root-WSF and Root-MUSIC, with angle errors less than 3.5 degrees off.
 Phi_4 is way off still.
