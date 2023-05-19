@@ -41,7 +41,7 @@ def main():
     ARRAY_TYPE = "ULA"
     # ARRAY_TYPE = "UCA"
     """Set parameters for the array"""
-    CENTER_FREQUENCY_HZ = 15000
+    CENTER_FREQUENCY_HZ = 30000
     PHASE_VELOCITY_MPS = 442.7
     GROUP_VELOCITY_MPS = 557.7
     NUMBER_OF_SENSORS = 7
@@ -50,7 +50,7 @@ def main():
     UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
 
     measurements = combine_measurements_into_dataframe(
-        f"Plate_10mm/Setup5/{str(CENTER_FREQUENCY_HZ)[:2]}kHz",
+        f"Plate_10mm/Setup5/{str(CENTER_FREQUENCY_HZ - 5000)[:2]}kHz",
         "1period_pulse_from_middle_to_sensors_123",
         "1period_pulse_from_middle_to_sensors_456",
         "1period_pulse_from_middle_to_sensors_78",
@@ -75,7 +75,7 @@ def main():
         signals=measurements,
         critical_frequency=CENTER_FREQUENCY_HZ,
         filtertype="bandpass",
-        order=2,
+        order=1,
         q=0.1,
         plot_response=True,
         sample_rate=SAMPLE_RATE,

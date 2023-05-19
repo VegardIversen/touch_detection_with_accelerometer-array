@@ -43,6 +43,7 @@ def generate_signals_for_matlab(
             FILE_NAME,
             analytic_signals,
         )
+        print(f"Saved analytic signals to {FILE_NAME}.csv")
         exit()
     return analytic_signals
 
