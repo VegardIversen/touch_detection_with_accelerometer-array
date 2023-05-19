@@ -217,10 +217,10 @@ def plot_far_field(
     ax.legend(loc="upper left")
     ax.grid()
     # Save figure as pdf
-    # plt.savefig(
-    #     f"{FIGURES_SAVE_PATH}/far_field_limits.pdf",
-    #     bbox_inches="tight",
-    # )
+    plt.savefig(
+        f"{FIGURES_SAVE_PATH}/far_field_limits.pdf",
+        bbox_inches="tight",
+    )
 
     plt.show()
 

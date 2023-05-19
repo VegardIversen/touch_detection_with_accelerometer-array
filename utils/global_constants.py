@@ -1,10 +1,8 @@
 """Author: Niklas Strømsnes
 Date: 2022-01-09
 """
+
 """GLOBAL CONSTANTS"""
-# from pathlib import Path
-
-
 ASSERTIONS_SHOULD_BE_INCLUDED = False
 
 """Settings"""
@@ -20,10 +18,9 @@ SENSOR_1 = 0
 SENSOR_2 = 1
 SENSOR_3 = 2
 
+"""Coordinates"""
 x = 0
 y = 1
 
 """Saving figures"""
-FIGURES_SAVE_PATH = "../Master-Thesis-NTNU/figures"
-# Make path as patlib.Path object
-# FIGURES_SAVE_PATH = Path(FIGURES_SAVE_PATH)
+FIGURES_SAVE_PATH = "/home/niklast/Documents/GitHub/Master-Thesis-NTNU/figures"
