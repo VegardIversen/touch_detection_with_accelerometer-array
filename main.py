@@ -17,6 +17,7 @@ from main_scripts.physical_measurements import (
     combine_measurements_into_dataframe,
     measure_phase_velocity,
 )
+from main_scripts.test_on_real_simulations import test_on_real_simulations_UCA
 from utils.data_processing.preprocessing import crop_data, filter_signal
 from utils.data_processing.processing import interpolate_signal
 from utils.data_visualization.visualize_data import compare_signals, set_fontsizes
@@ -38,29 +39,37 @@ def main():
     # - Low attenuation
 
     """Select array type ULA or UCA"""
-    ARRAY_TYPE = "ULA"
-    # ARRAY_TYPE = "UCA"
+    # ARRAY_TYPE = "ULA"
+    ARRAY_TYPE = "UCA"
     """Set parameters for the array"""
-    CENTER_FREQUENCY_HZ = 35000
+    CENTER_FREQUENCY_HZ = 22000
     PHASE_VELOCITY_MPS = 442.7
-    GROUP_VELOCITY_MPS = 557.7
-    NUMBER_OF_SENSORS = 7
+    GROUP_VELOCITY_MPS = 564.4
+    NUMBER_OF_SENSORS = 8
     SENSOR_SPACING_M = 0.01
     ACTUATOR_COORDINATES = np.array([0.50, 0.35])
     UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
 
-    measurements = combine_measurements_into_dataframe(
-        f"Plate_10mm/Setup5/{str(CENTER_FREQUENCY_HZ - 10000)[:2]}kHz",
-        "1period_pulse_from_middle_to_sensors_123",
-        "1period_pulse_from_middle_to_sensors_456",
-        "1period_pulse_from_middle_to_sensors_78",
+    # measurements = combine_measurements_into_dataframe(
+    #     f"Plate_10mm/Setup5/{str(CENTER_FREQUENCY_HZ - 10000)[:2]}kHz",
+    #     "1period_pulse_from_middle_to_sensors_123",
+    #     "1period_pulse_from_middle_to_sensors_456",
+    #     "1period_pulse_from_middle_to_sensors_78",
+    # )
+
+    measurements = test_on_real_simulations_UCA(
+        noise=False,
+        crop=True,
+        number_of_sensors=NUMBER_OF_SENSORS,
+        critical_frequency_Hz=CENTER_FREQUENCY_HZ,
+        filter_order=1,
     )
 
-    measurements = crop_data(
-        signals=measurements,
-        time_start=0.0005,
-        time_end=0.001,
-    )
+    # measurements = crop_data(
+    #     signals=measurements,
+    #     time_start=0.0,
+    #     time_end=0.01,
+    # )
 
     # Pad the measurements with zeros after the end of the signal
     # measurements = measurements.append(
@@ -70,16 +79,6 @@ def main():
     #     ),
     #     ignore_index=True,
     # )
-
-    measurements = filter_signal(
-        signals=measurements,
-        critical_frequency=CENTER_FREQUENCY_HZ,
-        filtertype="bandpass",
-        order=1,
-        q=0.1,
-        plot_response=True,
-        sample_rate=SAMPLE_RATE,
-    )
 
     # measure_phase _velocity(measurements=measurements)
 
