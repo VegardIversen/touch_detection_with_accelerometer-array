@@ -50,12 +50,14 @@ def filter_signal(
     else:
         raise ValueError("Filtertype not recognized")
 
-    signals_filtered = signals.copy()
     if isinstance(signals, pd.DataFrame):
-        for channel in signals_filtered:
-            signals_filtered[channel] = signal.sosfilt(sos, signals[channel].values)
+        signals_filtered = pd.DataFrame(
+            index=signals.index,
+            columns=signals.columns,
+            data=signal.sosfiltfilt(sos, signals.values, axis=0)
+        )
     else:
-        signals_filtered = signal.sosfilt(sos, signals)
+        signals_filtered = signal.sosfiltfilt(sos, signals, axis=0)
 
     if plot_response:
         plot_filter_response(sos, critical_frequency, critical_frequency)

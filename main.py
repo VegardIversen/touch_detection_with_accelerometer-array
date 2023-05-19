@@ -11,6 +11,7 @@ from main_scripts.estimate_touch_location import (
     estimate_touch_location_UCA,
     estimate_touch_location_ULA,
 )
+from main_scripts.generate_ideal_signal import generate_ideal_signal
 from main_scripts.generate_signals_for_matlab import generate_signals_for_matlab
 from main_scripts.physical_measurements import (
     combine_measurements_into_dataframe,
@@ -41,7 +42,8 @@ def main():
     # ARRAY_TYPE = "UCA"
     """Set parameters for the array"""
     CENTER_FREQUENCY_HZ = 15000
-    PHASE_VELOCITY = 442.7
+    PHASE_VELOCITY_MPS = 442.7
+    GROUP_VELOCITY_MPS = 557.7
     NUMBER_OF_SENSORS = 7
     SENSOR_SPACING_M = 0.01
     ACTUATOR_COORDINATES = np.array([0.50, 0.35])
@@ -56,32 +58,29 @@ def main():
 
     measurements = crop_data(
         signals=measurements,
-        time_start=0.0005,
-        time_end=0.001,
+        # time_start=0.0005,
+        time_start=0,
+        time_end=0.01,
     )
 
-    measurements = filter_signal(
-        signals=measurements,
-        critical_frequency=CENTER_FREQUENCY_HZ,
-        filtertype="bandpass",
-        order=1,
-        q=0.01,
-        plot_response=True,
-        sample_rate=SAMPLE_RATE,
-    )
+    # Pad the measurements with zeros after the end of the signal
+    # measurements = measurements.append(
+    #     pd.DataFrame(
+    #         np.zeros((measurements.shape[0], measurements.shape[1])),
+    #         columns=measurements.columns,
+    #     ),
+    #     ignore_index=True,
+    # )
 
-    fig, axs = plt.subplots(
-        nrows=measurements.shape[1],
-        ncols=2,
-        squeeze=False,
-    )
-    compare_signals(
-        fig,
-        axs,
-        measurements=[measurements[channel] for channel in measurements.columns],
-        plots_to_plot=["time", "fft"],
-        sharey=True,
-    )
+    # measurements = filter_signal(
+    #     signals=measurements,
+    #     critical_frequency=CENTER_FREQUENCY_HZ,
+    #     filtertype="bandpass",
+    #     order=1,
+    #     q=0.1,
+    #     plot_response=True,
+    #     sample_rate=SAMPLE_RATE,
+    # )
 
     # measure_phase _velocity(measurements=measurements)
 
@@ -98,18 +97,18 @@ def main():
             number_of_sensors=NUMBER_OF_SENSORS,
             array_spacing_m=SENSOR_SPACING_M,
         )
-    SETUP.draw()
 
-    # ideal_signals, _ = generate_ideal_signal(
-    #     setup=SETUP,
-    #     signal_model="gaussian",
-    #     propagation_speed_mps=PHASE_VELOCITY,
-    #     signal_length_s=0.2,
-    #     center_frequency_Hz=CENTER_FREQUENCY_HZ,
-    #     t_var=20e-7,
-    #     snr_dB=50,
-    #     attenuation_dBpm=0,
-    # )
+    ideal_signals, _ = generate_ideal_signal(
+        setup=SETUP,
+        signal_model="gaussian",
+        group_velocity_mps=GROUP_VELOCITY_MPS,
+        phase_velocity_mps=PHASE_VELOCITY_MPS,
+        signal_length_s=0.2,
+        center_frequency_Hz=CENTER_FREQUENCY_HZ,
+        t_var=20e-7,
+        snr_dB=50,
+        attenuation_dBpm=0,
+    )
 
     # ideal_signals = crop_to_signal(ideal_signals)
 
@@ -218,10 +217,10 @@ def plot_far_field(
     ax.legend(loc="upper left")
     ax.grid()
     # Save figure as pdf
-    plt.savefig(
-        f"{FIGURES_SAVE_PATH}/far_field_limits.pdf",
-        bbox_inches="tight",
-    )
+    # plt.savefig(
+    #     f"{FIGURES_SAVE_PATH}/far_field_limits.pdf",
+    #     bbox_inches="tight",
+    # )
 
     plt.show()
 

@@ -55,7 +55,7 @@ def combine_measurements_into_dataframe(
 
     align_with_trigger(measurements)
 
-    plot_time_corrected_signals(measurements, plot=False)
+    plot_time_corrected_signals(measurements, plot=True)
 
     measurements = measurements.drop(
         columns=[
@@ -102,7 +102,6 @@ def plot_time_corrected_signals(
         axs[12].plot(time_axis, measurements["Sensor 2"], label="Sensor 2")
         axs[13].plot(time_axis, measurements["Sensor 1"], label="Sensor 1")
         axs[13].set_xlabel("Time (ms)")
-        plt.show()
 
 
 def align_with_trigger(measurements):

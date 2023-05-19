@@ -41,7 +41,7 @@ def compare_signals(
             """Plot for instance a spectrogram under a time signal"""
             i = set_index
         if "time" in plots_to_plot:
-            time_plotting(
+            plot_time_signals(
                 axs,
                 measurements,
                 sharey,
@@ -51,7 +51,7 @@ def compare_signals(
                 channel,
             )
         if "spectrogram" in plots_to_plot:
-            spectrogram_plotting(
+            plot_spectrograms(
                 fig,
                 axs,
                 measurements,
@@ -66,7 +66,7 @@ def compare_signals(
                 channel,
             )
         if "fft" in plots_to_plot:
-            fft_plotting(
+            plot_ffts(
                 axs,
                 measurements,
                 freq_max,
@@ -84,7 +84,7 @@ def convert_ndarray_to_pdseries(
     return channel
 
 
-def time_plotting(
+def plot_time_signals(
     axs,
     measurements,
     sharey,
@@ -108,8 +108,8 @@ def time_plotting(
         set_log_dynamic_range(axs, i, channel)
     else:
         plot_as_linear(axs, i, channel, time_axis)
-    axs[len(measurements) - 1, 0].set_xlabel("Time (s)")
     axs[i, 0].plot()
+    axs[len(measurements) - 1, 0].set_xlabel("Time (s)")
 
 
 def share_x_axis_time(
@@ -161,10 +161,14 @@ def make_time_signal_for_compressed_signal(channel):
 
 
 def make_time_signal_for_uncompressed_signal(channel):
-    return np.linspace(start=0, stop=len(channel) / SAMPLE_RATE, num=len(channel))
+    return np.linspace(
+        start=0,
+        stop=1000 * len(channel) / SAMPLE_RATE,
+        num=len(channel),
+    )
 
 
-def spectrogram_plotting(
+def plot_spectrograms(
     fig,
     axs,
     measurements,
@@ -209,7 +213,6 @@ def spectrogram_plotting(
         axs[i, axs_index].sharey(axs[0, axs_index])
     axs[i, axs_index].axis(ymax=freq_max)
     # axs[i, axs_index].set_title(f'{channel.name}, spectrogram')
-    axs[len(measurements) - 1, axs_index].set_xlabel("Time (s)")
     axs[i, axs_index].set_ylabel("Frequency (Hz)")
     axs[i, axs_index].plot(sharex=axs[0, 0])
 
@@ -334,7 +337,7 @@ def axis_index(plots_to_plot):
     return axs_index
 
 
-def fft_plotting(
+def plot_ffts(
     axs,
     measurements,
     freq_max,
@@ -402,7 +405,6 @@ def wave_statistics(
             color="orange",
         )
         # axs[i].set_title(channel)
-        axs[i].set_xlabel("Time [s)")
         axs[i].legend()
         axs[i].grid()
 
@@ -427,7 +429,6 @@ def spectrogram_with_lines(
         to_dB(np.max(spec[0])),
     )
     # ax.set_title(f'Expected wave arrival times for {sensor.name}')
-    ax.set_xlabel("Time (s)")
     ax.set_ylabel("Frequency (Hz)")
     ax.set_ylim(0, 5000)
     # ax.set_xlim(2.5, 2.505)
@@ -488,7 +489,6 @@ def envelope_with_lines(
         for line in (arrival_times[5:])
     ]
     # ax.set_title(f'Expected wave arrival times for {sensor.name}')
-    ax.set_xlabel("Time (s)")
     ax.set_ylabel("Acceleration ($\mathregular{m/s^2}$)")
     # ax.set_xlim(0, 5)
     """Use scientific notation"""

@@ -22,7 +22,7 @@ def generate_signals_for_matlab(
     number_of_sensors: int = 10,
     array_type: str = "ula",
 ):
-    FILE_NAME = f"comsol_simulations/comsol_simulations_analytic_signals_{array_type}"
+    FILE_NAME = f"comsol_simulations_analytic_signals_{array_type}"
     if measurements is None:
         FILE_NAME = f"niklas_simulations/generated_signal_{center_frequency_Hz // 1000}kHz_{t_var}s_{propagation_speed_mps}mps_{number_of_sensors}sensors_interp{INTERPOLATION_FACTOR}"
         if crop_end_s is not None:
