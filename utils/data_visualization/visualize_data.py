@@ -3,6 +3,7 @@ Date: 2022-01-09
 """
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 import numpy as np
 import pandas as pd
 import scipy
@@ -54,7 +55,6 @@ def compare_signals(
             plot_spectrograms(
                 fig,
                 axs,
-                measurements,
                 nfft,
                 sharey,
                 freq_max,
@@ -98,7 +98,7 @@ def plot_time_signals(
         axs[i, 0].set_ylabel("Correlation coefficient (-)")
     else:
         time_axis = make_time_signal_for_uncompressed_signal(channel)
-        axs[i, 0].set_ylabel("Acceleration ($\mathregular{m/s^2}$)")
+        axs[i, 0].set_ylabel("Acceleration \n ($\mathregular{m/s^2}$)")
     share_x_axis_time(axs, i)
     if sharey:
         share_y_axis(axs, i)
@@ -108,8 +108,8 @@ def plot_time_signals(
         set_log_dynamic_range(axs, i, channel)
     else:
         plot_as_linear(axs, i, channel, time_axis)
-    axs[i, 0].plot()
-    axs[len(measurements) - 1, 0].set_xlabel("Time (s)")
+    axs[i, 0].yaxis.set_major_formatter(FormatStrFormatter("%.2f"))
+    axs[len(measurements) - 1, 0].set_xlabel("Time (ms)")
 
 
 def share_x_axis_time(
@@ -171,7 +171,6 @@ def make_time_signal_for_uncompressed_signal(channel):
 def plot_spectrograms(
     fig,
     axs,
-    measurements,
     nfft,
     sharey,
     freq_max,
@@ -208,6 +207,7 @@ def plot_spectrograms(
         axs,
         i,
         axs_index,
+        channel,
     )
     if sharey:
         axs[i, axs_index].sharey(axs[0, axs_index])
@@ -361,7 +361,7 @@ def plot_ffts(
     axs[i, axs_index].sharey(axs[0, axs_index])
     axs[i, axs_index].grid()
     # axs[i, axs_index].set_title(f'{channel.name}, FFT')
-    axs[len(measurements) - 1, axs_index].set_xlabel("Frequency [kHz)")
+    axs[len(measurements) - 1, axs_index].set_xlabel("Frequency (kHz)")
     axs[i, axs_index].set_ylabel("Amplitude [dB)")
     axs[i, axs_index].set_xlim(left=0, right=freq_max / 1000)
     axs[i, axs_index].set_ylim(bottom=-25, top=80)
