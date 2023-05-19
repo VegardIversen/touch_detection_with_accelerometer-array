@@ -5,8 +5,9 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from utils.data_processing.preprocessing import crop_data
+from utils.data_processing.preprocessing import crop_data, filter_signal
 from utils.data_processing.processing import interpolate_signal
+from utils.data_visualization.visualize_data import compare_signals
 from utils.global_constants import SAMPLE_RATE
 
 
@@ -52,6 +53,16 @@ def combine_measurements_into_dataframe(
         time_end=0.001,
     )
     measurements = interpolate_signal(measurements)
+
+    # Get rid of 50 Hz and potential DC offset
+    measurements = filter_signal(
+        signals=measurements,
+        critical_frequency=100,
+        filtertype="highpass",
+        order=2,
+        plot_response=True,
+        sample_rate=SAMPLE_RATE,
+    )
 
     align_with_trigger(measurements)
 
