@@ -60,7 +60,7 @@ def combine_measurements_into_dataframe(
         critical_frequency=100,
         filtertype="highpass",
         order=2,
-        plot_response=True,
+        plot_response=False,
         sample_rate=SAMPLE_RATE,
     )
 

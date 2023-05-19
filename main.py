@@ -58,9 +58,8 @@ def main():
 
     measurements = crop_data(
         signals=measurements,
-        # time_start=0.0005,
-        time_start=0,
-        time_end=0.01,
+        time_start=0.0005,
+        time_end=0.001,
     )
 
     # Pad the measurements with zeros after the end of the signal
@@ -72,15 +71,15 @@ def main():
     #     ignore_index=True,
     # )
 
-    # measurements = filter_signal(
-    #     signals=measurements,
-    #     critical_frequency=CENTER_FREQUENCY_HZ,
-    #     filtertype="bandpass",
-    #     order=1,
-    #     q=0.1,
-    #     plot_response=True,
-    #     sample_rate=SAMPLE_RATE,
-    # )
+    measurements = filter_signal(
+        signals=measurements,
+        critical_frequency=CENTER_FREQUENCY_HZ,
+        filtertype="bandpass",
+        order=2,
+        q=0.1,
+        plot_response=True,
+        sample_rate=SAMPLE_RATE,
+    )
 
     # measure_phase _velocity(measurements=measurements)
 
