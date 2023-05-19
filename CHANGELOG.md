@@ -1,5 +1,10 @@
 # Changelog
 
+### 10.0.3
+Nothing exciting really, plotting spectrograms and FFTs of measured signals from the 15 kHz pulse.
+The spectrogram relatively clearly shows the expected arrival times of the first four signals, considering that the last sensor has a higher concentration of the first arriving signals (before 1 ms).
+Confused about the group velocity, since it seems really high at around 1108 m/s.
+
 ### 10.0.2
 3.33 cm off with ESPRIT on full 22 kHz signal, PROPAGATION_SPEED = 443 for 22 kHz, 20.12 mm wavelength.
 Sharp tukey window (alpha=0.05), corrected array start position.

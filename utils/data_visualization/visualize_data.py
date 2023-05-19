@@ -207,7 +207,6 @@ def plot_spectrograms(
         axs,
         i,
         axs_index,
-        channel,
     )
     if sharey:
         axs[i, axs_index].sharey(axs[0, axs_index])
