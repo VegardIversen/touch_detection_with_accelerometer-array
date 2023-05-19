@@ -55,6 +55,15 @@ def combine_measurements_into_dataframe(
 
     align_with_trigger(measurements)
 
+    measurements = measurements.drop(
+        columns=[
+            "Sync Signal 123",
+            "Sync Signal 456",
+            "Sync Signal 78",
+            "Sensor 9",
+        ]
+    )
+
     plot_time_corrected_signals(measurements, plot=True)
 
     measurements = measurements.drop(
@@ -62,13 +71,10 @@ def combine_measurements_into_dataframe(
             "Actuator 123",
             "Actuator 456",
             "Actuator 78",
-            "Sync Signal 123",
-            "Sync Signal 456",
-            "Sync Signal 78",
             "Sensor 8",
-            "Sensor 9",
         ]
     )
+
     return measurements
 
 
@@ -78,30 +84,22 @@ def plot_time_corrected_signals(
 ):
     if plot:
         fig, axs = plt.subplots(
-            nrows=measurements.shape[1] - 1,
-            ncols=1,
-            sharex=True,
+            nrows=measurements.shape[1],
+            ncols=3,
+            # sharex=True,
         )
-        time_axis = np.linspace(
-            start=0,
-            stop=1000 * measurements.shape[0] / SAMPLE_RATE,
-            num=measurements.shape[0],
+        compare_signals(
+            fig,
+            axs,
+            [
+                measurements["Actuator 123"],
+                measurements["Actuator 456"],
+                measurements["Actuator 78"],
+            ]
+            + [measurements[f"Sensor {i}"] for i in range(1, 9)],
+            plots_to_plot=["time", "spectrogram", "fft"],
+            nfft=2**6,
         )
-        axs[0].plot(time_axis, measurements["Sync Signal 123"], label="Sync Signal 123")
-        axs[1].plot(time_axis, measurements["Sync Signal 456"], label="Sync Signal 456")
-        axs[2].plot(time_axis, measurements["Sync Signal 78"], label="Sync Signal 78")
-        axs[3].plot(time_axis, measurements["Actuator 123"], label="Actuator 123")
-        axs[4].plot(time_axis, measurements["Actuator 456"], label="Actuator 456")
-        axs[5].plot(time_axis, measurements["Actuator 78"], label="Actuator 78")
-        axs[6].plot(time_axis, measurements["Sensor 8"], label="Sensor 8")
-        axs[7].plot(time_axis, measurements["Sensor 7"], label="Sensor 7")
-        axs[8].plot(time_axis, measurements["Sensor 6"], label="Sensor 6")
-        axs[9].plot(time_axis, measurements["Sensor 5"], label="Sensor 5")
-        axs[10].plot(time_axis, measurements["Sensor 4"], label="Sensor 4")
-        axs[11].plot(time_axis, measurements["Sensor 3"], label="Sensor 3")
-        axs[12].plot(time_axis, measurements["Sensor 2"], label="Sensor 2")
-        axs[13].plot(time_axis, measurements["Sensor 1"], label="Sensor 1")
-        axs[13].set_xlabel("Time (ms)")
 
 
 def align_with_trigger(measurements):
