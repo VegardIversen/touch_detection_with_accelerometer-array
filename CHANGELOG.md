@@ -1,5 +1,34 @@
 # Changelog
 
+### 10.0.5
+Good guess for both Root-WSF and Root-MUSIC, with angle errors less than 3.5 degrees off.
+Phi_4 is way off still.
+Estimating four angles at 725 m/s for 30 kHz.
+
+Method: Root-WSF \
+Real phi_1: 30.964, Estimated phi_1: 27.615 \
+Real phi_2: -43.698, Estimated phi_2: -41.216 \
+Real phi_3: 26.147, Estimated phi_3: 27.615 \
+Real phi_4: -38.019, Estimated phi_4: -12.521 \
+Error in phi_1: 3.349 degrees. \
+Error in phi_2: 2.482 degrees. \
+Error in phi_3: 1.468 degrees. \
+Error in phi_4: 25.498 degrees. \
+r_sa: [0.453, 0.290] \
+Estimated location error: 0.020 m
+
+Method: Root-MUSIC \
+Real phi_1: 30.964, Estimated phi_1: 31.059 \
+Real phi_2: -43.698, Estimated phi_2: -43.371 \
+Real phi_3: 26.147, Estimated phi_3: 29.236 \
+Real phi_4: -38.019, Estimated phi_4: -13.168 \
+Error in phi_1: 0.096 degrees. \
+Error in phi_2: 0.327 degrees. \
+Error in phi_3: 3.089 degrees. \
+Error in phi_4: 24.851 degrees. \
+r_sa: [0.467, 0.317] \
+Estimated location error: 0.051 m
+
 ### 10.0.4
 Quite close guess for ESPRIT, despite angles being quite off.
 It finds three angles when asked to find 4, and all three angles are more than 3 degrees off.
