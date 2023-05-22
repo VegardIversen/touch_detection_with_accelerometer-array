@@ -129,8 +129,8 @@ def test_on_real_simulations_UCA(
     noise: bool = False,
     crop: bool = False,
     number_of_sensors: int = 8,
-    critical_frequency_Hz: int = 25000,
-    filter_order: int = 8,
+    critical_frequency_Hz: int = 23000,
+    filter_order: int = 1,
 ):
     import_simulation_data_UCA()
 
@@ -162,9 +162,9 @@ def test_on_real_simulations_UCA(
     if crop:
         simulation_data = crop_data(
             simulation_data,
-            time_start=0.001,
-            time_end=0.0015,
-            apply_window_function=True,
+            time_start=0.0008,
+            time_end=0.00155,
+            apply_window_function=False,
         )
 
     # Make a dataframe with 15 columns of 2 * simulation_data.size[0] rows of zeros
@@ -181,7 +181,7 @@ def test_on_real_simulations_UCA(
             simulation_data,
             filtertype="bandpass",
             critical_frequency=critical_frequency_Hz,
-            plot_response=False,
+            plot_response=True,
             order=filter_order,
             sample_rate=SAMPLE_RATE,
             q=0.1,

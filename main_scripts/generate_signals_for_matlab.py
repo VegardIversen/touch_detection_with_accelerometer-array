@@ -20,7 +20,7 @@ def generate_signals_for_matlab(
     propagation_speed_mps: float = 1000,
     crop_end_s: float = 0.000637,
     number_of_sensors: int = 10,
-    array_type: str = "ula",
+    array_type: str = "ULA",
 ):
     FILE_NAME = f"comsol_simulations_analytic_signals_{array_type}"
     if measurements is None:

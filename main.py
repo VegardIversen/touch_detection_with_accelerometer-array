@@ -17,6 +17,7 @@ from main_scripts.physical_measurements import (
     combine_measurements_into_dataframe,
     measure_phase_velocity,
 )
+from main_scripts.plot_speed_information import plot_speed_information
 from main_scripts.test_on_real_simulations import test_on_real_simulations_UCA
 from utils.data_processing.preprocessing import crop_data, filter_signal
 from utils.data_processing.processing import interpolate_signal
@@ -27,6 +28,8 @@ from utils.plate_setups import Setup5, Setup6
 
 def main():
     set_fontsizes()
+
+    plot_speed_information()
 
     # * Call one of the functions found in /main_scripts
 
@@ -42,7 +45,7 @@ def main():
     # ARRAY_TYPE = "ULA"
     ARRAY_TYPE = "UCA"
     """Set parameters for the array"""
-    CENTER_FREQUENCY_HZ = 22000
+    CENTER_FREQUENCY_HZ = 20000
     PHASE_VELOCITY_MPS = 442.7
     GROUP_VELOCITY_MPS = 564.4
     NUMBER_OF_SENSORS = 8

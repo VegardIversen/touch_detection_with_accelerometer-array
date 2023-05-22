@@ -519,7 +519,7 @@ def set_fontsizes():
     """Inspired by
     https://stackoverflow.com/questions/3899980/how-to-change-the-font-size-on-a-matplotlib-plot
     """
-    SMALL_SIZE = 13
+    SMALL_SIZE = 15
     MEDIUM_SIZE = 15
     BIGGER_SIZE = 18
     plt.rc("font", size=SMALL_SIZE)  # controls default text sizes

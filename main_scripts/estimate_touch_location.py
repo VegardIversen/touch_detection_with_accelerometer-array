@@ -84,7 +84,7 @@ def estimate_touch_location_ULA(
             phi_3_deg,
             phi_4_deg,
         )
-        r_sa = calculate_r_sa(
+        r_sa = calculate_r_sa_ULA(
             x_cs=SENSORS_CENTER_COORDINATES[x],
             y_cs=SENSORS_CENTER_COORDINATES[y],
             phi_1=phi_1_deg,
@@ -171,7 +171,7 @@ def estimate_touch_location_UCA(
             phi_3_deg,
             phi_4_deg,
         )
-        r_sa = calculate_r_sa(
+        r_sa = calculate_r_sa_UCA(
             x_cs=uca_center_coordinates[x],
             y_cs=uca_center_coordinates[y],
             phi_1=phi_1_deg,
@@ -285,7 +285,7 @@ def radians_to_degrees(radians):
     return radians * 180 / np.pi
 
 
-def calculate_r_sa(x_cs, y_cs, phi_1, phi_2, phi_3):
+def calculate_r_sa_ULA(x_cs, y_cs, phi_1, phi_2, phi_3):
     # Calculates the vector r_sa
     if abs(phi_1) == 90 or abs(phi_2) == 90:
         r_sa = [
@@ -300,6 +300,26 @@ def calculate_r_sa(x_cs, y_cs, phi_1, phi_2, phi_3):
         * (
             -2 * y_cs / (np.tan(np.radians(phi_2)) + np.tan(np.radians(phi_1)))
             + 2 * x_cs
+        ),
+    ]
+    return r_sa
+
+
+def calculate_r_sa_UCA(x_cs, y_cs, phi_1, phi_2, phi_3):
+    # Calculates the vector r_sa
+    if abs(phi_1) == 90 or abs(phi_2) == 90:
+        r_sa = [
+            0,
+            np.tan(np.radians(phi_3)) * (2 * x_cs),
+        ]
+        return r_sa
+
+    r_sa = [
+        -2 * y_cs / (np.tan(np.radians(phi_2)) + np.tan(np.radians(phi_1))),
+        np.tan(np.radians(phi_3))
+        * (
+            2 * y_cs / (np.tan(np.radians(phi_2)) + np.tan(np.radians(phi_1)))
+            - 2 * x_cs
         ),
     ]
     return r_sa
