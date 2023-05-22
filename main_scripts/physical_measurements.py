@@ -82,6 +82,7 @@ def combine_measurements_into_dataframe(
             "Actuator 123",
             "Actuator 456",
             "Actuator 78",
+            # "Sensor 7",
             "Sensor 8",
         ]
     )
