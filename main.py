@@ -31,7 +31,7 @@ def main():
 
     # * In theory these parameters should provide the best results:
     # - Many sensors
-    # - Long array length (high aperture), but avoid
+    # - Long array length (high aperture), but avoid near-field effects
     # - Small wavelength, so either high frequency or low phase velocity
     # - Long signal length, so that many periods are present.
     # - High SNR
@@ -41,7 +41,7 @@ def main():
     ARRAY_TYPE = "ULA"
     # ARRAY_TYPE = "UCA"
     """Set parameters for the array"""
-    CENTER_FREQUENCY_HZ = 40000
+    CENTER_FREQUENCY_HZ = 30000
     PHASE_VELOCITY_MPS = 442.7
     GROUP_VELOCITY_MPS = 557.7
     NUMBER_OF_SENSORS = 7
@@ -62,7 +62,7 @@ def main():
 
     measurements = crop_data(
         signals=measurements,
-        time_start=0.00045,
+        time_start=0.0003,
         time_end=0.0009,
     )
 

@@ -72,10 +72,22 @@ def interpolate_signal(
     new_length = signals.shape[0] * INTERPOLATION_FACTOR
 
     if isinstance(signals, np.ndarray):
-        x = np.linspace(0, signals.size, signals.size)
-        f = interpolate.interp1d(x, signals, kind="cubic")
-        x_new = np.linspace(0, signals.size, new_length)
-        return f(x_new)
+        sample_axis_original = np.linspace(
+            0,
+            signals.size,
+            signals.size,
+        )
+        interpolation_function = interpolate.interp1d(
+            sample_axis_original,
+            signals,
+            kind="cubic",
+        )
+        sample_axis_interpolated = np.linspace(
+            0,
+            signals.size,
+            new_length,
+        )
+        return interpolation_function(sample_axis_interpolated)
 
     signals_interpolated = pd.DataFrame(
         data=np.empty((new_length, signals.shape[1]), np.ndarray),
@@ -84,10 +96,22 @@ def interpolate_signal(
     )
     for channel in signals:
         old_length = signals[channel].size
-        x = np.linspace(0, old_length, old_length)
-        f = interpolate.interp1d(x, signals[channel], kind="cubic")
-        x_new = np.linspace(0, old_length, new_length)
-        signals_interpolated[channel] = f(x_new)
+        sample_axis_original = np.linspace(
+            0,
+            old_length,
+            old_length,
+        )
+        interpolation_function = interpolate.interp1d(
+            sample_axis_original,
+            signals[channel],
+            kind="cubic",
+        )
+        sample_axis_interpolated = np.linspace(
+            0,
+            old_length,
+            new_length,
+        )
+        signals_interpolated[channel] = interpolation_function(sample_axis_interpolated)
     return signals_interpolated
 
 
@@ -140,5 +164,5 @@ def get_noise_max_value(
     in terms of the standard deviation and max value
     based on the first 0.1 seconds of the measurement"""
     window_index_end = int(time_window_percentage * len(envelope))
-    noise_max_value = np.max(envelope[0 : window_index_end])
+    noise_max_value = np.max(envelope[0:window_index_end])
     return noise_max_value

@@ -64,7 +64,7 @@ def combine_measurements_into_dataframe(
         sample_rate=SAMPLE_RATE,
     )
 
-    align_with_trigger(measurements)
+    align_transmitted_signal(measurements)
 
     measurements = measurements.drop(
         columns=[
@@ -114,7 +114,7 @@ def plot_time_corrected_signals(
         )
 
 
-def align_with_trigger(measurements):
+def align_transmitted_signal(measurements: pd.DataFrame) -> None:
     # Find the delay of the sync signals using the maximum of the "Actuator" signal
     delay_456 = np.argmax(measurements["Actuator 456"]) - np.argmax(
         measurements["Actuator 123"]

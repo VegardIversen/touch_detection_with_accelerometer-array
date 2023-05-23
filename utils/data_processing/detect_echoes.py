@@ -121,39 +121,41 @@ def find_first_peak_index(measurements: pd.DataFrame, ax: plt.Axes = None) -> in
 
 
 def find_mirrored_source(
-    actuator: Actuator, edges_to_bounce_on: np.ndarray, surface: Table or Plate
+    actuator: Actuator,
+    edges_to_reflect_from: np.ndarray,
+    surface: Table or Plate,
 ):
     """Calculate the coordinate of the mirrored source
     to be used to find the wave travel distance.
     """
     NO_REFLECTION = 0
     mirrored_source = MirroredSource(actuator.coordinates)
-    for edge in edges_to_bounce_on:
+    for edge in edges_to_reflect_from:
         if edge == NO_REFLECTION:
             continue
         elif edge == surface.TOP_EDGE:
-            MIRRORED_SOURCE_OFFSET = np.array(
+            mirrored_source_offset = np.array(
                 [0, 2 * (surface.WIDTH - mirrored_source.y)]
             )
             mirrored_source.set_coordinates(
-                mirrored_source.coordinates + MIRRORED_SOURCE_OFFSET
+                mirrored_source.coordinates + mirrored_source_offset
             )
         elif edge == surface.RIGHT_EDGE:
-            MIRRORED_SOURCE_OFFSET = np.array(
+            mirrored_source_offset = np.array(
                 [2 * (surface.LENGTH - mirrored_source.x), 0]
             )
             mirrored_source.set_coordinates(
-                mirrored_source.coordinates + MIRRORED_SOURCE_OFFSET
+                mirrored_source.coordinates + mirrored_source_offset
             )
         elif edge == surface.BOTTOM_EDGE:
-            MIRRORED_SOURCE_OFFSET = np.array([0, -2 * mirrored_source.y])
+            mirrored_source_offset = np.array([0, -2 * mirrored_source.y])
             mirrored_source.set_coordinates(
-                mirrored_source.coordinates + MIRRORED_SOURCE_OFFSET
+                mirrored_source.coordinates + mirrored_source_offset
             )
         elif edge == surface.LEFT_EDGE:
-            MIRRORED_SOURCE_OFFSET = np.array([-2 * mirrored_source.x, 0])
+            mirrored_source_offset = np.array([-2 * mirrored_source.x, 0])
             mirrored_source.set_coordinates(
-                mirrored_source.coordinates + MIRRORED_SOURCE_OFFSET
+                mirrored_source.coordinates + mirrored_source_offset
             )
     return mirrored_source
 
@@ -267,7 +269,14 @@ def get_travel_times(
     if print_info and not relative_first_reflection:
         print_direct_travel_info(direct_travel_distance, direct_travel_time)
 
-    EDGES = np.array([1, 2, 3, 4])
+    EDGES = np.array(
+        [
+            surface.TOP_EDGE,
+            surface.RIGHT_EDGE,
+            surface.BOTTOM_EDGE,
+            surface.LEFT_EDGE,
+        ]
+    )
     # Iterate thorugh all combinations of edges to reflect from
     for edge_1 in range(0, EDGES.size + 1):
         for edge_2 in range(0, EDGES.size + 1):
