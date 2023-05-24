@@ -43,7 +43,7 @@ def main():
     """Set parameters for the array"""
     CENTER_FREQUENCY_HZ = 35000
     PHASE_VELOCITY_MPS = 442.7
-    GROUP_VELOCITY_MPS = 970
+    GROUP_VELOCITY_MPS = 1000
     NUMBER_OF_SENSORS = 7
     SENSOR_SPACING_M = 0.01
     ACTUATOR_COORDINATES = np.array([0.45, 0.40])

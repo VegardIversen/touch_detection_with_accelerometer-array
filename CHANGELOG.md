@@ -1,5 +1,9 @@
 # Changelog
 
+
+### 10.1.3
+Same as 10.1.2, but bandpassed at 35 kHz. Looks a bit wonky, but the implementation makes sense at least.
+
 ### 10.1.2
 Adjustments to v10.1.1 again, using the full bandwidth of the measurements. Looks good. Filter ideal signal as well with the same filter as the measured signal.
 

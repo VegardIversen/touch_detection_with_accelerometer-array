@@ -57,25 +57,25 @@ def compare_to_ideal_signal(
         snr_dB=50,
         t_var=5e-10,
     )
-    # if critical_frequency:
-    #     measurements = filter_signal(
-    #         measurements,
-    #         filtertype="highpass",
-    #         critical_frequency=critical_frequency,
-    #         plot_response=False,
-    #         order=filter_order,
-    #         sample_rate=SAMPLE_RATE,
-    #         q=filter_q_value,
-    #     )
-    #     ideal_signal = filter_signal(
-    #         ideal_signal,
-    #         filtertype="highpass",
-    #         critical_frequency=critical_frequency,
-    #         plot_response=False,
-    #         order=filter_order,
-    #         sample_rate=SAMPLE_RATE,
-    #         q=filter_q_value,
-    #     )
+    if critical_frequency:
+        measurements = filter_signal(
+            measurements,
+            filtertype="bandpass",
+            critical_frequency=critical_frequency,
+            plot_response=False,
+            order=filter_order,
+            sample_rate=SAMPLE_RATE,
+            q=filter_q_value,
+        )
+        ideal_signal = filter_signal(
+            ideal_signal,
+            filtertype="bandpass",
+            critical_frequency=critical_frequency,
+            plot_response=False,
+            order=filter_order,
+            sample_rate=SAMPLE_RATE,
+            q=filter_q_value,
+        )
 
     measurement_envelopes = get_envelopes(measurements)
     ideal_signal_envelopes = get_envelopes(ideal_signal)
