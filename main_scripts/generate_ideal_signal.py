@@ -53,7 +53,7 @@ def compare_to_ideal_signal(
         center_frequency_Hz=critical_frequency,
         signal_model=signal_model,
         snr_dB=50,
-        t_var=0.35e-9,
+        t_var=0.25e-9,
     )
     if critical_frequency:
         measurements = filter_signal(

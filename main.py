@@ -41,19 +41,35 @@ def main():
     ARRAY_TYPE = "ULA"
     # ARRAY_TYPE = "UCA"
     """Set parameters for the array"""
-    CENTER_FREQUENCY_HZ = 30000
+    CENTER_FREQUENCY_HZ = 35000
     PHASE_VELOCITY_MPS = 442.7
     GROUP_VELOCITY_MPS = 557.7
     NUMBER_OF_SENSORS = 7
     SENSOR_SPACING_M = 0.01
-    ACTUATOR_COORDINATES = np.array([0.55, 0.30])
+    ACTUATOR_COORDINATES = np.array([0.45, 0.40])
     UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
 
     FILE_FOLDER = f"Plate_10mm/Setup5/25kHz/x{str(int(ACTUATOR_COORDINATES[x] * 100))}y{str(int(ACTUATOR_COORDINATES[y] * 100))}"
     print(f"FILE_FOLDER: {FILE_FOLDER}")
 
+    if ARRAY_TYPE == "ULA":
+        SETUP = Setup5(
+            actuator_coordinates=ACTUATOR_COORDINATES,
+            number_of_sensors=NUMBER_OF_SENSORS,
+            array_spacing_m=SENSOR_SPACING_M,
+        )
+    elif ARRAY_TYPE == "UCA":
+        SETUP = Setup6(
+            actuator_coordinates=ACTUATOR_COORDINATES,
+            array_center_coordinates=UCA_CENTER_COORDINATES,
+            number_of_sensors=NUMBER_OF_SENSORS,
+            array_spacing_m=SENSOR_SPACING_M,
+        )
+
     measurements = combine_measurements_into_dataframe(
         FILE_FOLDER,
+        SETUP,
+        CENTER_FREQUENCY_HZ,
         # "Plate_10mm/Setup5/First_25khz_x50y35",
         "sensors123_v1",
         "sensors456_v1",
@@ -62,7 +78,7 @@ def main():
 
     measurements = crop_data(
         signals=measurements,
-        time_start=0.0003,
+        time_start=0.0004,
         time_end=0.0009,
     )
 
@@ -87,20 +103,6 @@ def main():
 
     # measure_phase _velocity(measurements=measurements)
 
-    if ARRAY_TYPE == "ULA":
-        SETUP = Setup5(
-            actuator_coordinates=ACTUATOR_COORDINATES,
-            number_of_sensors=NUMBER_OF_SENSORS,
-            array_spacing_m=SENSOR_SPACING_M,
-        )
-    elif ARRAY_TYPE == "UCA":
-        SETUP = Setup6(
-            actuator_coordinates=ACTUATOR_COORDINATES,
-            array_center_coordinates=UCA_CENTER_COORDINATES,
-            number_of_sensors=NUMBER_OF_SENSORS,
-            array_spacing_m=SENSOR_SPACING_M,
-        )
-
     # ideal_signals, _ = generate_ideal_signal(
     #     setup=SETUP,
     #     signal_model="gaussian",
@@ -112,20 +114,6 @@ def main():
     #     snr_dB=50,
     #     attenuation_dBpm=0,
     # )
-
-    # ideal_signals = crop_to_signal(ideal_signals)
-
-    # Plot each sensor in the ideal signal on a separate row
-    fig, ax = plt.subplots(
-        nrows=SETUP.number_of_sensors,
-        ncols=1,
-        sharex=True,
-        sharey=True,
-    )
-    for i, sensor in enumerate(SETUP.sensors):
-        ax[i].plot(measurements[sensor.name])
-        ax[i].set_ylabel(f"Sensor {sensor.name}")
-    ax[-1].set_xlabel("Time [s]")
 
     # Export the ideal signals
     generate_signals_for_matlab(

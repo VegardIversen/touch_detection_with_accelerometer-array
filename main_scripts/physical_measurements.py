@@ -4,15 +4,19 @@ import os
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from main_scripts.generate_ideal_signal import compare_to_ideal_signal
 
 from utils.data_processing.preprocessing import crop_data, filter_signal
 from utils.data_processing.processing import interpolate_signal
 from utils.data_visualization.visualize_data import compare_signals
 from utils.global_constants import SAMPLE_RATE
+from utils.plate_setups import Setup
 
 
 def combine_measurements_into_dataframe(
     file_folder: str,
+    setup: Setup,
+    center_frequency: float,
     *args,
 ):
     # Create a list of the arguments
@@ -77,6 +81,8 @@ def combine_measurements_into_dataframe(
 
     plot_time_corrected_signals(measurements, plot=True)
 
+    measurements["Actuator"] = measurements["Actuator 123"]
+
     measurements = measurements.drop(
         columns=[
             "Actuator 123",
@@ -85,6 +91,16 @@ def combine_measurements_into_dataframe(
             # "Sensor 7",
             "Sensor 8",
         ]
+    )
+
+    compare_to_ideal_signal(
+        setup=setup,
+        measurements=measurements,
+        attenuation_dBpm=23,
+        group_velocity_mps=1000,
+        filtertype="highpass",
+        critical_frequency=center_frequency,
+        signal_model="gaussian",
     )
 
     return measurements
@@ -97,7 +113,7 @@ def plot_time_corrected_signals(
     if plot:
         fig, axs = plt.subplots(
             nrows=measurements.shape[1],
-            ncols=3,
+            ncols=2,
             # sharex=True,
         )
         compare_signals(
@@ -109,7 +125,11 @@ def plot_time_corrected_signals(
                 measurements["Actuator 78"],
             ]
             + [measurements[f"Sensor {i}"] for i in range(1, 9)],
-            plots_to_plot=["time", "spectrogram", "fft"],
+            plots_to_plot=[
+                "time",
+                # "spectrogram",
+                "fft",
+            ],
             nfft=2**6,
         )
 
