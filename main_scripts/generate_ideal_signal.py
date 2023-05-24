@@ -23,6 +23,7 @@ from utils.data_visualization.visualize_data import (
 from utils.generate_chirp import generate_chirp
 from utils.global_constants import (
     ACTUATOR_1,
+    FIGURES_SAVE_PATH,
     ORIGINAL_SAMPLE_RATE,
     SAMPLE_RATE,
 )
@@ -53,7 +54,7 @@ def compare_to_ideal_signal(
         center_frequency_Hz=critical_frequency,
         signal_model=signal_model,
         snr_dB=50,
-        t_var=0.25e-9,
+        t_var=0.3e-9,
     )
     if critical_frequency:
         measurements = filter_signal(
@@ -74,20 +75,23 @@ def compare_to_ideal_signal(
 
     measurement_envelopes = crop_data(
         signals=measurement_envelopes,
-        time_start=0,
-        time_end=0.004,
+        time_start=0.0003,
+        time_end=0.0035,
     )
     ideal_signal_envelopes = crop_data(
         signals=ideal_signal_envelopes,
-        time_start=0,
-        time_end=0.004,
+        time_start=0.0003,
+        time_end=0.0035,
     )
 
     """Plot signals"""
     CHANNELS_TO_PLOT = setup.sensors
     PLOTS_TO_PLOT = ["time"]
     fig, axs = plt.subplots(
-        nrows=len(CHANNELS_TO_PLOT), ncols=len(PLOTS_TO_PLOT), squeeze=False
+        nrows=len(CHANNELS_TO_PLOT),
+        ncols=len(PLOTS_TO_PLOT),
+        squeeze=False,
+        figsize=(8, 8),
     )
     compare_signals(
         fig,
@@ -103,7 +107,16 @@ def compare_to_ideal_signal(
     )
     [ax.grid() for ax in axs[:, 0]]
     axs[0, 0].legend(["Ideal signal", "Measurement envelope"], loc="upper right")
-    fig.suptitle("Ideal signal vs. measurement envelope")
+    # Set the y-labels to be the sensor names
+    [
+        ax.set_ylabel(sensor.name + "\n" + "Amplitude")
+        for ax, sensor in zip(axs[:, 0], CHANNELS_TO_PLOT)
+    ]
+    fig.tight_layout(pad=0.5, h_pad=0)
+    plt.savefig(
+        f"{FIGURES_SAVE_PATH}/python_figures/ideal_signal_comparison_{critical_frequency // 1000}kHz.pdf",
+    )
+
     return ideal_signal, distances
 
 
