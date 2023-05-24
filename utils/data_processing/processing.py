@@ -163,27 +163,25 @@ def align_signals_by_first_peak(
 ):
     """Align signals to signals_to_align with using their first peak above 33% of the max value"""
     shifted_signals = signals.copy()
+    threshold_signal1 = 0.33 * np.max(signals["Sensor 1"])
+    threshold_signal2 = 0.33 * np.max(signals_to_align_with["Sensor 2"])
+    first_peak_above_threshold_signal1 = signal.find_peaks(
+        signals["Sensor 1"], height=threshold_signal1
+    )[0][0]
+    first_peak_above_threshold_signal2 = signal.find_peaks(
+        signals_to_align_with["Sensor 2"], height=threshold_signal2
+    )[0][0]
+    SHIFT_BY = (
+        np.rint(first_peak_above_threshold_signal2 - first_peak_above_threshold_signal1)
+    ).astype(int)
+    # Use the same normalization factor for all channels
+    normalization_factor = np.max(signals_to_align_with["Sensor 1"]) / np.max(
+        shifted_signals["Sensor 1"]
+    )
     for channel in signals:
-        threshold_signal1 = 0.33 * np.max(signals[channel])
-        threshold_signal2 = 0.33 * np.max(signals_to_align_with[channel])
-        first_peak_above_threshold_signal1 = signal.find_peaks(
-            signals[channel], height=threshold_signal1
-        )[0][0]
-        first_peak_above_threshold_signal2 = signal.find_peaks(
-            signals_to_align_with[channel], height=threshold_signal2
-        )[0][0]
-        SHIFT_BY = (
-            np.rint(
-                first_peak_above_threshold_signal2 - first_peak_above_threshold_signal1
-            )
-        ).astype(int)
         shifted_signals[channel] = np.roll(signals[channel], SHIFT_BY)
         # Normalize and match the amplitude of signals_to_align_with
-        shifted_signals[channel] = (
-            shifted_signals[channel]
-            * np.max(signals_to_align_with[channel])
-            / np.max(shifted_signals[channel])
-        )
+        shifted_signals[channel] = shifted_signals[channel] * normalization_factor
     return shifted_signals
 
 
