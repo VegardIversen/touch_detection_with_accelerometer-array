@@ -1,5 +1,8 @@
 # Changelog
 
+### 10.1.1
+Minor improvements to 10.1.0, shift and scale ideal signals for comparison using Sensor 1 as reference instead of doing it individually.
+
 ## 10.1.0
 Just saving a nice comparison of the ULA measurements and the expected arrival times.
 Quite easy to see what is going on, at a group velocity of 1000 m/s at 35 kHz, and around 23 dB/m attenuation.
