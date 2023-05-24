@@ -137,7 +137,8 @@ def align_signals_by_correlation(
 
 
 def align_signals_by_max_value(
-    signals: pd.DataFrame, signals_to_align_with: pd.DataFrame
+    signals: pd.DataFrame,
+    signals_to_align_with: pd.DataFrame,
 ):
     """Align signals to signals_to_align with using their max values"""
     shifted_signals = signals.copy()
@@ -145,6 +146,37 @@ def align_signals_by_max_value(
         max_index_in_signal1 = np.argmax(signals[channel])
         max_index_in_signal2 = np.argmax(signals_to_align_with[channel])
         SHIFT_BY = (np.rint(max_index_in_signal2 - max_index_in_signal1)).astype(int)
+        shifted_signals[channel] = np.roll(signals[channel], SHIFT_BY)
+        # Normalize and match the amplitude of signals_to_align_with
+        shifted_signals[channel] = normalize(shifted_signals[channel])
+        shifted_signals[channel] = (
+            shifted_signals[channel]
+            * np.max(signals_to_align_with[channel])
+            / np.max(shifted_signals[channel])
+        )
+    return shifted_signals
+
+
+def align_signals_by_first_peak(
+    signals: pd.DataFrame,
+    signals_to_align_with: pd.DataFrame,
+):
+    """Align signals to signals_to_align with using their first peak above 33% of the max value"""
+    shifted_signals = signals.copy()
+    for channel in signals:
+        threshold_signal1 = 0.33 * np.max(signals[channel])
+        threshold_signal2 = 0.33 * np.max(signals_to_align_with[channel])
+        first_peak_above_threshold_signal1 = signal.find_peaks(
+            signals[channel], height=threshold_signal1
+        )[0][0]
+        first_peak_above_threshold_signal2 = signal.find_peaks(
+            signals_to_align_with[channel], height=threshold_signal2
+        )[0][0]
+        SHIFT_BY = (
+            np.rint(
+                first_peak_above_threshold_signal2 - first_peak_above_threshold_signal1
+            )
+        ).astype(int)
         shifted_signals[channel] = np.roll(signals[channel], SHIFT_BY)
         # Normalize and match the amplitude of signals_to_align_with
         shifted_signals[channel] = normalize(shifted_signals[channel])
