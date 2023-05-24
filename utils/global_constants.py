@@ -23,4 +23,6 @@ x = 0
 y = 1
 
 """Saving figures"""
-FIGURES_SAVE_PATH = "/home/niklast/Documents/GitHub/Master-Thesis-NTNU/figures"
+FIGURES_SAVE_PATH = (
+    "/home/niklast/Documents/GitHub/Master-Thesis-NTNU/figures/python_figures"
+)

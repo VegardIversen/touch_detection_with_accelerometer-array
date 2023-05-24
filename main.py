@@ -43,13 +43,21 @@ def main():
     """Set parameters for the array"""
     CENTER_FREQUENCY_HZ = 35000
     PHASE_VELOCITY_MPS = 442.7
-    GROUP_VELOCITY_MPS = 557.7
+    GROUP_VELOCITY_MPS = 970
     NUMBER_OF_SENSORS = 7
     SENSOR_SPACING_M = 0.01
     ACTUATOR_COORDINATES = np.array([0.45, 0.40])
     UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
 
-    FILE_FOLDER = f"Plate_10mm/Setup5/25kHz/x{str(int(ACTUATOR_COORDINATES[x] * 100))}y{str(int(ACTUATOR_COORDINATES[y] * 100))}"
+    # Filter parameters
+    FILTER_ORDER = 1
+    FILTER_Q_VALUE = 0.1
+
+    FILE_FOLDER = (
+        f"Plate_10mm/Setup5/25kHz/"
+        f"x{100 * ACTUATOR_COORDINATES[x]:.0f}"
+        f"y{100 * ACTUATOR_COORDINATES[y]:.0f}"
+    )
     print(f"FILE_FOLDER: {FILE_FOLDER}")
 
     if ARRAY_TYPE == "ULA":
@@ -67,27 +75,31 @@ def main():
         )
 
     measurements = combine_measurements_into_dataframe(
-        FILE_FOLDER,
-        SETUP,
-        CENTER_FREQUENCY_HZ,
-        # "Plate_10mm/Setup5/First_25khz_x50y35",
-        "sensors123_v1",
-        "sensors456_v1",
-        "sensors78_v1",
+        file_folder=FILE_FOLDER,
+        file_names=[
+            "sensors123_v1",
+            "sensors456_v1",
+            "sensors78_v1",
+        ],
+        setup=SETUP,
+        group_velocity_mps=GROUP_VELOCITY_MPS,
+        center_frequency=CENTER_FREQUENCY_HZ,
+        filter_order=FILTER_ORDER,
+        filter_q_value=FILTER_Q_VALUE,
     )
 
-    measurements = crop_data(
-        signals=measurements,
-        time_start=0.0004,
-        time_end=0.0009,
-    )
+    # measurements = crop_data(
+    #     signals=measurements,
+    #     time_start=0.0004,
+    #     time_end=0.0009,
+    # )
 
     measurements = filter_signal(
         signals=measurements,
         critical_frequency=CENTER_FREQUENCY_HZ,
         filtertype="bandpass",
-        order=1,
-        q=0.05,
+        order=FILTER_ORDER,
+        q=FILTER_Q_VALUE,
         plot_response=True,
         sample_rate=SAMPLE_RATE,
     )
@@ -99,20 +111,6 @@ def main():
     #         columns=measurements.columns,
     #     ),
     #     ignore_index=True,
-    # )
-
-    # measure_phase _velocity(measurements=measurements)
-
-    # ideal_signals, _ = generate_ideal_signal(
-    #     setup=SETUP,
-    #     signal_model="gaussian",
-    #     group_velocity_mps=GROUP_VELOCITY_MPS,
-    #     phase_velocity_mps=PHASE_VELOCITY_MPS,
-    #     signal_length_s=0.2,
-    #     center_frequency_Hz=CENTER_FREQUENCY_HZ,
-    #     t_var=20e-7,
-    #     snr_dB=50,
-    #     attenuation_dBpm=0,
     # )
 
     # Export the ideal signals

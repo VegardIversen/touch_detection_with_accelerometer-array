@@ -98,7 +98,7 @@ def plot_time_signals(
         axs[i, 0].set_ylabel("Correlation coefficient (-)")
     else:
         time_axis = make_time_signal_for_uncompressed_signal(channel)
-        axs[i, 0].set_ylabel("Acceleration \n ($\mathregular{m/s^2}$)")
+        axs[i, 0].set_ylabel(channel.name + "\n" + "Amplitude")
     share_x_axis_time(axs, i)
     if sharey:
         share_y_axis(axs, i)

@@ -35,9 +35,10 @@ def compare_to_ideal_signal(
     measurements: pd.DataFrame,
     attenuation_dBpm: float,
     group_velocity_mps: float = None,
-    filtertype: str = "highpass",
-    critical_frequency: float = 0,
     signal_model: str = "touch",
+    critical_frequency: float = 0,
+    filter_order: int = 1,
+    filter_q_value: float = 0.05,
 ):
     """Calculate arrival times for sensor 1"""
     if group_velocity_mps is None:
@@ -54,18 +55,28 @@ def compare_to_ideal_signal(
         center_frequency_Hz=critical_frequency,
         signal_model=signal_model,
         snr_dB=50,
-        t_var=0.3e-9,
+        t_var=5e-10,
     )
-    if critical_frequency:
-        measurements = filter_signal(
-            measurements,
-            filtertype=filtertype,
-            critical_frequency=critical_frequency,
-            plot_response=False,
-            order=1,
-            sample_rate=SAMPLE_RATE,
-            q=0.05,
-        )
+    # if critical_frequency:
+    #     measurements = filter_signal(
+    #         measurements,
+    #         filtertype="highpass",
+    #         critical_frequency=critical_frequency,
+    #         plot_response=False,
+    #         order=filter_order,
+    #         sample_rate=SAMPLE_RATE,
+    #         q=filter_q_value,
+    #     )
+    #     ideal_signal = filter_signal(
+    #         ideal_signal,
+    #         filtertype="highpass",
+    #         critical_frequency=critical_frequency,
+    #         plot_response=False,
+    #         order=filter_order,
+    #         sample_rate=SAMPLE_RATE,
+    #         q=filter_q_value,
+    #     )
+
     measurement_envelopes = get_envelopes(measurements)
     ideal_signal_envelopes = get_envelopes(ideal_signal)
     ideal_signal_envelopes = align_signals_by_first_peak(
@@ -107,14 +118,11 @@ def compare_to_ideal_signal(
     )
     [ax.grid() for ax in axs[:, 0]]
     axs[0, 0].legend(["Ideal signal", "Measurement envelope"], loc="upper right")
-    # Set the y-labels to be the sensor names
-    [
+    for ax, sensor in zip(axs[:, 0], CHANNELS_TO_PLOT):
         ax.set_ylabel(sensor.name + "\n" + "Amplitude")
-        for ax, sensor in zip(axs[:, 0], CHANNELS_TO_PLOT)
-    ]
     fig.tight_layout(pad=0.5, h_pad=0)
     plt.savefig(
-        f"{FIGURES_SAVE_PATH}/python_figures/ideal_signal_comparison_{critical_frequency // 1000}kHz.pdf",
+        f"{FIGURES_SAVE_PATH}/ideal_signal_comparison_{critical_frequency // 1000}kHz.pdf",
     )
 
     return ideal_signal, distances

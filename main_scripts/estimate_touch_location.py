@@ -102,9 +102,16 @@ def estimate_touch_location_ULA(
         plot_estimated_location(touch_location)
         # Add legend that shows which color marker corresponds to which method
         plot_legend_without_duplicates()
-    # Save plot as pdf
+
+    plt.tight_layout(pad=0.5, h_pad=0)
     plt.savefig(
-        f"{FIGURES_SAVE_PATH}/{center_frequency_Hz // 1000}kHz_{number_of_sensors}sensors_ULA.pdf",
+        (
+            f"{FIGURES_SAVE_PATH}/"
+            f"{center_frequency_Hz // 1000}kHz_"
+            f"{number_of_sensors}sensors_"
+            f"x{100 * actuator_coordinates[x]:.0f}y{100 * actuator_coordinates[y]:.0f}"
+            "_ULA.pdf"
+        ),
         bbox_inches="tight",
     )
     return 0
@@ -189,7 +196,8 @@ def estimate_touch_location_UCA(
         plot_estimated_location(touch_location)
         # Add legend that shows which color marker corresponds to which method
         plot_legend_without_duplicates()
-    # Save plot as pdf
+
+    plt.tight_layout(pad=0.5, h_pad=0)
     plt.savefig(
         f"{FIGURES_SAVE_PATH}/{center_frequency_Hz // 1000}kHz_{number_of_sensors}sensors_UCA.pdf",
         bbox_inches="tight",

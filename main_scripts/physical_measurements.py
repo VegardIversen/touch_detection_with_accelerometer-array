@@ -15,12 +15,15 @@ from utils.plate_setups import Setup
 
 def combine_measurements_into_dataframe(
     file_folder: str,
+    file_names: list[str],
     setup: Setup,
+    group_velocity_mps: float,
     center_frequency: float,
-    *args,
+    filter_order: int,
+    filter_q_value: float,
 ):
     # Create a list of the arguments
-    args_list = list(args)
+    args_list = file_names
     # Create an empty list to store the dataframes
     dataframes = []
     # Loop through the arguments
@@ -96,11 +99,12 @@ def combine_measurements_into_dataframe(
     compare_to_ideal_signal(
         setup=setup,
         measurements=measurements,
-        attenuation_dBpm=23,
-        group_velocity_mps=1000,
-        filtertype="highpass",
-        critical_frequency=center_frequency,
+        attenuation_dBpm=17,
+        group_velocity_mps=group_velocity_mps,
         signal_model="gaussian",
+        critical_frequency=center_frequency,
+        filter_order=filter_order,
+        filter_q_value=filter_q_value,
     )
 
     return measurements
@@ -114,7 +118,7 @@ def plot_time_corrected_signals(
         fig, axs = plt.subplots(
             nrows=measurements.shape[1],
             ncols=2,
-            # sharex=True,
+            figsize=(10, 12),
         )
         compare_signals(
             fig,
@@ -132,6 +136,7 @@ def plot_time_corrected_signals(
             ],
             nfft=2**6,
         )
+        plt.tight_layout(pad=0.5, h_pad=0, w_pad=0)
 
 
 def align_transmitted_signal(measurements: pd.DataFrame) -> None:
