@@ -1,5 +1,11 @@
 # Changelog
 
+## 10.1.0
+Just saving a nice comparison of the ULA measurements and the expected arrival times.
+Quite easy to see what is going on, at a group velocity of 1000 m/s at 35 kHz, and around 23 dB/m attenuation.
+Similar gaussian pulse as the one transmitted.
+
+
 ### 10.0.6
 Spot on result for Root-MUSIC, good results for Root-WSF and ESPRIT.
 MUSIC is way off and phi_4 is wrong, which is ok
@@ -11,8 +17,6 @@ This fits with the hypothesis in many ways:
 - Higher frequency yields better results, especially as the wavelength approaches 2 cm (for this setup).
 - Even though the phase velocity is not as calculated beforehand, it makes somewhat sense given the measured group velocity. Possible to estimate phase velocity from a measured group velocity? If it is easier.
 - Angles are quite accurate, and although the other methods are worse, they are still relatively close.
-
-
 
 ### 10.0.5
 Good guess for both Root-WSF and Root-MUSIC, with angle errors less than 3.5 degrees off.
