@@ -11,6 +11,7 @@ from utils.data_processing.preprocessing import (
     filter_signal,
 )
 from utils.data_processing.processing import (
+    align_signals_by_first_peak,
     align_signals_by_max_value,
     interpolate_signal,
     normalize,
@@ -32,39 +33,43 @@ def compare_to_ideal_signal(
     setup: Setup,
     measurements: pd.DataFrame,
     attenuation_dBpm: float,
-    propagation_speed_mps: float = None,
+    group_velocity_mps: float = None,
     filtertype: str = "highpass",
     critical_frequency: float = 0,
     signal_model: str = "touch",
 ):
     """Calculate arrival times for sensor 1"""
-    if propagation_speed_mps is None:
-        propagation_speed_mps = 922
-    print(f"Propagation speed: {propagation_speed_mps:.2f}")
+    if group_velocity_mps is None:
+        group_velocity_mps = 922
+    print(f"Propagation speed: {group_velocity_mps:.2f}")
     signal_length_s = float(
         measurements.shape[0] / SAMPLE_RATE,
     )
     ideal_signal, distances = generate_ideal_signal(
-        setup,
-        propagation_speed_mps,
-        attenuation_dBpm,
-        signal_length_s,
-        critical_frequency,
-        signal_model,
+        setup=setup,
+        group_velocity_mps=group_velocity_mps,
+        attenuation_dBpm=attenuation_dBpm,
+        signal_length_s=signal_length_s,
+        center_frequency_Hz=critical_frequency,
+        signal_model=signal_model,
+        snr_dB=50,
+        t_var=0.35e-9,
     )
-    measurements = filter_signal(
-        measurements,
-        filtertype=filtertype,
-        critical_frequency=critical_frequency,
-        plot_response=False,
-        order=2,
-        sample_rate=SAMPLE_RATE,
-        q=0.05,
-    )
+    if critical_frequency:
+        measurements = filter_signal(
+            measurements,
+            filtertype=filtertype,
+            critical_frequency=critical_frequency,
+            plot_response=False,
+            order=1,
+            sample_rate=SAMPLE_RATE,
+            q=0.05,
+        )
     measurement_envelopes = get_envelopes(measurements)
     measurement_envelopes = normalize(measurement_envelopes)
-    ideal_signal = align_signals_by_max_value(
-        signals=ideal_signal, signals_to_align_with=measurement_envelopes
+    ideal_signal = align_signals_by_first_peak(
+        signals=ideal_signal,
+        signals_to_align_with=measurement_envelopes,
     )
     """Plot signals"""
     CHANNELS_TO_PLOT = setup.sensors
@@ -75,21 +80,13 @@ def compare_to_ideal_signal(
     compare_signals(
         fig,
         axs,
-        [
-            get_envelopes(ideal_signal["Sensor 1"]),
-            get_envelopes(ideal_signal["Sensor 2"]),
-            get_envelopes(ideal_signal["Sensor 3"]),
-        ],
+        [get_envelopes(ideal_signal[sensor.name]) for sensor in CHANNELS_TO_PLOT],
         plots_to_plot=PLOTS_TO_PLOT,
     )
     compare_signals(
         fig,
         axs,
-        [
-            measurement_envelopes["Sensor 1"],
-            measurement_envelopes["Sensor 2"],
-            measurement_envelopes["Sensor 3"],
-        ],
+        [measurement_envelopes[sensor.name] for sensor in CHANNELS_TO_PLOT],
         plots_to_plot=PLOTS_TO_PLOT,
     )
     [ax.grid() for ax in axs[:, 0]]
@@ -101,7 +98,7 @@ def compare_to_ideal_signal(
 def generate_ideal_signal(
     setup: Setup,
     group_velocity_mps: float,
-    phase_velocity_mps: float,
+    # phase_velocity_mps: float,
     attenuation_dBpm: float,
     signal_length_s: float,
     signal_model: str = "line",
