@@ -66,10 +66,23 @@ def compare_to_ideal_signal(
             q=0.05,
         )
     measurement_envelopes = get_envelopes(measurements)
-    ideal_signal = align_signals_by_first_peak(
-        signals=ideal_signal,
+    ideal_signal_envelopes = get_envelopes(ideal_signal)
+    ideal_signal_envelopes = align_signals_by_first_peak(
+        signals=ideal_signal_envelopes,
         signals_to_align_with=measurement_envelopes,
     )
+
+    measurement_envelopes = crop_data(
+        signals=measurement_envelopes,
+        time_start=0,
+        time_end=0.004,
+    )
+    ideal_signal_envelopes = crop_data(
+        signals=ideal_signal_envelopes,
+        time_start=0,
+        time_end=0.004,
+    )
+
     """Plot signals"""
     CHANNELS_TO_PLOT = setup.sensors
     PLOTS_TO_PLOT = ["time"]
@@ -79,7 +92,7 @@ def compare_to_ideal_signal(
     compare_signals(
         fig,
         axs,
-        [get_envelopes(ideal_signal[sensor.name]) for sensor in CHANNELS_TO_PLOT],
+        [ideal_signal_envelopes[sensor.name] for sensor in CHANNELS_TO_PLOT],
         plots_to_plot=PLOTS_TO_PLOT,
     )
     compare_signals(
