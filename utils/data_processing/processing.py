@@ -179,7 +179,6 @@ def align_signals_by_first_peak(
         ).astype(int)
         shifted_signals[channel] = np.roll(signals[channel], SHIFT_BY)
         # Normalize and match the amplitude of signals_to_align_with
-        shifted_signals[channel] = normalize(shifted_signals[channel])
         shifted_signals[channel] = (
             shifted_signals[channel]
             * np.max(signals_to_align_with[channel])

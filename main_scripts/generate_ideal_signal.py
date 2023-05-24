@@ -66,7 +66,6 @@ def compare_to_ideal_signal(
             q=0.05,
         )
     measurement_envelopes = get_envelopes(measurements)
-    measurement_envelopes = normalize(measurement_envelopes)
     ideal_signal = align_signals_by_first_peak(
         signals=ideal_signal,
         signals_to_align_with=measurement_envelopes,
