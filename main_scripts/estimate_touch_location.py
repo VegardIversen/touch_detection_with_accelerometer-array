@@ -62,8 +62,8 @@ def estimate_touch_location_ULA(
             phi_2_deg = sorted_estimated_angles_deg[method][3]
             phi_3_deg = sorted_estimated_angles_deg[method][0]
             phi_4_deg = sorted_estimated_angles_deg[method][2]
-        # Else if the number of angles is three
-        elif len(sorted_estimated_angles_deg[method]) == 3:
+        # Assume that there are three angles if there is a NaN value
+        elif sum(np.isnan(sorted_estimated_angles_deg[method])) == 1:
             phi_1_deg = sorted_estimated_angles_deg[method][2]
             phi_2_deg = sorted_estimated_angles_deg[method][0]
             phi_3_deg = sorted_estimated_angles_deg[method][1]
@@ -104,16 +104,16 @@ def estimate_touch_location_ULA(
         plot_legend_without_duplicates()
 
     plt.tight_layout(pad=0.5, h_pad=0)
-    plt.savefig(
-        (
-            f"{FIGURES_SAVE_PATH}/"
-            f"{center_frequency_Hz // 1000}kHz_"
-            f"{number_of_sensors}sensors_"
-            f"x{100 * actuator_coordinates[x]:.0f}y{100 * actuator_coordinates[y]:.0f}"
-            "_ULA.pdf"
-        ),
-        bbox_inches="tight",
-    )
+    # plt.savefig(
+    #     (
+    #         f"{FIGURES_SAVE_PATH}/"
+    #         f"{center_frequency_Hz // 1000}kHz_"
+    #         f"{number_of_sensors}sensors_"
+    #         f"x{100 * actuator_coordinates[x]:.0f}y{100 * actuator_coordinates[y]:.0f}"
+    #         "_ULA.pdf"
+    #     ),
+    #     bbox_inches="tight",
+    # )
     return 0
 
 

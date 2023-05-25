@@ -41,7 +41,7 @@ def main():
     ARRAY_TYPE = "ULA"
     # ARRAY_TYPE = "UCA"
     """Set parameters for the array"""
-    CENTER_FREQUENCY_HZ = 35000
+    CENTER_FREQUENCY_HZ = 33000
     PHASE_VELOCITY_MPS = 442.7
     GROUP_VELOCITY_MPS = 1000
     NUMBER_OF_SENSORS = 7
@@ -51,7 +51,7 @@ def main():
 
     # Filter parameters
     FILTER_ORDER = 1
-    FILTER_Q_VALUE = 0.1
+    FILTER_Q_VALUE = 0.05
 
     FILE_FOLDER = (
         f"Plate_10mm/Setup5/25kHz/"
@@ -88,11 +88,11 @@ def main():
         filter_q_value=FILTER_Q_VALUE,
     )
 
-    # measurements = crop_data(
-    #     signals=measurements,
-    #     time_start=0.0004,
-    #     time_end=0.0009,
-    # )
+    measurements = crop_data(
+        signals=measurements,
+        time_start=0.00045,
+        time_end=0.0009,
+    )
 
     measurements = filter_signal(
         signals=measurements,

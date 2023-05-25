@@ -96,16 +96,16 @@ def combine_measurements_into_dataframe(
         ]
     )
 
-    compare_to_ideal_signal(
-        setup=setup,
-        measurements=measurements,
-        attenuation_dBpm=17,
-        group_velocity_mps=group_velocity_mps,
-        signal_model="gaussian",
-        critical_frequency=center_frequency,
-        filter_order=filter_order,
-        filter_q_value=filter_q_value,
-    )
+    # compare_to_ideal_signal(
+    #     setup=setup,
+    #     measurements=measurements,
+    #     attenuation_dBpm=17,
+    #     group_velocity_mps=group_velocity_mps,
+    #     signal_model="gaussian",
+    #     critical_frequency=center_frequency,
+    #     filter_order=filter_order,
+    #     filter_q_value=filter_q_value,
+    # )
 
     return measurements
 

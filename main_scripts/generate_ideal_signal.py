@@ -121,9 +121,9 @@ def compare_to_ideal_signal(
     for ax, sensor in zip(axs[:, 0], CHANNELS_TO_PLOT):
         ax.set_ylabel(sensor.name + "\n" + "Amplitude")
     fig.tight_layout(pad=0.5, h_pad=0)
-    plt.savefig(
-        f"{FIGURES_SAVE_PATH}/ideal_signal_comparison_{critical_frequency // 1000}kHz.pdf",
-    )
+    # plt.savefig(
+    #     f"{FIGURES_SAVE_PATH}/ideal_signal_comparison_{critical_frequency // 1000}kHz.pdf",
+    # )
 
     return ideal_signal, distances
 

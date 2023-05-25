@@ -25,13 +25,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-
-
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
-
-
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -40,8 +36,8 @@ pip-delete-this-directory.txt
 profile_default/
 ipython_config.py
 
-
-
+# Random file that pops up sometimes
+*.Identifier
 
 # Environments
 .env
@@ -62,3 +58,4 @@ touch/
 *.txt
 
 #folders
+.vscode/
