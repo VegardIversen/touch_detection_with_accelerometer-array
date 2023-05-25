@@ -1,5 +1,8 @@
 # Changelog
 
+## 10.2.0
+Trying to find a universal way to find the touch location.
+Root-WSF and Root-MUSIC doing alright.
 
 ### 10.1.3
 Same as 10.1.2, but bandpassed at 35 kHz. Looks a bit wonky, but the implementation makes sense at least.
