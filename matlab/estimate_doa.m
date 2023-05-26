@@ -30,13 +30,16 @@ rootmusicangle_ula.SpatialSmoothing = 0;
 
 root_music_ula_ang = rootmusicangle_ula(signal_ula);
 root_music_sorted_ula_angles = sort(root_music_ula_ang);
+
+%%
+
 TEST_PARAMETERS = false;
 if TEST_PARAMETERS
     error_min = Inf; % Initialize the minimum error to a large value
     phase_velocity_min = 0; % Initialize the corresponding phase_velocity
-    
+
     target_angles = [-143.973, -41.634, 33.690, 151.390];
-    
+
     for phase_velocity = 400:1:650
         release(rootmusicangle_ula)
         rootmusicangle_uca = phased.RootMUSICEstimator('SensorArray',UCA,...
@@ -49,10 +52,10 @@ if TEST_PARAMETERS
         root_music_uca_ang = rootmusicangle_uca(signal_uca, ELEVATION_ANGLE);
         root_music_uca_ang = rotate_angles(root_music_uca_ang, NUMBER_OF_SENSORS);
         root_music_sorted_uca_angles = sort(root_music_uca_ang);
-        
+
         % Compute the error between root_music_sorted_uca_angles and target_angles
         error = sum(abs(root_music_sorted_uca_angles - target_angles));
-        
+
         % Check if the current error is lower than the minimum error
         if error < error_min
             error_min = error;
@@ -65,8 +68,6 @@ if TEST_PARAMETERS
     disp(phase_velocity_min)
     PHASE_VELOCITY_MPS = phase_velocity_min
 end
-
-%%
 
 rootmusicangle_uca = phased.RootMUSICEstimator('SensorArray',UCA,...
     'OperatingFrequency',CENTER_FREQUENCY_HZ,...

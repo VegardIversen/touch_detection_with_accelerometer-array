@@ -41,24 +41,43 @@ def main():
     ARRAY_TYPE = "ULA"
     # ARRAY_TYPE = "UCA"
     """Set parameters for the array"""
-    CENTER_FREQUENCY_HZ = 33000
-    PHASE_VELOCITY_MPS = 442.7
+    CENTER_FREQUENCY_HZ = 40000
+    PHASE_VELOCITY_MPS = 850
     GROUP_VELOCITY_MPS = 1000
     NUMBER_OF_SENSORS = 7
     SENSOR_SPACING_M = 0.01
     ACTUATOR_COORDINATES = np.array([0.45, 0.40])
     UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
-
-    # Filter parameters
-    FILTER_ORDER = 1
-    FILTER_Q_VALUE = 0.05
-
     FILE_FOLDER = (
         f"Plate_10mm/Setup5/25kHz/"
         f"x{100 * ACTUATOR_COORDINATES[x]:.0f}"
         f"y{100 * ACTUATOR_COORDINATES[y]:.0f}"
     )
-    print(f"FILE_FOLDER: {FILE_FOLDER}")
+    FILTER_ORDER = 1
+    FILTER_Q_VALUE = 0.01
+    CROP_TIME_START = 0.00045
+    CROP_TIME_END = 0.0009
+
+    parameters = {
+        "ARRAY_TYPE": ARRAY_TYPE,
+        "CENTER_FREQUENCY_HZ": float(CENTER_FREQUENCY_HZ),
+        "PHASE_VELOCITY_MPS": float(PHASE_VELOCITY_MPS),
+        "GROUP_VELOCITY_MPS": float(GROUP_VELOCITY_MPS),
+        "NUMBER_OF_SENSORS": float(NUMBER_OF_SENSORS),
+        "SENSOR_SPACING_M": float(SENSOR_SPACING_M),
+        "ACTUATOR_COORDINATES": ACTUATOR_COORDINATES,
+        "UCA_CENTER_COORDINATES": UCA_CENTER_COORDINATES,
+        "FILTER_ORDER": float(FILTER_ORDER),
+        "FILTER_Q_VALUE": float(FILTER_Q_VALUE),
+        "FILE_FOLDER": FILE_FOLDER,
+        "CROP_TIME_START": float(CROP_TIME_START),
+        "CROP_TIME_END": float(CROP_TIME_END),
+    }
+    print()
+    print("Parameters:")
+    for key, value in parameters.items():
+        print(f"{key}: {value}")
+    print()
 
     if ARRAY_TYPE == "ULA":
         SETUP = Setup5(
@@ -90,8 +109,8 @@ def main():
 
     measurements = crop_data(
         signals=measurements,
-        time_start=0.00045,
-        time_end=0.0009,
+        time_start=CROP_TIME_START,
+        time_end=CROP_TIME_END,
     )
 
     measurements = filter_signal(
@@ -115,6 +134,7 @@ def main():
 
     # Export the ideal signals
     generate_signals_for_matlab(
+        parameters=parameters,
         measurements=measurements,
         center_frequency_Hz=CENTER_FREQUENCY_HZ,
         number_of_sensors=NUMBER_OF_SENSORS,
@@ -148,16 +168,17 @@ def main():
 
 def import_estimated_angles(
     file_name: str,
-    s0: bool = False,
 ):
     # Put the angles from results_simULAtions_10_mm_Teflon_COMSOL_25kHz_10sensors.csv into a dataframe
-    estimated_angles = pd.read_csv(
-        f"{file_name}.csv",
-    )
-    if s0:
-        # Switch place between rows at index 1 and 3 in sorted_estimated_angles_deg, not sure why
-        estimated_angles.iloc[[1, 3]] = estimated_angles.iloc[[3, 1]].values
-        estimated_angles.iloc[[2, 3]] = estimated_angles.iloc[[3, 2]].values
+    try:
+        estimated_angles = pd.read_csv(
+            f"{file_name}.csv",
+        )
+    # If file does not exist, get the file from Windows
+    except FileNotFoundError:
+        estimated_angles = pd.read_csv(
+            f"/mnt/c/Users/nikla/Documents/GitHub/touch_detection_with_accelerometer-array/matlab/{file_name}.csv",
+        )
 
     return estimated_angles
 

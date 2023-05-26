@@ -1,5 +1,6 @@
 import pandas as pd
 from matplotlib import pyplot as plt
+import scipy
 
 from utils.csv_to_df import make_dataframe_from_csv
 from utils.data_processing.detect_echoes import get_analytic_signal, get_envelopes
@@ -11,9 +12,11 @@ from utils.global_constants import (
     ORIGINAL_SAMPLE_RATE,
     SAMPLE_RATE,
 )
+import os
 
 
 def generate_signals_for_matlab(
+    parameters: dict,
     measurements: pd.DataFrame = None,
     center_frequency_Hz: float = 25000,
     t_var: float = 0.0001,
@@ -43,7 +46,8 @@ def generate_signals_for_matlab(
             FILE_NAME,
             analytic_signals,
         )
-        print(f"Saved analytic signals to {FILE_NAME}.csv")
+        make_a_nice_parameters_file(parameters, FILE_NAME)
+        print(f"\nSaved analytic signals to {FILE_NAME}.csv\n")
         exit()
     return analytic_signals
 
@@ -136,7 +140,7 @@ def make_a_nice_csv_file(
         TODAYS_DATE = pd.Timestamp.now().strftime("%Y_%m_%d")
         TODAYS_TIME = pd.Timestamp.now().strftime("%H_%M_%S")
         FILE_NAME = f"{FILE_NAME}_{TODAYS_DATE}_{TODAYS_TIME}_analytic"
-    FOLDER_NAME = "generated_signals"
+    FOLDER_NAME = "matlab"
     # Save the analytic signals in a csv file
     analytic_signals.to_csv(
         f"{FOLDER_NAME}/{FILE_NAME}.csv",
@@ -152,3 +156,20 @@ def make_a_nice_csv_file(
     with open(f"{FOLDER_NAME}/{FILE_NAME}.csv", "w") as f:
         for line in lines:
             f.write(line.replace("(", "").replace(")", ""))
+
+    os.system(
+        f"cp {FOLDER_NAME}/{FILE_NAME}.csv /mnt/c/Users/nikla/Documents/GitHub/touch_detection_with_accelerometer-array/matlab/"
+    )
+
+
+def make_a_nice_parameters_file(parameters, FILE_NAME):
+    FOLDER_NAME = "matlab"
+    # Save the parameters in a csv file that can easily be read by matlab
+    scipy.io.savemat(
+        "/mnt/c/Users/nikla/Documents/GitHub/touch_detection_with_accelerometer-array/matlab/parameters.mat",
+        parameters,
+    )
+
+    os.system(
+        f"cp {FOLDER_NAME}/{FILE_NAME}_parameters.csv /mnt/c/Users/nikla/Documents/GitHub/touch_detection_with_accelerometer-array/matlab"
+    )
