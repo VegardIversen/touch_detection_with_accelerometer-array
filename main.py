@@ -5,6 +5,7 @@ Date: 2022-01-09
 
 import numpy as np
 import pandas as pd
+import matplotlib
 from matplotlib import pyplot as plt
 
 from main_scripts.estimate_touch_location import (
@@ -27,6 +28,7 @@ from utils.plate_setups import Setup5, Setup6
 def main():
     set_fontsizes()
 
+    matplotlib.use("TkAgg")
     # * Call one of the functions found in /main_scripts
 
     # * In theory these parameters should provide the best results:
@@ -92,6 +94,8 @@ def main():
             number_of_sensors=NUMBER_OF_SENSORS,
             array_spacing_m=SENSOR_SPACING_M,
         )
+    else:
+        raise ValueError("ARRAY_TYPE must be either ULA or UCA")
 
     measurements = combine_measurements_into_dataframe(
         file_folder=FILE_FOLDER,
@@ -120,7 +124,7 @@ def main():
         order=FILTER_ORDER,
         q=FILTER_Q_VALUE,
         plot_response=True,
-        sample_rate=SAMPLE_RATE,
+        sample_rate=SAMPLE_RATE,  # type: ignore
     )
 
     # Pad the measurements with zeros after the end of the signal
@@ -147,7 +151,7 @@ def main():
     if ARRAY_TYPE == "ULA":
         estimate_touch_location_ULA(
             setup=SETUP,
-            sorted_estimated_angles_deg=estimated_angles_ULA,
+            sorted_estimated_angles_deg=estimated_angles_ULA,  # type: ignore
             center_frequency_Hz=CENTER_FREQUENCY_HZ,
             number_of_sensors=NUMBER_OF_SENSORS,
             sensor_spacing_m=SENSOR_SPACING_M,
@@ -156,12 +160,14 @@ def main():
     elif ARRAY_TYPE == "UCA":
         estimate_touch_location_UCA(
             setup=SETUP,
-            sorted_estimated_angles_deg=estimated_angles_UCA,
+            sorted_estimated_angles_deg=estimated_angles_UCA,  # type: ignore
             center_frequency_Hz=CENTER_FREQUENCY_HZ,
             number_of_sensors=NUMBER_OF_SENSORS,
             actuator_coordinates=ACTUATOR_COORDINATES,
             uca_center_coordinates=UCA_CENTER_COORDINATES,
         )
+    else:
+        raise ValueError("ARRAY_TYPE must be either ULA or UCA")
 
     plt.show()
 
