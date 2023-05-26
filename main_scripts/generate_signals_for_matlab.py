@@ -46,7 +46,7 @@ def generate_signals_for_matlab(
             FILE_NAME,
             analytic_signals,
         )
-        make_a_nice_parameters_file(parameters, FILE_NAME)
+        make_a_nice_parameters_file(parameters)
         print(f"\nSaved analytic signals to {FILE_NAME}.csv\n")
         exit()
     return analytic_signals
@@ -157,19 +157,25 @@ def make_a_nice_csv_file(
         for line in lines:
             f.write(line.replace("(", "").replace(")", ""))
 
-    os.system(
-        f"cp {FOLDER_NAME}/{FILE_NAME}.csv /mnt/c/Users/nikla/Documents/GitHub/touch_detection_with_accelerometer-array/matlab/"
-    )
+    # Check if path exists
+    if os.path.exists(
+        "/mnt/c/Users/nikla/Documents/GitHub/touch_detection_with_accelerometer-array/matlab/"
+    ):
+        os.system(
+            f"cp {FOLDER_NAME}/{FILE_NAME}.csv"
+            "/mnt/c/Users/nikla/Documents/GitHub/touch_detection_with_accelerometer-array/matlab/"
+        )
 
 
-def make_a_nice_parameters_file(parameters, FILE_NAME):
-    FOLDER_NAME = "matlab"
-    # Save the parameters in a csv file that can easily be read by matlab
+def make_a_nice_parameters_file(parameters):
     scipy.io.savemat(
-        "/mnt/c/Users/nikla/Documents/GitHub/touch_detection_with_accelerometer-array/matlab/parameters.mat",
+        "matlab/parameters.mat",
         parameters,
     )
-
-    os.system(
-        f"cp {FOLDER_NAME}/{FILE_NAME}_parameters.csv /mnt/c/Users/nikla/Documents/GitHub/touch_detection_with_accelerometer-array/matlab"
-    )
+    if os.path.exists(
+        "/mnt/c/Users/nikla/Documents/GitHub/touch_detection_with_accelerometer-array/matlab/"
+    ):
+        os.system(
+            "cp matlab/parameters.mat"
+            "/mnt/c/Users/nikla/Documents/GitHub/touch_detection_with_accelerometer-array/matlab/"
+        )
