@@ -25,6 +25,7 @@ import data_processing.sensor_testing as st
 import data_processing.preprocessing as pp
 from matplotlib import style
 import data_viz_files.visualise_data as vd
+from data_processing.dispersion_comp import dispersion_compensation
 import os
 #import mph
 
@@ -204,6 +205,8 @@ def draw_simulated_plate(comsolefile=9):
     distances = sorted(distances)
     theoretical_distances = setup.get_diagonal_distance(positions=[position, position+10])
     print(f'distances from setup: {theoretical_distances}')
+    print(f'Arrial times: {sorted(arrival_times)}')
+    print(f'distances from reflections: {distances}')
     h_x, x = dispersion_compensation_Wilcox(position=position)
     #h_x1, x_1  = dispersion_compensation_Wilcox(position=position+10)
     h_x1, x_1  = dispersion_compensation_Wilcox(position=position, pertubation=True, alpha=alpha)
@@ -236,8 +239,29 @@ def draw_simulated_plate(comsolefile=9):
     print(f'theoretical distances: {theoretical_distances} m, peak distance: {peak_diff} m')
     print(f'difference between the physical distance and the peak distance: {peak_diff-theoretical_distances} m')
 
-
-
+def testing_wilcox_disp(file_n=2, position=25, fs=500000, dx=0.0001, pertubation=False, alpha=0.2, center_pulse=True):
+    wave_data, x_pos, y_pos, z_pos, time_axis = get_comsol_data(9) #fetches data from comsol files
+    if center_pulse:
+        time_axis = time_axis-133e-6
+    source_pos = [x_pos[0], y_pos[0]]
+    #print(f'time_axis: {time_axis}')
+    #print(f'source_pos: {source_pos}')
+    distanse = np.sqrt((x_pos[position]-source_pos[0])**2 + (y_pos[position]-source_pos[1])**2)
+    signal = wave_data[position]
+    oversampling_factor = 8
+    n_fft = signal.size * oversampling_factor
+    freq_vel = np.fft.fftfreq(n_fft, 1/fs)
+    freq_vel = freq_vel[:int(n_fft/2)]
+    v_gr, v_ph = wp.theoretical_group_phase_vel(freq_vel, material='LDPE_tonni20mm', plot=False)
+    k_mark = freq_vel/v_ph
+    #replace nan value with 0   
+    k_mark = np.nan_to_num(k_mark)
+    print(signal.shape)
+    #signal = signal.reshape(1,501)
+    #print(signal.shape)
+    d_step, hx = dispersion_compensation(time_axis, signal, freq_vel, k_mark, truncate=True, oversampling_factor=8, interpolation_method='linear')
+    plt.plot(d_step, hx)
+    plt.show()
 def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001, pertubation=False, alpha=0.2):
     """
     Performs dispersion compensation on the input signal.
@@ -289,8 +313,8 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001, 
     # plt.plot(wave_data_bottom[position], label='bottom')
     # plt.legend()
     # plt.show()
-    #signal = wave_data_top[position]
-    signal = (wave_data_top[position]+wave_data_bottom[position])/2 #A0 mode
+    signal = wave_data_top[position]
+    #signal = (wave_data_top[position]+wave_data_bottom[position])/2 #A0 mode
     # #plotting signal mode
     # plt.plot(signal, label='A0 mode')
     # plt.title('A0 mode')
@@ -360,6 +384,16 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001, 
     print(f'max distance wave: {max_distance_wave} m')
     #k = (2*np.pi*freq_vel)/v_ph #same length as freq_vel. Wavenumber domain 
     k = np.where(abs(v_ph) > tolerance, (2*np.pi*freq_vel)/v_ph, 0)
+    from scipy.io import savemat
+    velocity_dict = {
+    'phase_velocity': v_ph,
+    'group_velocity': v_gr,
+    'frequency': freq_vel,
+    'wavenumber': k
+}
+
+    # Save the velocity dictionary in MATLAB format
+    savemat('velocity_data_20mm.mat', velocity_dict)
     print(f'k: {k.shape}')
     v_nyq = get_velocity_at_freq(f_nyq)['A0']['phase_velocity'] #fetches the velocity at the nyquist frequency
     #print(f'k_max = {k[-1]}') 
@@ -1050,7 +1084,7 @@ def get_comsol_data(number=2):
 
     with open(path, 'r') as f1:
         i = 0
-        time_axis = np.linspace(0, 1000, num=501)
+        time_axis = np.linspace(0, 1000e-6, num=501)
         x_pos = np.zeros(data_nodes)
         y_pos = np.zeros(data_nodes)
         z_pos = np.zeros(data_nodes)
