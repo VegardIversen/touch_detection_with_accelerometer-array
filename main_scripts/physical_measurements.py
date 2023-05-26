@@ -41,7 +41,6 @@ def combine_measurements_into_dataframe(
         dataframes,
         axis=1,
     )
-    # Rename the columns
     measurements.columns = (
         ["Actuator 123"]
         + [f"Sensor {i}" for i in range(1, 4)]
@@ -64,7 +63,7 @@ def combine_measurements_into_dataframe(
     # Get rid of 50 Hz and potential DC offset
     measurements = filter_signal(
         signals=measurements,
-        critical_frequency=100,
+        critical_frequency=250,
         filtertype="highpass",
         order=2,
         plot_response=False,
