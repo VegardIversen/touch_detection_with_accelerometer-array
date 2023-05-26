@@ -60,3 +60,4 @@ touch/
 #folders
 .vscode/
 matlab/DOAExample.mlx
+matlab/parameters.mat
