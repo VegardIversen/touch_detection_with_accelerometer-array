@@ -1,13 +1,12 @@
-NUMBER_OF_SENSORS = 7;
-ULA = phased.ULA('NumElements', NUMBER_OF_SENSORS, 'ElementSpacing',0.01);
+load('parameters.mat')
+
+ULA = phased.ULA('NumElements', NUMBER_OF_SENSORS, 'ElementSpacing', SENSOR_SPACING_M);
 ULA.Element.FrequencyRange = [0 40e3];
 UCA = phased.UCA('NumElements', NUMBER_OF_SENSORS, 'Radius', 1.30656);
 
 % sensorArrayAnalyzer;
 
-OPERATING_FREQUENCY = 33e3;
-PHASE_VELOCITY = 770;
-
+NUMBER_OF_SIGNALS_SOURCES = 'Auto';
 NUMBER_OF_SIGNALS = 4;
 
 FILE_NAME_ULA = "comsol_simulations_analytic_signals_ULA.csv";
@@ -22,9 +21,9 @@ signal_uca = signal_ula;
 %%
 
 rootmusicangle_ula = phased.RootMUSICEstimator('SensorArray',ULA,...
-    'OperatingFrequency',OPERATING_FREQUENCY,...
-    'NumSignalsSource','Property','NumSignals', NUMBER_OF_SIGNALS, ...
-    'PropagationSpeed', PHASE_VELOCITY);
+    'OperatingFrequency',CENTER_FREQUENCY_HZ,...
+    'NumSignalsSource',NUMBER_OF_SIGNALS_SOURCES,'NumSignals', NUMBER_OF_SIGNALS, ...
+    'PropagationSpeed', PHASE_VELOCITY_MPS);
 
 rootmusicangle_ula.ForwardBackwardAveraging = true;
 rootmusicangle_ula.SpatialSmoothing = 0;
@@ -35,14 +34,14 @@ TEST_PARAMETERS = false;
 if TEST_PARAMETERS
     error_min = Inf; % Initialize the minimum error to a large value
     phase_velocity_min = 0; % Initialize the corresponding phase_velocity
-
+    
     target_angles = [-143.973, -41.634, 33.690, 151.390];
-
+    
     for phase_velocity = 400:1:650
         release(rootmusicangle_ula)
         rootmusicangle_uca = phased.RootMUSICEstimator('SensorArray',UCA,...
-            'OperatingFrequency',OPERATING_FREQUENCY,...
-            'NumSignalsSource','Property','NumSignals', NUMBER_OF_SIGNALS, ...
+            'OperatingFrequency',CENTER_FREQUENCY_HZ,...
+            'NumSignalsSource',NUMBER_OF_SIGNALS_SOURCES,'NumSignals', NUMBER_OF_SIGNALS, ...
             'PropagationSpeed', phase_velocity);
         rootmusicangle_uca.ForwardBackwardAveraging = true;
         rootmusicangle_uca.SpatialSmoothing = 1;
@@ -50,10 +49,10 @@ if TEST_PARAMETERS
         root_music_uca_ang = rootmusicangle_uca(signal_uca, ELEVATION_ANGLE);
         root_music_uca_ang = rotate_angles(root_music_uca_ang, NUMBER_OF_SENSORS);
         root_music_sorted_uca_angles = sort(root_music_uca_ang);
-
+        
         % Compute the error between root_music_sorted_uca_angles and target_angles
         error = sum(abs(root_music_sorted_uca_angles - target_angles));
-
+        
         % Check if the current error is lower than the minimum error
         if error < error_min
             error_min = error;
@@ -64,15 +63,15 @@ if TEST_PARAMETERS
     disp(error_min)
     disp('Phase Velocity yielding the lowest error:')
     disp(phase_velocity_min)
-    PHASE_VELOCITY = phase_velocity_min
+    PHASE_VELOCITY_MPS = phase_velocity_min
 end
 
 %%
 
 rootmusicangle_uca = phased.RootMUSICEstimator('SensorArray',UCA,...
-    'OperatingFrequency',OPERATING_FREQUENCY,...
+    'OperatingFrequency',CENTER_FREQUENCY_HZ,...
     'NumSignalsSource','Property','NumSignals', NUMBER_OF_SIGNALS, ...
-    'PropagationSpeed', PHASE_VELOCITY);
+    'PropagationSpeed', PHASE_VELOCITY_MPS);
 rootmusicangle_uca.ForwardBackwardAveraging = true;
 rootmusicangle_uca.SpatialSmoothing = 1;
 ELEVATION_ANGLE = 0;
@@ -82,22 +81,21 @@ root_music_sorted_uca_angles = sort(root_music_uca_ang);
 
 %%
 
-
 musicangle = phased.MUSICEstimator('SensorArray',ULA,...
-    'OperatingFrequency',OPERATING_FREQUENCY,'ForwardBackwardAveraging',true,...
-    'NumSignalsSource','Property','NumSignals', NUMBER_OF_SIGNALS,...
+    'OperatingFrequency',CENTER_FREQUENCY_HZ,'ForwardBackwardAveraging',true,...
+    'NumSignalsSource',NUMBER_OF_SIGNALS_SOURCES,'NumSignals', NUMBER_OF_SIGNALS,...
     'DOAOutputPort',true, ...
-    'PropagationSpeed', PHASE_VELOCITY);
+    'PropagationSpeed', PHASE_VELOCITY_MPS);
 
 [~,music_ang] = musicangle(signal_ula);
 music_sorted_angles = sort(music_ang);
-plotSpectrum(musicangle)
+% plotSpectrum(musicangle);
 
 %%
 
 rootwsfangle = phased.RootWSFEstimator('SensorArray',ULA,...
-    'OperatingFrequency',OPERATING_FREQUENCY,'MaximumIterationCount',50, ...
-    'PropagationSpeed', PHASE_VELOCITY, 'NumSignalsSource', 'Property', ...
+    'OperatingFrequency',CENTER_FREQUENCY_HZ,'MaximumIterationCount',50, ...
+    'PropagationSpeed', PHASE_VELOCITY_MPS, 'NumSignalsSource', NUMBER_OF_SIGNALS_SOURCES, ...
     'NumSignals', NUMBER_OF_SIGNALS);
 wsf_ang = rootwsfangle(signal_ula);
 wsf_sorted_angles = sort(wsf_ang);
@@ -105,10 +103,9 @@ wsf_sorted_angles = sort(wsf_ang);
 %%
 
 esprit = phased.ESPRITEstimator('SensorArray',ULA,...
-    'OperatingFrequency',OPERATING_FREQUENCY,'ForwardBackwardAveraging',true,...
-    'PropagationSpeed', PHASE_VELOCITY, ...
-    'NumSignalsSource','Property', ...
-    'NumSignalsMethod','AIC', ...
+    'OperatingFrequency',CENTER_FREQUENCY_HZ,'ForwardBackwardAveraging',true,...
+    'PropagationSpeed', PHASE_VELOCITY_MPS, ...
+    'NumSignalsSource',NUMBER_OF_SIGNALS_SOURCES, ...
     'NumSignals', NUMBER_OF_SIGNALS);
 esprit_angles = esprit(signal_ula);
 esprit_sorted_angles = sort(esprit_angles);
