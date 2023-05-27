@@ -61,14 +61,6 @@ def drop_actuator_channel(
     return measurements
 
 
-def import_the_data():
-    # TODO: Do this in main()
-    FILE_FOLDER = "Plate_10mm/Setup4/touch"
-    FILE_NAME = "nik_touch_35_35_v1"
-    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
-    return FILE_NAME, measurements
-
-
 def do_measurement_preprocessing(
     measurements,
     frequency,
