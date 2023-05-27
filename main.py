@@ -38,27 +38,27 @@ def main():
     # - Low attenuation
 
     """Select array type ULA or UCA"""
-    ARRAY_TYPE = "ULA"
-    # ARRAY_TYPE = "UCA"
+    ARRAY_TYPE = "UCA"
     """Set parameters for the array"""
     CENTER_FREQUENCY_HZ = 40000
     PHASE_VELOCITY_MPS = 850
     GROUP_VELOCITY_MPS = 1000
-    NUMBER_OF_SENSORS = 7
+    NUMBER_OF_SENSORS = 8
     SENSOR_SPACING_M = 0.01
-    ACTUATOR_COORDINATES = np.array([0.45, 0.40])
+    ACTUATOR_COORDINATES = np.array([0.50, 0.35])
     UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
     FILE_FOLDER = (
-        f"Plate_10mm/Setup5/25kHz/"
+        f"Plate_10mm/Setup6/25kHz/"
         f"x{100 * ACTUATOR_COORDINATES[x]:.0f}"
         f"y{100 * ACTUATOR_COORDINATES[y]:.0f}"
     )
     FILTER_ORDER = 1
     FILTER_Q_VALUE = 0.01
-    CROP_TIME_START = 0.00045
-    CROP_TIME_END = 0.0009
+    CROP_TIME_START = 0.000
+    CROP_TIME_END = 0.001
 
     parameters = {
+        # Use floats, or Matlab will complain
         "ARRAY_TYPE": ARRAY_TYPE,
         "CENTER_FREQUENCY_HZ": float(CENTER_FREQUENCY_HZ),
         "PHASE_VELOCITY_MPS": float(PHASE_VELOCITY_MPS),
