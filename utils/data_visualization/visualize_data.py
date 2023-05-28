@@ -294,7 +294,7 @@ def plot_ffts(
     axs[len(measurements) - 1, axs_index].set_xlabel("Frequency (kHz)")
     axs[i, axs_index].set_ylabel("Amplitude [dB)")
     axs[i, axs_index].set_xlim(left=0, right=freq_max / 1000)
-    axs[i, axs_index].set_ylim(bottom=-18, top=45)
+    axs[i, axs_index].set_ylim(bottom=-90, top=10)
     axs[i, axs_index].plot(fftfreq / 1000, data_fft_dB)
 
 
