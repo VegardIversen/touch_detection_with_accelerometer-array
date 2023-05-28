@@ -69,6 +69,15 @@ def combine_measurements_into_dataframe(
         plot_response=False,
         sample_rate=SAMPLE_RATE,
     )
+    # Get rid of frequencies above 50 kHz due to sensor responses
+    measurements = filter_signal(
+        signals=measurements,
+        critical_frequency=50000,
+        filtertype="lowpass",
+        order=2,
+        plot_response=False,
+        sample_rate=SAMPLE_RATE,
+    )
 
     align_transmitted_signal(measurements)
 
