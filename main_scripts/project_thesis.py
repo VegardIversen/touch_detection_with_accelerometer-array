@@ -8,7 +8,7 @@ import pandas as pd
 import scipy
 import scipy.signal as signal
 
-from utils.csv_to_df import make_dataframe_from_csv
+from utils.csv_to_df import import_measurements
 from utils.data_processing.detect_echoes import get_envelopes, get_travel_times
 from utils.data_processing.preprocessing import (
     compress_chirps,
@@ -26,7 +26,7 @@ from utils.data_visualization.visualize_data import (
 )
 from utils.global_constants import (
     ACTUATOR_1,
-    CHIRP_CHANNEL_NAMES,
+    CHANNEL_NAMES_WITH_ACTUATOR,
     FIGURES_SAVE_PATH,
     SAMPLE_RATE,
     SENSOR_1,
@@ -78,7 +78,7 @@ def setup1_plot_touch_signals():
     FILE_FOLDER = "Table/Setup1/touch"
     FILE_NAME = "touch_v1"
     """Open file"""
-    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = import_measurements(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     """Interpolate waveforms"""
     measurements = interpolate_signal(measurements)
@@ -144,7 +144,7 @@ def setup1_plot_chirp_signals():
     FILE_FOLDER = "Table/Setup1/chirp/100Hz_to_40kHz_single_chirp"
     FILE_NAME = "chirp_v1"
     """Open file"""
-    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = import_measurements(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     """Interpolate waveforms"""
     measurements = interpolate_signal(measurements)
@@ -378,7 +378,7 @@ def setup1_transfer_function(setup: Setup):
     FILE_NAME = "chirp_v1"
 
     """Open file"""
-    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = import_measurements(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     """Interpolate waveforms"""
     measurements = interpolate_signal(measurements)
@@ -551,7 +551,7 @@ def setup1_scattering():
     """Open file"""
     FILE_FOLDER = "Table/Setup1/scattering_tests/15kHz_to_40kHz_125ms"
     FILE_NAME = "no_touch_v1"
-    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = import_measurements(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     measurements = interpolate_signal(measurements)
 
@@ -595,7 +595,7 @@ def setup1_scattering():
         )
 
     """Split the channels into arrays of length 125 ms"""
-    measurements_split = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES)
+    measurements_split = pd.DataFrame(columns=CHANNEL_NAMES_WITH_ACTUATOR)
     for channel in measurements_split:
         measurements_split[channel] = np.split(
             measurements[channel], indices_or_sections=40
@@ -659,7 +659,7 @@ def setup1_predict_reflections(setup: Setup):
     """Open file"""
     FILE_FOLDER = "Table/Setup1/touch"
     FILE_NAME = "touch_v1"
-    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = import_measurements(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     """Interpolate waveforms"""
     measurements = interpolate_signal(measurements)
@@ -773,11 +773,11 @@ def setup2_results():
     FILE_FOLDER = "Setup2"
     FILE_NAME = "prop_speed_chirp3_setup3_2_v2"
     """Open file"""
-    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = import_measurements(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     """Delete sensor 2 as it doesn't have the required bandwidth"""
     measurements = measurements.drop(["Sensor 2"], axis="columns")
-    CHIRP_CHANNEL_NAMES.remove("Sensor 2")
+    CHANNEL_NAMES_WITH_ACTUATOR.remove("Sensor 2")
 
     """Choose setup"""
     SETUP = Setup2()
@@ -973,7 +973,7 @@ def setup2_transfer_function(setup: Setup):
     FILE_NAME = "prop_speed_chirp3_setup3_2_v1"
 
     """Open file"""
-    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = import_measurements(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     """Interpolate waveforms"""
     measurements = interpolate_signal(measurements)
@@ -1157,8 +1157,10 @@ def setup3_plot_raw_time_signal():
     """Open file"""
     FILE_FOLDER = "Setup3"
     FILE_NAME = "notouch_20to40khz_1s_10vpp_v1"
-    measurements = make_dataframe_from_csv(
-        file_folder=FILE_FOLDER, file_name=FILE_NAME, channel_names=CHIRP_CHANNEL_NAMES
+    measurements = import_measurements(
+        file_folder=FILE_FOLDER,
+        file_name=FILE_NAME,
+        channel_names=CHANNEL_NAMES_WITH_ACTUATOR,
     )
 
     """Choose crop times"""
@@ -1188,7 +1190,7 @@ def setup3_scattering():
     """Open file"""
     FILE_FOLDER = "Setup3"
     FILE_NAME = "notouchThenHoldB2_20to40khz_125ms_10vpp_v1"
-    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = import_measurements(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     measurements = interpolate_signal(measurements)
 
@@ -1234,7 +1236,7 @@ def setup3_scattering():
         )
 
     """Split the channels into arrays of length 125 ms"""
-    measurements_split = pd.DataFrame(columns=CHIRP_CHANNEL_NAMES)
+    measurements_split = pd.DataFrame(columns=CHANNEL_NAMES_WITH_ACTUATOR)
     for channel in measurements_split:
         measurements_split[channel] = np.split(
             measurements[channel], indices_or_sections=40
@@ -1330,7 +1332,7 @@ def custom_plots():
 def scattering_figure_3():
     """Use coordinates of points along a graph to make a plot"""
     print("Scattering figure 3")
-    ka_1 = make_dataframe_from_csv(
+    ka_1 = import_measurements(
         file_folder="Data visualisation/Figure datasets/scattering_figure_3",
         file_name="ka_1",
         channel_names=["r", "theta"],
@@ -1351,22 +1353,22 @@ def scattering_figure_3():
 def scattering_figure_5():
     """Use coordinates of points along a graph to make a plot"""
     print("Scattering figure 5")
-    rigid_inlcusion = make_dataframe_from_csv(
+    rigid_inlcusion = import_measurements(
         file_folder="Data visualisation/Figure datasets/scattering_figure_5",
         file_name="rigid_inclusion",
         channel_names=["x", "y"],
     )
-    steel_thickness_50in = make_dataframe_from_csv(
+    steel_thickness_50in = import_measurements(
         file_folder="Data visualisation/Figure datasets/scattering_figure_5",
         file_name="steel_thickness_50in",
         channel_names=["x", "y"],
     )
-    hole = make_dataframe_from_csv(
+    hole = import_measurements(
         file_folder="Data visualisation/Figure datasets/scattering_figure_5",
         file_name="hole",
         channel_names=["x", "y"],
     )
-    bonded_steel_inclusion_thickness_0_5in = make_dataframe_from_csv(
+    bonded_steel_inclusion_thickness_0_5in = import_measurements(
         file_folder="Data visualisation/Figure datasets/scattering_figure_5",
         file_name="bonded_steel_inclusion_thickness_0_5in",
         channel_names=["x", "y"],

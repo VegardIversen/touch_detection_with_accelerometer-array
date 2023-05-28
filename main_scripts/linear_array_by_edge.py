@@ -6,7 +6,7 @@ from main_scripts.generate_ideal_signal import (
     compare_to_ideal_signal,
     generate_ideal_signal,
 )
-from utils.csv_to_df import make_dataframe_from_csv
+from utils.csv_to_df import import_measurements
 from utils.data_processing.detect_echoes import get_envelopes
 from utils.data_processing.preprocessing import crop_data, crop_to_signal, filter_signal
 from utils.data_processing.processing import interpolate_signal
@@ -28,7 +28,7 @@ def linear_array_by_edge():
 
     FILE_FOLDER = "Plate_10mm/Setup4/"
     FILE_NAME = "nik_touch_35_35_v1"
-    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = import_measurements(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     measurements["Actuator"] = 0
     # Swap the data in column 'Sensor 1' with the data in column 'Sensor 3'

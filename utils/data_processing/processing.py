@@ -8,7 +8,7 @@ import scipy.signal as signal
 from scipy import interpolate
 from utils.data_processing.detect_echoes import get_envelopes
 from utils.global_constants import (
-    CHIRP_CHANNEL_NAMES,
+    CHANNEL_NAMES_WITH_ACTUATOR,
     INTERPOLATION_FACTOR,
     SAMPLE_RATE,
 )
@@ -17,7 +17,7 @@ from utils.global_constants import (
 def average_of_signals(measurements: pd.DataFrame, chirp_range: list) -> pd.DataFrame:
     """Find the average waveforms"""
     signals_average = pd.DataFrame(
-        columns=CHIRP_CHANNEL_NAMES, data=np.empty((1, 4), np.ndarray)
+        columns=CHANNEL_NAMES_WITH_ACTUATOR, data=np.empty((1, 4), np.ndarray)
     )
     for channel in signals_average:
         signals_average.at[0, channel] = np.empty(measurements.at[0, channel].size)
@@ -34,7 +34,7 @@ def average_of_signals(measurements: pd.DataFrame, chirp_range: list) -> pd.Data
 def variance_of_signals(measurements: pd.DataFrame, chirp_range: list) -> pd.DataFrame:
     """Find the variance of the waveforms"""
     signals_variance = pd.DataFrame(
-        columns=CHIRP_CHANNEL_NAMES, data=np.empty((1, 4), np.ndarray)
+        columns=CHANNEL_NAMES_WITH_ACTUATOR, data=np.empty((1, 4), np.ndarray)
     )
     for chan in signals_variance:
         signals_variance.at[0, chan] = np.empty(measurements.at[0, chan].size)

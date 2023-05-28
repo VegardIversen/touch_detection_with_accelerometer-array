@@ -1,6 +1,6 @@
 from matplotlib import pyplot as plt
 import pandas as pd
-from utils.csv_to_df import make_dataframe_from_csv
+from utils.csv_to_df import import_measurements
 from utils.global_constants import FIGURES_SAVE_PATH
 
 

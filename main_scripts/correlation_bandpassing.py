@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from utils.global_constants import (
-    CHIRP_CHANNEL_NAMES,
+    CHANNEL_NAMES_WITH_ACTUATOR,
     SAMPLE_RATE,
     ACTUATOR_1,
     SENSOR_1,
@@ -11,7 +11,7 @@ from utils.global_constants import (
     SENSOR_3,
     FIGURES_SAVE_PATH,
 )
-from utils.csv_to_df import make_dataframe_from_csv
+from utils.csv_to_df import import_measurements
 from utils.simulations import simulated_phase_velocities
 from utils.data_processing.detect_echoes import (
     get_envelopes,
@@ -47,7 +47,7 @@ def setup1_predict_reflections(setup: Setup):
     """Open file"""
     FILE_FOLDER = "Table/Setup1/touch"
     FILE_NAME = "touch_v1"
-    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = import_measurements(file_folder=FILE_FOLDER, file_name=FILE_NAME)
 
     """Interpolate waveforms"""
     measurements = interpolate_signal(measurements)

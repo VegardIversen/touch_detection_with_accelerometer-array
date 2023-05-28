@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy import signal
-from utils.csv_to_df import make_dataframe_from_csv
+from utils.csv_to_df import import_measurements
 
 from utils.data_processing.detect_echoes import get_envelopes, get_travel_times
 from utils.data_processing.preprocessing import (
@@ -327,7 +327,7 @@ def extract_touch_signal(
 ):
     FILE_FOLDER = "Plate_10mm/Setup3/touch"
     FILE_NAME = "nik_touch_v1"
-    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = import_measurements(file_folder=FILE_FOLDER, file_name=FILE_NAME)
     measurements = crop_to_signal(measurements)
     measurements = crop_data(
         measurements,

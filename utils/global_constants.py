@@ -7,10 +7,10 @@ ASSERTIONS_SHOULD_BE_INCLUDED = False
 
 """Settings"""
 ORIGINAL_SAMPLE_RATE = 150e3
-INTERPOLATION_FACTOR = 8
+INTERPOLATION_FACTOR = 1
 SAMPLE_RATE = ORIGINAL_SAMPLE_RATE * INTERPOLATION_FACTOR
 CHANNEL_NAMES = ["Sensor 1", "Sensor 2", "Sensor 3"]
-CHIRP_CHANNEL_NAMES = ["Actuator", "Sensor 1", "Sensor 2", "Sensor 3"]
+CHANNEL_NAMES_WITH_ACTUATOR = ["Actuator", "Sensor 1", "Sensor 2", "Sensor 3"]
 
 """Sensor int values, e.g. for use with sensors[SENSOR_1]"""
 ACTUATOR_1 = 0

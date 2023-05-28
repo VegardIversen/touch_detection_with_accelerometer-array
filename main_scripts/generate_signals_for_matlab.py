@@ -2,7 +2,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import scipy
 
-from utils.csv_to_df import make_dataframe_from_csv
+from utils.csv_to_df import import_measurements
 from utils.data_processing.detect_echoes import get_analytic_signal, get_envelopes
 from utils.data_processing.preprocessing import crop_data, crop_to_signal, filter_signal
 from utils.data_processing.processing import interpolate_signal
@@ -65,7 +65,7 @@ def import_the_data():
     # TODO: Do this in main()
     FILE_FOLDER = "Plate_10mm/Setup4/touch"
     FILE_NAME = "nik_touch_35_35_v1"
-    measurements = make_dataframe_from_csv(file_folder=FILE_FOLDER, file_name=FILE_NAME)
+    measurements = import_measurements(file_folder=FILE_FOLDER, file_name=FILE_NAME)
     return FILE_NAME, measurements
 
 

@@ -42,7 +42,6 @@ def find_indices_of_peaks(signal, height, plot=False, hilbert=True):
                 "x",
                 label="peaks",
             )
-
         else:
             ax.plot(
                 time_axis / SAMPLE_RATE,

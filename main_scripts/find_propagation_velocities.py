@@ -1,6 +1,6 @@
 from matplotlib import pyplot as plt
 
-from utils.csv_to_df import make_dataframe_from_csv
+from utils.csv_to_df import import_measurements
 from utils.data_processing.detect_echoes import get_envelopes
 from utils.data_processing.preprocessing import crop_data, crop_to_signal, filter_signal
 from utils.data_processing.processing import interpolate_signal
@@ -53,7 +53,6 @@ def find_speed_for_5kHz(measurements, SETUP):
     max_times = {
         sensor: max_indices[sensor] / SAMPLE_RATE
         for sensor in ["Sensor 1", "Sensor 2", "Sensor 3"]
-
     }
     print(f"Times of maximum values: {max_times}")
     sensor_2_1_diff = max_times["Sensor 2"][1] - max_times["Sensor 1"][0]
@@ -61,7 +60,9 @@ def find_speed_for_5kHz(measurements, SETUP):
     sensor_3_1_diff = max_times["Sensor 3"][0] - max_times["Sensor 1"][0]
     print(f"Time difference between Sensor 2 and 1: {sensor_2_1_diff:.6f} s")
     print(f"Time difference between Sensor 3 and 2: {sensor_3_2_diff:.6f} s")
-    print(f"Time difference between Sensor 3 and 1 (as 0.1 m): {(sensor_3_1_diff / 2):.6f} s")
+    print(
+        f"Time difference between Sensor 3 and 1 (as 0.1 m): {(sensor_3_1_diff / 2):.6f} s"
+    )
     print(f"Propagation speed between Sensor 2 and 1: {0.1 / sensor_2_1_diff} m/s")
     print(f"Propagation speed between Sensor 3 and 2: {0.1 / sensor_3_2_diff} m/s")
     print(f"Propagation speed between Sensor 3 and 1: {0.2 / sensor_3_1_diff} m/s")
@@ -334,6 +335,6 @@ def find_speed_for_35kHz(measurements, SETUP):
 def import_the_file():
     file_folder = "Plate_10mm/Setup1/touch"
     file_name = "nik_touch_v2"
-    measurements = make_dataframe_from_csv(file_folder=file_folder, file_name=file_name)
+    measurements = import_measurements(file_folder=file_folder, file_name=file_name)
     measurements["Actuator"] = 0
     return measurements
