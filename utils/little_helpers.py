@@ -2,11 +2,13 @@ import numpy as np
 import pandas as pd
 
 
-def to_dB(measurements: pd.DataFrame or np.ndarray):
+def to_dB(input: pd.DataFrame or np.ndarray or float):
     """Converts measurements to dB"""
+    if isinstance(input, float):
+        input = np.array([input])
     # Avoid division by zero
-    measurements[measurements == 0] = 1e-10
-    measurements_dB = 10 * np.log10(measurements)
+    input[input == 0] = 1e-10
+    measurements_dB = 20 * np.log10(input)
     return measurements_dB
 
 
