@@ -25,7 +25,6 @@ def compare_signals(
     freq_max: int = 45000,
     set_index: int = None,
     dynamic_range_db: int = 60,
-    log_time_signal: bool = False,
     compressed_chirps: bool = False,
     plots_to_plot: list = ["time", "spectrogram", "fft"],
 ):
@@ -46,8 +45,6 @@ def compare_signals(
                 axs,
                 measurements,
                 sharey,
-                log_time_signal,
-                compressed_chirps,
                 i,
                 channel,
             )
@@ -88,28 +85,45 @@ def plot_time_signals(
     axs,
     measurements,
     sharey,
-    log_time_signal,
-    compressed_chirps,
     i,
     channel,
 ):
-    if compressed_chirps:
-        time_axis = make_time_signal_for_compressed_signal(channel)
-        axs[i, 0].set_ylabel("Correlation coefficient (-)")
+    # Use ms if the highest time value is less than 1 second
+    if len(channel) / SAMPLE_RATE < 1:
+        time_axis = np.linspace(
+            start=0,
+            stop=1000 * len(channel) / SAMPLE_RATE,
+            num=len(channel),
+        )
+        axs[-1, 0].set_xlabel("Time (ms)")
     else:
-        time_axis = make_time_signal_for_uncompressed_signal(channel)
-        axs[i, 0].set_ylabel(channel.name + "\n" + "Amplitude")
+        time_axis = np.linspace(
+            start=0,
+            stop=len(channel) / SAMPLE_RATE,
+            num=len(channel),
+        )
+        axs[-1, 0].set_xlabel("Time (s)")
     share_x_axis_time(axs, i)
     if sharey:
         share_y_axis(axs, i)
     axs[i, 0].grid()
-    if log_time_signal:
-        plot_as_decibel(axs, i, channel, time_axis)
-        set_log_dynamic_range(axs, i, channel)
-    else:
-        plot_as_linear(axs, i, channel, time_axis)
+    channel = set_ylabels_for_time_plots(axs, i, channel, measurements)
+    axs[i, 0].plot(time_axis, channel, label=channel.name)
     axs[i, 0].yaxis.set_major_formatter(FormatStrFormatter("%.2f"))
-    axs[len(measurements) - 1, 0].set_xlabel("Time (ms)")
+    axs[i, 0].legend(loc="upper right")
+
+
+def set_ylabels_for_time_plots(axs, i, channel, measurements):
+    # Check if the maximum value in the dataframe measurements is less than 0.001
+    if np.max(np.abs(measurements)) < 0.001:
+        channel = channel * 1e6
+        axs[i, 0].set_ylabel("Acceleration \n (µm/s²)")
+    elif np.max(np.abs(measurements)) < 1:
+        channel = channel * 1e3
+        axs[i, 0].set_ylabel("Acceleration \n (mm/s²)")
+    else:
+        axs[i, 0].set_ylabel("Acceleration \n (m/s²)")
+    return channel
 
 
 def share_x_axis_time(
@@ -124,15 +138,6 @@ def share_y_axis(
     i,
 ):
     axs[i, 0].sharey(axs[0, 0])
-
-
-def plot_as_linear(
-    axs,
-    i,
-    channel,
-    time_axis,
-):
-    axs[i, 0].plot(time_axis, channel)
 
 
 def plot_as_decibel(
@@ -152,22 +157,6 @@ def set_log_dynamic_range(
     axs[i, 0].set_ylim(bottom=np.max(to_dB(channel)) - 60)
 
 
-def make_time_signal_for_compressed_signal(channel):
-    return np.linspace(
-        start=-len(channel) / SAMPLE_RATE,
-        stop=len(channel) / SAMPLE_RATE,
-        num=len(channel),
-    )
-
-
-def make_time_signal_for_uncompressed_signal(channel):
-    return np.linspace(
-        start=0,
-        stop=1000 * len(channel) / SAMPLE_RATE,
-        num=len(channel),
-    )
-
-
 def plot_spectrograms(
     fig,
     axs,
@@ -176,20 +165,17 @@ def plot_spectrograms(
     freq_max,
     set_index,
     dynamic_range_db,
-    compressed_chirps,
     plots_to_plot,
     i,
     channel,
 ):
     """Some logic for correct indexing of the axs array"""
     axs_index = axis_index(plots_to_plot)
-    spec = spectrogram_object(
-        axs,
-        nfft,
-        compressed_chirps,
-        i,
+    spec = axs[i, axs_index].specgram(
         channel,
-        axs_index,
+        Fs=SAMPLE_RATE,
+        NFFT=nfft,
+        noverlap=(nfft // 2),
     )
     set_dynamic_range_of_spectrogram(
         dynamic_range_db,
@@ -244,37 +230,6 @@ def make_colorbar(
         fig.colorbar(spec[3], ax=axs[i, axs_index])
 
 
-def spectrogram_object(
-    axs,
-    nfft,
-    compressed_chirps,
-    i,
-    channel,
-    axs_index,
-):
-    if compressed_chirps:
-        xextent = set_x_extent(channel)
-        spec = spectrogram_object_for_compressed_signals(
-            axs,
-            nfft,
-            i,
-            channel,
-            axs_index,
-            xextent,
-        )
-        set_x_axis_limits(axs, i, axs_index)
-    else:
-        spec = spectrogram_object_for_uncompressed_signal(
-            axs,
-            nfft,
-            i,
-            channel,
-            axs_index,
-        )
-
-    return spec
-
-
 def set_dynamic_range_of_spectrogram(
     dynamic_range_db,
     spec,
@@ -285,46 +240,22 @@ def set_dynamic_range_of_spectrogram(
     )
 
 
-def spectrogram_object_for_uncompressed_signal(
-    axs,
-    nfft,
-    i,
-    channel,
-    axs_index,
-):
-    spec = axs[i, axs_index].specgram(
-        channel, Fs=SAMPLE_RATE, NFFT=nfft, noverlap=(nfft // 2)
-    )
-    return spec
-
-
 def set_x_axis_limits(
     axs,
     i,
     axs_index,
 ):
-    axs[i, axs_index].set_xlim(left=-0.005, right=(-0.005 + 0.1))
-
-
-def spectrogram_object_for_compressed_signals(
-    axs,
-    nfft,
-    i,
-    channel,
-    axs_index,
-    xextent,
-):
-    return axs[i, axs_index].specgram(
-        channel,
-        Fs=SAMPLE_RATE,
-        NFFT=nfft,
-        noverlap=(nfft // 2),
-        xextent=xextent,
+    axs[i, axs_index].set_xlim(
+        left=-0.005,
+        right=(-0.005 + 0.1),
     )
 
 
 def set_x_extent(channel):
-    xextent = (-len(channel) / SAMPLE_RATE, len(channel) / SAMPLE_RATE)
+    xextent = (
+        -len(channel) / SAMPLE_RATE,
+        len(channel) / SAMPLE_RATE,
+    )
     return xextent
 
 
@@ -363,7 +294,7 @@ def plot_ffts(
     axs[len(measurements) - 1, axs_index].set_xlabel("Frequency (kHz)")
     axs[i, axs_index].set_ylabel("Amplitude [dB)")
     axs[i, axs_index].set_xlim(left=0, right=freq_max / 1000)
-    axs[i, axs_index].set_ylim(bottom=-25, top=80)
+    axs[i, axs_index].set_ylim(bottom=-18, top=45)
     axs[i, axs_index].plot(fftfreq / 1000, data_fft_dB)
 
 
