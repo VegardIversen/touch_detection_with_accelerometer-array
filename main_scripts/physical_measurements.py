@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from main_scripts.generate_ideal_signal import compare_to_ideal_signal
+from main_scripts.inspect_10mm_plate_touch import correct_sensitivities
 
 from utils.data_processing.preprocessing import crop_data, filter_signal
 from utils.data_processing.processing import interpolate_signal
@@ -58,6 +59,9 @@ def combine_measurements_into_dataframe(
         time_start=0,
         time_end=0.001,
     )
+
+    correct_sensitivities(setup, measurements)
+
     measurements = interpolate_signal(measurements)
 
     # Get rid of 50 Hz and potential DC offset
