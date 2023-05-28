@@ -30,6 +30,9 @@ def filter_signal(
     NOTE:   q is a value that determines the width of the flat bandpass,
             and is a value between 0 and 1. order determines the slope.
     """
+    if critical_frequency == 0:
+        return signals
+
     if filtertype == "highpass" or filtertype == "lowpass":
         sos = signal.butter(
             order,
@@ -54,7 +57,7 @@ def filter_signal(
         signals_filtered = pd.DataFrame(
             index=signals.index,
             columns=signals.columns,
-            data=signal.sosfiltfilt(sos, signals.values, axis=0)
+            data=signal.sosfiltfilt(sos, signals.values, axis=0),
         )
     else:
         signals_filtered = signal.sosfiltfilt(sos, signals, axis=0)
