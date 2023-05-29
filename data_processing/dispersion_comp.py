@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.interpolate import interp1d
-
+import pandas as pd
+import matplotlib.pyplot as plt
 def disp_comp(time_step, in_signal, frequency, wavenumber, truncate=True, oversampling_factor=8, interpolation_method='linear'):
     # basic disp comp starting from time signal, with time origin at first point
     
@@ -51,11 +52,32 @@ def disp_comp(time_step, in_signal, frequency, wavenumber, truncate=True, oversa
     print(f' k_at_freq[valid_range]: { k_at_freq[valid_range][-5:]},\n in_spec[valid_range]: {in_spec[valid_range][-5:]}')
     # interpolate spectra
     print(f'shapes: {out_k.shape}, {k_at_freq[valid_range].shape}, {in_spec[valid_range].shape}')
-    out_k = np.reshape(out_k, (len(out_k), 1))
-    k_at_freq = np.reshape(k_at_freq, (len(k_at_freq), 1))
-    in_spec = np.reshape(in_spec, (len(in_spec), 1))
-    out_kspec = interp1d(k_at_freq[valid_range], in_spec[valid_range], kind=interpolation_method, fill_value=0)(out_k)
-    print('YOYOYOYOOYOYOY')
+    #out_k = np.reshape(out_k, (len(out_k), 1))
+    #k_at_freq = np.reshape(k_at_freq, (len(k_at_freq), 1))
+    #in_spec = np.reshape(in_spec, (len(in_spec), 1))
+    out_k_mat = np.fromfile('out_k.csv', sep='\n')
+    k_at_freq_mat = np.fromfile('k_at_freq_valid.csv', sep='\n')
+    in_spec_mat = pd.read_csv('in_spec_validrange.csv',  header=None)
+    in_spec_mat = np.array(in_spec_mat.iloc[:, 0].apply(lambda x: complex(x.replace('i', 'j'))).values)
+    print('ssss')
+    #print(f'shapes: {out_k.shape}, {k_at_freq[valid_range].shape}, {in_spec[valid_range].shape}')
+    print(f'shapes: {out_k.shape}, {k_at_freq.shape}, {in_spec.shape}')
+    # print(in_spec)
+    # print(k_at_freq[valid_range][-5:])
+    # print(out_k[-5:])
+    # print(in_spec[valid_range][-5:])
+    # print('#########################')
+    # print(in_spec_mat[-5:])
+    # print(k_at_freq_mat[-5:])
+    # print(out_k_mat[-5:])
+    # plt.plot(out_k_mat, label='out_k_mat')
+    # plt.plot(out_k, label='out_k')
+    # plt.legend()
+    # plt.show()
+    out_kspec = interp1d(k_at_freq[valid_range], in_spec[valid_range], kind=interpolation_method, fill_value=0, bounds_error=False)(out_k)
+    print('woooork')
+    #out_kspec_mat = interp1d(k_at_freq_mat[:-1], in_spec_mat[:-1], kind=interpolation_method, fill_value=0, bounds_error=False)(out_k_mat)
+    #print('YOYOYOYOOYOYOY')
     out_signal = np.fft.ifft(out_kspec, out_kpts)
     d_step = 1 / (out_kpts * out_kstep)
     
@@ -101,9 +123,10 @@ def dispersion_compensation(time, in_signal, frequency, wavenumber, truncate=Tru
     else:
         neg_dist = np.array([])
         neg_out_sig = np.array([])
-        zero_neg_out_sig = np.zeros(in_signal.shape[0])
+        zero_neg_out_sig = 0#np.zeros(len(in_signal))
     
     dist = np.concatenate((neg_dist, [0], pos_dist))
-    out_signal = np.concatenate((neg_out_sig, 0.5 * (zero_neg_out_sig + zero_pos_out_sig), pos_out_sig))
-    
+    out_signal = np.concatenate((neg_out_sig, np.atleast_1d(0.5 * (zero_neg_out_sig + zero_pos_out_sig)), pos_out_sig))
+    print(f'out_signal: {out_signal.shape}')
+    print(f'dist: {dist.shape}')
     return dist, out_signal

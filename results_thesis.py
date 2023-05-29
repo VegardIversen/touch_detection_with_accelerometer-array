@@ -262,6 +262,52 @@ def testing_wilcox_disp(file_n=2, position=25, fs=500000, dx=0.0001, pertubation
     d_step, hx = dispersion_compensation(time_axis, signal, freq_vel, k_mark, truncate=True, oversampling_factor=8, interpolation_method='linear')
     plt.plot(d_step, hx)
     plt.show()
+
+def test_dispersion_compensation_gen_signals():
+    #load in data from tonni files
+    data = load_simulated_data1()
+    df = 1e3  # Frequency resolution (1kHz)
+    f = np.arange(1, 50e3 + df, df)  # Frequencies from 1kHz to 50kHz
+    v_gr, v_ph = wp.theoretical_group_phase_vel(f, material='LDPE_tonni7mm', plot=True)
+    k_mark = f/v_ph
+    
+    signal = data[0]
+    print(f'signal: {signal}')
+    print(f'signal shape: {signal.shape}')
+
+    signal_length = signal.size
+    dt = 1 / (df * signal_length)  # Time resolution
+    t = np.arange(0, signal_length) * dt  # Time axis
+    plt.plot(t, data[0])
+    plt.show()
+    
+    d_step, hx = dispersion_compensation(t, signal, f, k_mark, truncate=True, oversampling_factor=8, interpolation_method='linear')
+    #do this for every channel in data
+    d_step1, hx1 = dispersion_compensation(t, data[1], f, k_mark, truncate=True, oversampling_factor=8, interpolation_method='linear')
+    d_step2, hx2 = dispersion_compensation(t, data[2], f, k_mark, truncate=True, oversampling_factor=8, interpolation_method='linear')
+
+    #plot signal and dispersion compensated signal together in a subfigure
+    fig, axs = plt.subplots(2, 1, figsize=(8, 8))
+    axs[0].plot(t, signal, label='signal 17.3mm', color='r')
+    axs[0].plot(t, data[1], label='signal 41mm', color='g')
+    axs[0].plot(t, data[2], label='signal 135.9mm', color='b')
+    axs[0].set_xlabel('Time (s)')
+    axs[0].set_title('Signal')
+    axs[1].plot(d_step, hx, label='dispersion compensated signal 17.3mm')
+    axs[1].plot(d_step1, hx1, label='dispersion compensated signal 41mm')
+    axs[1].plot(d_step2, hx2, label='dispersion compensated signal 135.9mm')
+    #plotting vertical lines at the distances, with different colors
+    axs[1].vlines(0.0173, ymin=0, ymax=hx.max(), label='reflections', colors='r')
+    axs[1].vlines(0.041, ymin=0, ymax=hx.max(), label='reflections', colors='g')
+    axs[1].vlines(0.1359, ymin=0, ymax=hx.max(), label='reflections', colors='b')
+    axs[1].set_title('Dispersion compensated signal')
+    axs[1].set_xlabel('Distance (m)')
+    plt.title(label='Signal and dispersion compensated signal, 17.3mm')
+    plt.tight_layout()
+    plt.show()
+
+
+
 def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001, pertubation=False, alpha=0.2):
     """
     Performs dispersion compensation on the input signal.
@@ -368,7 +414,7 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001, 
     # plt.show()
     print(f'freq_vel: {freq_vel.shape}')
     #dt = 1/upper_freq
-    v_gr, v_ph = wp.theoretical_group_phase_vel(freq_vel, material='LDPE_tonni20mm', plot=True) #group and phase velocity with the same length as freq_vel
+    v_gr, v_ph = wp.theoretical_group_phase_vel(freq_vel, material='LDPE_tonni7mm', plot=True) #group and phase velocity with the same length as freq_vel
     if pertubation:
         v_ph = (1+alpha)*v_ph
         v_gr_old = v_gr
@@ -393,7 +439,7 @@ def dispersion_compensation_Wilcox(file_n=2, position=25, fs=500000, dx=0.0001, 
 }
 
     # Save the velocity dictionary in MATLAB format
-    savemat('velocity_data_20mm.mat', velocity_dict)
+    savemat('velocity_data_7mm.mat', velocity_dict)
     print(f'k: {k.shape}')
     v_nyq = get_velocity_at_freq(f_nyq)['A0']['phase_velocity'] #fetches the velocity at the nyquist frequency
     #print(f'k_max = {k[-1]}') 
