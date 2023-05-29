@@ -178,21 +178,21 @@ def plot_raw_shifted_signals(measurements):
             nfft=2**7,
         )
         im = axs[ax_i].pcolormesh(
-            time,
-            frequencies / 1000,  # Modified line
+            time * 1000,  # multiply time by 1000 to get ms
+            frequencies / 1000,
             10 * np.log10(Sxx),
             vmin=-160,
-            cmap="viridis",
         )
-        axs[ax_i].set_ylabel("Frequency (kHz)")  # Modified line
-        axs[ax_i].set_xlabel("Time (s)")
+        axs[ax_i].set_ylabel("Frequency (kHz)")
+        axs[ax_i].set_xlabel("Time (ms)")  # change xlabel to "Time (ms)"
         axs[ax_i].set_ylim([0, 50])
         fig.colorbar(
             im,
             ax=axs[ax_i],
             label="Power Spectral \n Density (dB)",
         )
-    fig.tight_layout(pad=0.5, h_pad=0)
+    fig.tight_layout(pad=0.9, h_pad=0)
+    plt.subplots_adjust(top=0.95)
     plt.savefig(
         f"{FIGURES_SAVE_PATH}/touch_spectrogram_{SHIFT_AMOUNT_S * 1e6:.0f}us.pdf",
         bbox_inches="tight",
