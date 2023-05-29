@@ -199,7 +199,8 @@ def estimate_touch_location_UCA(
 
     plt.tight_layout(pad=0.5, h_pad=0)
     plt.savefig(
-        f"{FIGURES_SAVE_PATH}/{center_frequency_Hz // 1000}kHz_{number_of_sensors}sensors_UCA.pdf",
+        f"{FIGURES_SAVE_PATH}/{center_frequency_Hz // 1000}kHz"
+        f"_{number_of_sensors}sensors_UCA.pdf",
         bbox_inches="tight",
     )
     return 0

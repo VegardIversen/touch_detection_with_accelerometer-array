@@ -57,7 +57,6 @@ def compare_signals(
                 freq_max,
                 set_index,
                 dynamic_range_db,
-                compressed_chirps,
                 plots_to_plot,
                 i,
                 channel,
@@ -292,10 +291,11 @@ def plot_ffts(
     axs[i, axs_index].grid()
     # axs[i, axs_index].set_title(f'{channel.name}, FFT')
     axs[len(measurements) - 1, axs_index].set_xlabel("Frequency (kHz)")
-    axs[i, axs_index].set_ylabel("Amplitude [dB)")
+    axs[i, axs_index].set_ylabel("Amplitude (dB)")
     axs[i, axs_index].set_xlim(left=0, right=freq_max / 1000)
-    axs[i, axs_index].set_ylim(bottom=-90, top=10)
-    axs[i, axs_index].plot(fftfreq / 1000, data_fft_dB)
+    axs[i, axs_index].set_ylim(bottom=-70, top=35)
+    axs[i, axs_index].plot(fftfreq / 1000, data_fft_dB, label=channel.name)
+    axs[i, axs_index].legend(loc="upper right")
 
 
 def wave_statistics(
