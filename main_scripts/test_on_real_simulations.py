@@ -13,16 +13,20 @@ from utils.data_visualization.visualize_data import compare_signals
 from utils.global_constants import SAMPLE_RATE
 
 
-def test_on_real_simulations(
+def prepare_simulation_data(
     noise: bool = False,
     crop: bool = False,
-    number_of_sensors: int = 8,
-    critical_frequency_Hz: int = 25000,
-    filter_order: int = 8,
+    number_of_sensors: int = 7,
+    critical_frequency_Hz: int = 0,
+    filter_order: int = 1,
 ):
+    # If the simulation data is not already generated, generate it
+    if not path.exists("Measurements/Plate_10mm/COMSOL/simulation_data_formatted.csv"):
+        import_simulation_data()
+
     # Import the simulation_data_formatted.csv to a Pandas DataFrame
     simulation_data = pd.read_csv(
-        "simulation_data_formatted.csv",
+        "Measurements/Plate_10mm/COMSOL/simulation_data_formatted.csv",
         header=0,
     )
 
@@ -50,19 +54,12 @@ def test_on_real_simulations(
     if crop:
         simulation_data = crop_data(
             simulation_data,
-            time_start=0.0009,
-            time_end=0.0009 + 0.00085,
-            apply_window_function=True,
+            # time_start=0.0008,
+            time_start=0.0,
+            time_end=0.00175,
+            # time_end=5,
+            apply_window_function=False,
         )
-
-    # Make a dataframe with 15 columns of 2 * simulation_data.size[0] rows of zeros
-    # simulation_data = simulation_data.append(
-    #     pd.DataFrame(
-    #         np.zeros((2 * simulation_data.shape[0], simulation_data.shape[1])),
-    #         columns=simulation_data.columns,
-    #     ),
-    #     ignore_index=True,
-    # )
 
     if critical_frequency_Hz:
         simulation_data = filter_signal(
@@ -72,17 +69,9 @@ def test_on_real_simulations(
             plot_response=False,
             order=filter_order,
             sample_rate=SAMPLE_RATE,
-            q=0.04,
+            q=0.05,
         )
 
-    # if crop:
-
-    #     simulation_data = crop_data(
-    #         simulation_data,
-    #         time_start=0.0006,
-    #         time_end=0.002,
-    #         apply_window_function=False,
-    #     )
     fig, axs = plt.subplots(number_of_sensors, 1, squeeze=False)
     envelopes = get_envelopes(simulation_data)
     compare_signals(
@@ -99,7 +88,7 @@ def test_on_real_simulations(
 def import_simulation_data():
     """Call to convert the simulation data file to a more convenient format."""
     # Set the path to your data file
-    data_file = "az_on_plate_top_Teflon_25kHz_pulse_5cmfromedge.txt"
+    data_file = "Measurements/Plate_10mm/COMSOL/az_on_plate_top_Teflon_25kHz_pulse_5cmfromedge.txt"
 
     # Read the file into a Pandas DataFrame
     simulation_data = pd.read_csv(
@@ -119,7 +108,7 @@ def import_simulation_data():
 
     # Save as a csv file named "simulation_data_formatted.csv"
     simulation_data.to_csv(
-        "simulation_data_formatted.csv",
+        "/home/sniklad/GitHub/touch_detection_with_accelerometer-array/Measurements/Plate_10mm/COMSOL/simulation_data_formatted.csv",
         header=False,
         index=False,
     )

@@ -63,7 +63,10 @@ def estimate_touch_location_ULA(
             phi_3_deg = sorted_estimated_angles_deg[method][0]
             phi_4_deg = sorted_estimated_angles_deg[method][2]
         # Assume that there are three angles if there is a NaN value
-        elif sum(np.isnan(sorted_estimated_angles_deg[method])) == 1:
+        elif (
+            sum(np.isnan(sorted_estimated_angles_deg[method])) == 1
+            or sorted_estimated_angles_deg[method].size == 3
+        ):
             phi_1_deg = sorted_estimated_angles_deg[method][2]
             phi_2_deg = sorted_estimated_angles_deg[method][0]
             phi_3_deg = sorted_estimated_angles_deg[method][1]

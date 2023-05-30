@@ -79,15 +79,14 @@ def get_envelopes(signals: pd.DataFrame or pd.Series or np.ndarray):
 
 def get_analytic_signal(signals: pd.DataFrame or pd.Series or np.ndarray):
     """Get the Hilbert envelope for all channels in df"""
-    envelopes_of_signals = signals.copy()
+    analytic_signal = signals.copy()
     if isinstance(signals, np.ndarray) or isinstance(signals, pd.Series):
-        envelopes_of_signals = np.abs(signal.hilbert(signals))
-        return envelopes_of_signals
+        analytic_signal = signal.hilbert(signals)
+        return analytic_signal
     elif isinstance(signals, pd.DataFrame):
-        for channel in envelopes_of_signals:
-            envelope = signal.hilbert(signals[channel])
-            envelopes_of_signals[channel] = envelope
-    return envelopes_of_signals
+        for channel in analytic_signal:
+            analytic_signal[channel] = signal.hilbert(signals[channel])
+    return analytic_signal
 
 
 def find_first_peak_index(measurements: pd.DataFrame, ax: plt.Axes = None) -> int:

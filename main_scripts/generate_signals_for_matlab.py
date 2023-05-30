@@ -162,7 +162,7 @@ def make_a_nice_csv_file(
         "/mnt/c/Users/nikla/Documents/GitHub/touch_detection_with_accelerometer-array/matlab/"
     ):
         os.system(
-            f"cp {FOLDER_NAME}/{FILE_NAME}.csv"
+            f"cp {FOLDER_NAME}/{FILE_NAME}.csv "
             "/mnt/c/Users/nikla/Documents/GitHub/touch_detection_with_accelerometer-array/matlab/"
         )
 
@@ -176,6 +176,6 @@ def make_a_nice_parameters_file(parameters):
         "/mnt/c/Users/nikla/Documents/GitHub/touch_detection_with_accelerometer-array/matlab/"
     ):
         os.system(
-            "cp matlab/parameters.mat"
+            "cp matlab/parameters.mat "
             "/mnt/c/Users/nikla/Documents/GitHub/touch_detection_with_accelerometer-array/matlab/"
         )

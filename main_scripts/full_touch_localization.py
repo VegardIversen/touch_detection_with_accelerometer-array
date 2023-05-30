@@ -7,6 +7,7 @@ from main_scripts.estimate_touch_location import (
     estimate_touch_location_UCA,
     estimate_touch_location_ULA,
 )
+from main_scripts.test_on_real_simulations import prepare_simulation_data
 from main_scripts.generate_ideal_signal import generate_ideal_signal
 from main_scripts.generate_signals_for_matlab import generate_signals_for_matlab
 from main_scripts.physical_measurements import (
@@ -32,21 +33,24 @@ def full_touch_localization():
     """Select array type ULA or UCA"""
     ARRAY_TYPE = "ULA"
     # ARRAY_TYPE = "UCA"
+    """Select whether to use COMSOL simulation data or real measurements"""
+    DATA_SOURCE = "COMSOL"
+    # DATA_SOURCE = "Measurements"
     """Set parameters for the array"""
-    CENTER_FREQUENCY_HZ = 40000
-    PHASE_VELOCITY_MPS = 850
-    GROUP_VELOCITY_MPS = 1000
+    CENTER_FREQUENCY_HZ = 22000
+    PHASE_VELOCITY_MPS = 442.7
+    GROUP_VELOCITY_MPS = 564
     NUMBER_OF_SENSORS = 7
     SENSOR_SPACING_M = 0.01
-    ACTUATOR_COORDINATES = np.array([0.45, 0.40])
+    ACTUATOR_COORDINATES = np.array([0.50, 0.35])
     UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
-    FILE_FOLDER = (
+    MEASUREMENTS_FILE_FOLDER = (
         f"Plate_10mm/Setup5/25kHz/"
         f"x{100 * ACTUATOR_COORDINATES[x]:.0f}"
         f"y{100 * ACTUATOR_COORDINATES[y]:.0f}"
     )
     FILTER_ORDER = 1
-    FILTER_Q_VALUE = 0.01
+    FILTER_Q_VALUE = 0.005
     CROP_TIME_START = 0.00045
     CROP_TIME_END = 0.0009
 
@@ -61,7 +65,7 @@ def full_touch_localization():
         "UCA_CENTER_COORDINATES": UCA_CENTER_COORDINATES,
         "FILTER_ORDER": float(FILTER_ORDER),
         "FILTER_Q_VALUE": float(FILTER_Q_VALUE),
-        "FILE_FOLDER": FILE_FOLDER,
+        "FILE_FOLDER": MEASUREMENTS_FILE_FOLDER,
         "CROP_TIME_START": float(CROP_TIME_START),
         "CROP_TIME_END": float(CROP_TIME_END),
     }
@@ -87,25 +91,33 @@ def full_touch_localization():
     else:
         raise ValueError("ARRAY_TYPE must be either ULA or UCA")
 
-    measurements = combine_measurements_into_dataframe(
-        file_folder=FILE_FOLDER,
-        file_names=[
-            "sensors123_v1",
-            "sensors456_v1",
-            "sensors78_v1",
-        ],
-        setup=SETUP,
-        group_velocity_mps=GROUP_VELOCITY_MPS,
-        center_frequency=CENTER_FREQUENCY_HZ,
-        filter_order=FILTER_ORDER,
-        filter_q_value=FILTER_Q_VALUE,
-    )
+    if DATA_SOURCE == "Measurements":
+        measurements = combine_measurements_into_dataframe(
+            file_folder=MEASUREMENTS_FILE_FOLDER,
+            file_names=[
+                "sensors123_v1",
+                "sensors456_v1",
+                "sensors78_v1",
+            ],
+            setup=SETUP,
+            group_velocity_mps=GROUP_VELOCITY_MPS,
+            center_frequency=CENTER_FREQUENCY_HZ,
+            filter_order=FILTER_ORDER,
+            filter_q_value=FILTER_Q_VALUE,
+        )
+    elif DATA_SOURCE == "COMSOL":
+        measurements = prepare_simulation_data(
+            number_of_sensors=NUMBER_OF_SENSORS,
+            crop=True,
+        )
+    else:
+        raise ValueError("DATA_SOURCE must be either COMSOL or MEASUREMENTS")
 
-    measurements = crop_data(
-        signals=measurements,
-        time_start=CROP_TIME_START,
-        time_end=CROP_TIME_END,
-    )
+    # measurements = crop_data(
+    #     signals=measurements,
+    #     time_start=CROP_TIME_START,
+    #     time_end=CROP_TIME_END,
+    # )
 
     measurements = filter_signal(
         signals=measurements,
@@ -165,7 +177,7 @@ def full_touch_localization():
 def import_estimated_angles(
     file_name: str,
 ):
-    # Put the angles from results_simULAtions_10_mm_Teflon_COMSOL_25kHz_10sensors.csv into a dataframe
+    # Put the angles from results_simulations_10_mm_Teflon_COMSOL_25kHz_10sensors.csv into a dataframe
     try:
         estimated_angles = pd.read_csv(
             f"{file_name}.csv",

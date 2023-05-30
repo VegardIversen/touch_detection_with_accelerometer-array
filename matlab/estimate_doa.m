@@ -85,7 +85,7 @@ root_music_sorted_uca_angles = sort(root_music_uca_ang);
 musicangle = phased.MUSICEstimator('SensorArray',ULA,...
     'OperatingFrequency',CENTER_FREQUENCY_HZ,'ForwardBackwardAveraging',true,...
     'NumSignalsSource',NUMBER_OF_SIGNALS_SOURCES,'NumSignals', NUMBER_OF_SIGNALS,...
-    'DOAOutputPort',true, ...
+    'DOAOutputPort', true, ...
     'PropagationSpeed', PHASE_VELOCITY_MPS);
 
 [~,music_ang] = musicangle(signal_ula);
@@ -130,7 +130,7 @@ method_results_uca = [root_music_sorted_uca_angles];
 % Transpose the matrix
 method_results_uca_transposed = method_results_uca.';
 
-% Combine the headers and data into a single cell array
+% Combine the headers and data into  a single cell array
 data_uca = [METHOD_NAMES_UCA; num2cell(method_results_uca_transposed)];
 
 % Write the data_uca to a CSV file using the built-in `writematrix` function
