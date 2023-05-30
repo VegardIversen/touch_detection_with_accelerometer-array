@@ -1,32 +1,33 @@
 load('parameters.mat')
 
 ULA = phased.ULA('NumElements', NUMBER_OF_SENSORS, 'ElementSpacing', SENSOR_SPACING_M);
-ULA.Element.FrequencyRange = [0 40e3];
 UCA = phased.UCA('NumElements', NUMBER_OF_SENSORS, 'Radius', 1.30656);
 
 % sensorArrayAnalyzer;
 
-NUMBER_OF_SIGNALS_SOURCES = 'Auto';
-NUMBER_OF_SIGNALS = 3;
+NUMBER_OF_SIGNALS_SOURCES = 'Property';
 
-FILE_NAME_ULA = "comsol_simulations_analytic_signals_ULA.csv";
-signal_ula= readtable(FILE_NAME_ULA);
-signal_ula = table2array(signal_ula);
-% FILE_NAME_UCA = "comsol_simulations_analytic_signals_UCA.csv";
-% signal_uca = readtable(FILE_NAME_UCA);
-% signal_uca = table2array(signal_uca);
-% The dumb way of bypassing the other geometry:
-signal_uca = signal_ula;
+if ARRAY_TYPE == "ULA"
+    FILE_NAME_ULA = "comsol_simulations_analytic_signals_ULA.csv";
+    signal_ula= readtable(FILE_NAME_ULA);
+    signal_ula = table2array(signal_ula);
+    signal_uca = signal_ula;
+elseif ARRAY_TYPE == "UCA"
+    FILE_NAME_UCA = "comsol_simulations_analytic_signals_UCA.csv";
+    signal_uca = readtable(FILE_NAME_UCA);
+    signal_uca = table2array(signal_uca);
+    signal_ula = signal_uca;
+end
 
 %%
 
-rootmusicangle_ula = phased.RootMUSICEstimator('SensorArray',ULA,...
-    'OperatingFrequency',CENTER_FREQUENCY_HZ,...
-    'NumSignalsSource',NUMBER_OF_SIGNALS_SOURCES,'NumSignals', NUMBER_OF_SIGNALS, ...
+rootmusicangle_ula = phased.RootMUSICEstimator('SensorArray', ULA,...
+    'OperatingFrequency', CENTER_FREQUENCY_HZ,...
+    'NumSignalsSource', NUMBER_OF_SIGNALS_SOURCES,'NumSignals', NUMBER_OF_SIGNALS, ...
     'PropagationSpeed', PHASE_VELOCITY_MPS);
 
 rootmusicangle_ula.ForwardBackwardAveraging = true;
-rootmusicangle_ula.SpatialSmoothing = 0;
+rootmusicangle_ula.SpatialSmoothing = SPATIAL_SMOOTHING;
 
 root_music_ula_ang = rootmusicangle_ula(signal_ula);
 root_music_sorted_ula_angles = sort(root_music_ula_ang);
@@ -47,7 +48,7 @@ if TEST_PARAMETERS
             'NumSignalsSource',NUMBER_OF_SIGNALS_SOURCES,'NumSignals', NUMBER_OF_SIGNALS, ...
             'PropagationSpeed', phase_velocity);
         rootmusicangle_uca.ForwardBackwardAveraging = true;
-        rootmusicangle_uca.SpatialSmoothing = 1;
+        rootmusicangle_uca.SpatialSmoothing = SPATIAL_SMOOTHING;
         ELEVATION_ANGLE = 0;
         root_music_uca_ang = rootmusicangle_uca(signal_uca, ELEVATION_ANGLE);
         root_music_uca_ang = rotate_angles(root_music_uca_ang, NUMBER_OF_SENSORS);
@@ -74,7 +75,7 @@ rootmusicangle_uca = phased.RootMUSICEstimator('SensorArray',UCA,...
     'NumSignalsSource','Property','NumSignals', NUMBER_OF_SIGNALS, ...
     'PropagationSpeed', PHASE_VELOCITY_MPS);
 rootmusicangle_uca.ForwardBackwardAveraging = true;
-rootmusicangle_uca.SpatialSmoothing = 1;
+rootmusicangle_uca.SpatialSmoothing = SPATIAL_SMOOTHING;
 ELEVATION_ANGLE = 0;
 root_music_uca_ang = rootmusicangle_uca(signal_uca, ELEVATION_ANGLE);
 root_music_uca_ang = rotate_angles(root_music_uca_ang, NUMBER_OF_SENSORS);
@@ -85,7 +86,7 @@ root_music_sorted_uca_angles = sort(root_music_uca_ang);
 musicangle = phased.MUSICEstimator('SensorArray',ULA,...
     'OperatingFrequency',CENTER_FREQUENCY_HZ,'ForwardBackwardAveraging',true,...
     'NumSignalsSource',NUMBER_OF_SIGNALS_SOURCES,'NumSignals', NUMBER_OF_SIGNALS,...
-    'DOAOutputPort', true, ...
+    'DOAOutputPort',true, ...
     'PropagationSpeed', PHASE_VELOCITY_MPS);
 
 [~,music_ang] = musicangle(signal_ula);
@@ -109,7 +110,7 @@ esprit = phased.ESPRITEstimator('SensorArray',ULA,...
     'NumSignalsSource',NUMBER_OF_SIGNALS_SOURCES, ...
     'NumSignals', NUMBER_OF_SIGNALS);
 esprit.ForwardBackwardAveraging = true;
-esprit.SpatialSmoothing = 1;
+esprit.SpatialSmoothing = SPATIAL_SMOOTHING;
 esprit_angles = esprit(signal_ula);
 esprit_sorted_angles = sort(esprit_angles);
 
@@ -132,7 +133,7 @@ method_results_uca = [root_music_sorted_uca_angles];
 % Transpose the matrix
 method_results_uca_transposed = method_results_uca.';
 
-% Combine the headers and data into  a single cell array
+% Combine the headers and data into a single cell array
 data_uca = [METHOD_NAMES_UCA; num2cell(method_results_uca_transposed)];
 
 % Write the data_uca to a CSV file using the built-in `writematrix` function
