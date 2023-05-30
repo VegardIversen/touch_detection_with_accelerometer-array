@@ -19,6 +19,8 @@ def prepare_simulation_data(
     number_of_sensors: int = 7,
     critical_frequency_Hz: int = 0,
     filter_order: int = 1,
+    crop_start: float = 0.0,
+    crop_end: float = 0.002,
 ):
     # If the simulation data is not already generated, generate it
     if not path.exists("Measurements/Plate_10mm/COMSOL/simulation_data_formatted.csv"):
@@ -55,8 +57,8 @@ def prepare_simulation_data(
         simulation_data = crop_data(
             simulation_data,
             # time_start=0.0008,
-            time_start=0.0,
-            time_end=0.00175,
+            time_start=crop_start,
+            time_end=crop_end,
             # time_end=5,
             apply_window_function=False,
         )

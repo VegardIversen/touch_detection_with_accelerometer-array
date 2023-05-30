@@ -1,0 +1,64 @@
+Parameters:
+ARRAY_TYPE: ULA
+CENTER_FREQUENCY_HZ: 22000.0
+PHASE_VELOCITY_MPS: 442.7
+GROUP_VELOCITY_MPS: 564.0
+NUMBER_OF_SENSORS: 7.0
+SENSOR_SPACING_M: 0.01
+ACTUATOR_COORDINATES: [0.5  0.35]
+UCA_CENTER_COORDINATES: [0.05 0.05]
+FILTER_ORDER: 1.0
+FILTER_Q_VALUE: 0.01
+FILE_FOLDER: Plate_10mm/Setup5/25kHz/x50y35
+CROP_TIME_START: 0.00045
+CROP_TIME_END: 0.0009
+
+Save analytic signals? y/n:
+
+Method: Root-WSF
+Real phi_1: 30.964, Estimated phi_1: 28.669
+Real phi_2: -43.698, Estimated phi_2: -43.221
+Real phi_3: 26.147, Estimated phi_3: 28.669
+Real phi_4: -38.019, Estimated phi_4: 0.000
+Error in phi_1: 2.295 degrees.
+Error in phi_2: 0.477 degrees.
+Error in phi_3: 2.522 degrees.
+Error in phi_4: 38.019 degrees.
+r_sa: [0.407, 0.277]
+Estimated location error: 0.043 m
+
+Method: Root-MUSIC
+Real phi_1: 30.964, Estimated phi_1: 32.509
+Real phi_2: -43.698, Estimated phi_2: -43.212
+Real phi_3: 26.147, Estimated phi_3: 23.875
+Real phi_4: -38.019, Estimated phi_4: 0.000
+Error in phi_1: 1.545 degrees.
+Error in phi_2: 0.487 degrees.
+Error in phi_3: 2.272 degrees.
+Error in phi_4: 38.019 degrees.
+r_sa: [0.530, 0.279]
+Estimated location error: 0.080 m
+
+Method: MUSIC
+Real phi_1: 30.964, Estimated phi_1: 32.000
+Real phi_2: -43.698, Estimated phi_2: -43.000
+Real phi_3: 26.147, Estimated phi_3: -22.000
+Real phi_4: -38.019, Estimated phi_4: 0.000
+Error in phi_1: 1.036 degrees.
+Error in phi_2: 0.698 degrees.
+Error in phi_3: 48.147 degrees.
+Error in phi_4: 38.019 degrees.
+r_sa: [0.520, -0.251]
+Estimated location error: 0.525 m
+
+Method: ESPRIT
+Real phi_1: 30.964, Estimated phi_1: 31.464
+Real phi_2: -43.698, Estimated phi_2: -43.169
+Real phi_3: 26.147, Estimated phi_3: 21.906
+Real phi_4: -38.019, Estimated phi_4: 0.000
+Error in phi_1: 0.500 degrees.
+Error in phi_2: 0.529 degrees.
+Error in phi_3: 4.241 degrees.
+Error in phi_4: 38.019 degrees.
+r_sa: [0.491, 0.238]
+Estimated location error: 0.052 m

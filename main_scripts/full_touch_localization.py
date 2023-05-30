@@ -50,7 +50,7 @@ def full_touch_localization():
         f"y{100 * ACTUATOR_COORDINATES[y]:.0f}"
     )
     FILTER_ORDER = 1
-    FILTER_Q_VALUE = 0.005
+    FILTER_Q_VALUE = 0.1
     CROP_TIME_START = 0.00045
     CROP_TIME_END = 0.0009
 
@@ -109,6 +109,8 @@ def full_touch_localization():
         measurements = prepare_simulation_data(
             number_of_sensors=NUMBER_OF_SENSORS,
             crop=True,
+            crop_start=0.0008,
+            crop_end=0.00175,
         )
     else:
         raise ValueError("DATA_SOURCE must be either COMSOL or MEASUREMENTS")
