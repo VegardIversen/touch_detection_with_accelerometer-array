@@ -31,8 +31,8 @@ def full_touch_localization():
     # - Low attenuation
 
     """Select array type ULA or UCA"""
-    ARRAY_TYPE = "ULA"
-    # ARRAY_TYPE = "UCA"
+    # ARRAY_TYPE = "ULA"
+    ARRAY_TYPE = "UCA"
     """Select whether to use COMSOL simulation data or real measurements"""
     DATA_SOURCE = "COMSOL"
     # DATA_SOURCE = "Measurements"
@@ -107,6 +107,7 @@ def full_touch_localization():
         )
     elif DATA_SOURCE == "COMSOL":
         measurements = prepare_simulation_data(
+            array_type=ARRAY_TYPE,
             number_of_sensors=NUMBER_OF_SENSORS,
             crop=True,
             crop_start=0.0008,

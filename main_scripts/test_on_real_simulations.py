@@ -14,6 +14,7 @@ from utils.global_constants import SAMPLE_RATE
 
 
 def prepare_simulation_data(
+    array_type: str,
     noise: bool = False,
     crop: bool = False,
     number_of_sensors: int = 7,
@@ -24,7 +25,7 @@ def prepare_simulation_data(
 ):
     # If the simulation data is not already generated, generate it
     if not path.exists("Measurements/Plate_10mm/COMSOL/simulation_data_formatted.csv"):
-        import_simulation_data()
+        import_simulation_data(array_type=array_type)
 
     # Import the simulation_data_formatted.csv to a Pandas DataFrame
     simulation_data = pd.read_csv(
@@ -87,11 +88,14 @@ def prepare_simulation_data(
     return simulation_data
 
 
-def import_simulation_data():
+def import_simulation_data(array_type: str):
     """Call to convert the simulation data file to a more convenient format."""
-    # Set the path to your data file
-    data_file = "Measurements/Plate_10mm/COMSOL/az_on_plate_top_Teflon_25kHz_pulse_5cmfromedge.txt"
-
+    if array_type == "ULA":
+        data_file = "Measurements/Plate_10mm/COMSOL/az_on_plate_top_Teflon_25kHz_pulse_5cmfromedge.txt"
+    elif array_type == "UCA":
+        data_file = "Measurements/Plate_10mm/COMSOL/az_on_plate_bottom_Teflon_25kHz_pulse_circular_receivers.txt"
+    else:
+        raise ValueError("Invalid array type")
     # Read the file into a Pandas DataFrame
     simulation_data = pd.read_csv(
         data_file,

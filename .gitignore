@@ -54,12 +54,10 @@ touch/
 *.jpeg
 *.png
 *.gif
-*.csv 
+*.csv
 *.txt
 
 #folders
 .vscode/
 matlab/DOAExample.mlx
 matlab/parameters.mat
-
-*.txt
