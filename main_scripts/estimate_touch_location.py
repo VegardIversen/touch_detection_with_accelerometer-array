@@ -67,6 +67,7 @@ def estimate_touch_location_ULA(
             sum(np.isnan(sorted_estimated_angles_deg[method])) == 1
             or sorted_estimated_angles_deg[method].size == 3
         ):
+            # If there are only three angles, then phi_4_deg = 0
             phi_1_deg = sorted_estimated_angles_deg[method][2]
             phi_2_deg = sorted_estimated_angles_deg[method][0]
             phi_3_deg = sorted_estimated_angles_deg[method][1]
@@ -107,16 +108,19 @@ def estimate_touch_location_ULA(
         plot_legend_without_duplicates()
 
     plt.tight_layout(pad=0.5, h_pad=0)
-    # plt.savefig(
-    #     (
-    #         f"{FIGURES_SAVE_PATH}/"
-    #         f"{center_frequency_Hz // 1000}kHz_"
-    #         f"{number_of_sensors}sensors_"
-    #         f"x{100 * actuator_coordinates[x]:.0f}y{100 * actuator_coordinates[y]:.0f}"
-    #         "_ULA.pdf"
-    #     ),
-    #     bbox_inches="tight",
-    # )
+    try:
+        plt.savefig(
+            (
+                f"{FIGURES_SAVE_PATH}/"
+                f"{center_frequency_Hz // 1000}kHz_"
+                f"{number_of_sensors}sensors_"
+                f"x{100 * actuator_coordinates[x]:.0f}y{100 * actuator_coordinates[y]:.0f}"
+                "_ULA.pdf"
+            ),
+            bbox_inches="tight",
+        )
+    except FileNotFoundError:
+        print(f"\nCould not save figure at {FIGURES_SAVE_PATH}\n")
     return 0
 
 
@@ -165,6 +169,15 @@ def estimate_touch_location_UCA(
             phi_2_deg = sorted_estimated_angles_deg[method][2]
             phi_3_deg = sorted_estimated_angles_deg[method][0]
             phi_4_deg = sorted_estimated_angles_deg[method][1]
+        elif (
+            sum(np.isnan(sorted_estimated_angles_deg[method])) == 1
+            or sorted_estimated_angles_deg[method].size == 3
+        ):
+            # If there are only three angles, then phi_4_deg = 0
+            phi_1_deg = sorted_estimated_angles_deg[method][1]
+            phi_2_deg = sorted_estimated_angles_deg[method][0]
+            phi_3_deg = sorted_estimated_angles_deg[method][2]
+            phi_4_deg = 0
         else:
             phi_1_deg = sorted_estimated_angles_deg[method][2]
             phi_2_deg = sorted_estimated_angles_deg[method][1]
@@ -201,11 +214,14 @@ def estimate_touch_location_UCA(
         plot_legend_without_duplicates()
 
     plt.tight_layout(pad=0.5, h_pad=0)
-    plt.savefig(
-        f"{FIGURES_SAVE_PATH}/{center_frequency_Hz // 1000}kHz"
-        f"_{number_of_sensors}sensors_UCA.pdf",
-        bbox_inches="tight",
-    )
+    try:
+        plt.savefig(
+            f"{FIGURES_SAVE_PATH}/{center_frequency_Hz // 1000}kHz"
+            f"_{number_of_sensors}sensors_UCA.pdf",
+            bbox_inches="tight",
+        )
+    except FileNotFoundError:
+        print(f"\nCould not save figure at {FIGURES_SAVE_PATH}\n")
     return 0
 
 

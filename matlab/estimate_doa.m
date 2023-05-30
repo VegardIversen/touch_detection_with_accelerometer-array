@@ -7,7 +7,7 @@ UCA = phased.UCA('NumElements', NUMBER_OF_SENSORS, 'Radius', 1.30656);
 % sensorArrayAnalyzer;
 
 NUMBER_OF_SIGNALS_SOURCES = 'Auto';
-NUMBER_OF_SIGNALS = 4;
+NUMBER_OF_SIGNALS = 3;
 
 FILE_NAME_ULA = "comsol_simulations_analytic_signals_ULA.csv";
 signal_ula= readtable(FILE_NAME_ULA);

@@ -102,19 +102,15 @@ def import_simulation_data(array_type: str):
         delim_whitespace=True,
         comment="%",
     )
-
     # Drop x and z columns
     simulation_data.drop(
         columns=[simulation_data.columns[0], simulation_data.columns[2]],
         inplace=True,
     )
-
-    # Transpose dataframe
     simulation_data = simulation_data.T
-
-    # Save as a csv file named "simulation_data_formatted.csv"
     simulation_data.to_csv(
-        "/home/sniklad/GitHub/touch_detection_with_accelerometer-array/Measurements/Plate_10mm/COMSOL/simulation_data_formatted.csv",
+        "/home/sniklad/GitHub/touch_detection_with_accelerometer-array/"
+        f"Measurements/Plate_10mm/COMSOL/simulation_data_formatted_{array_type}.csv",
         header=False,
         index=False,
     )

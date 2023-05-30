@@ -54,11 +54,11 @@ def combine_measurements_into_dataframe(
         + ["Sync Signal 78"]
     )
 
-    measurements = crop_data(
-        signals=measurements,
-        time_start=0,
-        time_end=0.001,
-    )
+    # measurements = crop_data(
+    #     signals=measurements,
+    #     time_start=0,
+    #     time_end=0.001,
+    # )
 
     correct_sensitivities(setup, measurements)
 

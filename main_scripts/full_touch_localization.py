@@ -31,16 +31,17 @@ def full_touch_localization():
     # - Low attenuation
 
     """Select array type ULA or UCA"""
-    # ARRAY_TYPE = "ULA"
-    ARRAY_TYPE = "UCA"
+    ARRAY_TYPE = "ULA"
+    # ARRAY_TYPE = "UCA"
     """Select whether to use COMSOL simulation data or real measurements"""
-    DATA_SOURCE = "COMSOL"
-    # DATA_SOURCE = "Measurements"
+    DATA_SOURCE = "Measurements"
+    # DATA_SOURCE = "COMSOL"
     """Set parameters for the array"""
-    CENTER_FREQUENCY_HZ = 22000
-    PHASE_VELOCITY_MPS = 442.7
+    CENTER_FREQUENCY_HZ = 30000
+    PHASE_VELOCITY_MPS = 700
     GROUP_VELOCITY_MPS = 564
     NUMBER_OF_SENSORS = 7
+    NUMBER_OF_SIGNALS = 3
     SENSOR_SPACING_M = 0.01
     ACTUATOR_COORDINATES = np.array([0.50, 0.35])
     UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
@@ -53,6 +54,7 @@ def full_touch_localization():
     FILTER_Q_VALUE = 0.1
     CROP_TIME_START = 0.00045
     CROP_TIME_END = 0.0009
+    SPATIAL_SMOOTHING = 1
 
     parameters = {
         "ARRAY_TYPE": ARRAY_TYPE,
@@ -60,6 +62,7 @@ def full_touch_localization():
         "PHASE_VELOCITY_MPS": float(PHASE_VELOCITY_MPS),
         "GROUP_VELOCITY_MPS": float(GROUP_VELOCITY_MPS),
         "NUMBER_OF_SENSORS": float(NUMBER_OF_SENSORS),
+        "NUMBER_OF_SIGNALS": float(NUMBER_OF_SIGNALS),
         "SENSOR_SPACING_M": float(SENSOR_SPACING_M),
         "ACTUATOR_COORDINATES": ACTUATOR_COORDINATES,
         "UCA_CENTER_COORDINATES": UCA_CENTER_COORDINATES,
@@ -68,6 +71,7 @@ def full_touch_localization():
         "FILE_FOLDER": MEASUREMENTS_FILE_FOLDER,
         "CROP_TIME_START": float(CROP_TIME_START),
         "CROP_TIME_END": float(CROP_TIME_END),
+        "SPATIAL_SMOOTHING": float(SPATIAL_SMOOTHING),
     }
     print()
     print("Parameters:")
@@ -116,11 +120,11 @@ def full_touch_localization():
     else:
         raise ValueError("DATA_SOURCE must be either COMSOL or MEASUREMENTS")
 
-    # measurements = crop_data(
-    #     signals=measurements,
-    #     time_start=CROP_TIME_START,
-    #     time_end=CROP_TIME_END,
-    # )
+    measurements = crop_data(
+        signals=measurements,
+        time_start=CROP_TIME_START,
+        time_end=CROP_TIME_END,
+    )
 
     measurements = filter_signal(
         signals=measurements,
