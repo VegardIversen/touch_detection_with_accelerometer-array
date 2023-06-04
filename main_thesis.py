@@ -16,7 +16,7 @@ def main():
     #r.show_A0_and_S0_wave()
     #r.comsol_data50()
     #r.un_reassigned_spectrogram()
-    r.show_A0_and_S0_wave_comsol_y0_2(11)
+    #r.show_A0_and_S0_wave_comsol_y0_2(11)
     #r.warping_map()
     #r.dispersion_compensation_Wilcox(pertubation=True,alpha=0.2)
     #r.dispersion_compensation_Wilcox(position=25)
@@ -26,5 +26,6 @@ def main():
     #r.draw_simulated_plate()
     #r.testing_wilcox_disp()
     #r.test_dispersion_compensation_gen_signals()
+    r.pressure_wave_oscilloscope()
 if __name__ == '__main__':
     main()

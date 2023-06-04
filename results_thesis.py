@@ -1483,6 +1483,57 @@ def velocities():
                 use_recorded_chirp=True)
     wp.plot_velocities(phase10, freq10, 0.10, savefig=False, filename='phase_velocity_10cm.svg', file_format='svg', material='HDPE')
 
+
+def pressure_wave_oscilloscope():
+    data1_ch1 = csv_to_df_thesis('scope', 'scope_0_1', scope=True)
+    data1_ch4 = csv_to_df_thesis('scope', 'scope_0_4', scope=True)
+    data2_ch1 = csv_to_df_thesis('scope', 'scope_1_1', scope=True)
+    data2_ch4 = csv_to_df_thesis('scope', 'scope_1_4', scope=True)
+    data3_ch1 = csv_to_df_thesis('scope', 'scope_2_1', scope=True)
+    data3_ch4 = csv_to_df_thesis('scope', 'scope_2_4', scope=True)
+    plt.plot(data1_ch1['second'], data1_ch1['Volt'], label='ch1')
+    plt.plot(data1_ch4['second'], data1_ch4['Volt'], label='ch4')
+    plt.plot(data2_ch1['second'], data2_ch1['Volt'], label='ch1')
+    plt.plot(data2_ch4['second'], data2_ch4['Volt'], label='ch4')
+    plt.plot(data3_ch1['second'], data3_ch1['Volt'], label='ch1')
+    plt.plot(data3_ch4['second'], data3_ch4['Volt'], label='ch4')
+    plt.legend()
+    plt.show()
+    plt.plot(data2_ch1['second'][300:], data2_ch1['Volt'][300:], label='ch1')
+    plt.show()
+    print(len(data1_ch1))
+    #find peaks of the ch1 signal
+    peaks, _ = signal.find_peaks(data1_ch1['Volt'], height=0.2)
+    peaks2, _ = signal.find_peaks(data2_ch1['Volt'][300:], height=0.1)
+    peaks3, _ = signal.find_peaks(data3_ch1['Volt'], height=0.05)
+    plt.plot(data1_ch1['second'], data1_ch1['Volt'], label='data1ch1')
+    plt.plot(data1_ch1['second'][peaks], data1_ch1['Volt'][peaks], "x")
+    plt.plot(data2_ch1['second'], data2_ch1['Volt'], label='data2ch1')
+    plt.plot(data2_ch1['second'][peaks2], data2_ch1['Volt'][peaks2], "x")
+    plt.plot(data3_ch1['second'], data3_ch1['Volt'], label='data3ch1')
+    plt.plot(data3_ch1['second'][peaks3], data3_ch1['Volt'][peaks3], "x")
+    plt.legend()
+    plt.show()
+    #find the time difference between 0 and the peak
+    time_diff = data1_ch1['second'][peaks[0]] - data1_ch1['second'][0]
+    print(f'time difference is {time_diff} s')
+    time_diff2 = data2_ch1['second'][peaks2[0]] - data2_ch1['second'][0]
+    print(f'time difference is {time_diff2} s')
+    time_diff3 = data3_ch1['second'][peaks3[0]] - data3_ch1['second'][0]
+    print(f'time difference is {time_diff3} s')
+    #distance is 20 mm and 10 mm
+    velocity20 = 0.02 / time_diff
+    velocity10 = 0.01 / time_diff
+    print(f'velocity20 is {velocity20} m/s')
+    print(f'velocity10 is {velocity10} m/s')
+    velocity20 = 0.02 / time_diff2
+    velocity10 = 0.01 / time_diff2
+    print(f'velocity20 is {velocity20} m/s')
+    print(f'velocity10 is {velocity10} m/s')
+    velocity20 = 0.02 / time_diff3
+    velocity10 = 0.01 / time_diff3
+    print(f'velocity20 is {velocity20} m/s')
+    print(f'velocity10 is {velocity10} m/s')
 if __name__ == '__main__':
     CROSS_CORR_PATH1 = '\\Measurements\\setup2_korrelasjon\\'
     CROSS_CORR_PATH2 = '\\first_test_touch_passive_setup2\\'
