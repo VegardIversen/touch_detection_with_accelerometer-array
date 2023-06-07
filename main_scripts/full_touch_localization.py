@@ -37,7 +37,7 @@ def full_touch_localization():
     DATA_SOURCE = "Measurements"
     # DATA_SOURCE = "COMSOL"
     """Set parameters for the array"""
-    CENTER_FREQUENCY_HZ = 30000
+    CENTER_FREQUENCY_HZ = 15000
     PHASE_VELOCITY_MPS = 700
     GROUP_VELOCITY_MPS = 564
     NUMBER_OF_SENSORS = 7

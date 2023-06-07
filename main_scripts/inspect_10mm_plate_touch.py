@@ -131,10 +131,16 @@ def plot_raw_shifted_signals(measurements):
         axs.set_ylim(-90, -19)
     plt.tight_layout(pad=0.5, h_pad=0)
     plt.subplots_adjust(wspace=0.25)
-    plt.savefig(
-        f"{FIGURES_SAVE_PATH}/touch_over_and_under.pdf",
-        bbox_inches="tight",
-    )
+    try:
+        plt.savefig(
+            f"{FIGURES_SAVE_PATH}/touch_over_and_under.pdf",
+            bbox_inches="tight",
+        )
+    except FileNotFoundError:
+        plt.savefig(
+            "results/touch_over_and_under.pdf",
+            bbox_inches="tight",
+        )
 
     measurements["A0 Wave"] = measurements["Sensor 3"] - measurements["Sensor 2"]
     measurements["S0 Wave"] = measurements["Sensor 3"] + measurements["Sensor 2"]
@@ -160,10 +166,16 @@ def plot_raw_shifted_signals(measurements):
         sharey=True,
     )
     fig.tight_layout(pad=0.5, h_pad=0)
-    plt.savefig(
-        f"{FIGURES_SAVE_PATH}/touch_A0_and_S0_{SHIFT_AMOUNT_S * 1e6:.0f}us.pdf",
-        bbox_inches="tight",
-    )
+    try:
+        plt.savefig(
+            f"{FIGURES_SAVE_PATH}/touch_A0_and_S0_{SHIFT_AMOUNT_S * 1e6:.0f}us.pdf",
+            bbox_inches="tight",
+        )
+    except FileNotFoundError:
+        plt.savefig(
+            "results/touch_A0_and_S0.pdf",
+            bbox_inches="tight",
+        )
 
     fig, axs = plt.subplots(
         nrows=3,
@@ -189,14 +201,20 @@ def plot_raw_shifted_signals(measurements):
         fig.colorbar(
             im,
             ax=axs[ax_i],
-            label="Power Spectral \n Density (dB)",
+            label="Power Spectral Density (dB)",
         )
     fig.tight_layout(pad=0.9, h_pad=0)
     plt.subplots_adjust(top=0.95)
-    plt.savefig(
-        f"{FIGURES_SAVE_PATH}/touch_spectrogram_{SHIFT_AMOUNT_S * 1e6:.0f}us.pdf",
-        bbox_inches="tight",
-    )
+    try:
+        plt.savefig(
+            f"{FIGURES_SAVE_PATH}/touch_spectrogram_{SHIFT_AMOUNT_S * 1e6:.0f}us.pdf",
+            bbox_inches="tight",
+        )
+    except FileNotFoundError:
+        plt.savefig(
+            "results/touch_spectrogram.pdf",
+            bbox_inches="tight",
+        )
 
 
 def plot_A0_and_S0_large_shift(measurements):
@@ -291,14 +309,14 @@ def inspect_swipe():
     FILE_NAME = "x47y40y30_sensors678_v1"
     measurements = import_measurements_for_swipes(FILE_FOLDER, FILE_NAME, SETUP)
 
-    # CRITICAL_FREQUENCY = 250
-    # measurements = filter_signal(
-    #     measurements,
-    #     filtertype="highpass",
-    #     critical_frequency=CRITICAL_FREQUENCY,
-    #     order=1,
-    # )
-    measurements = interpolate_signal(measurements)
+    CRITICAL_FREQUENCY = 3000
+    measurements = filter_signal(
+        measurements,
+        filtertype="highpass",
+        critical_frequency=CRITICAL_FREQUENCY,
+        order=1,
+        sample_rate=SAMPLE_RATE,
+    )
 
     PLOTS_TO_PLOT = [
         "time",
@@ -306,21 +324,64 @@ def inspect_swipe():
         "fft",
     ]
     fig, axs = plt.subplots(
-        nrows=3,
+        nrows=1,
         ncols=len(PLOTS_TO_PLOT),
         squeeze=False,
-        figsize=(8, 10),
+        figsize=(6, 3),
     )
     compare_signals(
         fig,
         axs,
-        [measurements[sensor.name] for sensor in SETUP.sensors],
+        [measurements["Sensor 2"]],
         plots_to_plot=PLOTS_TO_PLOT,
         freq_max=40000,
         dynamic_range_db=14,
         sharey=True,
     )
+    axs[0, 0].legend().remove()
+    axs[0, 1].legend().remove()
+
     fig.tight_layout(pad=0.5, h_pad=0, w_pad=0.5)
+    # plt.savefig(
+    #     "results/Setup5_swipe_x47y40y30_sensor6_time_fft.pdf",
+    #     bbox_inches="tight",
+    # )
+
+    fig, axs = plt.subplots(
+        nrows=1,
+        ncols=1,
+        figsize=(7, 4),
+        sharex=True,
+        sharey=True,
+    )
+    frequencies, time, Sxx = signal.spectrogram(
+        measurements["Sensor 2"],
+        SAMPLE_RATE,
+        nperseg=2**8,
+        nfft=2**8,
+    )
+    im = axs.pcolormesh(
+        time,  # multiply time by 1000 to get ms
+        frequencies / 1000,
+        10 * np.log10(Sxx),
+        vmin=np.max(10 * np.log10(Sxx)) - 15,
+        vmax=np.max(10 * np.log10(Sxx)),
+    )
+    axs.set_ylabel("Frequency (kHz)")
+    axs.set_xlabel("Time (s)")  # change xlabel to "Time (ms)"
+    axs.set_ylim([0, 40])
+    fig.colorbar(
+        im,
+        ax=axs,
+        label="Power Spectral Density (dB)",
+    )
+    fig.tight_layout(pad=0.9, h_pad=0)
+    plt.subplots_adjust(top=0.95)
+    plt.savefig(
+        "results/Setup5_sensor6_full_spectrogram.png",
+        bbox_inches="tight",
+        dpi=500,
+    )
 
 
 def import_measurements_for_swipes(
@@ -340,8 +401,12 @@ def import_measurements_for_swipes(
     measurements = measurements.drop(columns=["Actuator", "Sync Signal"])
 
     # measurements = crop_to_signal(measurements, padding_percent=0.3)
-
-    # Correct for the wrong sensitivity in the amplifier.
+    measurements = crop_data(
+        signals=measurements,
+        time_start=2.755,
+        time_end=2.78,
+        sample_rate=ORIGINAL_SAMPLE_RATE,
+    )
 
     correct_sensitivities(setup, measurements)
 
@@ -351,7 +416,7 @@ def import_measurements_for_swipes(
         critical_frequency=50,
         filtertype="highpass",
         order=2,
-        plot_response=True,
+        plot_response=False,
         sample_rate=ORIGINAL_SAMPLE_RATE,
     )
     # Get rid of frequencies above 50 kHz due to sensor responses
@@ -401,13 +466,13 @@ def correct_sensitivities(
                     measurements[sensor.name] * correction_factor
                 )
             else:
-                correction_factor = 0.300 / 100
+                correction_factor = 0.489 / 100
                 measurements[sensor.name] = (
                     measurements[sensor.name] * correction_factor
                 )
         # If sensor name is "Sensor 3", "Sensor 6", "Sensor 9", etc.
         elif int(sensor.name[-1]) % 3 == 0:
-            # Measurements at 100 mV/ms^-2, should be 0.293 mV/ms^-2
+            # Measurements at 100 mV/ms^-2, should be 0.305 mV/ms^-2
             correction_factor = 0.305 / 100  # Actual sensitivity
             measurements[sensor.name] = measurements[sensor.name] * correction_factor
 
