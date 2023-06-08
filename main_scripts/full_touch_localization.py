@@ -8,16 +8,19 @@ from main_scripts.estimate_touch_location import (
     estimate_touch_location_ULA,
 )
 from main_scripts.test_on_real_simulations import prepare_simulation_data
-from main_scripts.generate_ideal_signal import generate_ideal_signal
+from main_scripts.generate_ideal_signal import (
+    compare_to_ideal_signal,
+    generate_ideal_signal,
+)
 from main_scripts.generate_signals_for_matlab import generate_signals_for_matlab
 from main_scripts.physical_measurements import (
     combine_measurements_into_dataframe,
     measure_phase_velocity,
 )
-from utils.data_processing.preprocessing import crop_data, filter_signal
+from utils.data_processing.preprocessing import crop_data, crop_to_signal, filter_signal
 from utils.data_processing.processing import interpolate_signal
 from utils.data_visualization.visualize_data import compare_signals, set_fontsizes
-from utils.global_constants import FIGURES_SAVE_PATH, SAMPLE_RATE, x, y
+from utils.global_constants import ACTUATOR_1, FIGURES_SAVE_PATH, SAMPLE_RATE, x, y
 from utils.plate_setups import Setup5, Setup6
 
 
@@ -34,12 +37,12 @@ def full_touch_localization():
     ARRAY_TYPE = "ULA"
     # ARRAY_TYPE = "UCA"
     """Select whether to use COMSOL simulation data or real measurements"""
-    DATA_SOURCE = "Measurements"
-    # DATA_SOURCE = "COMSOL"
+    # DATA_SOURCE = "Measurements"
+    DATA_SOURCE = "COMSOL"
     """Set parameters for the array"""
-    CENTER_FREQUENCY_HZ = 15000
-    PHASE_VELOCITY_MPS = 700
-    GROUP_VELOCITY_MPS = 564
+    CENTER_FREQUENCY_HZ = 22000
+    PHASE_VELOCITY_MPS = 442.7
+    GROUP_VELOCITY_MPS = 564.4
     NUMBER_OF_SENSORS = 7
     NUMBER_OF_SIGNALS = 3
     SENSOR_SPACING_M = 0.01
@@ -79,6 +82,27 @@ def full_touch_localization():
         print(f"{key}: {value}")
     print()
 
+    # SETUP_FOR_DRAWING = Setup5(
+    #     actuator_coordinates=[
+    #         ACTUATOR_COORDINATES,
+    #         np.array([0.45, 0.30]),
+    #         np.array([0.55, 0.40]),
+    #         np.array([0.45, 0.40]),
+    #         np.array([0.55, 0.30]),
+    #         np.array([0.50, 0.20]),
+    #         np.array([0.50, 0.15]),
+    #         np.array([0.50, 0.08]),
+    #         np.array([0.50, 0.05]),
+    #     ],
+    #     number_of_sensors=NUMBER_OF_SENSORS,
+    #     array_spacing_m=SENSOR_SPACING_M,
+    # )
+    # SETUP_FOR_DRAWING.draw()
+    # plt.savefig(
+    #     "results/physical_tests_setup.pdf",
+    #     bbox_inches="tight",
+    # )
+
     if ARRAY_TYPE == "ULA":
         SETUP = Setup5(
             actuator_coordinates=ACTUATOR_COORDINATES,
@@ -113,18 +137,83 @@ def full_touch_localization():
         measurements = prepare_simulation_data(
             array_type=ARRAY_TYPE,
             number_of_sensors=NUMBER_OF_SENSORS,
-            crop=True,
+            crop=False,
             crop_start=0.0008,
             crop_end=0.00175,
         )
     else:
         raise ValueError("DATA_SOURCE must be either COMSOL or MEASUREMENTS")
 
-    measurements = crop_data(
-        signals=measurements,
-        time_start=CROP_TIME_START,
-        time_end=CROP_TIME_END,
+    ideal_signal, distances = generate_ideal_signal(
+        setup=SETUP,
+        group_velocity_mps=GROUP_VELOCITY_MPS,
+        attenuation_dBpm=0,
+        signal_length_s=2,
+        center_frequency_Hz=CENTER_FREQUENCY_HZ,
+        signal_model="line",
+        snr_dB=20,
+        t_var=5e-10,
     )
+    # ideal_signal = crop_to_signal(ideal_signal)
+    ideal_signal = crop_data(
+        ideal_signal,
+        time_start=1,
+        time_end=1 + 0.004,
+        sample_rate=SAMPLE_RATE,
+    )
+    fig, axs = plt.subplots(
+        1,
+        1,
+        figsize=(10, 3.5),
+        sharex=True,
+        sharey=True,
+    )
+    time_axis = np.linspace(
+        0,
+        1000 * len(ideal_signal) / SAMPLE_RATE,
+        len(ideal_signal),
+    )
+    axs.plot(
+        time_axis,
+        ideal_signal,
+    )
+    axs.set_xlabel("Time [ms]")
+    axs.grid()
+    axs.legend(
+        [
+            "Touch signal",
+            "Sensor 1",
+            "Sensor 2",
+            "Sensor 3",
+            "Sensor 4",
+            "Sensor 5",
+            "Sensor 6",
+            "Sensor 7",
+        ],
+        loc="right",
+    )
+    fig.tight_layout()
+    plt.savefig(
+        "results/ideal_signal_comsol2.pdf",
+        bbox_inches="tight",
+    )
+
+    # compare_to_ideal_signal(
+    #     setup=SETUP,
+    #     measurements=measurements,
+    #     attenuation_dBpm=0,
+    #     group_velocity_mps=GROUP_VELOCITY_MPS,
+    #     signal_model="line",
+    #     critical_frequency=0,
+    #     filter_order=1,
+    #     filter_q_value=0.05,
+    # )
+
+    # measurements = crop_data(
+    #     signals=measurements,
+    #     time_start=CROP_TIME_START,
+    #     time_end=CROP_TIME_END,
+    # )
 
     measurements = filter_signal(
         signals=measurements,

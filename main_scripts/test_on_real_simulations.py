@@ -24,12 +24,17 @@ def prepare_simulation_data(
     crop_end: float = 0.002,
 ):
     # If the simulation data is not already generated, generate it
-    if not path.exists("Measurements/Plate_10mm/COMSOL/simulation_data_formatted.csv"):
+    if not (
+        path.exists("Measurements/Plate_10mm/COMSOL/simulation_data_formatted_ULA.csv")
+        or path.exists(
+            "Measurements/Plate_10mm/COMSOL/simulation_data_formatted_UCA.csv"
+        )
+    ):
         import_simulation_data(array_type=array_type)
 
     # Import the simulation_data_formatted.csv to a Pandas DataFrame
     simulation_data = pd.read_csv(
-        "Measurements/Plate_10mm/COMSOL/simulation_data_formatted.csv",
+        f"Measurements/Plate_10mm/COMSOL/simulation_data_formatted_{array_type}.csv",
         header=0,
     )
 

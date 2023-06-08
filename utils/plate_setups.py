@@ -2,6 +2,7 @@
 Date: 2022-01-09
 """
 
+from typing import List
 import numpy as np
 import pandas as pd
 import scipy.signal as signal
@@ -331,17 +332,14 @@ class Setup_ULA(Setup):
     def __init__(
         self,
         number_of_sensors: int,
-        actuator_coordinates: np.ndarray,
+        actuator_coordinates: np.ndarray or List[np.ndarray],
         array_start_coordinates: np.ndarray,
         array_spacing_m: float,
     ):
         self.number_of_sensors = number_of_sensors
-        self.actuator_coordinates = actuator_coordinates
         self.array_start_coordinates = array_start_coordinates
         self.array_spacing = array_spacing_m
-        self.actuators = np.empty(shape=1, dtype=Actuator)
         self.sensors = np.empty(shape=number_of_sensors, dtype=Sensor)
-        self.actuators[ACTUATOR_1] = Actuator(coordinates=actuator_coordinates)
         for i in range(number_of_sensors):
             self.sensors[i] = Sensor(
                 coordinates=np.array(
@@ -352,6 +350,13 @@ class Setup_ULA(Setup):
                 ),
                 name=f"Sensor {i + 1}",
             )
+        if isinstance(actuator_coordinates, List):
+            self.actuators = np.empty(shape=len(actuator_coordinates), dtype=Actuator)
+            for i, actuator in enumerate(self.actuators):
+                self.actuators[i] = Actuator(coordinates=actuator_coordinates[i])
+        else:
+            self.actuators = np.empty(shape=1, dtype=Actuator)
+            self.actuators[0] = Actuator(coordinates=actuator_coordinates)
 
 
 class Setup4(Setup_ULA):
@@ -426,16 +431,15 @@ class Setup_UCA(Setup):
     def __init__(
         self,
         number_of_sensors: int,
-        actuator_coordinates: np.ndarray,
+        actuator_coordinates: np.ndarray or List[np.ndarray],
         array_center_coordinates: np.ndarray,
         array_spacing_m: float,
     ):
         self.number_of_sensors = number_of_sensors
         self.array_start_coordinates = array_center_coordinates
         self.array_spacing = array_spacing_m
-        self.actuators = np.empty(shape=1, dtype=Actuator)
+        self.actuators = np.empty(shape=len(actuator_coordinates), dtype=Actuator)
         self.sensors = np.empty(shape=number_of_sensors, dtype=Sensor)
-        self.actuators[ACTUATOR_1] = Actuator(coordinates=actuator_coordinates)
         angles_of_sensors = np.linspace(0, 2 * np.pi, number_of_sensors, endpoint=False)
         angle_from_sensor_to_sensor = (np.pi - angles_of_sensors[1]) / 2
         radius = (
@@ -455,6 +459,8 @@ class Setup_UCA(Setup):
                 ),
                 name=f"Sensor {i + 1}",
             )
+        for i, actuator_coordinate in enumerate(actuator_coordinates):
+            self.actuators[i] = Actuator(coordinates=actuator_coordinate)
 
 
 class Setup6(Setup_UCA):

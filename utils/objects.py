@@ -153,7 +153,7 @@ class Sensor:
         coordinates: np.ndarray,
         name: str,
         plot: bool = True,
-        type_MEMS: bool = True,
+        type_MEMS: bool = False,
     ):
         self.coordinates = coordinates
         self.x = coordinates[0]
