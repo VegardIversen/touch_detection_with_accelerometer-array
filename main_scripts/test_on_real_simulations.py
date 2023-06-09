@@ -17,18 +17,15 @@ def prepare_simulation_data(
     array_type: str,
     noise: bool = False,
     crop: bool = False,
-    number_of_sensors: int = 7,
+    number_of_sensors: int = 8,
     critical_frequency_Hz: int = 0,
     filter_order: int = 1,
     crop_start: float = 0.0,
     crop_end: float = 0.002,
 ):
     # If the simulation data is not already generated, generate it
-    if not (
-        path.exists("Measurements/Plate_10mm/COMSOL/simulation_data_formatted_ULA.csv")
-        or path.exists(
-            "Measurements/Plate_10mm/COMSOL/simulation_data_formatted_UCA.csv"
-        )
+    if not path.exists(
+        f"Measurements/Plate_10mm/COMSOL/simulation_data_formatted_{array_type}.csv"
     ):
         import_simulation_data(array_type=array_type)
 
@@ -38,7 +35,8 @@ def prepare_simulation_data(
         header=0,
     )
 
-    simulation_data = simulation_data.iloc[:, 4 : (4 + number_of_sensors)]
+    if array_type == "ULA":
+        simulation_data = simulation_data.iloc[:, 4 : (4 + number_of_sensors)]
 
     simulation_data = interpolate_signal(simulation_data)
 
@@ -97,16 +95,22 @@ def import_simulation_data(array_type: str):
     """Call to convert the simulation data file to a more convenient format."""
     if array_type == "ULA":
         data_file = "Measurements/Plate_10mm/COMSOL/az_on_plate_top_Teflon_25kHz_pulse_5cmfromedge.txt"
+        simulation_data = pd.read_csv(
+            data_file,
+            delim_whitespace=True,
+            comment="%",
+        )
     elif array_type == "UCA":
         data_file = "Measurements/Plate_10mm/COMSOL/az_on_plate_bottom_Teflon_25kHz_pulse_circular_receivers.txt"
+        simulation_data = pd.read_csv(
+            data_file,
+            delim_whitespace=True,
+            comment="%",
+            header=None,
+        )
     else:
         raise ValueError("Invalid array type")
-    # Read the file into a Pandas DataFrame
-    simulation_data = pd.read_csv(
-        data_file,
-        delim_whitespace=True,
-        comment="%",
-    )
+    # Read the file into a Pandas DataFrame, but a bit different for ULA and UCA, don't know why
     # Drop x and z columns
     simulation_data.drop(
         columns=[simulation_data.columns[0], simulation_data.columns[2]],

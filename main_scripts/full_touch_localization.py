@@ -44,7 +44,7 @@ def full_touch_localization():
     PHASE_VELOCITY_MPS = 442.7
     GROUP_VELOCITY_MPS = 564.4
     NUMBER_OF_SENSORS = 7
-    NUMBER_OF_SIGNALS = 3
+    NUMBER_OF_SIGNALS = 4
     SENSOR_SPACING_M = 0.01
     ACTUATOR_COORDINATES = np.array([0.50, 0.35])
     UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
@@ -139,75 +139,75 @@ def full_touch_localization():
             number_of_sensors=NUMBER_OF_SENSORS,
             crop=False,
             crop_start=0.0008,
-            crop_end=0.00175,
+            crop_end=0.0016,
         )
     else:
         raise ValueError("DATA_SOURCE must be either COMSOL or MEASUREMENTS")
 
-    ideal_signal, distances = generate_ideal_signal(
-        setup=SETUP,
-        group_velocity_mps=GROUP_VELOCITY_MPS,
-        attenuation_dBpm=0,
-        signal_length_s=2,
-        center_frequency_Hz=CENTER_FREQUENCY_HZ,
-        signal_model="line",
-        snr_dB=20,
-        t_var=5e-10,
-    )
-    # ideal_signal = crop_to_signal(ideal_signal)
-    ideal_signal = crop_data(
-        ideal_signal,
-        time_start=1,
-        time_end=1 + 0.004,
-        sample_rate=SAMPLE_RATE,
-    )
-    fig, axs = plt.subplots(
-        1,
-        1,
-        figsize=(10, 3.5),
-        sharex=True,
-        sharey=True,
-    )
-    time_axis = np.linspace(
-        0,
-        1000 * len(ideal_signal) / SAMPLE_RATE,
-        len(ideal_signal),
-    )
-    axs.plot(
-        time_axis,
-        ideal_signal,
-    )
-    axs.set_xlabel("Time [ms]")
-    axs.grid()
-    axs.legend(
-        [
-            "Touch signal",
-            "Sensor 1",
-            "Sensor 2",
-            "Sensor 3",
-            "Sensor 4",
-            "Sensor 5",
-            "Sensor 6",
-            "Sensor 7",
-        ],
-        loc="right",
-    )
-    fig.tight_layout()
-    plt.savefig(
-        "results/ideal_signal_comsol2.pdf",
-        bbox_inches="tight",
-    )
-
-    # compare_to_ideal_signal(
+    # ideal_signal, distances = generate_ideal_signal(
     #     setup=SETUP,
-    #     measurements=measurements,
-    #     attenuation_dBpm=0,
     #     group_velocity_mps=GROUP_VELOCITY_MPS,
+    #     attenuation_dBpm=0,
+    #     signal_length_s=2,
+    #     center_frequency_Hz=CENTER_FREQUENCY_HZ,
     #     signal_model="line",
-    #     critical_frequency=0,
-    #     filter_order=1,
-    #     filter_q_value=0.05,
+    #     snr_dB=20,
+    #     t_var=5e-10,
     # )
+    # # ideal_signal = crop_to_signal(ideal_signal)
+    # ideal_signal = crop_data(
+    #     ideal_signal,
+    #     time_start=1,
+    #     time_end=1 + 0.004,
+    #     sample_rate=SAMPLE_RATE,
+    # )
+    # fig, axs = plt.subplots(
+    #     1,
+    #     1,
+    #     figsize=(10, 3.5),
+    #     sharex=True,
+    #     sharey=True,
+    # )
+    # time_axis = np.linspace(
+    #     0,
+    #     1000 * len(ideal_signal) / SAMPLE_RATE,
+    #     len(ideal_signal),
+    # )
+    # axs.plot(
+    #     time_axis,
+    #     ideal_signal,
+    # )
+    # axs.set_xlabel("Time [ms]")
+    # axs.grid()
+    # axs.legend(
+    #     [
+    #         "Touch signal",
+    #         "Sensor 1",
+    #         "Sensor 2",
+    #         "Sensor 3",
+    #         "Sensor 4",
+    #         "Sensor 5",
+    #         "Sensor 6",
+    #         "Sensor 7",
+    #     ],
+    #     loc="right",
+    # )
+    # fig.tight_layout()
+    # plt.savefig(
+    #     "results/ideal_signal_comsol2.pdf",
+    #     bbox_inches="tight",
+    # )
+
+    compare_to_ideal_signal(
+        setup=SETUP,
+        measurements=measurements,
+        attenuation_dBpm=0,
+        group_velocity_mps=GROUP_VELOCITY_MPS,
+        signal_model="gaussian",
+        critical_frequency=CENTER_FREQUENCY_HZ,
+        filter_order=FILTER_ORDER,
+        filter_q_value=FILTER_Q_VALUE,
+    )
 
     # measurements = crop_data(
     #     signals=measurements,
@@ -215,23 +215,14 @@ def full_touch_localization():
     #     time_end=CROP_TIME_END,
     # )
 
-    measurements = filter_signal(
-        signals=measurements,
-        critical_frequency=CENTER_FREQUENCY_HZ,
-        filtertype="bandpass",
-        order=FILTER_ORDER,
-        q=FILTER_Q_VALUE,
-        plot_response=True,
-        sample_rate=SAMPLE_RATE,  # type: ignore
-    )
-
-    # Pad the measurements with zeros after the end of the signal
-    # measurements = measurements.append(
-    #     pd.DataFrame(
-    #         np.zeros((2 * measurements.shape[0], measurements.shape[1])),
-    #         columns=measurements.columns,
-    #     ),
-    #     ignore_index=True,
+    # measurements = filter_signal(
+    #     signals=measurements,
+    #     critical_frequency=CENTER_FREQUENCY_HZ,
+    #     filtertype="bandpass",
+    #     order=FILTER_ORDER,
+    #     q=FILTER_Q_VALUE,
+    #     plot_response=True,
+    #     sample_rate=SAMPLE_RATE,  # type: ignore
     # )
 
     # Export the ideal signals

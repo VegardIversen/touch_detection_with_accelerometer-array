@@ -44,9 +44,7 @@ def compare_to_ideal_signal(
     if group_velocity_mps is None:
         group_velocity_mps = 922
     print(f"Propagation speed: {group_velocity_mps:.2f}")
-    signal_length_s = float(
-        measurements.shape[0] / SAMPLE_RATE,
-    )
+    signal_length_s = 1
     ideal_signal, distances = generate_ideal_signal(
         setup=setup,
         group_velocity_mps=group_velocity_mps,
@@ -55,7 +53,7 @@ def compare_to_ideal_signal(
         center_frequency_Hz=critical_frequency,
         signal_model=signal_model,
         snr_dB=50,
-        t_var=5e-10,
+        t_var=1e-10,
     )
     if critical_frequency:
         measurements = filter_signal(
@@ -107,16 +105,19 @@ def compare_to_ideal_signal(
     compare_signals(
         fig,
         axs,
-        [ideal_signal_envelopes[sensor.name] for sensor in CHANNELS_TO_PLOT],
+        [np.real(ideal_signal_envelopes[sensor.name]) for sensor in CHANNELS_TO_PLOT],
         plots_to_plot=PLOTS_TO_PLOT,
     )
     compare_signals(
         fig,
         axs,
-        [measurement_envelopes[sensor.name] for sensor in CHANNELS_TO_PLOT],
+        [np.real(measurement_envelopes[sensor.name]) for sensor in CHANNELS_TO_PLOT],
         plots_to_plot=PLOTS_TO_PLOT,
     )
     [ax.grid() for ax in axs[:, 0]]
+    # clear legend
+    for ax in axs[:, 0]:
+        ax.get_legend().remove()
     axs[0, 0].legend(["Ideal signal", "Measurement envelope"], loc="upper right")
     for ax, sensor in zip(axs[:, 0], CHANNELS_TO_PLOT):
         ax.set_ylabel(sensor.name + "\n" + "Amplitude")

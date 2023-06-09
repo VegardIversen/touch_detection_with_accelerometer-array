@@ -459,8 +459,13 @@ class Setup_UCA(Setup):
                 ),
                 name=f"Sensor {i + 1}",
             )
-        for i, actuator_coordinate in enumerate(actuator_coordinates):
-            self.actuators[i] = Actuator(coordinates=actuator_coordinate)
+        if isinstance(actuator_coordinates, List):
+            self.actuators = np.empty(shape=len(actuator_coordinates), dtype=Actuator)
+            for i, actuator in enumerate(self.actuators):
+                self.actuators[i] = Actuator(coordinates=actuator_coordinates[i])
+        else:
+            self.actuators = np.empty(shape=1, dtype=Actuator)
+            self.actuators[0] = Actuator(coordinates=actuator_coordinates)
 
 
 class Setup6(Setup_UCA):
