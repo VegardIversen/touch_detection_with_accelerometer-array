@@ -137,7 +137,7 @@ def full_touch_localization():
         measurements = prepare_simulation_data(
             array_type=ARRAY_TYPE,
             number_of_sensors=NUMBER_OF_SENSORS,
-            crop=False,
+            crop=True,
             crop_start=0.0008,
             crop_end=0.0016,
         )

@@ -120,7 +120,10 @@ def compare_to_ideal_signal(
     [ax.grid() for ax in axs[:, 0]]
     for ax in axs[:, 0]:
         ax.get_legend().remove()
-    axs[0, 0].legend(["Ideal signal", "Measurement envelope"], loc="upper left")
+    axs[0, 0].legend(
+        ["Ideal signal envelope", "Measurement envelope"],
+        loc="upper left",
+    )
     for ax, sensor in zip(axs[:, 0], CHANNELS_TO_PLOT):
         ax.set_ylabel(sensor.name)
     fig.tight_layout(pad=0.5, h_pad=0)
