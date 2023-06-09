@@ -201,7 +201,7 @@ def full_touch_localization():
     compare_to_ideal_signal(
         setup=SETUP,
         measurements=measurements,
-        attenuation_dBpm=0,
+        attenuation_dBpm=20,
         group_velocity_mps=GROUP_VELOCITY_MPS,
         signal_model="gaussian",
         critical_frequency=CENTER_FREQUENCY_HZ,

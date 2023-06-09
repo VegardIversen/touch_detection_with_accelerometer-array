@@ -53,7 +53,8 @@ def compare_to_ideal_signal(
         center_frequency_Hz=critical_frequency,
         signal_model=signal_model,
         snr_dB=50,
-        t_var=1e-10,
+        t_var=4.5865 * 10**-10,
+        t_pulse=1.6 * 10**-4,
     )
     if critical_frequency:
         measurements = filter_signal(
@@ -84,13 +85,13 @@ def compare_to_ideal_signal(
 
     measurement_envelopes = crop_data(
         signals=measurement_envelopes,
-        time_start=0.0003,
-        time_end=0.0035,
+        time_start=0.0,
+        time_end=0.002,
     )
     ideal_signal_envelopes = crop_data(
         signals=ideal_signal_envelopes,
-        time_start=0.0003,
-        time_end=0.0035,
+        time_start=0.0,
+        time_end=0.002,
     )
 
     """Plot signals"""
@@ -100,7 +101,9 @@ def compare_to_ideal_signal(
         nrows=len(CHANNELS_TO_PLOT),
         ncols=len(PLOTS_TO_PLOT),
         squeeze=False,
-        figsize=(8, 8),
+        figsize=(8, 7),
+        sharex=True,
+        sharey=True,
     )
     compare_signals(
         fig,
@@ -115,16 +118,18 @@ def compare_to_ideal_signal(
         plots_to_plot=PLOTS_TO_PLOT,
     )
     [ax.grid() for ax in axs[:, 0]]
-    # clear legend
     for ax in axs[:, 0]:
         ax.get_legend().remove()
-    axs[0, 0].legend(["Ideal signal", "Measurement envelope"], loc="upper right")
+    axs[0, 0].legend(["Ideal signal", "Measurement envelope"], loc="upper left")
     for ax, sensor in zip(axs[:, 0], CHANNELS_TO_PLOT):
-        ax.set_ylabel(sensor.name + "\n" + "Amplitude")
+        ax.set_ylabel(sensor.name)
     fig.tight_layout(pad=0.5, h_pad=0)
-    # plt.savefig(
-    #     f"{FIGURES_SAVE_PATH}/ideal_signal_comparison_{critical_frequency // 1000}kHz.pdf",
-    # )
+    for ax in axs[:, 0]:
+        ax.yaxis.set_major_formatter(plt.FormatStrFormatter("%.0f"))
+
+    plt.savefig(
+        f"results/ideal_signal_comparison_{critical_frequency // 1000}kHz_att20dB.pdf",
+    )
 
     return ideal_signal, distances
 
@@ -138,6 +143,7 @@ def generate_ideal_signal(
     signal_model: str = "line",
     center_frequency_Hz: float = 0,
     t_var: float = 1e-9,
+    t_pulse: float = 1.6 * 10**-4,
     snr_dB: float = 0,
 ):
     """Generate an "ideal" signal based on expected arrival times for a setup."""
@@ -146,6 +152,7 @@ def generate_ideal_signal(
         signal_model,
         center_frequency_Hz,
         t_var,
+        t_pulse,
     )
 
     # Initialize the superpositioned signal
@@ -170,6 +177,7 @@ def model_touch_signal(
     signal_model,
     critical_frequency,
     t_var,
+    t_pulse,
 ):
     if signal_model == "touch":
         touch_signal = extract_touch_signal(
@@ -181,16 +189,22 @@ def model_touch_signal(
         touch_signal[int(signal_length_s * SAMPLE_RATE / 2)] = 1
     elif signal_model == "gaussian":
         touch_signal = model_gaussian_touch(
-            signal_length_s,
-            critical_frequency,
-            t_var,
+            signal_length_s=signal_length_s,
+            critical_frequency=critical_frequency,
+            t_var=t_var,
+            t_pulse=t_var,
         )
     else:
         raise ValueError("Invalid signal model")
     return touch_signal
 
 
-def model_gaussian_touch(signal_length_s, critical_frequency, t_var):
+def model_gaussian_touch(
+    signal_length_s,
+    critical_frequency,
+    t_var,
+    t_pulse,
+):
     # Generate a gaussian modulated pulse with frequency critical_frequency and duration 10 periods
     t = np.linspace(
         -signal_length_s / 2,
@@ -198,8 +212,10 @@ def model_gaussian_touch(signal_length_s, critical_frequency, t_var):
         int(signal_length_s * SAMPLE_RATE),
     )
     # The function Tonni uses for the simulations
-    touch_signal = -np.exp(-((t) ** 2) / (2 * t_var)) * np.sin(
-        2 * np.pi * critical_frequency * (t)
+    t_pulse = 1.6 * 10**-4
+    t_var = 4.5865 * 10**-10
+    touch_signal = -np.exp(-((t - t_pulse / 2) ** 2) / (2 * t_var)) * np.sin(
+        2 * np.pi * critical_frequency * (t - t_pulse / 2)
     )
     # Add some noise to allow crop_to_signal() to work properly
     touch_signal_with_noise = add_noise(touch_signal, critical_frequency, snr_dB=50)
