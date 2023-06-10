@@ -40,14 +40,14 @@ def full_touch_localization():
     DATA_SOURCE = "Measurements"
     # DATA_SOURCE = "COMSOL"
     """Set parameters for the array"""
-    CENTER_FREQUENCY_HZ = 22000 * 1.81
+    CENTER_FREQUENCY_HZ = 22000
     # PHASE_VELOCITY_MPS = 442.7
     PHASE_VELOCITY_MPS = 442.7 * 1.81
     GROUP_VELOCITY_MPS = 564.4 * 1.81
     NUMBER_OF_SENSORS = 7
     NUMBER_OF_SIGNALS = 3
     SENSOR_SPACING_M = 0.01
-    ACTUATOR_COORDINATES = np.array([0.50, 0.35])
+    ACTUATOR_COORDINATES = np.array([0.45, 0.30])
     UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
     MEASUREMENTS_FILE_FOLDER = (
         f"Plate_10mm/Setup5/25kHz/"
@@ -56,7 +56,7 @@ def full_touch_localization():
     )
     FILTER_ORDER = 3
     FILTER_Q_VALUE = 0.05
-    CROP_TIME_START = 0.0005
+    CROP_TIME_START = 0.0004
     CROP_TIME_END = 0.001
     SPATIAL_SMOOTHING = 1
     FORWARD_BACKWARD = 1
