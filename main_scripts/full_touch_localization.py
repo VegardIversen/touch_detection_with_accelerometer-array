@@ -37,14 +37,15 @@ def full_touch_localization():
     ARRAY_TYPE = "ULA"
     # ARRAY_TYPE = "UCA"
     """Select whether to use COMSOL simulation data or real measurements"""
-    # DATA_SOURCE = "Measurements"
-    DATA_SOURCE = "COMSOL"
+    DATA_SOURCE = "Measurements"
+    # DATA_SOURCE = "COMSOL"
     """Set parameters for the array"""
-    CENTER_FREQUENCY_HZ = 22000
-    PHASE_VELOCITY_MPS = 442.7
-    GROUP_VELOCITY_MPS = 564.4
+    CENTER_FREQUENCY_HZ = 22000 * 1.81
+    # PHASE_VELOCITY_MPS = 442.7
+    PHASE_VELOCITY_MPS = 442.7 * 1.81
+    GROUP_VELOCITY_MPS = 564.4 * 1.81
     NUMBER_OF_SENSORS = 7
-    NUMBER_OF_SIGNALS = 4
+    NUMBER_OF_SIGNALS = 3
     SENSOR_SPACING_M = 0.01
     ACTUATOR_COORDINATES = np.array([0.50, 0.35])
     UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
@@ -53,11 +54,12 @@ def full_touch_localization():
         f"x{100 * ACTUATOR_COORDINATES[x]:.0f}"
         f"y{100 * ACTUATOR_COORDINATES[y]:.0f}"
     )
-    FILTER_ORDER = 1
-    FILTER_Q_VALUE = 0.1
-    CROP_TIME_START = 0.00045
-    CROP_TIME_END = 0.0009
+    FILTER_ORDER = 3
+    FILTER_Q_VALUE = 0.05
+    CROP_TIME_START = 0.0005
+    CROP_TIME_END = 0.001
     SPATIAL_SMOOTHING = 1
+    FORWARD_BACKWARD = 1
 
     parameters = {
         "ARRAY_TYPE": ARRAY_TYPE,
@@ -75,6 +77,7 @@ def full_touch_localization():
         "CROP_TIME_START": float(CROP_TIME_START),
         "CROP_TIME_END": float(CROP_TIME_END),
         "SPATIAL_SMOOTHING": float(SPATIAL_SMOOTHING),
+        "FORWARD_BACKWARD": float(FORWARD_BACKWARD),
     }
     print()
     print("Parameters:")
@@ -138,8 +141,8 @@ def full_touch_localization():
             array_type=ARRAY_TYPE,
             number_of_sensors=NUMBER_OF_SENSORS,
             crop=True,
-            crop_start=0.0008,
-            crop_end=0.0016,
+            crop_start=CROP_TIME_START,
+            crop_end=CROP_TIME_END,
         )
     else:
         raise ValueError("DATA_SOURCE must be either COMSOL or MEASUREMENTS")
@@ -198,32 +201,32 @@ def full_touch_localization():
     #     bbox_inches="tight",
     # )
 
-    compare_to_ideal_signal(
-        setup=SETUP,
-        measurements=measurements,
-        attenuation_dBpm=20,
-        group_velocity_mps=GROUP_VELOCITY_MPS,
-        signal_model="gaussian",
-        critical_frequency=CENTER_FREQUENCY_HZ,
-        filter_order=FILTER_ORDER,
-        filter_q_value=FILTER_Q_VALUE,
+    # compare_to_ideal_signal(
+    #     setup=SETUP,
+    #     measurements=measurements,
+    #     attenuation_dBpm=20,
+    #     group_velocity_mps=GROUP_VELOCITY_MPS,
+    #     signal_model="gaussian",
+    #     critical_frequency=CENTER_FREQUENCY_HZ,
+    #     filter_order=FILTER_ORDER,
+    #     filter_q_value=FILTER_Q_VALUE,
+    # )
+
+    measurements = crop_data(
+        signals=measurements,
+        time_start=CROP_TIME_START,
+        time_end=CROP_TIME_END,
     )
 
-    # measurements = crop_data(
-    #     signals=measurements,
-    #     time_start=CROP_TIME_START,
-    #     time_end=CROP_TIME_END,
-    # )
-
-    # measurements = filter_signal(
-    #     signals=measurements,
-    #     critical_frequency=CENTER_FREQUENCY_HZ,
-    #     filtertype="bandpass",
-    #     order=FILTER_ORDER,
-    #     q=FILTER_Q_VALUE,
-    #     plot_response=True,
-    #     sample_rate=SAMPLE_RATE,  # type: ignore
-    # )
+    measurements = filter_signal(
+        signals=measurements,
+        critical_frequency=CENTER_FREQUENCY_HZ,
+        filtertype="bandpass",
+        order=FILTER_ORDER,
+        q=FILTER_Q_VALUE,
+        plot_response=True,
+        sample_rate=SAMPLE_RATE,  # type: ignore
+    )
 
     # Export the ideal signals
     generate_signals_for_matlab(

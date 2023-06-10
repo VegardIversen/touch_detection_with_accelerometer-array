@@ -293,7 +293,7 @@ def plot_ffts(
     axs[len(measurements) - 1, axs_index].set_xlabel("Frequency (kHz)")
     axs[i, axs_index].set_ylabel("Amplitude (dB)")
     axs[i, axs_index].set_xlim(left=0, right=freq_max / 1000)
-    axs[i, axs_index].set_ylim(bottom=-70, top=35)
+    # axs[i, axs_index].set_ylim(bottom=-70, top=35)
     axs[i, axs_index].plot(fftfreq / 1000, data_fft_dB, label=channel.name)
     axs[i, axs_index].legend(loc="upper right")
 
@@ -441,6 +441,7 @@ def plot_filter_response(
     ax.grid(which="both", axis="both")
     ax.axvline(cutoff_highpass, color="green")
     ax.axvline(cutoff_lowpass, color="green")
+    plt.tight_layout()
 
 
 """Matplotlib settings"""

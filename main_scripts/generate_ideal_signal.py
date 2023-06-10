@@ -169,7 +169,6 @@ def generate_ideal_signal(
 
     ideal_signals = add_noise(
         ideal_signals,
-        center_frequency_Hz,
         snr_dB,
     )
     return ideal_signals, distances
@@ -221,7 +220,7 @@ def model_gaussian_touch(
         2 * np.pi * critical_frequency * (t - t_pulse / 2)
     )
     # Add some noise to allow crop_to_signal() to work properly
-    touch_signal_with_noise = add_noise(touch_signal, critical_frequency, snr_dB=50)
+    touch_signal_with_noise = add_noise(touch_signal, snr_dB=50)
     touch_signal_with_noise, _, _ = crop_to_signal(touch_signal_with_noise)
     time_axis_for_plotting = np.linspace(
         0, len(touch_signal_with_noise) / SAMPLE_RATE, len(touch_signal_with_noise)
@@ -237,7 +236,6 @@ def model_gaussian_touch(
 
 def add_noise(
     ideal_signals: pd.DataFrame or np.ndarray,
-    critical_frequency: float,
     snr_dB: float = 0,
 ):
     if isinstance(ideal_signals, pd.DataFrame):
@@ -245,7 +243,6 @@ def add_noise(
         for channel in ideal_signals.columns:
             ideal_signals[channel] = add_noise(
                 ideal_signals[channel],
-                critical_frequency,
                 snr_dB,
             )
         return ideal_signals

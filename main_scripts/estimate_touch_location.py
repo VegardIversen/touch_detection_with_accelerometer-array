@@ -53,6 +53,17 @@ def estimate_touch_location_ULA(
         array_type="ULA",
     )
 
+    # Set font sizes for these figures
+    SMALL_SIZE = 15
+    MEDIUM_SIZE = 17
+    BIGGER_SIZE = 18
+    plt.rc("font", size=SMALL_SIZE)  # controls default text sizes
+    plt.rc("axes", titlesize=MEDIUM_SIZE)  # fontsize of the axes title
+    plt.rc("axes", labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
+    plt.rc("xtick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
+    plt.rc("ytick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
+    plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
+    plt.rc("figure", titlesize=MEDIUM_SIZE)  # fontsize of the figure title
     setup.draw()
     for method in sorted_estimated_angles_deg.keys():
         if all([angle < 0 for angle in sorted_estimated_angles_deg[method]]):
@@ -96,15 +107,14 @@ def estimate_touch_location_ULA(
             phi_3=phi_3_deg,
         )
         r_sa = np.array(r_sa)
-        print(f"r_sa: [{r_sa[x]:.3f}, {r_sa[y]:.3f}]")
+        print(f"r_sa: [{100 * r_sa[x]:.2f} cm, {100 * r_sa[y]:.2f} cm]")
         estimated_location_error = np.linalg.norm(
             r_sa - (actuator_coordinates - SENSORS_CENTER_COORDINATES)
         )
-        print(f"Estimated location error: {estimated_location_error:.3f} m")
+        print(f"Estimated location error: {100 * estimated_location_error:.2f} cm")
         # Plot estimation result
         touch_location = SENSORS_CENTER_COORDINATES + r_sa
         plot_estimated_location(touch_location)
-        # Add legend that shows which color marker corresponds to which method
         plot_legend_without_duplicates()
 
     plt.tight_layout(pad=0.5, h_pad=0)
@@ -202,17 +212,15 @@ def estimate_touch_location_UCA(
             phi_3=phi_3_deg,
         )
         r_sa = np.array(r_sa)
-        print(f"r_sa: [{r_sa[x]:.3f}, {r_sa[y]:.3f}]")
+        print(f"r_sa: [{r_sa[x]:.2f}, {r_sa[y]:.2f}]")
         estimated_location_error = np.linalg.norm(
             r_sa - (actuator_coordinates - uca_center_coordinates)
         )
-        print(f"Estimated location error: {estimated_location_error:.3f} m")
+        print(f"Estimated location error: {estimated_location_error:.2f} m")
         # Plot estimation result
         touch_location = uca_center_coordinates + r_sa
         plot_estimated_location(touch_location)
-        # Add legend that shows which color marker corresponds to which method
         plot_legend_without_duplicates()
-
     plt.tight_layout(pad=0.5, h_pad=0)
     try:
         plt.savefig(
@@ -238,16 +246,16 @@ def print_angles_info(
 ):
     print()
     print(f"Method: {method}")
-    print(f"Real phi_1: {real_phi_1:.3f}, Estimated phi_1: {phi_1:.3f}")
-    print(f"Real phi_2: {real_phi_2:.3f}, Estimated phi_2: {phi_2:.3f}")
-    print(f"Real phi_3: {real_phi_3:.3f}, Estimated phi_3: {phi_3:.3f}")
-    print(f"Real phi_4: {real_phi_4:.3f}, Estimated phi_4: {phi_4:.3f}")
+    print(f"Real phi_1: {real_phi_1:.2f}, Estimated phi_1: {phi_1:.2f}")
+    print(f"Real phi_2: {real_phi_2:.2f}, Estimated phi_2: {phi_2:.2f}")
+    print(f"Real phi_3: {real_phi_3:.2f}, Estimated phi_3: {phi_3:.2f}")
+    print(f"Real phi_4: {real_phi_4:.2f}, Estimated phi_4: {phi_4:.2f}")
 
     # Errors in angles:
-    print(f"Error in phi_1: {np.abs(real_phi_1 - phi_1):.3f} degrees.")
-    print(f"Error in phi_2: {np.abs(real_phi_2 - phi_2):.3f} degrees.")
-    print(f"Error in phi_3: {np.abs(real_phi_3 - phi_3):.3f} degrees.")
-    print(f"Error in phi_4: {np.abs(real_phi_4 - phi_4):.3f} degrees.")
+    print(f"Error in phi_1: {np.abs(real_phi_1 - phi_1):.2f} degrees.")
+    print(f"Error in phi_2: {np.abs(real_phi_2 - phi_2):.2f} degrees.")
+    print(f"Error in phi_3: {np.abs(real_phi_3 - phi_3):.2f} degrees.")
+    print(f"Error in phi_4: {np.abs(real_phi_4 - phi_4):.2f} degrees.")
 
 
 def plot_estimated_location(touch_location):

@@ -101,6 +101,7 @@ def plot_them_time_signals(
         nrows=measurements.shape[1],
         ncols=2,
         squeeze=False,
+        figsize=(10, 10),
     )
     compare_signals(
         fig,
@@ -110,6 +111,7 @@ def plot_them_time_signals(
         sharey=True,
     )
     fig.suptitle("Signals before analytic signal processing")
+    fig.tight_layout()
 
 
 def plot_them_envelopes(
@@ -119,6 +121,7 @@ def plot_them_envelopes(
         nrows=envelopes.shape[1],
         ncols=1,
         squeeze=False,
+        figsize=(10, 10),
     )
     compare_signals(
         fig,
@@ -128,6 +131,7 @@ def plot_them_envelopes(
         sharey=True,
     )
     fig.suptitle("Envelopes of exported analytic signals")
+    fig.tight_layout()
 
 
 def make_a_nice_csv_file(

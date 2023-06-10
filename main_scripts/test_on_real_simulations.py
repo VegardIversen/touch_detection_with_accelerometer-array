@@ -53,7 +53,6 @@ def prepare_simulation_data(
         # Add noise to the signal
         simulation_data = add_noise(
             simulation_data,
-            critical_frequency=critical_frequency_Hz,
             snr_dB=50,
         )
 
@@ -65,17 +64,6 @@ def prepare_simulation_data(
             time_end=crop_end,
             # time_end=5,
             apply_window_function=False,
-        )
-
-    if critical_frequency_Hz:
-        simulation_data = filter_signal(
-            simulation_data,
-            filtertype="bandpass",
-            critical_frequency=critical_frequency_Hz,
-            plot_response=False,
-            order=filter_order,
-            sample_rate=SAMPLE_RATE,
-            q=0.05,
         )
 
     fig, axs = plt.subplots(number_of_sensors, 1, squeeze=False)
