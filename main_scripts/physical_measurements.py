@@ -18,19 +18,14 @@ def combine_measurements_into_dataframe(
     file_folder: str,
     file_names: list[str],
     setup: Setup,
-    group_velocity_mps: float,
-    center_frequency: float,
-    filter_order: int,
-    filter_q_value: float,
+    sensitivites_should_be_corrected: bool,
 ):
-    # Create a list of the arguments
-    args_list = file_names
     # Create an empty list to store the dataframes
     dataframes = []
     # Loop through the arguments
-    for arg in args_list:
+    for file in file_names:
         # Read the csv file into a dataframe
-        file_path = os.path.join("Measurements", file_folder, f"{arg}.csv")
+        file_path = os.path.join("Measurements", file_folder, f"{file}.csv")
         measurements = pd.read_csv(
             filepath_or_buffer=file_path,
             header=None,
@@ -59,8 +54,8 @@ def combine_measurements_into_dataframe(
     #     time_start=0,
     #     time_end=0.001,
     # )
-
-    correct_sensitivities(setup, measurements)
+    if sensitivites_should_be_corrected:
+        correct_sensitivities(setup, measurements)
 
     measurements = interpolate_signal(measurements)
 
@@ -107,17 +102,6 @@ def combine_measurements_into_dataframe(
             "Sensor 8",
         ]
     )
-
-    # compare_to_ideal_signal(
-    #     setup=setup,
-    #     measurements=measurements,
-    #     attenuation_dBpm=17,
-    #     group_velocity_mps=group_velocity_mps,
-    #     signal_model="gaussian",
-    #     critical_frequency=center_frequency,
-    #     filter_order=filter_order,
-    #     filter_q_value=filter_q_value,
-    # )
 
     return measurements
 

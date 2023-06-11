@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -41,13 +42,14 @@ def full_touch_localization():
     # DATA_SOURCE = "COMSOL"
     """Set parameters for the array"""
     CENTER_FREQUENCY_HZ = 22000
-    # PHASE_VELOCITY_MPS = 442.7
-    PHASE_VELOCITY_MPS = 442.7 * 1.81
-    GROUP_VELOCITY_MPS = 564.4 * 1.81
+    PHASE_VELOCITY_MPS = 442.7 * 1
+    GROUP_VELOCITY_MPS = 564.4 * 1
+    # PHASE_VELOCITY_MPS = 442.7 * 1.79
+    # GROUP_VELOCITY_MPS = 564.4 * 1.79
     NUMBER_OF_SENSORS = 7
     NUMBER_OF_SIGNALS = 3
     SENSOR_SPACING_M = 0.01
-    ACTUATOR_COORDINATES = np.array([0.45, 0.30])
+    ACTUATOR_COORDINATES = np.array([0.50, 0.20])
     UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
     MEASUREMENTS_FILE_FOLDER = (
         f"Plate_10mm/Setup5/25kHz/"
@@ -56,10 +58,12 @@ def full_touch_localization():
     )
     FILTER_ORDER = 3
     FILTER_Q_VALUE = 0.05
-    CROP_TIME_START = 0.0004
+    CROP_TIME_START = 0.000
     CROP_TIME_END = 0.001
     SPATIAL_SMOOTHING = 1
     FORWARD_BACKWARD = 1
+    ATTENUATION_DBPM = 35
+    FILE_VERSION = "v1"
 
     parameters = {
         "ARRAY_TYPE": ARRAY_TYPE,
@@ -78,6 +82,8 @@ def full_touch_localization():
         "CROP_TIME_END": float(CROP_TIME_END),
         "SPATIAL_SMOOTHING": float(SPATIAL_SMOOTHING),
         "FORWARD_BACKWARD": float(FORWARD_BACKWARD),
+        "ATTENUATION": float(ATTENUATION_DBPM),
+        "FILE_VERSION": FILE_VERSION,
     }
     print()
     print("Parameters:")
@@ -126,15 +132,12 @@ def full_touch_localization():
         measurements = combine_measurements_into_dataframe(
             file_folder=MEASUREMENTS_FILE_FOLDER,
             file_names=[
-                "sensors123_v1",
-                "sensors456_v1",
-                "sensors78_v1",
+                f"sensors123_{FILE_VERSION}",
+                f"sensors456_{FILE_VERSION}",
+                f"sensors78_{FILE_VERSION}",
             ],
             setup=SETUP,
-            group_velocity_mps=GROUP_VELOCITY_MPS,
-            center_frequency=CENTER_FREQUENCY_HZ,
-            filter_order=FILTER_ORDER,
-            filter_q_value=FILTER_Q_VALUE,
+            sensitivites_should_be_corrected=True,
         )
     elif DATA_SOURCE == "COMSOL":
         measurements = prepare_simulation_data(
@@ -147,66 +150,12 @@ def full_touch_localization():
     else:
         raise ValueError("DATA_SOURCE must be either COMSOL or MEASUREMENTS")
 
-    # ideal_signal, distances = generate_ideal_signal(
-    #     setup=SETUP,
-    #     group_velocity_mps=GROUP_VELOCITY_MPS,
-    #     attenuation_dBpm=0,
-    #     signal_length_s=2,
-    #     center_frequency_Hz=CENTER_FREQUENCY_HZ,
-    #     signal_model="line",
-    #     snr_dB=20,
-    #     t_var=5e-10,
-    # )
-    # # ideal_signal = crop_to_signal(ideal_signal)
-    # ideal_signal = crop_data(
-    #     ideal_signal,
-    #     time_start=1,
-    #     time_end=1 + 0.004,
-    #     sample_rate=SAMPLE_RATE,
-    # )
-    # fig, axs = plt.subplots(
-    #     1,
-    #     1,
-    #     figsize=(10, 3.5),
-    #     sharex=True,
-    #     sharey=True,
-    # )
-    # time_axis = np.linspace(
-    #     0,
-    #     1000 * len(ideal_signal) / SAMPLE_RATE,
-    #     len(ideal_signal),
-    # )
-    # axs.plot(
-    #     time_axis,
-    #     ideal_signal,
-    # )
-    # axs.set_xlabel("Time [ms]")
-    # axs.grid()
-    # axs.legend(
-    #     [
-    #         "Touch signal",
-    #         "Sensor 1",
-    #         "Sensor 2",
-    #         "Sensor 3",
-    #         "Sensor 4",
-    #         "Sensor 5",
-    #         "Sensor 6",
-    #         "Sensor 7",
-    #     ],
-    #     loc="right",
-    # )
-    # fig.tight_layout()
-    # plt.savefig(
-    #     "results/ideal_signal_comsol2.pdf",
-    #     bbox_inches="tight",
-    # )
-
     # compare_to_ideal_signal(
     #     setup=SETUP,
     #     measurements=measurements,
-    #     attenuation_dBpm=20,
+    #     attenuation_dBpm=ATTENUATION_DBPM,
     #     group_velocity_mps=GROUP_VELOCITY_MPS,
-    #     signal_model="gaussian",
+    #     signal_model="signal_generator_touch_pulse",
     #     critical_frequency=CENTER_FREQUENCY_HZ,
     #     filter_order=FILTER_ORDER,
     #     filter_q_value=FILTER_Q_VALUE,
@@ -261,7 +210,7 @@ def full_touch_localization():
     else:
         raise ValueError("ARRAY_TYPE must be either ULA or UCA")
 
-    plt.show()
+    return
 
 
 def import_estimated_angles(
@@ -367,3 +316,34 @@ def test_UCA_points():
 
     # Display the plot
     plt.show()
+
+
+def extract_touch_pulse_from_signal_generator(
+    measurements: pd.DataFrame,
+    plot: bool = False,
+    save: bool = False,
+):
+    measurements = crop_data(
+        signals=measurements,
+        time_start=0.0000,
+        time_end=0.00015,
+    )
+    if plot:
+        fig, ax = plt.subplots(squeeze=False)
+        compare_signals(
+            fig,
+            ax,
+            [measurements["Actuator"]],
+            plots_to_plot=["time"],
+        )
+    if save:
+        measurements["Actuator"].to_csv(
+            os.path.join(
+                "Measurements",
+                "Plate_10mm",
+                "Setup5",
+                "25kHz",
+                "signal_generator_touch_pulse.csv",
+            ),
+            index=False,
+        )

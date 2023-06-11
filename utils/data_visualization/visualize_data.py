@@ -114,7 +114,8 @@ def plot_time_signals(
 
 def set_ylabels_for_time_plots(axs, i, channel, measurements):
     # Check if the maximum value in the dataframe measurements is less than 0.001
-    if np.max(np.abs(measurements)) < 0.001:
+    # if np.max(np.abs(measurements)) < 0.001:
+    if 1:
         channel = channel * 1e6
         axs[i, 0].set_ylabel("Acceleration \n (µm/s²)")
     elif np.max(np.abs(measurements)) < 1:
@@ -448,9 +449,6 @@ def plot_filter_response(
 
 
 def set_fontsizes():
-    """Inspired by
-    https://stackoverflow.com/questions/3899980/how-to-change-the-font-size-on-a-matplotlib-plot
-    """
     SMALL_SIZE = 13
     MEDIUM_SIZE = 15
     BIGGER_SIZE = 18

@@ -73,21 +73,86 @@ def estimate_touch_location_ULA(
             phi_2_deg = sorted_estimated_angles_deg[method][3]
             phi_3_deg = sorted_estimated_angles_deg[method][0]
             phi_4_deg = sorted_estimated_angles_deg[method][2]
-        # Assume that there are three angles if there is a NaN value
+            r_sa = calculate_r_sa_four_angles(
+                x_cs=SENSORS_CENTER_COORDINATES[x],
+                y_cs=SENSORS_CENTER_COORDINATES[y],
+                phi_1=phi_1_deg,
+                phi_2=phi_2_deg,
+                phi_3=phi_3_deg,
+            )
+        # There are four valid angles in sorted_estimated_angles_deg, i.e. four floats that are not nan
         elif (
-            sum(np.isnan(sorted_estimated_angles_deg[method])) == 1
-            or sorted_estimated_angles_deg[method].size == 3
+            len(
+                [
+                    angle
+                    for angle in sorted_estimated_angles_deg[method]
+                    if not np.isnan(angle)
+                ]
+            )
+            == 4
+        ):
+            phi_1_deg = sorted_estimated_angles_deg[method][3]
+            phi_2_deg = sorted_estimated_angles_deg[method][0]
+            phi_3_deg = sorted_estimated_angles_deg[method][2]
+            phi_4_deg = sorted_estimated_angles_deg[method][1]
+            r_sa = calculate_r_sa_four_angles(
+                x_cs=SENSORS_CENTER_COORDINATES[x],
+                y_cs=SENSORS_CENTER_COORDINATES[y],
+                phi_1=phi_1_deg,
+                phi_2=phi_2_deg,
+                phi_3=phi_3_deg,
+            )
+        # Check if there are three valid angles, i.e.three values that are not NaN or
+        elif (
+            len(
+                [
+                    angle
+                    for angle in sorted_estimated_angles_deg[method]
+                    if not np.isnan(angle)
+                ]
+            )
+            == 3
         ):
             # If there are only three angles, then phi_4_deg = 0
             phi_1_deg = sorted_estimated_angles_deg[method][2]
             phi_2_deg = sorted_estimated_angles_deg[method][0]
             phi_3_deg = sorted_estimated_angles_deg[method][1]
             phi_4_deg = 0
-        else:
-            phi_1_deg = sorted_estimated_angles_deg[method][3]
+            r_sa = calculate_r_sa_four_angles(
+                x_cs=SENSORS_CENTER_COORDINATES[x],
+                y_cs=SENSORS_CENTER_COORDINATES[y],
+                phi_1=phi_1_deg,
+                phi_2=phi_2_deg,
+                phi_3=phi_3_deg,
+            )
+        elif (
+            len(
+                [
+                    angle
+                    for angle in sorted_estimated_angles_deg[method]
+                    if not np.isnan(angle)
+                ]
+            )
+            == 2
+        ):
+            # If there are only two angles, then phi_3_deg = phi_4_deg = 0
+            phi_1_deg = sorted_estimated_angles_deg[method][1]
             phi_2_deg = sorted_estimated_angles_deg[method][0]
-            phi_3_deg = sorted_estimated_angles_deg[method][2]
-            phi_4_deg = sorted_estimated_angles_deg[method][1]
+            phi_3_deg = 0
+            phi_4_deg = 0
+            r_sa = calculate_r_sa_two_angles(
+                x_cs=SENSORS_CENTER_COORDINATES[x],
+                y_cs=SENSORS_CENTER_COORDINATES[y],
+                phi_1=phi_1_deg,
+                phi_2=phi_2_deg,
+            )
+        else:
+            # Set all to zero
+            phi_1_deg = 0
+            phi_2_deg = 0
+            phi_3_deg = 0
+            phi_4_deg = 0
+            r_sa = np.zeros(2)
         print_angles_info(
             method,
             real_phi_1_deg,
@@ -99,13 +164,7 @@ def estimate_touch_location_ULA(
             phi_3_deg,
             phi_4_deg,
         )
-        r_sa = calculate_r_sa(
-            x_cs=SENSORS_CENTER_COORDINATES[x],
-            y_cs=SENSORS_CENTER_COORDINATES[y],
-            phi_1=phi_1_deg,
-            phi_2=phi_2_deg,
-            phi_3=phi_3_deg,
-        )
+
         r_sa = np.array(r_sa)
         print(f"r_sa: [{100 * r_sa[x]:.2f} cm, {100 * r_sa[y]:.2f} cm]")
         estimated_location_error = np.linalg.norm(
@@ -204,7 +263,7 @@ def estimate_touch_location_UCA(
             phi_3_deg,
             phi_4_deg,
         )
-        r_sa = calculate_r_sa(
+        r_sa = calculate_r_sa_four_angles(
             x_cs=uca_center_coordinates[x],
             y_cs=uca_center_coordinates[y],
             phi_1=phi_1_deg,
@@ -321,7 +380,13 @@ def radians_to_degrees(radians):
     return radians * 180 / np.pi
 
 
-def calculate_r_sa(x_cs, y_cs, phi_1, phi_2, phi_3):
+def calculate_r_sa_four_angles(
+    x_cs,
+    y_cs,
+    phi_1,
+    phi_2,
+    phi_3,
+):
     # Calculates the vector r_sa
     if abs(phi_1) == 90 or abs(phi_2) == 90:
         r_sa = [
@@ -337,6 +402,30 @@ def calculate_r_sa(x_cs, y_cs, phi_1, phi_2, phi_3):
             -2 * y_cs / (np.tan(np.radians(phi_2)) + np.tan(np.radians(phi_1)))
             + 2 * x_cs
         ),
+    ]
+    return r_sa
+
+
+def calculate_r_sa_two_angles(
+    x_cs,
+    y_cs,
+    phi_1,
+    phi_2,
+):
+    # Calculates the vector r_sa
+    if abs(phi_1) == 90 or abs(phi_2) == 90:
+        r_sa = [
+            0,
+            0,
+        ]
+        return r_sa
+
+    r_sa = [
+        -2 * y_cs / (np.tan(np.radians(phi_2)) + np.tan(np.radians(phi_1))),
+        -2
+        * y_cs
+        * np.tan(np.radians(phi_1))
+        / (np.tan(np.radians(phi_2)) + np.tan(np.radians(phi_1))),
     ]
     return r_sa
 

@@ -466,7 +466,7 @@ def correct_sensitivities(
                     measurements[sensor.name] * correction_factor
                 )
             else:
-                correction_factor = 0.489 / 100
+                correction_factor = 0.300 / 100
                 measurements[sensor.name] = (
                     measurements[sensor.name] * correction_factor
                 )

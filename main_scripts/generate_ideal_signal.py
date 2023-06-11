@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -44,7 +45,7 @@ def compare_to_ideal_signal(
     if group_velocity_mps is None:
         group_velocity_mps = 922
     print(f"Propagation speed: {group_velocity_mps:.2f}")
-    signal_length_s = 1
+    signal_length_s = 0.01
     ideal_signal, distances = generate_ideal_signal(
         setup=setup,
         group_velocity_mps=group_velocity_mps,
@@ -86,12 +87,12 @@ def compare_to_ideal_signal(
     measurement_envelopes = crop_data(
         signals=measurement_envelopes,
         time_start=0.0,
-        time_end=0.002,
+        time_end=1,
     )
     ideal_signal_envelopes = crop_data(
         signals=ideal_signal_envelopes,
         time_start=0.0,
-        time_end=0.002,
+        time_end=1,
     )
 
     """Plot signals"""
@@ -108,13 +109,13 @@ def compare_to_ideal_signal(
     compare_signals(
         fig,
         axs,
-        [np.real(ideal_signal_envelopes[sensor.name]) for sensor in CHANNELS_TO_PLOT],
+        [(ideal_signal_envelopes[sensor.name]) for sensor in CHANNELS_TO_PLOT],
         plots_to_plot=PLOTS_TO_PLOT,
     )
     compare_signals(
         fig,
         axs,
-        [np.real(measurement_envelopes[sensor.name]) for sensor in CHANNELS_TO_PLOT],
+        [(measurement_envelopes[sensor.name]) for sensor in CHANNELS_TO_PLOT],
         plots_to_plot=PLOTS_TO_PLOT,
     )
     [ax.grid() for ax in axs[:, 0]]
@@ -122,7 +123,7 @@ def compare_to_ideal_signal(
         ax.get_legend().remove()
     axs[0, 0].legend(
         ["Ideal signal envelope", "Measurement envelope"],
-        loc="upper left",
+        loc="upper right",
     )
     for ax, sensor in zip(axs[:, 0], CHANNELS_TO_PLOT):
         ax.set_ylabel(sensor.name)
@@ -145,7 +146,7 @@ def generate_ideal_signal(
     signal_length_s: float,
     signal_model: str = "line",
     center_frequency_Hz: float = 0,
-    t_var: float = 1e-9,
+    t_var: float = 4.5865 * 10**-10,
     t_pulse: float = 1.6 * 10**-4,
     snr_dB: float = 0,
 ):
@@ -194,8 +195,27 @@ def model_touch_signal(
             signal_length_s=signal_length_s,
             critical_frequency=critical_frequency,
             t_var=t_var,
-            t_pulse=t_var,
+            t_pulse=t_pulse,
         )
+    elif signal_model == "signal_generator_touch_pulse":
+        # import from
+        # os.path.join(
+        #     "Measurements",
+        #     "Plate_10mm",
+        #     "Setup5",
+        #     "25kHz",
+        #     "signal_generator_touch_pulse.csv",
+        # ),
+        touch_signal = np.genfromtxt(
+            os.path.join(
+                "Measurements",
+                "Plate_10mm",
+                "Setup5",
+                "25kHz",
+                "signal_generator_touch_pulse.csv",
+            ),
+            delimiter=",",
+        )[1:]
     else:
         raise ValueError("Invalid signal model")
     return touch_signal
@@ -222,15 +242,14 @@ def model_gaussian_touch(
     # Add some noise to allow crop_to_signal() to work properly
     touch_signal_with_noise = add_noise(touch_signal, snr_dB=50)
     touch_signal_with_noise, _, _ = crop_to_signal(touch_signal_with_noise)
-    time_axis_for_plotting = np.linspace(
-        0, len(touch_signal_with_noise) / SAMPLE_RATE, len(touch_signal_with_noise)
-    )
     # Plot the signal
-    fig, ax = plt.subplots()
-    ax.plot(time_axis_for_plotting, touch_signal_with_noise)
-    ax.set_xlabel("Time [s]")
-    ax.set_ylabel("Amplitude")
-    ax.set_title("Gaussian modulated pulse")
+    fig, ax = plt.subplots(squeeze=False)
+    compare_signals(
+        fig,
+        ax,
+        [touch_signal_with_noise],
+        plots_to_plot=["time"],
+    )
     return touch_signal
 
 
