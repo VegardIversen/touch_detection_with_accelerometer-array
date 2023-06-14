@@ -72,17 +72,20 @@ class SimulatedSetup():
     plate = obj.SimulatedPlate()
     actuators = np.empty(shape=1, dtype=obj.Actuator)
     sensors: np.ndarray
-    def __init__(self, comsol_file=9, positions=[], SAMPLE_RATE=500000, center_freq=15000):
+    def __init__(self, comsol_file=9, positions=[], SAMPLE_RATE=500000, center_freq=15000, all_sensors=False):
         self.wave_data, self.x_pos, self.y_pos, self.z_pos, self.time_axis = rt.get_comsol_data(comsol_file)
         self.positions = positions
-        if not positions:
+        self.actuators_positions = np.array([0.075,0.05])
+        if not positions and not all_sensors:
             self.positions = [0]
+        if all_sensors:
+            self.positions = np.arange(len(self.x_pos))
         n_sensors = len(self.x_pos)
         self.signal_length = len(self.wave_data[0])
         self.SAMPLE_RATE = SAMPLE_RATE
         self.freq_vel = np.fft.rfftfreq(self.signal_length, d=1/SAMPLE_RATE)
         self.sensors = np.empty(shape=n_sensors, dtype=obj.Sensor)
-        self.actuators[0] = obj.Actuator(coordinates=np.array([self.x_pos[0], self.y_pos[0]]))
+        self.actuators[0] = obj.Actuator(coordinates=np.array([self.actuators_positions[0], self.actuators_positions[1]]))
         self.v_gr_calc, self.v_ph_calc = wp.theoretical_group_phase_vel(self.freq_vel, material='LDPE_tonni20mm')
         self.velocities = rt.get_velocity_at_freq(freq=center_freq)
         self.v_ph_center_freq = self.velocities['A0']['phase_velocity']
