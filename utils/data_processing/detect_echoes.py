@@ -82,10 +82,12 @@ def get_analytic_signal(signals: pd.DataFrame or pd.Series or np.ndarray):
     analytic_signal = signals.copy()
     if isinstance(signals, np.ndarray) or isinstance(signals, pd.Series):
         analytic_signal = signal.hilbert(signals)
+        # analytic_signal = signals
         return analytic_signal
     elif isinstance(signals, pd.DataFrame):
         for channel in analytic_signal:
             analytic_signal[channel] = signal.hilbert(signals[channel])
+            # analytic_signal[channel] = signals[channel]
     return analytic_signal
 
 
