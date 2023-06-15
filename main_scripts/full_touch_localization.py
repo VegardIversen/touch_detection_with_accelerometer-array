@@ -34,33 +34,29 @@ def full_touch_localization():
     # - High SNR
     # - Low attenuation
 
-    """Select array type ULA or UCA"""
-    ARRAY_TYPE = "ULA"
-    # ARRAY_TYPE = "UCA"
-    """Select whether to use COMSOL simulation data or real measurements"""
+    # ARRAY_TYPE = "ULA"
+    ARRAY_TYPE = "UCA"
     DATA_SOURCE = "Measurements"
     # DATA_SOURCE = "COMSOL"
-    """Set parameters for the array"""
     CENTER_FREQUENCY_HZ = 22000
-    PHASE_VELOCITY_MPS = 442.7 * 1.8
-    GROUP_VELOCITY_MPS = 564.4 * 1.8
+    PHASE_VELOCITY_MPS = 442.7 * 1.79
+    GROUP_VELOCITY_MPS = 564.4 * 1.79
     # PHASE_VELOCITY_MPS = 442.7 * 1.79
     # GROUP_VELOCITY_MPS = 564.4 * 1.79
-    NUMBER_OF_SENSORS = 7
+    NUMBER_OF_SENSORS = 6
     NUMBER_OF_SIGNALS = 3
     SENSOR_SPACING_M = 0.01
     ACTUATOR_COORDINATES = np.array([0.50, 0.35])
-    UCA_CENTER_COORDINATES = np.array([0.05, 0.05])
+    UCA_CENTER_COORDINATES = np.array([0.05, 0.08])
     MEASUREMENTS_FILE_FOLDER = (
         f"Plate_10mm/Setup5/25kHz/"
         f"x{100 * ACTUATOR_COORDINATES[x]:.0f}"
         f"y{100 * ACTUATOR_COORDINATES[y]:.0f}"
     )
-    FILTER_ORDER = 1
-    FILTER_Q_VALUE = 0.1
-    CROP_TIME_START = 0.0
-    # CROP_TIME_END = 0.0014
-    CROP_TIME_END = 0.004
+    FILTER_ORDER = 3
+    FILTER_Q_VALUE = 0.05
+    CROP_TIME_START = 0.00025
+    CROP_TIME_END = 0.001
     SPATIAL_SMOOTHING = 1
     FORWARD_BACKWARD = 1
     ATTENUATION_DBPM = 20
@@ -139,6 +135,7 @@ def full_touch_localization():
             ],
             setup=SETUP,
             sensitivites_should_be_corrected=True,
+            number_of_sensors=NUMBER_OF_SENSORS,
         )
     elif DATA_SOURCE == "COMSOL":
         measurements = prepare_simulation_data(
@@ -151,23 +148,25 @@ def full_touch_localization():
     else:
         raise ValueError("DATA_SOURCE must be either COMSOL or MEASUREMENTS")
 
-    compare_to_ideal_signal(
-        setup=SETUP,
-        measurements=measurements,
-        attenuation_dBpm=ATTENUATION_DBPM,
-        group_velocity_mps=GROUP_VELOCITY_MPS,
-        # signal_model="gaussian",
-        signal_model="signal_generator_touch_pulse",
-        critical_frequency=CENTER_FREQUENCY_HZ,
-        filter_order=FILTER_ORDER,
-        filter_q_value=FILTER_Q_VALUE,
-    )
+    # compare_to_ideal_signal(
+    #     setup=SETUP,
+    #     measurements=measurements,
+    #     attenuation_dBpm=ATTENUATION_DBPM,
+    #     group_velocity_mps=GROUP_VELOCITY_MPS,
+    #     # signal_model="gaussian",
+    #     signal_model="signal_generator_touch_pulse",
+    #     critical_frequency=CENTER_FREQUENCY_HZ,
+    #     filter_order=FILTER_ORDER,
+    #     filter_q_value=FILTER_Q_VALUE,
+    # )
 
     measurements = crop_data(
         signals=measurements,
         time_start=CROP_TIME_START,
         time_end=CROP_TIME_END,
     )
+
+    # measurements = pad_signal(measurements)
 
     measurements = filter_signal(
         signals=measurements,
@@ -349,3 +348,19 @@ def extract_touch_pulse_from_signal_generator(
             ),
             index=False,
         )
+
+
+def pad_signal(signal):
+    if isinstance(signal, pd.DataFrame):
+        padded_signals = pd.DataFrame()
+        for column in signal.columns:
+            padding_size = 2 * int(len(signal[column]))
+            padded_signal = np.pad(
+                signal[column], (padding_size, padding_size), mode="constant"
+            )
+            padded_signals[column] = padded_signal
+        return padded_signals
+
+    padding_size = int(len(signal))
+    padded_signal = np.pad(signal, (padding_size, padding_size), mode="constant")
+    return padded_signal

@@ -19,6 +19,7 @@ def combine_measurements_into_dataframe(
     file_names: list[str],
     setup: Setup,
     sensitivites_should_be_corrected: bool,
+    number_of_sensors: int,
 ):
     # Create an empty list to store the dataframes
     dataframes = []
@@ -93,15 +94,27 @@ def combine_measurements_into_dataframe(
 
     measurements["Actuator"] = measurements["Actuator 123"]
 
-    measurements = measurements.drop(
-        columns=[
-            "Actuator 123",
-            "Actuator 456",
-            "Actuator 78",
-            # "Sensor 7",
-            "Sensor 8",
-        ]
-    )
+    if number_of_sensors == 7:
+        measurements = measurements.drop(
+            columns=[
+                "Actuator 123",
+                "Actuator 456",
+                "Actuator 78",
+                "Sensor 8",
+            ]
+        )
+    elif number_of_sensors == 6:
+        measurements = measurements.drop(
+            columns=[
+                "Actuator 123",
+                "Actuator 456",
+                "Actuator 78",
+                "Sensor 7",
+                "Sensor 8",
+            ]
+        )
+    else:
+        raise NotImplementedError
 
     return measurements
 
