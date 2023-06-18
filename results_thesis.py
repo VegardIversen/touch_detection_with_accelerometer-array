@@ -1,10 +1,12 @@
 import scipy.signal as signal
 import scipy
+from scipy.optimize import minimize
 from scipy import interpolate
 import scipy.io as sio
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
 import seaborn as sns
 from matplotlib.widgets import Slider, Button
 from pathlib import Path
@@ -1085,6 +1087,15 @@ def read_DC_files(file_n=1):
     elif file_n == 2:
         path_A = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\LDPE_disp_fxthickness_A_Lamb.xlsx"
         path_S = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\LDPE_disp_fxthickness_S_Lamb.xlsx"
+    elif file_n == 3:
+        path_A = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\COMSOL_PLATE_20_A_Lamb.xlsx"
+        path_S = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\COMSOL_PLATE_20_S_Lamb.xlsx"
+    elif file_n == 4:
+        path_A = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\COMSOL_PLATE_20_long_A_Lamb.xlsx"
+        path_S = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\COMSOL_PLATE_20_long_S_Lamb.xlsx"
+    elif file_n == 5:
+        path_A = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\REAL_PLATE_20_long_A_Lamb.xlsx"
+        path_S = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\REAL_PLATE_20_long_S_Lamb.xlsx"
     dc_A0 = pd.read_excel(path_A)
     dc_S0 = pd.read_excel(path_S)
     return dc_A0, dc_S0
@@ -1137,14 +1148,209 @@ def get_velocity_at_freq(freq, meter_per_second=True):
     return velocities
 
 
+def find_signal_start(signal, threshold):
+    """Find the index where signal exceeds a threshold."""
+    return next((i for i, val in enumerate(signal) if abs(val) > threshold), None)
+
+
+def all_calculate_phase_velocities(size=0.75, save=False, theoretical=True):
+    # Constants
+    plate_width = 0.35  # meters
+    plate_height = 0.25  # meters
+    plate_thickness = 0.007  # meters
+    samplerate = 500000  # Hz
+    num_samples = 501
+    delta_i = plate_height / (num_samples - 1)
+    freq = 35000  # Hz
+    cut_length = 120
+    threshold = 0.01  # Threshold for signal start. Adjust according to your data
+
+    types = "A0_only"
+    size_str = str(size).replace(".", "_")
+    # Get data for all sensors
+    wave_top, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(number=9)
+    (
+        wave_bottom,
+        x_pos_bottom,
+        y_pos_bottom,
+        z_pos_bottom,
+        time_axis_bottom,
+    ) = get_comsol_data(number=10)
+
+    # Initialize result lists
+    phase_velocities_A0 = []
+    phase_velocities_S0 = []
+    num_of_sensors = 50
+    step_size = 16
+    # Loop over sensor pairs
+    for i in range(
+        7, num_of_sensors - step_size
+    ):  # Using 7 as a start point and 99 as the end to consider the pairs correctly
+        j = i + step_size
+        distances = np.sqrt(
+            (x_pos_bottom[j] - x_pos_bottom[i]) ** 2
+            + (y_pos_bottom[j] - y_pos_bottom[i]) ** 2
+        )
+        print(f"Sensor pair {i} and {j} with distance {distances} m")
+        S0 = (wave_top - wave_bottom) / 2
+        A0 = (wave_top + wave_bottom) / 2
+
+        # Find start of the significant signal
+        start_index_A0_i = find_signal_start(A0[i], threshold=threshold)
+        start_index_A0_i_plus = find_signal_start(A0[j], threshold=threshold)
+        start_index_S0_i = find_signal_start(S0[i], threshold=threshold)
+        start_index_S0_i_plus = find_signal_start(S0[j], threshold=threshold)
+
+        # Slice and process the signals
+        A0_cut_i = A0[i][start_index_A0_i : start_index_A0_i + cut_length] * np.hamming(
+            cut_length
+        )
+        A0_cut_i_plus = A0[j][
+            start_index_A0_i_plus : start_index_A0_i_plus + cut_length
+        ] * np.hamming(cut_length)
+        S0_cut_i = S0[i][start_index_S0_i : start_index_S0_i + cut_length] * np.hamming(
+            cut_length
+        )
+        S0_cut_i_plus = S0[j][
+            start_index_S0_i_plus : start_index_S0_i_plus + cut_length
+        ] * np.hamming(cut_length)
+
+        # Pad cut signals to original length
+        extra_padding = 8
+        A0_padded_i = np.zeros(num_samples * extra_padding)
+        A0_padded_i_plus = np.zeros(num_samples * extra_padding)
+        S0_padded_i = np.zeros(num_samples * extra_padding)
+        S0_padded_i_plus = np.zeros(num_samples * extra_padding)
+        A0_padded_i[start_index_A0_i : start_index_A0_i + cut_length] = A0_cut_i
+        A0_padded_i_plus[
+            start_index_A0_i_plus : start_index_A0_i_plus + cut_length
+        ] = A0_cut_i_plus
+        S0_padded_i[start_index_S0_i : start_index_S0_i + cut_length] = S0_cut_i
+        S0_padded_i_plus[
+            start_index_S0_i_plus : start_index_S0_i_plus + cut_length
+        ] = S0_cut_i_plus
+
+        # Calculate phase difference and phase velocity for both modes
+        phase_AO, freq_AO = wp.phase_difference_plot(
+            A0_padded_i, A0_padded_i_plus, SAMPLE_RATE=samplerate, BANDWIDTH=[0, freq]
+        )
+        phase_SO, freq_SO = wp.phase_difference_plot(
+            S0_padded_i, S0_padded_i_plus, SAMPLE_RATE=samplerate, BANDWIDTH=[0, freq]
+        )
+        print(f"min freq_AO: {min(freq_AO)}")
+        phase_velocity_A0 = wp.phase_velocity(phase_AO, freq_AO, distance=distances)
+        phase_velocity_S0 = wp.phase_velocity(phase_SO, freq_SO, distance=distances)
+
+        # Append the results
+        # print(f"shape of phase_velocity_A0: {phase_velocity_A0.shape}")
+        phase_velocities_A0.append(phase_velocity_A0)
+        phase_velocities_S0.append(phase_velocity_S0)
+
+    max_velocity = 2000  # Set this to a value that makes sense for your data
+    # convert frequenncy from Hz to kHz
+    freq_AO = freq_AO / 1000
+    freq_SO = freq_SO / 1000
+    # Filter out the phase velocities with spikes
+    phase_velocities_A0_clean = [
+        v
+        for v in phase_velocities_A0
+        if all(abs(velocity) <= max_velocity for velocity in v)
+    ]
+    phase_velocities_S0_clean = [
+        v
+        for v in phase_velocities_S0
+        if all(abs(velocity) <= max_velocity for velocity in v)
+    ]
+    mean_velocities_A0 = np.mean(phase_velocities_A0_clean, axis=0)
+    mean_velocities_S0 = np.mean(phase_velocities_S0_clean, axis=0)
+    # Compute standard deviations
+    std_velocities_A0 = np.std(phase_velocities_A0_clean, axis=0)
+    std_velocities_S0 = np.std(phase_velocities_S0_clean, axis=0)
+
+    fig, ax = figure_size_setup_thesis(size)
+    ax.plot(freq_AO, mean_velocities_A0, label="A0 mean")
+    ax.fill_between(
+        freq_AO,
+        mean_velocities_A0 - std_velocities_A0,
+        mean_velocities_A0 + std_velocities_A0,
+        color="b",
+        alpha=0.1,
+    )
+    if theoretical:
+        types = "theoretical"
+        A0_t, S0_t = read_DC_files(3)
+        A0_t_phase = A0_t["A0 Phase velocity (m/ms)"]
+        A0_t_freq = A0_t["A0 f (kHz)"]
+        S0_t_phase = S0_t["S0 Phase velocity (m/ms)"]
+        S0_t_freq = S0_t["S0 f (kHz)"]
+        # convert from m/ms to m/s
+        A0_t_phase = A0_t_phase * 1000
+        S0_t_phase = S0_t_phase * 1000
+        # interpolate the theoretical values to the same frequency as the measured values
+        ax.plot(A0_t_freq, A0_t_phase, label="A0 theoretical")
+
+        # (
+        #     phase_velocities_flexural,
+        #     corrected_phase_velocities,
+        #     phase_velocity_shear,
+        #     material,
+        # ) = wp.theoretical_velocities(freq_AO, material="LDPE_tonni20mm")
+        # ax.plot(freq_AO, corrected_phase_velocities, label="A0 theoretical")
+    ax.set_xlabel("Frequency (kHz)")
+    ax.set_ylabel("Phase velocity (m/s)")
+    # ax.set_title("Mean phase velocity and Standard Deviation for A0 mode")
+    ax.legend()
+    if save:
+        fig.savefig(
+            f"phase_velocity_A0_{step_size}_{size_str}_{types}.png",
+            dpi=300,
+            # bbox_inches="tight",
+        )
+        fig.savefig(
+            f"phase_velocity_A0_{step_size}_{size_str}_{types}.svg",
+            # bbox_inches="tight",
+            dpi=300,
+        )
+    plt.show()
+
+    fig, ax = figure_size_setup_thesis(size)
+    ax.plot(freq_SO, mean_velocities_S0, label="S0 mean")
+    ax.fill_between(
+        freq_SO,
+        mean_velocities_S0 - std_velocities_S0,
+        mean_velocities_S0 + std_velocities_S0,
+        color="b",
+        alpha=0.1,
+    )
+    if theoretical:
+        ax.plot(S0_t_freq, S0_t_phase, label="S0 theoretical")
+
+    ax.set_xlabel("Frequency (kHz)")
+    ax.set_ylabel("Phase velocity (m/s)")
+    # ax.set_title("Mean phase velocity and Standard Deviation for S0 mode")
+    ax.legend()
+    if save:
+        fig.savefig(
+            f"phase_velocity_S0_{step_size}_{size_str}_{types}.png",
+            dpi=300,
+            # bbox_inches="tight",
+        )
+        fig.savefig(
+            f"phase_velocity_S0_{step_size}_{size_str}_{types}.svg",
+            # bbox_inches="tight",
+            dpi=300,
+        )
+    plt.show()
+
+
 def velocites_modes():
     plate_width = 0.35  # meters
     plate_height = 0.25  # meters
     plate_thickness = 0.007  # meters
-    samplerate = 501000  # Hz
+    samplerate = 500000  # Hz
     num_samples = 501
     delta_i = plate_height / (num_samples - 1)
-    freq = 30000  # Hz
+    freq = 35000  # Hz
 
     # Generate example signal data
     wave_top, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(number=9)
@@ -1195,6 +1401,11 @@ def velocites_modes():
     S0_cut_19[34:153] = S0_19_cutted
     A0_cut_10[25:142] = A0_10_cutted
     A0_cut_19[36:153] = A0_19_cutted
+
+    S0_cut_10 = S0_10
+    S0_cut_19 = S0_19
+    A0_cut_10 = A0_10
+    A0_cut_19 = A0_19
     # plot the cut
     plt.plot(S0_cut_19, label="S0_19")
     plt.plot(S0_cut_10, label="S0_10")
@@ -1204,20 +1415,23 @@ def velocites_modes():
     plt.plot(A0_cut_10, label="A0_10")
     plt.legend()
     plt.show()
+    print(len(A0_cut_19), len(A0_cut_10), len(S0_cut_19), len(S0_cut_10))
     phase_AO, freq_AO = wp.phase_difference_plot(
         A0_cut_19,
         A0_cut_10,
         SAMPLE_RATE=501000,
-        BANDWIDTH=[0, 30000],
+        BANDWIDTH=[0, freq],
         title=f"A0 Phase difference, distance: {distances} ",
     )
     phase_SO, freq_SO = wp.phase_difference_plot(
         S0_cut_19,
         S0_cut_10,
         SAMPLE_RATE=501000,
-        BANDWIDTH=[0, 30000],
+        BANDWIDTH=[0, freq],
         title=f"S0 Phase difference, distance: {distances} ",
     )
+    print(f"shape of freq_AO: {freq_AO.shape}")
+    print(f"shape of freq_SO: {freq_SO.shape}")
     phase_velocity_A0 = wp.phase_velocity(
         phase_AO,
         freq_AO,
@@ -1917,8 +2131,67 @@ def comsol_data200():
     plt.show()
 
 
-def comsol_data50():
-    path = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\az_on_plate_top_LDPE20mm_15kHz_pulse_line1.txt"
+def comsol_wave_prop_all(save=False, size=0.75):
+    cmap = "viridis"
+    top_or_bottom = ["bot", "top", "top", "top", "top", "bot"]
+    details = ["y_02", "y_02", "y_01", "x_075", "diagonal", "diagonal"]
+    details_true = ["y=0.2", "y=0.2", "y=0.1", "x=0.75", "diagonal", "diagonal"]
+    size_name = str(size).replace(".", "")
+    for i in range(5, 11):
+        wave_data, x_pos, y_pos, z_pos, time_axis = get_comsol_data(i)
+        fig, axs = figure_size_setup_thesis(size)
+        if details[i - 5] in ["x_075", "diagonal"]:
+            # need to skip the 5 first sensors as they are in the source
+            print(wave_data.shape)
+            wave_data = wave_data[5:]
+            print(wave_data.shape)
+        min_val = np.amin(wave_data)
+        max_val = np.amax(wave_data)
+        print(f"min val is: {min_val}")
+        print(f"max val is: {max_val}")
+        if details[i - 5] == "x_075":
+            im = axs.imshow(
+                wave_data.T,
+                aspect="auto",
+                cmap=cmap,
+                extent=[y_pos[5], y_pos[-1], 1000, 0],
+                vmin=min_val,
+                vmax=max_val,
+            )
+        else:
+            im = axs.imshow(
+                wave_data.T,
+                aspect="auto",
+                cmap=cmap,
+                extent=[x_pos[0], x_pos[-1], 1000, 0],
+                vmin=min_val,
+                vmax=max_val,
+            )
+        cbar = plt.colorbar(im)
+        cbar.set_label(r"Accleration ($\mathrm{m/s^2}$)")
+        if not save:
+            axs.set_title(
+                f"Wave Through Plate at {top_or_bottom[i-5]} {details_true[i-5]}"
+            )
+        axs.set_ylabel(r"Time ($\mathrm{\mu s}}$)")
+        axs.set_xlabel("Position (m)")
+        # save figure as png and svg
+        if save:
+            fig.savefig(
+                f"wave_prop_{top_or_bottom[i-5]}_{details[i-5]}_20mm_virdis_{size_name}_notitle.png",
+                dpi=300,
+                format="png",
+            )
+            fig.savefig(
+                f"wave_prop_{top_or_bottom[i-5]}_{details[i-5]}_20mm_virdis_{size_name}_notitle.svg",
+                dpi=300,
+                format="svg",
+            )
+        plt.show()
+
+
+def comsol_data50(save=False):
+    path = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\az_on_plate_top_LDPE20mm_15kHz_pulse_line2.txt"
     cmap = "viridis"
     number_of_nodes = 50
     with open(path, "r") as f1:
@@ -1948,7 +2221,7 @@ def comsol_data50():
     # for the x axis we need to ignore the first sensors as they are in the source
 
     # wave_data = wave_data[5:]
-    fig, axs = figure_size_setup()
+    fig, axs = figure_size_setup_thesis()
     min_val = np.amin(wave_data)
     max_val = np.amax(wave_data)
     print(f"min val is: {min_val}")
@@ -1964,38 +2237,39 @@ def comsol_data50():
     )
     cbar = plt.colorbar(im)
     cbar.set_label(r"Accleration ($\mathrm{m/s^2}$)")
-    axs.set_title("Wave Through Plate at y=0.1m")
+    axs.set_title("Wave Through Plate at y=0.2m")
     axs.set_ylabel(r"Time ($\mathrm{\mu s}}$)")
     axs.set_xlabel("Position (m)")
     # save figure as png and svg
-    fig.savefig("wave_prop_top_y_02_20mm_virdis.png", dpi=300, format="png")
-    fig.savefig("wave_prop_top_y_02_20mm_virdis.svg", dpi=300, format="svg")
+    if save:
+        fig.savefig("wave_prop_top_y_02_20mm_virdis.png", dpi=300, format="png")
+        fig.savefig("wave_prop_top_y_02_20mm_virdis.svg", dpi=300, format="svg")
     plt.show()
 
-    # Create a 3D figure
-    x_index = np.linspace(0, 0.345, num=number_of_nodes)
+    # # Create a 3D figure
+    # x_index = np.linspace(0, 0.345, num=number_of_nodes)
 
-    # Create meshgrid for x and t
-    x, t = np.meshgrid(x_index, np.arange(501))  # Swap x and t
-    wave_data = wave_data.T
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection="3d")
-    surf = ax.plot_surface(x, t, wave_data, cmap=cmap)
-    # Set the axis labels and title
-    ax.set_xlabel("Position (mm)")
-    ax.set_ylabel("Time (samples)")
-    ax.set_zlabel("Amplitude")
-    ax.set_title("Wave Through Plate")
+    # # Create meshgrid for x and t
+    # x, t = np.meshgrid(x_index, np.arange(501))  # Swap x and t
+    # wave_data = wave_data.T
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection="3d")
+    # surf = ax.plot_surface(x, t, wave_data, cmap=cmap)
+    # # Set the axis labels and title
+    # ax.set_xlabel("Position (mm)")
+    # ax.set_ylabel("Time (samples)")
+    # ax.set_zlabel("Amplitude")
+    # ax.set_title("Wave Through Plate")
 
-    # Set the x and y axis limits
-    ax.set_xlim([x_index.min(), x_index.max()])
-    ax.set_ylim([0, 500])
+    # # Set the x and y axis limits
+    # ax.set_xlim([x_index.min(), x_index.max()])
+    # ax.set_ylim([0, 500])
 
-    # Set the colorbar
-    fig.colorbar(surf)
+    # # Set the colorbar
+    # fig.colorbar(surf)
 
-    # Show the plot
-    plt.show()
+    # # Show the plot
+    # plt.show()
 
 
 def comsol_data200_phase_diff(idx1=1, idx2=10):
@@ -2102,6 +2376,219 @@ def show_A0_and_S0_wave_comsol_y0_2(position):
     plt.plot(time_axis_top, S0, label="S0")
     plt.title(label=f"A0 and S0 at x={x_pos_top[position]}mm")
     plt.legend()
+    plt.show()
+
+
+def show_A0_and_S0_wave_comsol_diagonal(
+    position, save=False, size=0.75, expected_arrival_time=False
+):
+    vline = "novline"
+    size_name = str(size).replace(".", "_")
+    top_data, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(9)
+    bot_data, x_pos_bot, y_pos_bot, z_pos_bot, time_axis_bot = get_comsol_data(10)
+    diag_dist = np.sqrt(
+        (x_pos_top[position] - x_pos_top[0]) ** 2
+        + (y_pos_top[position] - y_pos_top[0]) ** 2
+    )
+    time_axis_top = time_axis_top * 1e3
+    time_axis_bot = time_axis_bot * 1e3
+    fig, ax = figure_size_setup_thesis(size)
+    ax.plot(time_axis_top, top_data[position], label="top raw data")
+    ax.plot(time_axis_bot, bot_data[position], label="bottom raw data")
+    if expected_arrival_time:
+        vline = "vline"
+        A0, S0 = read_DC_files()
+        A0_vel_ph = A0["A0 Phase velocity (m/ms)"]
+        S0_vel_ph = S0["S0 Phase velocity (m/ms)"]
+        A0_vel_gr = A0["A0 Energy velocity (m/ms)"]
+        S0_vel_gr = S0["S0 Energy velocity (m/ms)"]
+        # find max velocity and convert from (m/ms) to (m/s)
+        A0_vel_ph_max = np.max(A0_vel_ph) * 1000
+        S0_vel_ph_max = np.max(S0_vel_ph) * 1000
+        A0_vel_gr_max = np.max(A0_vel_gr) * 1000
+        S0_vel_gr_max = np.max(S0_vel_gr) * 1000
+        freq = A0["A0 f (kHz)"]
+        # find expected arrival time for S0 and A0 using max group velocity
+        A0_expected_arrival_time = (diag_dist / A0_vel_gr_max) * 1000
+        S0_expected_arrival_time = (diag_dist / S0_vel_gr_max) * 1000
+
+        # plot vline at this time in the plot
+        ax.axvline(
+            A0_expected_arrival_time,
+            color="k",
+            linestyle="--",
+            label="A0 expected arrival time",
+        )
+        ax.axvline(
+            S0_expected_arrival_time,
+            color="k",
+            linestyle=":",
+            label="S0 expected arrival time",
+        )
+
+    # caluclate the diagonal distance
+    print(f"distance from source to sensor: {diag_dist}")
+    # ax.set_title(f"Raw data at x={round(x_pos_top[position],2)}m")
+    ax.set_ylabel(r"Acceleration ($m/s^2$)")
+    ax.set_xlabel("Time [ms]")
+    ax.legend()
+    if save:
+        # relace . with _ in x pos string and distance
+        x_pos_string = str(round(x_pos_top[position], 2)).replace(".", "_")
+        diag_dist_string = str(round(diag_dist, 2)).replace(".", "_")
+        fig.savefig(
+            f"top_bot_raw_data_x_{x_pos_string}_{diag_dist_string}_{size_name}_notitle_{vline}.png",
+            dpi=300,
+            format="png",
+        )
+        fig.savefig(
+            f"top_bot_raw_data_x_{x_pos_string}_{diag_dist_string}_{size_name}_notitle_{vline}.svg",
+            dpi=300,
+            format="svg",
+        )
+    plt.show()
+    # the way the sensor is read in comsol the S0 andd A0 is calculated opposite of what is done for real data
+    fig, ax = figure_size_setup_thesis(size)
+    S0 = (top_data[position] - bot_data[position]) / 2
+    A0 = (top_data[position] + bot_data[position]) / 2
+    ax.plot(time_axis_top, S0, label="S0")
+    ax.plot(time_axis_top, top_data[position], label="top raw data")
+    ax.set_ylabel(r"Acceleration ($m/s^2$)")
+    ax.set_xlabel("Time [ms]")
+    if expected_arrival_time:
+        ax.axvline(
+            S0_expected_arrival_time,
+            color="k",
+            linestyle=":",
+            label="S0 expected arrival time",
+        )
+    # ax.set_title(label=f"S0 at x={round(x_pos_top[position],2)}m")
+    ax.legend()
+    if save:
+        fig.savefig(
+            f"S0_x_{x_pos_string}_{diag_dist_string}_{size_name}_notitle_{vline}.png",
+            dpi=300,
+            format="png",
+        )
+        fig.savefig(
+            f"S0_x_{x_pos_string}_{diag_dist_string}_{size_name}_notitle_{vline}.svg",
+            dpi=300,
+            format="svg",
+        )
+    plt.show()
+    fig, ax = figure_size_setup_thesis(size)
+    ax.plot(time_axis_top, A0, label="A0")
+    ax.plot(time_axis_top, top_data[position], label="top raw data")
+    ax.set_ylabel(r"Acceleration ($m/s^2$)")
+    ax.set_xlabel("Time [ms]")
+    # ax.set_title(label=f"A0 at x={round(x_pos_top[position],2)}m")
+    if expected_arrival_time:
+        ax.axvline(
+            A0_expected_arrival_time,
+            color="k",
+            linestyle="--",
+            label="A0 expected arrival time",
+        )
+    ax.legend()
+    if save:
+        fig.savefig(
+            f"A0_x_{x_pos_string}_{diag_dist_string}_{size_name}_notitle_{vline}.png",
+            dpi=300,
+            format="png",
+        )
+        fig.savefig(
+            f"A0_x_{x_pos_string}_{diag_dist_string}_{size_name}_notitle_{vline}.svg",
+            dpi=300,
+            format="svg",
+        )
+    plt.show()
+    fig, ax = figure_size_setup_thesis(size)
+    ax.plot(time_axis_top, A0, label="A0")
+    ax.plot(time_axis_top, S0, label="S0")
+    ax.set_ylabel(r"Acceleration ($m/s^2$)")
+    ax.set_xlabel("Time [ms]")
+    # ax.set_title(label=f"A0 and S0 at x={round(x_pos_top[position],2)}m")
+    if expected_arrival_time:
+        ax.axvline(
+            A0_expected_arrival_time,
+            color="k",
+            linestyle="--",
+            label="A0 expected arrival time",
+        )
+        ax.axvline(
+            S0_expected_arrival_time,
+            color="k",
+            linestyle=":",
+            label="S0 expected arrival time",
+        )
+    ax.legend()
+    if save:
+        fig.savefig(
+            f"A0_S0_x_{x_pos_string}_{diag_dist_string}_{size_name}_notitle_{vline}.png",
+            dpi=300,
+            format="png",
+        )
+        fig.savefig(
+            f"A0_S0_x_{x_pos_string}_{diag_dist_string}_{size_name}_notitle_{vline}.svg",
+            dpi=300,
+            format="svg",
+        )
+    plt.show()
+    # pad data before fft
+    top_data_fft = np.fft.fft(top_data[position], n=2**18)
+    bot_data_fft = np.fft.fft(bot_data[position], n=2**18)
+    A0_fft = np.fft.fft(A0, n=2**18)
+    S0_fft = np.fft.fft(S0, n=2**18)
+    # get the frequency axis for the padded fft data
+    freq_axis = np.fft.fftfreq(len(top_data_fft), d=1 / 500e3) / 1000
+    # only look at the positive frequencies and fft data
+    freq_axis = freq_axis[: len(freq_axis) // 2]
+    top_data_fft = top_data_fft[: len(top_data_fft) // 2]
+    bot_data_fft = bot_data_fft[: len(bot_data_fft) // 2]
+    A0_fft = A0_fft[: len(A0_fft) // 2]
+    S0_fft = S0_fft[: len(S0_fft) // 2]
+    # plot the fft data in db scale
+    fig, ax = figure_size_setup_thesis(size)
+    ax.plot(freq_axis, 20 * np.log10(np.abs(top_data_fft)), label="top data")
+    ax.plot(freq_axis, 20 * np.log10(np.abs(bot_data_fft)), label="bottom data")
+    # limit the x axis to the range of interest
+    ax.set_xlim([0, 40])
+    ax.set_ylabel("Amplitude [dB]")
+    ax.set_xlabel("Frequency [kHz]")
+    ax.set_title(label=f"FFT of raw data at x={round(x_pos_top[position],2)}m")
+    ax.legend()
+    if save:
+        fig.savefig(
+            f"fft_x_{x_pos_string}_{diag_dist_string}_{size_name}_notitle_{vline}.png",
+            dpi=300,
+            format="png",
+        )
+        fig.savefig(
+            f"fft_x_{x_pos_string}_{diag_dist_string}_{size_name}_notitle_{vline}.svg",
+            dpi=300,
+            format="svg",
+        )
+    plt.show()
+    fig, ax = figure_size_setup_thesis(size)
+    ax.plot(freq_axis, 20 * np.log10(np.abs(A0_fft)), label="A0")
+    ax.plot(freq_axis, 20 * np.log10(np.abs(S0_fft)), label="S0")
+    # limit the x axis to the range of interest
+    ax.set_xlim([0, 40])
+    ax.set_ylabel("Amplitude [dB]")
+    ax.set_xlabel("Frequency [kHz]")
+    ax.set_title(label=f"FFT of A0 and S0 at x={round(x_pos_top[position],2)}m")
+    ax.legend()
+    if save:
+        fig.savefig(
+            f"fft_A0_S0_x_{x_pos_string}_{diag_dist_string}_{size_name}_notitle_{vline}.png",
+            dpi=300,
+            format="png",
+        )
+        fig.savefig(
+            f"fft_A0_S0_x_{x_pos_string}_{diag_dist_string}_{size_name}_notitle_{vline}.svg",
+            dpi=300,
+            format="svg",
+        )
     plt.show()
 
 
@@ -2249,66 +2736,41 @@ def velocities():
     )
 
 
-def pressure_wave_oscilloscope():
-    data1_ch1 = csv_to_df_thesis("scope", "scope_0_1", scope=True)
-    data1_ch4 = csv_to_df_thesis("scope", "scope_0_4", scope=True)
-    data2_ch1 = csv_to_df_thesis("scope", "scope_1_1", scope=True)
-    data2_ch4 = csv_to_df_thesis("scope", "scope_1_4", scope=True)
-    data3_ch1 = csv_to_df_thesis("scope", "scope_2_1", scope=True)
-    data3_ch4 = csv_to_df_thesis("scope", "scope_2_4", scope=True)
-    # plt.plot(data1_ch1['second'], data1_ch1['Volt'], label='ch1')
-    # plt.plot(data1_ch4['second'], data1_ch4['Volt'], label='ch4')
-    # plt.plot(data2_ch1['second'], data2_ch1['Volt'], label='ch1')
-    # plt.plot(data2_ch4['second'], data2_ch4['Volt'], label='ch4')
-    # plt.plot(data3_ch1['second'], data3_ch1['Volt'], label='ch1')
-    # plt.plot(data3_ch4['second'], data3_ch4['Volt'], label='ch4')
-    # plt.legend()
-    # plt.show()
-    # plt.plot(data2_ch1['second'][300:], data2_ch1['Volt'][300:], label='ch1')
-    # plt.show()
-    print(len(data1_ch1))
-    # find peaks of the ch1 signal
-    peaks, _ = signal.find_peaks(data1_ch1["Volt"], height=0.2)
-    peaks2, _ = signal.find_peaks(data2_ch1["Volt"][300:], height=0.1)
-    peaks3, _ = signal.find_peaks(data3_ch1["Volt"], height=0.05)
-    # plt.plot(data1_ch1['second'], data1_ch1['Volt'], label='data1ch1')
-    # plt.plot(data1_ch1['second'][peaks], data1_ch1['Volt'][peaks], "x")
-    # plt.plot(data2_ch1['second'], data2_ch1['Volt'], label='data2ch1')
-    # plt.plot(data2_ch1['second'][peaks2], data2_ch1['Volt'][peaks2], "x")
-    # plt.plot(data3_ch1['second'], data3_ch1['Volt'], label='data3ch1')
-    # plt.plot(data3_ch1['second'][peaks3], data3_ch1['Volt'][peaks3], "x")
-    # plt.legend()
-    # plt.show()
-
-    plt.plot(data3_ch1["second"], data3_ch1["Volt"], label="data3ch1")
-    plt.plot(data3_ch1["second"][peaks3], data3_ch1["Volt"][peaks3], "x")
-    plt.legend()
+def pressure_wave_oscilloscope(size=0.75, save=False):
+    data = csv_to_df_thesis("scope", "scope_2_1", scope=True)
+    size_str = str(size).replace(".", "_")
+    peaks, _ = signal.find_peaks(data["Volt"], height=0.05)
+    data["second"] = data["second"] * 1e6
+    time = data["second"][peaks]
+    fig, ax = figure_size_setup_thesis(size)
+    # convert time axis to microseconds
+    time_unit = r"$\mathrm{\mu}$s"
+    ax.plot(data["second"], data["Volt"])
+    ax.plot(data["second"][peaks], data["Volt"][peaks], "x")
+    ax.set_xlabel(r"Time ($\mathrm{\mu}$s)")
+    ax.set_ylabel("Voltage (V)")
+    # annotate the first peak with the time at that peak
+    ax.annotate(
+        f"{time.values[0]} {time_unit}", (time.values[0], data["Volt"][peaks[0]])
+    )
+    if save:
+        fig.savefig(
+            f"pressure_wave_oscilloscope_{size_str}.svg",
+            format="svg",
+            dpi=300,
+            # bbox_inches="tight",
+        )
+        fig.savefig(
+            f"pressure_wave_oscilloscope_{size_str}.png",
+            format="png",
+            dpi=300,
+            # bbox_inches="tight",
+        )
     plt.show()
-    time = data3_ch1["second"][peaks3]
 
     print(f"time is {time.values[0]} s")
-    plate_wave_vel = (2 * 0.02) / time.values[0]
+    plate_wave_vel = (2 * 0.02) / (time.values[0] * 1e-6)
     print(f"plate wave velocity is {plate_wave_vel} m/s")
-    # #find the time difference between 0 and the peak
-    # time_diff = data1_ch1['second'][peaks[0]] - data1_ch1['second'][0]
-    # print(f'time difference is {time_diff} s')
-    # time_diff2 = data2_ch1['second'][peaks2[0]] - data2_ch1['second'][0]
-    # print(f'time difference is {time_diff2} s')
-    # time_diff3 = data3_ch1['second'][peaks3[0]] - data3_ch1['second'][0]
-    # print(f'time difference is {time_diff3} s')
-    # #distance is 20 mm and 10 mm
-    # velocity20 = 0.02 / time_diff
-    # velocity10 = 0.01 / time_diff
-    # print(f'velocity20 is {velocity20} m/s')
-    # print(f'velocity10 is {velocity10} m/s')
-    # velocity20 = 0.02 / time_diff2
-    # velocity10 = 0.01 / time_diff2
-    # print(f'velocity20 is {velocity20} m/s')
-    # print(f'velocity10 is {velocity10} m/s')
-    # velocity20 = 0.02 / time_diff3
-    # velocity10 = 0.01 / time_diff3
-    # print(f'velocity20 is {velocity20} m/s')
-    # print(f'velocity10 is {velocity10} m/s')
 
 
 def comsol_pulse():
@@ -2423,7 +2885,7 @@ def gen_pulse_dispersion():
     plt.show()
 
 
-def theory_disperson_curve():
+def theory_disperson_curve(save=False):
     A, S = read_DC_files(2)
     fig, axs = figure_size_setup()
     number_modes = 3
@@ -2464,9 +2926,149 @@ def theory_disperson_curve():
     # set x limit
     axs.set_xlim([0, 80])
     # axs.legend()
-    fig.savefig("dispersion_curve_theory_LDPE_notthickness.png", dpi=300, format="png")
-    fig.savefig("dispersion_curve_theory_LDPE_notthickness.svg", dpi=300, format="svg")
+    if save:
+        fig.savefig(
+            "dispersion_curve_theory_LDPE_notthickness.png", dpi=300, format="png"
+        )
+        fig.savefig(
+            "dispersion_curve_theory_LDPE_notthickness.svg", dpi=300, format="svg"
+        )
     plt.show()
+
+
+def COMSOL_velocity_curve(
+    size=0.75,
+    save=False,
+    filenum=4,
+    y_max=1.7,
+    m_per_s=True,
+    freq_max=35,
+    name="COMSOL",
+    number_modes=2,
+):
+    A, S = read_DC_files(filenum)
+    size_name = str(size).replace(".", "_")
+    fig, axs = figure_size_setup_thesis(size)
+    thickness = 0.02
+
+    if m_per_s:
+        multiplier = 1000
+    else:
+        multiplier = 1
+    y_max = y_max * multiplier
+    for i in range(number_modes):
+        Afrekvens_string = "A" + str(i) + " f (kHz)"  # A0 f (kHz)
+        Sfrekvens_string = "S" + str(i) + " f (kHz)"  # S0 f (kHz)
+        A_veloc_string = (
+            "A" + str(i) + " Phase velocity (m/ms)"
+        )  # A0 Phase velocity (m/ms)
+        S_veloc_string = (
+            "S" + str(i) + " Phase velocity (m/ms)"
+        )  # S0 Phase velocity (m/ms)
+        A_group_veloc_string = (
+            "A" + str(i) + " Energy velocity (m/ms)"
+        )  # A0 Energy velocity (m/ms)
+        S_group_veloc_string = (
+            "S" + str(i) + " Energy velocity (m/ms)"
+        )  # S0 Energy velocity (m/ms)
+
+        A_x = A[Afrekvens_string]
+        S_x = S[Sfrekvens_string]
+        A_y = A[A_veloc_string] * multiplier
+        S_y = S[S_veloc_string] * multiplier
+        A_group_y = A[A_group_veloc_string] * multiplier
+        S_group_y = S[S_group_veloc_string] * multiplier
+
+        axs.plot(A_x, A_y, "r")
+        axs.plot(S_x, S_y, "b")
+        axs.plot(A_x, A_group_y, "r--")
+        axs.plot(S_x, S_group_y, "b--")
+        annotation_y_A = min(
+            y_max - 0.22 * multiplier, A_y.iloc[1]
+        )  # limit to max of 3.5
+        annotation_y_S = min(
+            y_max - 0.22 * multiplier, S_y.iloc[1]
+        )  # limit to max of 3.5
+
+        axs.annotate(
+            "A" + str(i),
+            xy=(A_x.iloc[1], annotation_y_A),
+            xytext=(10, 10),
+            textcoords="offset points",
+            color="red",
+        )
+        axs.annotate(
+            "S" + str(i),
+            xy=(S_x.iloc[1], annotation_y_S),
+            xytext=(10, 10),
+            textcoords="offset points",
+            color="blue",
+        )
+    # axs.set_xlabel(r'Frequency (kHz)$\cdot$ thickness (mm)')
+    axs.set_xlabel(r"Frequency (kHz)")
+    if m_per_s:
+        axs.set_ylabel("Velocity (m/s)")
+    else:
+        axs.set_ylabel("Velocity (m/ms)")
+
+    # axs.set_title("Dispersion curve LDPE")
+    # set x limit
+    axs.set_xlim([0, freq_max])
+    axs.set_ylim([0, y_max])
+    # Create custom lines for the legend
+    phase_line = mlines.Line2D([], [], color="k", label="Phase velocity")
+    group_line = mlines.Line2D(
+        [], [], color="k", linestyle="--", label="Group velocity"
+    )
+
+    # Add the lines to the legend
+    axs.legend(handles=[phase_line, group_line])
+
+    if save:
+        fig.savefig(
+            f"dispersion_curve_{name}_LDPE_notthickness_{size_name}.png",
+            dpi=300,
+            format="png",
+        )
+        fig.savefig(
+            f"dispersion_curve_{name}_LDPE_notthickness_{size_name}.svg",
+            dpi=300,
+            format="svg",
+        )
+    plt.show()
+
+
+def objective(x, density, vp):
+    # x[0] corresponds to Poisson's ratio (v), x[1] corresponds to Young's modulus (E)
+
+    # Calculate measured bulk modulus
+    measured_M = density * vp**2
+
+    # Calculate bulk modulus with the given values of v and E
+    calculated_M = (x[1] * (1 - x[0])) / ((1 + x[0]) * (1 - 2 * x[0]))
+
+    # Return the difference
+    return abs(measured_M - calculated_M)
+
+
+def find_best_values(density=935.7, vp=2527.646):
+    # Initial guess (midpoint of expected range)
+    v0 = (0.38 + 0.46) / 2
+    E0 = (0.9e9 + 3.5e9) / 2
+    x0 = np.array([v0, E0])
+
+    # Bounds for v and E
+    bounds = [(0.38, 0.46), (0.9e9, 3.5e9)]
+
+    # Run the optimization
+    result = minimize(objective, x0, args=(density, vp), bounds=bounds, tol=1e-12)
+    best_v = result.x[0]
+    best_E = result.x[1]
+    smallest_diff = result.fun
+    print(f"Best Poisson's ratio: {best_v}")
+    print(f"Best Young's modulus: {best_E}")
+    print(f"Smallest difference: {smallest_diff}")
+    return best_v, best_E, smallest_diff
 
 
 def calculate_velocity(E, rho, nu):
@@ -2475,10 +3077,11 @@ def calculate_velocity(E, rho, nu):
 
 def find_combinations_for_velocity_range(target_velocity=2527):
     def find_combinations_for_velocity(target_velocity):
-        density_range = range(900, 1000, 10)  # Range of densities in kg/m^3
+        density = 936  # Range of densities in kg/m^3
         youngs_modulus_range = [
             i * 0.05 for i in range(18, 121)
         ]  # Range of Young's moduli in GPa with a step size of 0.05
+        print(f"max of youngs_modulus_range: {max(youngs_modulus_range)}")
         poisson_ratio_range = [
             i * 0.05 for i in range(0, 11)
         ]  # Range of Poisson's ratios with a step size of 0.05
@@ -2487,22 +3090,19 @@ def find_combinations_for_velocity_range(target_velocity=2527):
         closest_velocity_diff = float("inf")
         found_combinations = []
 
-        for density in density_range:
-            for youngs_modulus in youngs_modulus_range:
-                for poisson_ratio in poisson_ratio_range:
-                    # Convert Young's modulus from GPa to Pa
-                    E = youngs_modulus * 1e9
-                    velocity = calculate_velocity(E, density, poisson_ratio)
-                    velocity_diff = abs(velocity - target_velocity)
+        for youngs_modulus in youngs_modulus_range:
+            for poisson_ratio in poisson_ratio_range:
+                # Convert Young's modulus from GPa to Pa
+                E = youngs_modulus * 1e9
+                velocity = calculate_velocity(E, density, poisson_ratio)
+                velocity_diff = abs(velocity - target_velocity)
 
-                    if velocity_diff < closest_velocity_diff:
-                        closest_combination = (density, youngs_modulus, poisson_ratio)
-                        closest_velocity_diff = velocity_diff
+                if velocity_diff < closest_velocity_diff:
+                    closest_combination = (density, youngs_modulus, poisson_ratio)
+                    closest_velocity_diff = velocity_diff
 
-                    if velocity == target_velocity:
-                        found_combinations.append(
-                            (density, youngs_modulus, poisson_ratio)
-                        )
+                if velocity == target_velocity:
+                    found_combinations.append((density, youngs_modulus, poisson_ratio))
 
         if found_combinations:
             return found_combinations
@@ -2514,7 +3114,6 @@ def find_combinations_for_velocity_range(target_velocity=2527):
     if isinstance(combinations, list):
         print("Combinations that give a velocity of", target_velocity, "m/s:")
         for combination in combinations:
-            density = combination[0]
             youngs_modulus = combination[1]
             poisson_ratio = combination[2]
             velocity = calculate_velocity(youngs_modulus * 1e9, density, poisson_ratio)
@@ -2529,14 +3128,11 @@ def find_combinations_for_velocity_range(target_velocity=2527):
             print("Velocity:", velocity, "m/s")
         return combinations
     else:
-        density = combinations[0]
         youngs_modulus = combinations[1]
         poisson_ratio = combinations[2]
         velocity = calculate_velocity(youngs_modulus * 1e9, density, poisson_ratio)
         print("No exact match found. Closest combination:")
         print(
-            "Density:",
-            density,
             "kg/m^3, Young's Modulus:",
             youngs_modulus,
             "GPa, Poisson's Ratio:",
@@ -2544,6 +3140,50 @@ def find_combinations_for_velocity_range(target_velocity=2527):
         )
         print("Velocity:", velocity, "m/s")
         return combinations
+
+
+def REAL_plate_velocities():
+    df = csv_to_df_thesis("plate20mm\\setup1_vegard\\chirp", "chirp_v5")
+    # frequency range from 100 to 40000 Hz samplerate of 150000 Hz
+    freqs = np.linspace(100, 40000, 150000)
+    channels = ["channel 1", "channel 2"]
+    df = wp.preprocess_df(df, detrend=True)
+    # check if dataframe has a column with name wave_gen
+    if "wave_gen" in df.columns:
+        chirp = df["wave_gen"].to_numpy()
+        plt.plot(chirp)
+        plt.show()
+
+    df_sig_only = df.drop(columns=["wave_gen"])
+    df_sig_only = df_sig_only.iloc[170000:]
+    plt.Figure(figsize=(16, 14))
+    plt.plot(df_sig_only)
+    plt.xlabel("Samples")
+    plt.ylabel("Amplitude")
+    plt.show()
+    compressed_df = wp.compress_chirp(df_sig_only, chirp, use_recorded_chirp=True)
+    plt.Figure(figsize=(16, 14))
+    plt.plot(compressed_df[channels[0]], label=channels[0])
+    plt.plot(compressed_df[channels[1]], label=channels[1])
+    plt.xlabel("Samples")
+    plt.ylabel("Amplitude")
+    plt.legend()
+    # plt.savefig('sig'+file_name, format=file_format,dpi=300)
+    plt.show()
+
+    s1t = compressed_df[channels[0]]
+
+    s2t = compressed_df[channels[1]]
+
+    # wp.plot_velocities(
+    #     phase,
+    #     freq,
+    #     0.10,
+    #     savefig=False,
+    #     filename="phase_velocity_10cm.svg",
+    #     file_format="svg",
+    #     material="LDPE_tonni20mm",
+    # )
 
 
 if __name__ == "__main__":

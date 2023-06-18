@@ -15,24 +15,36 @@ def main():
     # r.show_A0_and_S0_wave()
     # r.comsol_data50()
     # r.un_reassigned_spectrogram()
-    # r.show_A0_and_S0_wave_comsol_y0_2(11)
+    # r.show_A0_and_S0_wave_comsol_diagonal(20, save=True, size=0.45, expected_arrival_time=False)
     # r.warping_map()
     # r.dispersion_compensation_Wilcox(pertubation=True,alpha=0.2)
     # r.dispersion_compensation_Wilcox(position=25)
     # r.wave_number_to_omega()
-    # r.velocites_modes()
+    # r.all_calculate_phase_velocities(0.75, save=False)
     # r.velocites_modes()
     # r.draw_simulated_plate()
     # r.testing_wilcox_disp()
     # r.test_dispersion_compensation_gen_signals()
-    # r.pressure_wave_oscilloscope()
+    # r.pressure_wave_oscilloscope(save=True)
     # r.comsol_pulse()
     # r.gen_pulse_dispersion()
     # r.theory_disperson_curve()
-    # r.find_combinations_for_velocity()
+    # r.find_combinations_for_velocity_range()
     # print(r.calculate_velocity(0.97357*1e9, 910, 0.468908))
     # r.draw_all_plates()
-    r.touch_signal_plot()
+    # r.touch_signal_plot()
+    # r.comsol_wave_prop_all()
+    # r.COMSOL_velocity_curve(
+    #     save=True,
+    #     name="real",
+    #     filenum=5,
+    #     y_max=2.5,
+    #     number_modes=2,
+    #     freq_max=45,
+    #     size=0.45,
+    # )
+    # r.find_best_values()
+    r.REAL_plate_velocities()
     pass
 
 
