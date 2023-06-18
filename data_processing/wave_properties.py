@@ -15,7 +15,7 @@ import data_processing.preprocessing as pp
 
 # sb.set_theme(style="darkgrid")
 # sb.set(font_scale=12/10)
-from data_viz_files.visualise_data import figure_size_setup
+from data_viz_files.visualise_data import figure_size_setup, figure_size_setup_thesis
 
 
 def get_estimated_gamma_correction(nu):
@@ -168,7 +168,7 @@ def phase_difference_plot(
         phase_diff = phase_diff[slices]
         freq = freq[slices]
     if show:
-        fig, axs = figure_size_setup(figsize)
+        fig, axs = figure_size_setup_thesis(figsize)
 
         axs.plot(freq, phase_diff)
         if title is not None:

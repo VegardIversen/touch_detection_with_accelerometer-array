@@ -2805,7 +2805,7 @@ def comsol_pulse():
     plt.show()
 
 
-def gen_pulse_dispersion():
+def gen_pulse_dispersion(size=0.75, save=False, distance=0.1):
     tc = 4.460504007831342e-04  # from matlab with this: tc = gauspuls('cutoff',3e3,0.6,[],-20);
     dt = 1e-6
     fs = 1 / dt
@@ -2814,13 +2814,14 @@ def gen_pulse_dispersion():
     pulse = yi
     pulse_window = signal.hann(len(pulse))
 
-    fig, axs = figure_size_setup()
+    fig, axs = figure_size_setup_thesis(size)
     axs.plot(t * 1000, pulse)
     axs.set_xlabel("Time (ms)")
     axs.set_ylabel("Amplitude")
     axs.set_title("Pulse")
-    fig.savefig("pulse_yi.png", dpi=300, format="png")
-    fig.savefig("pulse_yi.svg", dpi=300, format="svg")
+    if save:
+        fig.savefig("pulse_yi.png", dpi=300, format="png")
+        fig.savefig("pulse_yi.svg", dpi=300, format="svg")
     plt.show()
 
     pulse = pulse * pulse_window
@@ -2831,13 +2832,14 @@ def gen_pulse_dispersion():
     num_zeros = len(t_axis) - len(pulse)
     pulse_padded = np.pad(pulse, (0, num_zeros), "constant", constant_values=(0, 0))
 
-    fig, axs = figure_size_setup()
+    fig, axs = figure_size_setup_thesis(size)
     axs.plot(t_axis * 1000, pulse_padded)
     axs.set_xlabel("Time (ms)")
     axs.set_ylabel("Amplitude")
     axs.set_title("Pulse Padded")
-    fig.savefig("pulse_padded_yi.png", dpi=300, format="png")
-    fig.savefig("pulse_padded_yi.svg", dpi=300, format="svg")
+    if save:
+        fig.savefig("pulse_padded_yi.png", dpi=300, format="png")
+        fig.savefig("pulse_padded_yi.svg", dpi=300, format="svg")
     plt.show()
     data_info = sio.loadmat("velocity_data_20mm.mat")
     v_ph = data_info["phase_velocity"][0]
@@ -2849,19 +2851,21 @@ def gen_pulse_dispersion():
     N = len(pulse_padded)
     freq_range = np.linspace(0, f[-1], N // 2 + 1)
     v_ph_interp = interpolate.interp1d(f, v_ph, kind="linear")(freq_range)
-    fig, axs = figure_size_setup()
+    fig, axs = figure_size_setup_thesis(size)
     axs.plot(freq_range, v_ph_interp, "b")
     axs.plot(f, v_ph, "r")
     axs.set_ylabel("Phase velocity (m/s)")
     axs.set_xlabel("Frequency (Hz)")
     axs.set_title("Phase Velocity")
     axs.legend(["Interpolated", "Original"])
-    fig.savefig("phase_velocity.png", dpi=300, format="png")
-    fig.savefig("phase_velocity.svg", dpi=300, format="svg")
+    if save:
+        fig.savefig("phase_velocity.png", dpi=300, format="png")
+        fig.savefig("phase_velocity.svg", dpi=300, format="svg")
     plt.show()
     omega = 2 * np.pi * freq_range / v_ph_interp
     omega[np.isnan(omega)] = 0
     distance = 2.8  # max_distance / 2
+    distance_str = str(distance).replace(".", "_")
     print(distance)
     exp_term = np.exp(-1j * omega * distance)
     pulse_fft = np.fft.fft(pulse_padded)
@@ -2873,15 +2877,16 @@ def gen_pulse_dispersion():
     shifted_pulse = np.fft.ifft(shifted_pulse_fft, N)
     shifted_pulse = np.real(shifted_pulse)
 
-    fig, axs = figure_size_setup()
+    fig, axs = figure_size_setup_thesis(size)
     axs.plot(t_axis * 1000, shifted_pulse, "r")
     axs.plot(t_axis * 1000, pulse_padded, "b")
     axs.set_ylabel("Amplitude")
     axs.set_xlabel("Time (ms)")
     axs.set_title("Shifted Pulse")
     axs.legend(["Shifted", "Original"])
-    fig.savefig("shifted_pulse2_8_yi.png", dpi=300, format="png")
-    fig.savefig("shifted_pulse2_8_yi.svg", dpi=300, format="svg")
+    if save:
+        fig.savefig(f"shifted_pulse{distance_str}_yi.png", dpi=300, format="png")
+        fig.savefig(f"shifted_pulse{distance_str}_yi.svg", dpi=300, format="svg")
     plt.show()
 
 
@@ -2979,10 +2984,10 @@ def COMSOL_velocity_curve(
         A_group_y = A[A_group_veloc_string] * multiplier
         S_group_y = S[S_group_veloc_string] * multiplier
 
-        axs.plot(A_x, A_y, "r")
-        axs.plot(S_x, S_y, "b")
-        axs.plot(A_x, A_group_y, "r--")
-        axs.plot(S_x, S_group_y, "b--")
+        axs.plot(A_x, A_y, color="C0")
+        axs.plot(S_x, S_y, color="C1")
+        axs.plot(A_x, A_group_y, color="C0", linestyle="--")
+        axs.plot(S_x, S_group_y, color="C1", linestyle="--")
         annotation_y_A = min(
             y_max - 0.22 * multiplier, A_y.iloc[1]
         )  # limit to max of 3.5
@@ -2995,14 +3000,14 @@ def COMSOL_velocity_curve(
             xy=(A_x.iloc[1], annotation_y_A),
             xytext=(10, 10),
             textcoords="offset points",
-            color="red",
+            color="C0",
         )
         axs.annotate(
             "S" + str(i),
             xy=(S_x.iloc[1], annotation_y_S),
             xytext=(10, 10),
             textcoords="offset points",
-            color="blue",
+            color="C1",
         )
     # axs.set_xlabel(r'Frequency (kHz)$\cdot$ thickness (mm)')
     axs.set_xlabel(r"Frequency (kHz)")
@@ -3142,48 +3147,125 @@ def find_combinations_for_velocity_range(target_velocity=2527):
         return combinations
 
 
-def REAL_plate_velocities():
+def REAL_plate_velocities(theoretical=True, size=0.75, save=False):
     df = csv_to_df_thesis("plate20mm\\setup1_vegard\\chirp", "chirp_v5")
     # frequency range from 100 to 40000 Hz samplerate of 150000 Hz
     freqs = np.linspace(100, 40000, 150000)
-    channels = ["channel 1", "channel 2"]
+    channels = ["channel 2", "channel 3"]
     df = wp.preprocess_df(df, detrend=True)
+    SAMPLE_RATE = 150000
+    BANDWIDTH = [100, 40000]
+    duration_cut = 40
+    size_str = str(size).replace(".", "_")
+
     # check if dataframe has a column with name wave_gen
     if "wave_gen" in df.columns:
         chirp = df["wave_gen"].to_numpy()
-        plt.plot(chirp)
-        plt.show()
 
     df_sig_only = df.drop(columns=["wave_gen"])
-    df_sig_only = df_sig_only.iloc[170000:]
-    plt.Figure(figsize=(16, 14))
-    plt.plot(df_sig_only)
-    plt.xlabel("Samples")
-    plt.ylabel("Amplitude")
-    plt.show()
+    df_sig_only_copy = df_sig_only.copy()
+    # set all values before 170000 to 0
+
+    df_sig_only.iloc[:170000, :] = 0
     compressed_df = wp.compress_chirp(df_sig_only, chirp, use_recorded_chirp=True)
-    plt.Figure(figsize=(16, 14))
-    plt.plot(compressed_df[channels[0]], label=channels[0])
-    plt.plot(compressed_df[channels[1]], label=channels[1])
-    plt.xlabel("Samples")
-    plt.ylabel("Amplitude")
-    plt.legend()
-    # plt.savefig('sig'+file_name, format=file_format,dpi=300)
+    # plt.Figure(figsize=(16, 14))
+    # plt.plot(compressed_df[channels[0]], label=channels[0])
+    # plt.plot(compressed_df[channels[1]], label=channels[1])
+    # plt.xlabel("Samples")
+    # plt.ylabel("Amplitude")
+    # plt.legend()
+
+    # plt.show()
+
+    # exit()
+    start_index_ch1 = get_first_index_above_threshold(compressed_df[channels[0]], 600)
+    end_index_ch1 = start_index_ch1 + duration_cut
+    start_index_ch2 = get_first_index_above_threshold(compressed_df[channels[1]], 600)
+    end_index_ch2 = start_index_ch2 + duration_cut
+    cut_ch1 = compressed_df[channels[0]][start_index_ch1:end_index_ch1]
+    cut_ch2 = compressed_df[channels[1]][start_index_ch2:end_index_ch2]
+    # add window to signal
+    window = np.hamming(duration_cut)
+    cut_ch1_win = cut_ch1 * window
+    cut_ch2_win = cut_ch2 * window
+
+    # plot the cut signals
+    # fig2 = plt.Figure(figsize=(16, 14))
+    # plt.plot(cut_ch1_win, label=channels[0])
+    # plt.plot(cut_ch2_win, label=channels[1])
+    # plt.legend()
+    # plt.show()
+    # exit()
+    s1t = np.zeros(len(compressed_df[channels[0]]))
+    s1t[start_index_ch1:end_index_ch1] = cut_ch1_win
+    s2t = np.zeros(len(compressed_df[channels[1]]))
+    s2t[start_index_ch2:end_index_ch2] = cut_ch2_win
+
+    plt.plot(s1t)
+    plt.plot(s2t)
+    plt.show()
+    phase, freq = wp.phase_difference_plot(
+        s1t,
+        s2t,
+        # method=method,
+        n_pi=-0.97,
+        SAMPLE_RATE=SAMPLE_RATE,
+        BANDWIDTH=BANDWIDTH,
+        save_fig=False,
+        # file_name=file_name,
+        # file_format=file_format,
+        # figsize=figsize,
+        show=True,
+    )
+    phase_vel = wp.phase_velocity(phase, freq, 0.1, plot=True)
+    freq = freq / 1000
+    if theoretical:
+        A0_t, S0_t = read_DC_files(5)
+        A0_t_phase = A0_t["A0 Phase velocity (m/ms)"]
+        A0_t_freq = A0_t["A0 f (kHz)"]
+        S0_t_phase = S0_t["S0 Phase velocity (m/ms)"]
+        S0_t_freq = S0_t["S0 f (kHz)"]
+        # convert from m/ms to m/s
+        A0_t_phase = A0_t_phase * 1000
+        S0_t_phase = S0_t_phase * 1000
+    fig, ax = figure_size_setup_thesis()
+    ax.plot(freq, phase_vel, label="Measured")
+    if theoretical:
+        ax.plot(A0_t_freq, A0_t_phase, label="Theoretical")
+        # ax.plot(S0_t_freq, S0_t_phase, label="S0")
+    ax.set_xlabel("Frequency (kHz)")
+    ax.set_ylabel("Phase velocity (m/s)")
+    ax.set_xlim([0, 40])
+    ax.legend()
+    if save:
+        # save as png and svg
+        plt.savefig(
+            f"realplate_velocities_{size_str}.png",
+            format="png",
+            dpi=300,
+            # bbox_inches="tight",
+        )
+        plt.savefig(
+            f"realplate_velocities_{size_str}.svg",
+            format="svg",
+            dpi=300,
+            # bbox_inches="tight",
+        )
     plt.show()
 
-    s1t = compressed_df[channels[0]]
 
-    s2t = compressed_df[channels[1]]
-
-    # wp.plot_velocities(
-    #     phase,
-    #     freq,
-    #     0.10,
-    #     savefig=False,
-    #     filename="phase_velocity_10cm.svg",
-    #     file_format="svg",
-    #     material="LDPE_tonni20mm",
-    # )
+def print_material_values(rho=935.7, v_p=2527.646):
+    p, E, _ = find_best_values()
+    print(f"E: {E}")
+    nu = r"$\nu$"
+    print(f"{nu}: {p}")
+    G = E / (2 * (1 + p))
+    print(f"G: {G}")
+    V_s = np.sqrt(G / rho)
+    print(f"V_s: {V_s}")
+    V_p = np.sqrt(E / rho)
+    print(f"V_p calculated: {V_p}")
+    print(f"V_p measured: {v_p}")
 
 
 if __name__ == "__main__":
