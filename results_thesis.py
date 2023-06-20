@@ -280,13 +280,21 @@ def draw_all_plates():
         )
 
 
-def draw_simulated_plate(comsolefile=9):
-    position = 35
+def draw_simulated_plate(position=35, comsolefile=9, velocity=None):
+    # position = 35
     alpha = 0.4
     setup = SimulatedSetup(comsol_file=comsolefile)
     setup.draw()
-    # arrival_times, distances = setup.reflections()
-    # distances = sorted(distances)
+    if velocity is not None:
+        print(f"setting velocity: {velocity}")
+        setup.set_propagation_vel(velocity)
+    print(setup.get_propagation_vel())
+    distances = setup.get_travel_distances_at_position(position)
+    arrival_times = setup.get_arrival_times_at_position(position)
+    print(f"arrival times: {sorted(arrival_times)}")
+    distances = sorted(distances)
+    print(f"distances: {distances}")
+    return distances, arrival_times
     # theoretical_distances = setup.get_diagonal_distance(positions=[position, position+10])
     # print(f'distances from setup: {theoretical_distances}')
     # print(f'Arrial times: {sorted(arrival_times)}')
@@ -580,14 +588,6 @@ def dispersion_compensation_Wilcox(
     print(f"max distance wave: {max_distance_wave} m")
     # k = (2*np.pi*freq_vel)/v_ph #same length as freq_vel. Wavenumber domain
     k = np.where(abs(v_ph) > tolerance, (2 * np.pi * freq_vel) / v_ph, 0)
-    from scipy.io import savemat
-
-    velocity_dict = {
-        "phase_velocity": v_ph,
-        "group_velocity": v_gr,
-        "frequency": freq_vel,
-        "wavenumber": k,
-    }
 
     # Save the velocity dictionary in MATLAB format
     # savemat('velocity_data_7mm.mat', velocity_dict)
@@ -1096,6 +1096,9 @@ def read_DC_files(file_n=1):
     elif file_n == 5:
         path_A = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\REAL_PLATE_20_long_A_Lamb.xlsx"
         path_S = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\REAL_PLATE_20_long_S_Lamb.xlsx"
+    elif file_n == 6:
+        path_A = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\REAL_PLATE_250_A_Lamb.xlsx"
+        path_S = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\REAL_PLATE_250_S_Lamb.xlsx"
     dc_A0 = pd.read_excel(path_A)
     dc_S0 = pd.read_excel(path_S)
     return dc_A0, dc_S0
@@ -1123,7 +1126,7 @@ def get_velocity_at_freq(freq, meter_per_second=True):
     The velocities are in m/ms.
 
     """
-    A0, S0 = read_DC_files()
+    A0, S0 = read_DC_files(4)
     idx = (A0["A0 f (kHz)"] - freq).abs().idxmin()
     group_velocity_A0 = A0.loc[idx, "A0 Energy velocity (m/ms)"]
     phase_velocity_A0 = A0.loc[idx, "A0 Phase velocity (m/ms)"]
@@ -1191,7 +1194,7 @@ def all_calculate_phase_velocities(size=0.75, save=False, theoretical=True):
             (x_pos_bottom[j] - x_pos_bottom[i]) ** 2
             + (y_pos_bottom[j] - y_pos_bottom[i]) ** 2
         )
-        print(f"Sensor pair {i} and {j} with distance {distances} m")
+        # print(f"Sensor pair {i} and {j} with distance {distances} m")
         S0 = (wave_top - wave_bottom) / 2
         A0 = (wave_top + wave_bottom) / 2
 
@@ -1237,7 +1240,7 @@ def all_calculate_phase_velocities(size=0.75, save=False, theoretical=True):
         phase_SO, freq_SO = wp.phase_difference_plot(
             S0_padded_i, S0_padded_i_plus, SAMPLE_RATE=samplerate, BANDWIDTH=[0, freq]
         )
-        print(f"min freq_AO: {min(freq_AO)}")
+        # print(f"min freq_AO: {min(freq_AO)}")
         phase_velocity_A0 = wp.phase_velocity(phase_AO, freq_AO, distance=distances)
         phase_velocity_S0 = wp.phase_velocity(phase_SO, freq_SO, distance=distances)
 
@@ -1341,6 +1344,7 @@ def all_calculate_phase_velocities(size=0.75, save=False, theoretical=True):
             dpi=300,
         )
     plt.show()
+    return mean_velocities_A0, mean_velocities_S0, freq_AO
 
 
 def velocites_modes():
@@ -1592,14 +1596,26 @@ def get_comsol_data(number=2):
     elif number == 10:
         path = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\az_on_plate_bottom_LDPE20mm_15kHz_pulse_diagonal.txt"  # diagonal
         data_nodes = 100
+    elif number == 11:
+        path = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\az_on_plate_top_LDPE20mm_3kHz_pulse_diagonal.txt"  # diagonal
+        data_nodes = 100
+    elif number == 12:
+        path = r"C:\Users\vegar\OneDrive - NTNU\NTNU\Masteroppgave\spring2023\tonnidata\LDPE_20mm\az_on_plate_bottom_LDPE20mm_3kHz_pulse_diagonal.txt"  # diagonal
+        data_nodes = 100
 
     with open(path, "r") as f1:
         i = 0
-        time_axis = np.linspace(0, 1000e-6, num=501)
+        if number == 11 or number == 12:
+            time_axis = np.linspace(0, 3000e-6, num=1501)
+        else:
+            time_axis = np.linspace(0, 1000e-6, num=501)
         x_pos = np.zeros(data_nodes)
         y_pos = np.zeros(data_nodes)
         z_pos = np.zeros(data_nodes)
-        wave_data = np.zeros((data_nodes, 501))
+        if number == 11 or number == 12:
+            wave_data = np.zeros((data_nodes, 1501))
+        else:
+            wave_data = np.zeros((data_nodes, 501))
 
         for idx, line in enumerate(f1):
             tmp = line.split()
@@ -2429,7 +2445,7 @@ def show_A0_and_S0_wave_comsol_diagonal(
     # caluclate the diagonal distance
     print(f"distance from source to sensor: {diag_dist}")
     # ax.set_title(f"Raw data at x={round(x_pos_top[position],2)}m")
-    ax.set_ylabel(r"Acceleration ($m/s^2$)")
+    ax.set_ylabel(r"Acceleration ($\mathrm{m/s^2}$)")
     ax.set_xlabel("Time [ms]")
     ax.legend()
     if save:
@@ -2813,16 +2829,16 @@ def gen_pulse_dispersion(size=0.75, save=False, distance=0.1):
     yi, yq, ye = signal.gausspulse(t, fc=3e3, bw=0.6, retquad=True, retenv=True)
     pulse = yi
     pulse_window = signal.hann(len(pulse))
-
-    fig, axs = figure_size_setup_thesis(size)
-    axs.plot(t * 1000, pulse)
-    axs.set_xlabel("Time (ms)")
-    axs.set_ylabel("Amplitude")
-    axs.set_title("Pulse")
-    if save:
-        fig.savefig("pulse_yi.png", dpi=300, format="png")
-        fig.savefig("pulse_yi.svg", dpi=300, format="svg")
-    plt.show()
+    size_str = str(size).replace(".", "_")
+    # fig, axs = figure_size_setup_thesis(size)
+    # axs.plot(t * 1000, pulse)
+    # axs.set_xlabel("Time (ms)")
+    # axs.set_ylabel("Amplitude")
+    # axs.set_title("Pulse")
+    # if save:
+    #     fig.savefig("pulse_yi.png", dpi=300, format="png")
+    #     fig.savefig("pulse_yi.svg", dpi=300, format="svg")
+    # plt.show()
 
     pulse = pulse * pulse_window
 
@@ -2832,41 +2848,73 @@ def gen_pulse_dispersion(size=0.75, save=False, distance=0.1):
     num_zeros = len(t_axis) - len(pulse)
     pulse_padded = np.pad(pulse, (0, num_zeros), "constant", constant_values=(0, 0))
 
-    fig, axs = figure_size_setup_thesis(size)
-    axs.plot(t_axis * 1000, pulse_padded)
-    axs.set_xlabel("Time (ms)")
-    axs.set_ylabel("Amplitude")
-    axs.set_title("Pulse Padded")
-    if save:
-        fig.savefig("pulse_padded_yi.png", dpi=300, format="png")
-        fig.savefig("pulse_padded_yi.svg", dpi=300, format="svg")
-    plt.show()
-    data_info = sio.loadmat("velocity_data_20mm.mat")
-    v_ph = data_info["phase_velocity"][0]
-    v_gr = data_info["group_velocity"][0]
-    f = data_info["frequency"][0]
-    k = f / v_ph
+    # fig, axs = figure_size_setup_thesis(size)
+    # axs.plot(t_axis * 1000, pulse_padded)
+    # axs.set_xlabel("Time (ms)")
+    # axs.set_ylabel("Amplitude")
+    # axs.set_title("Pulse Padded")
+    # if save:
+    #     fig.savefig("pulse_padded_yi.png", dpi=300, format="png")
+    #     fig.savefig("pulse_padded_yi.svg", dpi=300, format="svg")
+    # plt.show()
+
+    A, S = read_DC_files(5)
+    # create a mask to limit the frequency range
+    mask = (A["A0 f (kHz)"] > 0.1) & (A["A0 f (kHz)"] < 40)
+    A0_t_phase = A["A0 Phase velocity (m/ms)"] * 1000
+    A0_t_freq = A["A0 f (kHz)"] * 1000
+    A0_group = A["A0 Energy velocity (m/ms)"] * 1000
+    A0_wavenumber = A["A0 Wavenumber (rad/mm)"]
+    A0_wavenumber = A0_wavenumber[mask]
+    A0_t_phase = A0_t_phase[mask]
+    A0_t_freq = A0_t_freq[mask]
+    A0_group = A0_group[mask]
+    print(f"type of A0_t_phase: {type(A0_t_phase)}")
+    print(f"type of A0_t_freq: {type(A0_t_freq)}")
+    print(f"type of A0_group: {type(A0_group)}")
+    # save values in a dict and store as a mat file
+    data = {
+        "phase_velocity": A0_t_phase.to_numpy(),
+        "frequency": A0_t_freq.to_numpy(),
+        "group_velocity": A0_group.to_numpy(),
+        "wavenumber": A0_wavenumber.to_numpy(),
+    }
+    scipy.io.savemat("A0.mat", data)
+
+    v_gr = A0_group
+    v_ph = A0_t_phase
+    # v_ph = (1 + 0.22) * v_ph
+    f = A0_t_freq.to_numpy()
+
+    k = (
+        f / v_ph
+    )  # to make the same as A0_wavenumber, multiply A0_wavenumber by 1000 and multiply k by 2*pi
     k[np.isnan(k)] = 0
-    max_distance = max(t_axis) * max(v_ph)
+    # f = f * 2 * np.pi
+
+    max_distance_phase = max(t_axis) * max(v_ph)
+    max_distance_group = max(t_axis) * max(v_gr)
+    print(f"max distance phase: {max_distance_phase}")
+    print(f"max distance group: {max_distance_group}")
     N = len(pulse_padded)
-    freq_range = np.linspace(0, f[-1], N // 2 + 1)
+    freq_range = np.linspace(f[0], f[-1], N // 2 + 1)
     v_ph_interp = interpolate.interp1d(f, v_ph, kind="linear")(freq_range)
-    fig, axs = figure_size_setup_thesis(size)
-    axs.plot(freq_range, v_ph_interp, "b")
-    axs.plot(f, v_ph, "r")
-    axs.set_ylabel("Phase velocity (m/s)")
-    axs.set_xlabel("Frequency (Hz)")
-    axs.set_title("Phase Velocity")
-    axs.legend(["Interpolated", "Original"])
-    if save:
-        fig.savefig("phase_velocity.png", dpi=300, format="png")
-        fig.savefig("phase_velocity.svg", dpi=300, format="svg")
-    plt.show()
+    # fig, axs = figure_size_setup_thesis(size)
+    # axs.plot(freq_range, v_ph_interp, "b")
+    # axs.plot(f, v_ph, "r")
+    # axs.set_ylabel("Phase velocity (m/s)")
+    # axs.set_xlabel("Frequency (Hz)")
+    # axs.set_title("Phase Velocity")
+    # axs.legend(["Interpolated", "Original"])
+    # if save:
+    #     fig.savefig("phase_velocity.png", dpi=300, format="png")
+    #     fig.savefig("phase_velocity.svg", dpi=300, format="svg")
+    # plt.show()
     omega = 2 * np.pi * freq_range / v_ph_interp
     omega[np.isnan(omega)] = 0
-    distance = 2.8  # max_distance / 2
+    # max_distance / 2
     distance_str = str(distance).replace(".", "_")
-    print(distance)
+    print(f"distance: {distance} m")
     exp_term = np.exp(-1j * omega * distance)
     pulse_fft = np.fft.fft(pulse_padded)
     pulse_fft = pulse_fft[
@@ -2878,15 +2926,118 @@ def gen_pulse_dispersion(size=0.75, save=False, distance=0.1):
     shifted_pulse = np.real(shifted_pulse)
 
     fig, axs = figure_size_setup_thesis(size)
-    axs.plot(t_axis * 1000, shifted_pulse, "r")
-    axs.plot(t_axis * 1000, pulse_padded, "b")
+    axs.plot(t_axis * 1000, pulse_padded)
+    axs.plot(t_axis * 1000, shifted_pulse)
     axs.set_ylabel("Amplitude")
     axs.set_xlabel("Time (ms)")
-    axs.set_title("Shifted Pulse")
-    axs.legend(["Shifted", "Original"])
+    # axs.set_title("Shifted Pulse")
+    axs.legend(["Original", "Shifted"])
     if save:
-        fig.savefig(f"shifted_pulse{distance_str}_yi.png", dpi=300, format="png")
-        fig.savefig(f"shifted_pulse{distance_str}_yi.svg", dpi=300, format="svg")
+        fig.savefig(
+            f"shifted_pulse{distance_str}_yi_{size_str}.png", dpi=300, format="png"
+        )
+        fig.savefig(
+            f"shifted_pulse{distance_str}_yi_{size_str}.svg", dpi=300, format="svg"
+        )
+    plt.show()
+    d_step, out_signal = dispersion_compensation(
+        t_axis, shifted_pulse, f, k, group_velocity=v_gr
+    )
+    # d_step_equallyspace = np.linspace(min(d_step), max(d_step), len(d_step))
+    out_signal_real = np.real(out_signal)
+
+    analytic_signal = signal.hilbert(out_signal_real)
+    envelope = np.abs(analytic_signal)
+    peak_index = np.argmax(envelope)
+    peak_distance = d_step[peak_index]
+    peak_value = envelope[peak_index]
+
+    fig, axs = figure_size_setup_thesis(size)
+    axs.plot(d_step, out_signal_real, label="Compensated signal")
+    axs.plot(d_step, envelope, label="Envelope")
+    # annotate and mark the maximum peak of the envelope with the distance with a dot and the distance with two decimals
+    axs.plot(
+        d_step[peak_index],
+        envelope[peak_index],
+        "o",
+        label=f"Peak at {round(d_step[peak_index],2)} m",
+    )
+    # axs.plot(t_axis * 1000, pulse_padded)
+    axs.set_ylabel("Amplitude")
+    axs.set_xlabel("Distance (m)")
+    # axs.set_title("Dispersion Compensated Pulse")
+    # axs.legend(["Compensated", "Original"])
+    axs.legend()
+    if save:
+        fig.savefig(
+            f"dispersion_compensated_pulse{distance_str}_yi_{size_str}.png",
+            dpi=300,
+            format="png",
+        )
+        fig.savefig(
+            f"dispersion_compensated_pulse{distance_str}_yi_{size_str}.svg",
+            dpi=300,
+            format="svg",
+        )
+    plt.show()
+
+    print(f"peak distance: {peak_distance}")
+    print(f"true distance: {distance}")
+    error_distance = peak_distance - distance
+    error_distance_div = peak_distance / distance
+    error_distance_perc = error_distance / distance * 100
+    error_distance_div_v2 = distance / peak_distance
+    print(f"error distance: {error_distance}")
+    print(f"error distance div: {error_distance_div}")
+    print(f"error distance div v2: {error_distance_div_v2}")
+    print(f"error distance perc: {error_distance_perc}")
+    correct_distance = peak_distance * 1 / 0.16
+    print(f"correct distance: {correct_distance}")
+    correction_value = 0.16
+
+    print(f"type of d_step: {type(d_step)}")
+    print(f"type of dispersion signal: {type(out_signal_real)}")
+    # Find the index that is closest to the desired shift
+    d_step_corrected = d_step / 0.16
+
+    # Interpolate your signal to the new distance axis
+    f = interpolate.interp1d(
+        d_step_corrected, out_signal_real, bounds_error=False, fill_value=0
+    )
+    signal_corrected = f(d_step)
+    analytic_signal = signal.hilbert(signal_corrected)
+    envelope = np.abs(analytic_signal)
+    peak_index = np.argmax(envelope)
+    d_step[peak_index]
+    fig, axs = figure_size_setup_thesis(size)
+    axs.plot(d_step, signal_corrected, label="Corrected signal")
+    # plot envelope
+    axs.plot(d_step, envelope, label="Envelope")
+    # annotate and mark the maximum peak of the envelope with the distance with a dot and the distance with two decimals
+    axs.plot(
+        d_step[peak_index],
+        envelope[peak_index],
+        "o",
+        label=f"Peak at {round(d_step[peak_index],2)} m",
+    )
+
+    # axs.plot(t_axis * 1000, pulse_padded)
+    axs.set_ylabel("Amplitude")
+    axs.set_xlabel("Distance (m)")
+    # axs.set_title("Dispersion Compensated Pulse")
+    # axs.legend(["Compensated", "Original"])
+    axs.legend()
+    if save:
+        fig.savefig(
+            f"dispersion_compensated_pulse{distance_str}_yi_corrected_{size_str}.png",
+            dpi=300,
+            format="png",
+        )
+        fig.savefig(
+            f"dispersion_compensated_pulse{distance_str}_yi_corrected_{size_str}.svg",
+            dpi=300,
+            format="svg",
+        )
     plt.show()
 
 
@@ -3266,6 +3417,432 @@ def print_material_values(rho=935.7, v_p=2527.646):
     V_p = np.sqrt(E / rho)
     print(f"V_p calculated: {V_p}")
     print(f"V_p measured: {v_p}")
+
+
+def COMSOL_dispersion(
+    position=20, size=0.75, save=False, theoretical=True, reflections=False
+):
+    A, S = read_DC_files(4)
+    size_str = str(size).replace(".", "_")
+    n_vlines = 1
+    # Setting up velocities
+    mask = (A["A0 f (kHz)"] > 0.1) & (A["A0 f (kHz)"] < 40)
+    A0_t_phase = A["A0 Phase velocity (m/ms)"] * 1000
+    A0_t_freq = A["A0 f (kHz)"] * 1000
+    A0_group = A["A0 Energy velocity (m/ms)"] * 1000
+    A0_wavenumber = A["A0 Wavenumber (rad/mm)"]
+    (
+        mean_velocities_A0,
+        mean_velocities_S0,
+        frequencies,
+    ) = all_calculate_phase_velocities()
+    # A0_wavenumber = A0_wavenumber[mask]
+    # A0_t_phase = A0_t_phase[mask]
+    # A0_t_freq = A0_t_freq[mask]
+    # A0_group = A0_group[mask]
+
+    if theoretical:
+        v_gr = A0_group
+        v_ph = A0_t_phase
+        f = A0_t_freq.to_numpy()
+
+    else:
+        v_ph = mean_velocities_A0
+        f = frequencies * 1000
+        v_gr = wp.group_velocity_phase(v_ph, f, plot=True)
+
+    # v_ph = (1 + 0.22) * v_ph
+
+    k = (
+        f / v_ph
+    )  # to make the same as A0_wavenumber, multiply A0_wavenumber by 1000 and multiply k by 2*pi
+    k[np.isnan(k)] = 0
+
+    # f = f * 2 * np.pi
+    # setting up comsol file
+    # top_data, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(9)
+    # bot_data, x_pos_bot, y_pos_bot, z_pos_bot, time_axis_bot = get_comsol_data(10)
+
+    top_data, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(11)
+    bot_data, x_pos_bot, y_pos_bot, z_pos_bot, time_axis_bot = get_comsol_data(12)
+    distance = np.sqrt(
+        (x_pos_top[position] - x_pos_top[0]) ** 2
+        + (y_pos_top[position] - y_pos_top[0]) ** 2
+    )
+    distance_str = str(round(distance, 2)).replace(".", "_")
+    # time_axis_ms = time_axis_top * 1e-3
+    # time_axis_seconds = time_axis_top * 1e-6
+    time_axis_seconds = time_axis_top
+    time_axis_ms = time_axis_seconds * 1e3
+    S0_pos = (top_data[position] - bot_data[position]) / 2
+    A0_pos = (top_data[position] + bot_data[position]) / 2
+    # A0_pos = top_data[position]
+    max_distance_phase = max(time_axis_seconds) * max(v_ph)
+    max_distance_group = max(time_axis_seconds) * max(v_gr)
+    print(f"max distance phase: {max_distance_phase}")
+    print(f"max distance group: {max_distance_group}")
+    # normalize the top data[0] and the A0_pos in order to compare them
+    top_data[0] = top_data[0] / max(top_data[0])
+    A0_pos = A0_pos / max(A0_pos)
+    fig, axs = figure_size_setup_thesis(size)
+    axs.plot(time_axis_ms, top_data[0], label="Source pulse")
+    axs.plot(time_axis_ms, A0_pos, label=f"Pulse at {round(distance,2)} m")
+    axs.set_ylabel("Amplitude")
+    axs.set_xlabel("Time (ms)")
+    axs.legend()
+    # axs.set_title("Shifted Pulse")
+
+    if save:
+        fig.savefig(
+            f"COMSOL_top_A0_{distance_str}_{size_str}_3khz.png", dpi=300, format="png"
+        )
+        fig.savefig(
+            f"COMSOL_top_A0_{distance_str}_{size_str}_3khz.svg", dpi=300, format="svg"
+        )
+    plt.show()
+
+    if theoretical:
+        d_step, out_signal = dispersion_compensation(
+            time_axis_seconds, A0_pos, f, k, group_velocity=v_gr
+        )
+    else:
+        d_step, out_signal = dispersion_compensation(time_axis_seconds, A0_pos, f, k)
+    # d_step_equallyspace = np.linspace(min(d_step), max(d_step), len(d_step))
+    out_signal_real = np.real(out_signal)
+
+    analytic_signal = signal.hilbert(out_signal_real)
+    envelope = np.abs(analytic_signal)
+    peak_index = np.argmax(envelope)
+    peak_distance = d_step[peak_index]
+    peak_value = envelope[peak_index]
+
+    # find the index where the envelope crosses a threshold value
+    threshold = 0.0016
+    threshold_index = (
+        np.where(envelope[40 + position :] > threshold)[0][0] + 40 + position
+    )
+    print(f"threshold index: {threshold_index}")
+    threshold_distance = d_step[threshold_index]
+    print(f"threshold distance: {threshold_distance}, true distance: {distance}")
+    estimated_distance_str = str(round(threshold_distance, 4)).replace(".", "_")
+    if reflections:
+        distances, arrival_times = draw_simulated_plate(velocity=max(v_gr))
+    fig, axs = figure_size_setup_thesis(size)
+    axs.plot(d_step, out_signal_real, label="Compensated signal")
+    axs.plot(d_step, envelope, label="Envelope")
+    # plot the vline at the true distance
+    axs.axvline(x=distance, color="k", linestyle="--", label="True distance")
+    axs.axvline(
+        x=threshold_distance, color="r", linestyle="--", label="Estimated distance"
+    )
+    # annotate and mark the maximum peak of the envelope with the distance with a dot and the distance with two decimals
+    # axs.plot(
+    #     d_step[peak_index],
+
+    #     envelope[peak_index],
+    #     "o",
+    #     label=f"Peak at {round(d_step[peak_index],2)} m",
+    # )
+    # axs.plot(t_axis * 1000, pulse_padded)
+    axs.set_ylabel("Amplitude")
+    axs.set_xlabel("Distance (m)")
+
+    # axs.set_title("Dispersion Compensated Pulse")
+    # axs.legend(["Compensated", "Original"])
+    if reflections:
+        n_vlines = 4
+        for i in range(1, n_vlines + 1):
+            axs.axvline(
+                x=distances[i],
+                color="k",
+                linestyle="--",
+                label=f"Simulated reflection {i+1}",
+            )
+    axs.legend()
+    if save:
+        fig.savefig(
+            f"dispersion_compensated_pulse_3khz_COMSOL_top_A0{distance_str}_{size_str}_estimated_{estimated_distance_str}_n_vlines_{n_vlines}.png",
+            dpi=300,
+            format="png",
+        )
+        fig.savefig(
+            f"dispersion_compensated_pulse_3khz_COMSOL_top_A0{distance_str}_{size_str}_estimated_{estimated_distance_str}_n_vlines_{n_vlines}.svg",
+            dpi=300,
+            format="svg",
+        )
+    print("showing figure")
+    plt.show()
+
+    # print(f"peak distance: {peak_distance}")
+    # print(f"true distance: {distance}")
+    # error_distance = peak_distance - distance
+    # error_distance_div = peak_distance / distance
+    # error_distance_perc = error_distance / distance * 100
+    # error_distance_div_v2 = distance / peak_distance
+    # print(f"error distance: {error_distance}")
+    # print(f"error distance div: {error_distance_div}")
+    # print(f"error distance div v2: {error_distance_div_v2}")
+    # print(f"error distance perc: {error_distance_perc}")
+    # correct_distance = peak_distance * 1 / 0.16
+    # print(f"correct distance: {correct_distance}")
+    # correction_value = 0.16
+
+    # Find the index that is closest to the desired shift
+    # d_step_corrected = d_step / 0.16
+
+    # # Interpolate your signal to the new distance axis
+    # f = interpolate.interp1d(
+    #     d_step_corrected, out_signal_real, bounds_error=False, fill_value=0
+    # )
+    # signal_corrected = f(d_step)
+    # analytic_signal = signal.hilbert(signal_corrected)
+    # envelope = np.abs(analytic_signal)
+    # peak_index = np.argmax(envelope)
+    # d_step[peak_index]
+    # fig, axs = figure_size_setup_thesis(size)
+    # axs.plot(d_step, signal_corrected, label="Corrected signal")
+    # # plot envelope
+    # axs.plot(d_step, envelope, label="Envelope")
+    # # annotate and mark the maximum peak of the envelope with the distance with a dot and the distance with two decimals
+    # axs.plot(
+    #     d_step[peak_index],
+    #     envelope[peak_index],
+    #     "o",
+    #     label=f"Peak at {round(d_step[peak_index],2)} m",
+    # )
+
+    # # axs.plot(t_axis * 1000, pulse_padded)
+    # axs.set_ylabel("Amplitude")
+    # axs.set_xlabel("Distance (m)")
+    # # axs.set_title("Dispersion Compensated Pulse")
+    # # axs.legend(["Compensated", "Original"])
+    # axs.legend()
+    # if save:
+    #     fig.savefig(
+    #         f"dispersion_compensated_pulse{distance_str}_yi_corrected_{size_str}.png",
+    #         dpi=300,
+    #         format="png",
+    #     )
+    #     fig.savefig(
+    #         f"dispersion_compensated_pulse{distance_str}_yi_corrected_{size_str}.svg",
+    #         dpi=300,
+    #         format="svg",
+    #     )
+    # plt.show()
+
+
+def REAL_dispersion(
+    distance=0.2, size=0.75, save=False, theoretical=True, reflections=False
+):
+    """
+    In setup 3 vegard does we have a sensor under the touch location and one at 10 cm distance both on the top and bottom
+
+    """
+    A, S = read_DC_files(6)
+    size_str = str(size).replace(".", "_")
+    n_vlines = 1
+    # Setting up velocities
+    mask = (A["A0 f (kHz)"] > 0.1) & (A["A0 f (kHz)"] < 40)
+    A0_t_phase = A["A0 Phase velocity (m/ms)"] * 1000
+    A0_t_freq = A["A0 f (kHz)"] * 1000
+    A0_group = A["A0 Energy velocity (m/ms)"] * 1000
+    A0_wavenumber = A["A0 Wavenumber (rad/mm)"]
+    # A0_wavenumber = A0_wavenumber[mask]
+    # A0_t_phase = A0_t_phase[mask]
+    # A0_t_freq = A0_t_freq[mask]
+    # A0_group = A0_group[mask]
+    sample_rate = 150e3
+    size_name = str(size).replace(".", "_")
+    folder = "plate20mm\\setup4_vegard\\touch"
+    # file_name = "touch_v1"
+    file_name = "touch_ca2_4_v1"
+    # file_name3 = "touch_v5"
+
+    # fig1, ax1 = figure_size_setup(0.45)
+    # data = csv_to_df_thesis(folder, file_name)
+    data = csv_to_df_thesis(folder, file_name)
+    # drop wave_gen channel
+    # plt.plot(data["channel 1"], label="channel 1")
+    # plt.plot(data["channel 2"], label="channel 2")
+    # plt.plot(data["channel 3"], label="channel 3")
+    # plt.legend()
+    # plt.show()
+    data = data.drop(columns=["wave_gen"])
+    # data3 = csv_to_df_thesis(folder, file_name3)
+    data_start = data["channel 1"]
+    data_top_50 = data["channel 2"]
+    # data_bot_10 = data["channel 3"]
+    data_top_75 = data["channel 3"]
+    time_axis = np.linspace(0, len(data) // sample_rate, num=len(data))
+    print(f"max time axis: {max(time_axis)}")
+    plt.plot(time_axis, data_start, label="start")
+    plt.plot(time_axis, data_top_50, label="top 50 cm")
+    plt.plot(time_axis, data_top_75, label="top 75 cm")
+    plt.legend()
+    plt.show()
+
+    # start point is when data_start is above 0.005
+    start_point = get_first_index_above_threshold(data_start, 0.007)
+    seconds = 0.008
+    # create new time axis which starts in 0, from start point index
+    time_axis_new = (
+        time_axis[start_point : start_point + int(seconds * sample_rate)]
+        - time_axis[start_point]
+    )
+    print(f"max time axis new: {max(time_axis_new)}")
+    # remove the data before the start point from all the data
+    data_start = data_start[start_point : start_point + int(seconds * sample_rate)]
+    data_top_50 = data_top_50[start_point : start_point + int(seconds * sample_rate)]
+    data_top_75 = data_top_75[start_point : start_point + int(seconds * sample_rate)]
+    # plot the data
+    # plt.plot(time_axis_new, data_start)
+    plt.plot(time_axis_new, data_top_50)
+    plt.plot(time_axis_new, data_top_75)
+    plt.show()
+    exit()
+    if distance == 0.5:
+        A0_pos = data_top_50
+    elif distance == 0.75:
+        A0_pos = data_top_75
+    # A0_pos = (data_top_10 - data_bot_10) / 2
+    # S0_pos = (data_top_10 + data_bot_10) / 2
+    # A0_pos = data_top_50
+    # A_pos2 = data_top_75
+    # plot top and A0
+    # plt.plot(time_axis_new, data_top_50, label="top 50 cm")
+    # #plt.plot(time_axis_new, A0_pos, label="A0")
+    # plt.legend()
+    # plt.show()
+    # normalize the S0 and A0
+    # S0_pos = S0_pos / max(S0_pos)
+    # A0_pos = A0_pos / max(A0_pos)
+    # plt.plot(time_axis_new, A0_pos, label="A0")
+    # # plt.plot(time_axis_new, S0_pos, label="S0")
+    # plt.legend()
+    # plt.show()
+
+    if theoretical:
+        v_gr = A0_group
+        v_ph = A0_t_phase
+        f = A0_t_freq.to_numpy()
+
+    else:
+        exit()
+
+    # v_ph = (1 + 0.22) * v_ph
+
+    k = (
+        f / v_ph
+    )  # to make the same as A0_wavenumber, multiply A0_wavenumber by 1000 and multiply k by 2*pi
+    k[np.isnan(k)] = 0
+
+    distance_str = str(round(distance, 2)).replace(".", "_")
+
+    max_distance_phase = max(time_axis_new) * max(v_ph)
+    max_distance_group = max(time_axis_new) * max(v_gr)
+    print(f"max distance phase: {max_distance_phase}")
+    print(f"max distance group: {max_distance_group}")
+    # normalize the top data[0] and the A0_pos in order to compare them
+    fig, axs = figure_size_setup_thesis(size)
+    axs.plot(time_axis_new * 1000, A0_pos, label=f"Signal at {distance}m")
+    axs.set_ylabel(r"Acceleration ($\mathrm{m/s^2}$)")
+    axs.set_xlabel("Time (ms)")
+    axs.legend()
+    # axs.set_title("Shifted Pulse")
+
+    if save:
+        fig.savefig(
+            f"REAL_PLATE_A0_setup4_touch_{distance_str}_{size_str}.png",
+            dpi=300,
+            format="png",
+        )
+        fig.savefig(
+            f"REAL_PLATE_A0_setup4_touch_{distance_str}_{size_str}.svg",
+            dpi=300,
+            format="svg",
+        )
+    plt.show()
+
+    if theoretical:
+        d_step, out_signal = dispersion_compensation(
+            time_axis_new, A0_pos, f, k, group_velocity=v_gr
+        )
+
+    else:
+        d_step, out_signal = dispersion_compensation(time_axis_seconds, A0_pos, f, k)
+    # d_step_equallyspace = np.linspace(min(d_step), max(d_step), len(d_step))
+    out_signal_real = np.real(out_signal)
+
+    analytic_signal = signal.hilbert(out_signal_real)
+    envelope = np.abs(analytic_signal)
+    peak_index = np.argmax(envelope)
+    peak_distance = d_step[peak_index]
+    peak_value = envelope[peak_index]
+
+    # find the index where the envelope crosses a threshold value
+    threshold = 0.04
+    ignore_index = np.where(d_step > 0.4)[0][0]
+    threshold_index = np.where(envelope[ignore_index:] > threshold)[0][0] + ignore_index
+    # ignore distance values below 0.4m
+
+    print(f"threshold index: {threshold_index}")
+    threshold_distance = d_step[threshold_index]
+    print(f"threshold distance: {threshold_distance}, true distance: {distance}")
+    estimated_distance_str = str(round(threshold_distance, 4)).replace(".", "_")
+    if reflections:
+        distances, arrival_times = draw_simulated_plate(velocity=max(v_gr))
+    # find index of d_step which is above 2m
+    # index_above_25m = np.where(d_step > 25)[0][0]
+    index_above_25m = -1
+    fig, axs = figure_size_setup_thesis(size)
+    axs.plot(
+        d_step[:index_above_25m],
+        out_signal_real[:index_above_25m],
+        label="Compensated signal",
+    )
+    axs.plot(d_step[:index_above_25m], envelope[:index_above_25m], label="Envelope")
+    # plot the vline at the true distance
+    axs.axvline(x=distance, color="k", linestyle="--", label="True distance")
+    # axs.axvline(
+    #     x=threshold_distance, color="r", linestyle="--", label="Estimated distance"
+    # )
+    # annotate and mark the maximum peak of the envelope with the distance with a dot and the distance with two decimals
+    # axs.plot(
+    #     d_step[peak_index],
+
+    #     envelope[peak_index],
+    #     "o",
+    #     label=f"Peak at {round(d_step[peak_index],2)} m",
+    # )
+    # axs.plot(t_axis * 1000, pulse_padded)
+    axs.set_ylabel("Amplitude")
+    axs.set_xlabel("Distance (m)")
+
+    # axs.set_title("Dispersion Compensated Pulse")
+    # axs.legend(["Compensated", "Original"])
+    if reflections:
+        n_vlines = 4
+        for i in range(1, n_vlines + 1):
+            axs.axvline(
+                x=distances[i],
+                color="k",
+                linestyle="--",
+                label=f"Simulated reflection {i+1}",
+            )
+    axs.legend()
+    if save:
+        fig.savefig(
+            f"dispersion_compensated_pulse_realplate_top_A0_setup4_touch{distance_str}_{size_str}_estimated_{estimated_distance_str}_short.png",
+            dpi=300,
+            format="png",
+        )
+        fig.savefig(
+            f"dispersion_compensated_pulse_realplate_top_A0_setup4_touch{distance_str}_{size_str}_estimated_{estimated_distance_str}_short.svg",
+            dpi=300,
+            format="svg",
+        )
+
+    plt.show()
 
 
 if __name__ == "__main__":

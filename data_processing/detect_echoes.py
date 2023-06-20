@@ -12,7 +12,9 @@ from data_processing.preprocessing import filter_general, crop_data
 
 def find_indices_of_peaks(sig_np, height, plot=False, hilbert=True):
     """Find the indices of the peaks in the signal."""
-    peak_indices = pd.DataFrame(columns=['channel 1', 'channel 2', 'channel 3', 'chirp'])
+    peak_indices = pd.DataFrame(
+        columns=["channel 1", "channel 2", "channel 3", "chirp"]
+    )
 
     if not hilbert:
         # Find the peaks of the square of the signal
@@ -24,7 +26,7 @@ def find_indices_of_peaks(sig_np, height, plot=False, hilbert=True):
         peak_indices, _ = signal.find_peaks(sig_np_filtered_hilbert, height)
 
     if peak_indices.size == 0:
-        raise ValueError('No peaks found!')
+        raise ValueError("No peaks found!")
 
     if plot:
         time_axis = np.linspace(0, len(sig_np), num=len(sig_np))
@@ -32,12 +34,26 @@ def find_indices_of_peaks(sig_np, height, plot=False, hilbert=True):
         # ax0.plot(time_axis, sig_np, label='signal')
         # ax0.plot(time_axis / 150000, sig_np_filtered_hilbert, label='filtered')
         if not hilbert:
-            ax0.plot(time_axis / SAMPLE_RATE, signal_sqr, label='sqrd')
-            ax0.plot(time_axis[peak_indices] / SAMPLE_RATE, signal_sqr[peak_indices], 'x', label='peaks')
+            ax0.plot(time_axis / SAMPLE_RATE, signal_sqr, label="sqrd")
+            ax0.plot(
+                time_axis[peak_indices] / SAMPLE_RATE,
+                signal_sqr[peak_indices],
+                "x",
+                label="peaks",
+            )
 
         else:
-            ax0.plot(time_axis / SAMPLE_RATE, sig_np_filtered_hilbert, label='filtered hilbert')
-            ax0.plot(time_axis[peak_indices] / SAMPLE_RATE, sig_np_filtered_hilbert[peak_indices], 'x', label='peaks')
+            ax0.plot(
+                time_axis / SAMPLE_RATE,
+                sig_np_filtered_hilbert,
+                label="filtered hilbert",
+            )
+            ax0.plot(
+                time_axis[peak_indices] / SAMPLE_RATE,
+                sig_np_filtered_hilbert[peak_indices],
+                "x",
+                label="peaks",
+            )
         ax0.set_xlabel("Time [s]")
         ax0.legend()
         fig.tight_layout()
@@ -64,7 +80,7 @@ def find_first_peak(sig_df, height):
     sig_np = sig_df.values
     peaks, _ = signal.find_peaks(sig_np, height)
     if peaks.size == 0:
-        raise ValueError('No peaks found!')
+        raise ValueError("No peaks found!")
         # return 0
     peak_index = peaks[0]
     return peak_index
@@ -114,8 +130,7 @@ def find_mirrored_source(
     return mirrored_source
 
 
-def flip_sources(sources: np.ndarray,
-                 edges_to_flip_around: np.ndarray):
+def flip_sources(sources: np.ndarray, edges_to_flip_around: np.ndarray):
     """Draw the sources in the flipped positions.
     The table edges are numbered as:
 
@@ -132,22 +147,31 @@ def flip_sources(sources: np.ndarray,
         for source in sources:
             new_source = MirroredSource(source.coordinates)
             if edge == Table.TOP_EDGE:
-                new_source.set_coordinates(new_source.coordinates + np.array([0, 2 * (Table.WIDTH - new_source.y)]))
+                new_source.set_coordinates(
+                    new_source.coordinates
+                    + np.array([0, 2 * (Table.WIDTH - new_source.y)])
+                )
                 sources = np.append(sources, new_source)
             elif edge == Table.RIGHT_EDGE:
-                new_source.set_coordinates(new_source.coordinates + np.array([2 * (Table.LENGTH - new_source.x), 0]))
+                new_source.set_coordinates(
+                    new_source.coordinates
+                    + np.array([2 * (Table.LENGTH - new_source.x), 0])
+                )
                 sources = np.append(sources, new_source)
             elif edge == Table.BOTTOM_EDGE:
-                new_source.set_coordinates(new_source.coordinates + np.array([0, -2 * new_source.y]))
+                new_source.set_coordinates(
+                    new_source.coordinates + np.array([0, -2 * new_source.y])
+                )
                 sources = np.append(sources, new_source)
             elif edge == Table.LEFT_EDGE:
-                new_source.set_coordinates(new_source.coordinates + np.array([-2 * new_source.x, 0]))
+                new_source.set_coordinates(
+                    new_source.coordinates + np.array([-2 * new_source.x, 0])
+                )
                 sources = np.append(sources, new_source)
     return sources
 
 
-def flip_sensors(sensors: np.ndarray,
-                 edges_to_flip_around: np.ndarray):
+def flip_sensors(sensors: np.ndarray, edges_to_flip_around: np.ndarray):
     """Draw the sensors in the flipped positions.
     The table edges are numbered as:
 
@@ -163,18 +187,27 @@ def flip_sensors(sensors: np.ndarray,
         for sensor in sensors:
             new_sensor = MirroredSensor(sensor.coordinates)
             if edge == Table.TOP_EDGE:
-                new_sensor.set_coordinates(sensor.coordinates + np.array([0, 2 * (Table.WIDTH - sensor.y)]))
+                new_sensor.set_coordinates(
+                    sensor.coordinates + np.array([0, 2 * (Table.WIDTH - sensor.y)])
+                )
                 sensors = np.append(sensors, new_sensor)
             elif edge == Table.RIGHT_EDGE:
-                new_sensor.set_coordinates(sensor.coordinates + np.array([2 * (Table.LENGTH - sensor.x), 0]))
+                new_sensor.set_coordinates(
+                    sensor.coordinates + np.array([2 * (Table.LENGTH - sensor.x), 0])
+                )
                 sensors = np.append(sensors, new_sensor)
             elif edge == Table.BOTTOM_EDGE:
-                new_sensor.set_coordinates(sensor.coordinates + np.array([0, -2 * sensor.y]))
+                new_sensor.set_coordinates(
+                    sensor.coordinates + np.array([0, -2 * sensor.y])
+                )
                 sensors = np.append(sensors, new_sensor)
             elif edge == Table.LEFT_EDGE:
-                new_sensor.set_coordinates(sensor.coordinates + np.array([-2 * sensor.x, 0]))
+                new_sensor.set_coordinates(
+                    sensor.coordinates + np.array([-2 * sensor.x, 0])
+                )
                 sensors = np.append(sensors, new_sensor)
     return sensors
+
 
 def ignore_edge_combination(edge_1, edge_2):
     if edge_1 == edge_2:
@@ -188,6 +221,7 @@ def ignore_edge_combination(edge_1, edge_2):
         return True
     else:
         return False
+
 
 def get_travel_times(
     actuator: Actuator,
@@ -248,6 +282,7 @@ def get_travel_times(
 
     return arrival_times, travel_distances
 
+
 def print_reflections_info(
     print_info, edge_1, edge_2, distance_to_sensor, time_to_sensors
 ):
@@ -274,7 +309,10 @@ def print_direct_travel_info(direct_travel_distance, direct_travel_time):
     )
     print(f"\nDirect travel time: {np.round(direct_travel_time, 6)} s")
 
-if __name__ == '__main__':
-    signal_df = csv_to_df(file_folder='first_test_touch_passive_setup2',
-                          file_name='touch_test_passive_setup2_place_C3_center_v2')
+
+if __name__ == "__main__":
+    signal_df = csv_to_df(
+        file_folder="first_test_touch_passive_setup2",
+        file_name="touch_test_passive_setup2_place_C3_center_v2",
+    )
     find_indices_of_peaks(signal_df)

@@ -437,9 +437,7 @@ def group_velocity_theoretical(freqs, material="teflon", plot=False, kind="cubic
     return v_g_numpy
 
 
-def group_velocity_phase(
-    vph, freqs, method="t", distance=0.1, material="teflon", plot=False
-):
+def group_velocity_phase(vph, freqs, plot=False):
     """
     Function for calulating the group velocity of a signal.
     phase is the phase of the signal. freqs is the frequency range you are interested in.

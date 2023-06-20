@@ -27,7 +27,7 @@ def main():
     # r.test_dispersion_compensation_gen_signals()
     # r.pressure_wave_oscilloscope(save=True)
     # r.comsol_pulse()
-    r.gen_pulse_dispersion()
+    # r.gen_pulse_dispersion(distance=1.3, save=True, size=0.45)
     # r.theory_disperson_curve()
     # r.find_combinations_for_velocity_range()
     # print(r.calculate_velocity(0.97357*1e9, 910, 0.468908))
@@ -46,6 +46,10 @@ def main():
     # r.find_best_values()
     # r.REAL_plate_velocities(save=True, size=0.45)
     # r.print_material_values()
+    # r.COMSOL_dispersion(
+    #     position=10, theoretical=True, reflections=False, save=True, size=0.45
+    # )
+    r.REAL_dispersion(save=False, size=0.45, distance=0.5)
     pass
 
 
