@@ -49,7 +49,8 @@ def main():
     # r.COMSOL_dispersion(
     #     position=10, theoretical=True, reflections=False, save=True, size=0.45
     # )
-    r.REAL_dispersion(save=False, size=0.45, distance=0.5)
+    # r.REAL_dispersion(save=False, size=0.45, distance=0.5)
+    r.REAL_wavemodes(save=True, size=0.33, chirp=True)
     pass
 
 

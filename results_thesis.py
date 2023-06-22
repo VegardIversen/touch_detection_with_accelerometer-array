@@ -1666,7 +1666,7 @@ def touch_signal_plot_hold():
     # ax.plot(data3, label='v3')
     # ax.title('v3')
     ax.set_xlabel("Time [s]")
-    ax.set_ylabel(r"Accleration ($\mathrm{m/s^2}$)")
+    ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
@@ -1700,7 +1700,7 @@ def touch_signal_plot_hold():
     # ax.plot(data3, label='v3')
     # ax.title('v3')
     ax.set_xlabel("Time [s]")
-    ax.set_ylabel(r"Accleration ($\mathrm{m/s^2}$)")
+    ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
@@ -1749,7 +1749,7 @@ def touch_signal_plot():
     # ax.plot(time_axis, data2, label="channel 1")'
     ax.plot(time_axis, data2, label=data2.columns)
     ax.set_xlabel("Time [s]")
-    ax.set_ylabel(r"Accleration ($\mathrm{m/s^2}$)")
+    ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
@@ -1808,7 +1808,7 @@ def touch_signal_plot():
     # ax.plot(data2, label='v2')
     # plt.title('v2')
     ax.set_xlabel("Time [s]")
-    ax.set_ylabel(r"Accleration ($\mathrm{m/s^2}$)")
+    ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
@@ -1843,7 +1843,7 @@ def touch_signal_plot():
     # ax.plot(data2, label='v2')
     # plt.title('v2')
     ax.set_xlabel("Time [s]")
-    ax.set_ylabel(r"Accleration ($\mathrm{m/s^2}$)")
+    ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
@@ -1885,7 +1885,7 @@ def chirp_signal():
     fig, ax = figure_size_setup_thesis(size)
     ax.plot(time_axis, data, label="channel 1")
     ax.set_xlabel("Time [s]")
-    ax.set_ylabel(r"Accleration ($\mathrm{m/s^2}$)")
+    ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
@@ -1954,7 +1954,7 @@ def swipe_signal():
     fig, ax = figure_size_setup_thesis(size)
     ax.plot(time_axis, data3, label="channel 1")
     ax.set_xlabel("Time [s]")
-    ax.set_ylabel(r"Accleration ($\mathrm{m/s^2}$)")
+    ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
@@ -1986,7 +1986,7 @@ def swipe_signal():
     # ax.plot(data3, label='v3')
     # ax.title('v3')
     ax.set_xlabel("Time [s]")
-    ax.set_ylabel(r"Accleration ($\mathrm{m/s^2}$)")
+    ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
@@ -2020,7 +2020,7 @@ def swipe_signal():
     # ax.plot(data3, label='v3')
     # ax.title('v3')
     ax.set_xlabel("Time [s]")
-    ax.set_ylabel(r"Accleration ($\mathrm{m/s^2}$)")
+    ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
@@ -2184,7 +2184,7 @@ def comsol_wave_prop_all(save=False, size=0.75):
                 vmax=max_val,
             )
         cbar = plt.colorbar(im)
-        cbar.set_label(r"Accleration ($\mathrm{m/s^2}$)")
+        cbar.set_label(r"Accleration ($\mathrm{mm/s^2}$)")
         if not save:
             axs.set_title(
                 f"Wave Through Plate at {top_or_bottom[i-5]} {details_true[i-5]}"
@@ -2252,7 +2252,7 @@ def comsol_data50(save=False):
         vmax=max_val,
     )
     cbar = plt.colorbar(im)
-    cbar.set_label(r"Accleration ($\mathrm{m/s^2}$)")
+    cbar.set_label(r"Accleration ($\mathrm{mm/s^2}$)")
     axs.set_title("Wave Through Plate at y=0.2m")
     axs.set_ylabel(r"Time ($\mathrm{\mu s}}$)")
     axs.set_xlabel("Position (m)")
@@ -2445,7 +2445,7 @@ def show_A0_and_S0_wave_comsol_diagonal(
     # caluclate the diagonal distance
     print(f"distance from source to sensor: {diag_dist}")
     # ax.set_title(f"Raw data at x={round(x_pos_top[position],2)}m")
-    ax.set_ylabel(r"Acceleration ($\mathrm{m/s^2}$)")
+    ax.set_ylabel(r"Acceleration ($\mathrm{mm/s^2}$)")
     ax.set_xlabel("Time [ms]")
     ax.legend()
     if save:
@@ -3635,7 +3635,7 @@ def REAL_dispersion(
     distance=0.2, size=0.75, save=False, theoretical=True, reflections=False
 ):
     """
-    In setup 3 vegard does we have a sensor under the touch location and one at 10 cm distance both on the top and bottom
+    In setup 2 vegard does we have a sensor under the touch location and one at 10 cm distance both on the top and bottom
 
     """
     A, S = read_DC_files(6)
@@ -3745,7 +3745,7 @@ def REAL_dispersion(
     # normalize the top data[0] and the A0_pos in order to compare them
     fig, axs = figure_size_setup_thesis(size)
     axs.plot(time_axis_new * 1000, A0_pos, label=f"Signal at {distance}m")
-    axs.set_ylabel(r"Acceleration ($\mathrm{m/s^2}$)")
+    axs.set_ylabel(r"Acceleration ($\mathrm{mm/s^2}$)")
     axs.set_xlabel("Time (ms)")
     axs.legend()
     # axs.set_title("Shifted Pulse")
@@ -3842,6 +3842,160 @@ def REAL_dispersion(
             format="svg",
         )
 
+    plt.show()
+
+
+def REAL_wavemodes(distance=0.2, size=0.75, save=False, chirp=False):
+    """
+    In setup 2 vegard does we have a sensor under the touch location and one at 20 cm distance both on the top and bottom
+
+    """
+    A, S = read_DC_files(6)
+    size_str = str(size).replace(".", "_")
+    n_vlines = 1
+    # Setting up velocities
+    mask = (A["A0 f (kHz)"] > 0.1) & (A["A0 f (kHz)"] < 40)
+    A0_t_phase = A["A0 Phase velocity (m/ms)"] * 1000
+    A0_t_freq = A["A0 f (kHz)"] * 1000
+    A0_group = A["A0 Energy velocity (m/ms)"] * 1000
+    A0_wavenumber = A["A0 Wavenumber (rad/mm)"]
+    # A0_wavenumber = A0_wavenumber[mask]
+    # A0_t_phase = A0_t_phase[mask]
+    # A0_t_freq = A0_t_freq[mask]
+    # A0_group = A0_group[mask]
+    sample_rate = 150e3
+    size_name = str(size).replace(".", "_")
+    if chirp:
+        folder = "plate20mm\\setup2_vegard\\chirp"
+        file_name = "chirp_v1"
+        data = csv_to_df_thesis(folder, file_name)
+        wave_gen = data["wave_gen"]
+        # drop wave_gen from data
+        data = data.drop(columns=["wave_gen"])
+    else:
+        folder = "plate20mm\\setup2_vegard\\touch"
+
+        file_name = "touch_hold_v1"
+
+        # fig1, ax1 = figure_size_setup(0.45)
+        # data = csv_to_df_thesis(folder, file_name)
+        data = csv_to_df_thesis(folder, file_name)
+
+        data = data.drop(columns=["wave_gen"])
+
+    time_axis = np.linspace(0, len(data) // sample_rate, num=len(data))
+    data_top = data["channel 2"]
+    data_bot = data["channel 3"]
+
+    A0_pos = (data_top - data_bot) / 2
+    S0_pos = (data_top + data_bot) / 2
+    fig, ax = figure_size_setup_thesis(size)
+    if chirp:
+        time_start = np.where(time_axis > 1.44)[0][0]
+        time_end = np.where(time_axis > 3.5)[0][0]
+    else:
+        time_start = np.where(time_axis > 0.97744)[0][0]
+        time_end = np.where(time_axis > 1.10)[0][0]
+    # create a new time axis
+    time_axis_new = time_axis[time_start:time_end] - time_axis[time_start]
+    # ms time axis
+    time_axis_new_ms = time_axis_new * 1000
+    ax.plot(time_axis_new, data_top[time_start:time_end], label="Top")
+    ax.plot(time_axis_new, data_bot[time_start:time_end], label="Bottom")
+    ax.set_xlabel("Time (ms)")
+    ax.set_ylabel(r"Accleleration ($\mathrm{mm/s^2}$)")
+    ax.legend()
+    if save:
+        fig.savefig(
+            f"{file_name}_{size_name}_top_bottom.png",
+            dpi=300,
+            format="png",
+        )
+        fig.savefig(
+            f"{file_name}_{size_name}_top_bottom.svg",
+            dpi=300,
+            format="svg",
+        )
+    plt.show()
+    # plot a smaller part of the signal
+    if chirp:
+        fig, ax = figure_size_setup_thesis(size)
+        time_start_short = np.where(time_axis > 2.2)[0][0]
+        time_end_short = np.where(time_axis > 2.2005)[0][0]
+        # create new time axis in ms
+        print(f"time start {time_start} time end {time_end}")
+
+        time_axis_new_short = (
+            time_axis[time_start_short:time_end_short] - time_axis[time_start_short]
+        )
+        print(f"time axis new {time_axis_new_short}")
+        time_axis_new_ms_short = time_axis_new_short * 1000
+        print(f"time axis new ms {time_axis_new_ms_short}")
+        print(f"data top {data_top[time_start_short:time_end_short]}")
+        print(f"data bot {data_bot[time_start_short:time_end_short]}")
+        datatop_short = data_top[time_start_short:time_end_short]
+        databot_short = data_bot[time_start_short:time_end_short]
+        print(f"data shape {datatop_short.shape}")
+        print(f"time axis shape {time_axis_new_ms_short.shape}")
+        print(f"data bot shape {databot_short.shape}")
+        ax.plot(time_axis_new_ms_short, datatop_short, label="Top")
+        ax.plot(time_axis_new_ms_short, databot_short, label="Bottom")
+
+        ax.set_xlabel("Time (ms)")
+        ax.set_ylabel(r"Accleleration ($\mathrm{mm/s^2}$)")
+        ax.legend()
+        if save:
+            fig.savefig(
+                f"{file_name}_{size_name}_top_bottom_zoom.png",
+                dpi=300,
+                format="png",
+            )
+            fig.savefig(
+                f"{file_name}_{size_name}_top_bottom_zoom.svg",
+                dpi=300,
+                format="svg",
+            )
+        plt.show()
+
+    fig, ax = figure_size_setup_thesis(size)
+
+    ax.plot(time_axis_new, A0_pos[time_start:time_end], label="A0")
+    ax.plot(time_axis_new, S0_pos[time_start:time_end], label="S0")
+
+    ax.set_xlabel("Time (ms)")
+    ax.set_ylabel(r"Accleleration ($\mathrm{mm/s^2}$)")
+    ax.legend()
+    if save:
+        fig.savefig(
+            f"{file_name}_{size_name}_A0_S0.png",
+            dpi=300,
+            format="png",
+        )
+        fig.savefig(
+            f"{file_name}_{size_name}_A0_S0.svg",
+            dpi=300,
+            format="svg",
+        )
+    plt.show()
+
+    # plot A0 andd top
+    fig, ax = figure_size_setup_thesis(size)
+    ax.plot(time_axis_new, A0_pos[time_start:time_end], label="A0")
+    ax.plot(time_axis_new, data_top[time_start:time_end], label="Top")
+    ax.set_xlabel("Time (ms)")
+    ax.set_ylabel(r"Accleleration ($\mathrm{mm/s^2}$)")
+    ax.legend()
+    if save:
+        fig.savefig(
+            f"{file_name}_{size_name}_A0_top.png",
+            dpi=300,
+            format="png",
+        )
+        fig.savefig(
+            f"{file_name}_{size_name}_A0_top.svg",
+            dpi=300,
+            format="svg",
+        )
     plt.show()
 
 
