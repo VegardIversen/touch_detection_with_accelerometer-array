@@ -218,6 +218,402 @@ class SimulatedSetup:
         return self.arrival_times_list, self.travel_distances
 
 
+class RealSetup1:
+    plate = obj.RealPlate()
+    actuators = np.empty(shape=1, dtype=obj.Actuator)
+    sensors = np.empty(shape=3, dtype=obj.Sensor)
+    actuators[0] = obj.Actuator(coordinates=np.array([0.35, 0.35]))
+    sensors[SENSOR_1] = obj.Sensor(coordinates=np.array([0.35, 0.45]), name="Sensor 1")
+    sensors[SENSOR_2] = obj.Sensor(coordinates=([0.35, 0.55]), name="Sensor 2")
+    sensors[SENSOR_3] = obj.Sensor(coordinates=([0.35, 0.65]), name="Sensor 3")
+
+    def __init__(self):
+        self.SAMPLE_RATE = 150000
+        # self.freq_vel = np.fft.rfftfreq(self.signal_length, d=1 / SAMPLE_RATE)
+        self.A0, self.S0 = rt.read_DC_files(6)
+        self.v_gr_max = np.max(self.A0["A0 Energy velocity (m/ms)"])
+        self.propagation_vel = self.v_gr_max
+        self.travel_distances = []
+        self.arrival_times_list = []
+
+    def draw(
+        self,
+        save_fig=False,
+        fig_name=None,
+        file_format="png",
+        actuator_show=True,
+        show_tab=True,
+    ):
+        plt.axes()
+        self.plate.draw()
+        if actuator_show:
+            [actuator.draw() for actuator in self.actuators]
+        [sensor.draw() for sensor in self.sensors if sensor.plot]
+        plt.axis("scaled")
+        plt.xlabel("x (m)")
+        plt.ylabel("y (m)")
+        plot_legend_without_duplicates()
+        if save_fig:
+            plt.savefig(f"{fig_name}.{file_format}", dpi=300, format=file_format)
+        if show_tab:
+            plt.show()
+
+    def set_propagation_vel(self, propagation_vel):
+        self.propagation_vel = propagation_vel
+
+    def get_propagation_vel(self):
+        return self.propagation_vel
+
+    def get_travel_distances_at_sensor(self, sensor=0):
+        try:
+            self.reflections()
+            return self.travel_distances[sensor]
+        except IndexError:
+            print(f"Position {sensor} not found in {self.sensors}")
+
+    def get_travel_times(self):
+        return self.travel_distances
+
+    def get_arrival_times_at_sensor(self, sensor=0):
+        try:
+            self.reflections()
+            return self.arrival_times_list[sensor]
+        except IndexError:
+            print(f"Position {sensor} not found in {self.sensors}")
+
+    def get_arrival_times(self):
+        return self.arrival_times_list
+
+    def reflections(self):
+        attenuation_dBpm = 0
+        # travel_distances = []
+        # arrival_times_list = []
+        # NEED TO FIX THIS IF I EVER USE MORE THAN 1 SENSOR!!
+        for sensor_i in range(len(self.sensors)):
+            # measurement_i = np.zeros(len(self.wave_data[0]))
+            arrival_times, distances = de.get_travel_times(
+                self.actuators[0],
+                self.sensors[sensor_i],
+                self.propagation_vel,
+                surface=self.plate,
+                milliseconds=False,
+                relative_first_reflection=False,
+                print_info=False,
+            )
+            self.arrival_times_list.append(arrival_times)
+            self.travel_distances.append(distances)
+            # print(f'distances: {distances}')
+            # print(f'arrival_times: {arrival_times}')
+            # # Hardcode the arrival times to be only the indices 0, 3, 4, and 11 of arrival_times
+            # #arrival_times = arrival_times[[0, 3, 4, 11]]
+            # for arrival_time in arrival_times:
+            #     arrival_time_index = int(arrival_time * self.SAMPLE_RATE)
+            #     travel_distance_m = arrival_time * self.v_ph_center_freq
+            #     measurement_i[
+            #         arrival_time_index : arrival_time_index + self.signal_length
+            #     ] += self.wave_data[self.positions[0]] * 10 ** (-attenuation_dBpm * travel_distance_m / 20)
+            # sensor_measurements[f"Sensor {sensor_i + 1}"] = measurement_i
+            # travel_distances.append(distances[:2])
+        return self.arrival_times_list, self.travel_distances
+
+
+class RealSetup2:
+    plate = obj.RealPlate()
+    actuators = np.empty(shape=1, dtype=obj.Actuator)
+    sensors = np.empty(shape=3, dtype=obj.Sensor)
+    actuators[0] = obj.Actuator(coordinates=np.array([0.35, 0.35]))
+    sensors[SENSOR_1] = obj.Sensor(coordinates=np.array([0.35, 0.35]), name="Sensor 1")
+    sensors[SENSOR_2] = obj.Sensor(coordinates=([0.35, 0.55]), name="Sensor 2")
+    sensors[SENSOR_3] = obj.Sensor(coordinates=([0.35, 0.55]), name="Sensor 3")
+
+    def __init__(self):
+        self.SAMPLE_RATE = 150000
+        # self.freq_vel = np.fft.rfftfreq(self.signal_length, d=1 / SAMPLE_RATE)
+        self.A0, self.S0 = rt.read_DC_files(6)
+        self.v_gr_max = np.max(self.A0["A0 Energy velocity (m/ms)"])
+        self.propagation_vel = self.v_gr_max
+        self.travel_distances = []
+        self.arrival_times_list = []
+
+    def draw(
+        self,
+        save_fig=False,
+        fig_name=None,
+        file_format="png",
+        actuator_show=True,
+        show_tab=True,
+    ):
+        plt.axes()
+        self.plate.draw()
+        if actuator_show:
+            [actuator.draw() for actuator in self.actuators]
+        [sensor.draw() for sensor in self.sensors if sensor.plot]
+        plt.axis("scaled")
+        plt.xlabel("x (m)")
+        plt.ylabel("y (m)")
+        plot_legend_without_duplicates()
+        if save_fig:
+            plt.savefig(f"{fig_name}.{file_format}", dpi=300, format=file_format)
+        if show_tab:
+            plt.show()
+
+    def set_propagation_vel(self, propagation_vel):
+        self.propagation_vel = propagation_vel
+
+    def get_propagation_vel(self):
+        return self.propagation_vel
+
+    def get_travel_distances_at_sensor(self, sensor=0):
+        try:
+            self.reflections()
+            return self.travel_distances[sensor]
+        except IndexError:
+            print(f"Position {sensor} not found in {self.sensors}")
+
+    def get_travel_times(self):
+        return self.travel_distances
+
+    def get_arrival_times_at_sensor(self, sensor=0):
+        try:
+            self.reflections()
+            return self.arrival_times_list[sensor]
+        except IndexError:
+            print(f"Position {sensor} not found in {self.sensors}")
+
+    def get_arrival_times(self):
+        return self.arrival_times_list
+
+    def reflections(self):
+        attenuation_dBpm = 0
+        # travel_distances = []
+        # arrival_times_list = []
+        # NEED TO FIX THIS IF I EVER USE MORE THAN 1 SENSOR!!
+        for sensor_i in range(len(self.sensors)):
+            # measurement_i = np.zeros(len(self.wave_data[0]))
+            arrival_times, distances = de.get_travel_times(
+                self.actuators[0],
+                self.sensors[sensor_i],
+                self.propagation_vel,
+                surface=self.plate,
+                milliseconds=False,
+                relative_first_reflection=False,
+                print_info=False,
+            )
+            self.arrival_times_list.append(arrival_times)
+            self.travel_distances.append(distances)
+            # print(f'distances: {distances}')
+            # print(f'arrival_times: {arrival_times}')
+            # # Hardcode the arrival times to be only the indices 0, 3, 4, and 11 of arrival_times
+            # #arrival_times = arrival_times[[0, 3, 4, 11]]
+            # for arrival_time in arrival_times:
+            #     arrival_time_index = int(arrival_time * self.SAMPLE_RATE)
+            #     travel_distance_m = arrival_time * self.v_ph_center_freq
+            #     measurement_i[
+            #         arrival_time_index : arrival_time_index + self.signal_length
+            #     ] += self.wave_data[self.positions[0]] * 10 ** (-attenuation_dBpm * travel_distance_m / 20)
+            # sensor_measurements[f"Sensor {sensor_i + 1}"] = measurement_i
+            # travel_distances.append(distances[:2])
+        return self.arrival_times_list, self.travel_distances
+
+
+class RealSetup3:
+    plate = obj.RealPlate()
+    actuators = np.empty(shape=1, dtype=obj.Actuator)
+    sensors = np.empty(shape=3, dtype=obj.Sensor)
+    actuators[0] = obj.Actuator(coordinates=np.array([0.35, 0.15]))
+    sensors[SENSOR_1] = obj.Sensor(coordinates=np.array([0.35, 0.35]), name="Sensor 1")
+    sensors[SENSOR_2] = obj.Sensor(coordinates=([0.35, 0.65]), name="Sensor 2")
+    sensors[SENSOR_3] = obj.Sensor(coordinates=([0.35, 0.9]), name="Sensor 3")
+
+    def __init__(self):
+        self.SAMPLE_RATE = 150000
+        # self.freq_vel = np.fft.rfftfreq(self.signal_length, d=1 / SAMPLE_RATE)
+        self.A0, self.S0 = rt.read_DC_files(6)
+        self.v_gr_max = np.max(self.A0["A0 Energy velocity (m/ms)"])
+        self.propagation_vel = self.v_gr_max
+        self.travel_distances = []
+        self.arrival_times_list = []
+
+    def draw(
+        self,
+        save_fig=False,
+        fig_name=None,
+        file_format="png",
+        actuator_show=True,
+        show_tab=True,
+    ):
+        plt.axes()
+        self.plate.draw()
+        if actuator_show:
+            [actuator.draw() for actuator in self.actuators]
+        [sensor.draw() for sensor in self.sensors if sensor.plot]
+        plt.axis("scaled")
+        plt.xlabel("x (m)")
+        plt.ylabel("y (m)")
+        plot_legend_without_duplicates()
+        if save_fig:
+            plt.savefig(f"{fig_name}.{file_format}", dpi=300, format=file_format)
+        if show_tab:
+            plt.show()
+
+    def set_propagation_vel(self, propagation_vel):
+        self.propagation_vel = propagation_vel
+
+    def get_propagation_vel(self):
+        return self.propagation_vel
+
+    def get_travel_distances_at_sensor(self, sensor=0):
+        try:
+            self.reflections()
+            return self.travel_distances[sensor]
+        except IndexError:
+            print(f"Position {sensor} not found in {self.sensors}")
+
+    def get_travel_times(self):
+        return self.travel_distances
+
+    def get_arrival_times_at_sensor(self, sensor=0):
+        try:
+            self.reflections()
+            return self.arrival_times_list[sensor]
+        except IndexError:
+            print(f"Position {sensor} not found in {self.sensors}")
+
+    def get_arrival_times(self):
+        return self.arrival_times_list
+
+    def reflections(self):
+        attenuation_dBpm = 0
+        # travel_distances = []
+        # arrival_times_list = []
+        # NEED TO FIX THIS IF I EVER USE MORE THAN 1 SENSOR!!
+        for sensor_i in range(len(self.sensors)):
+            # measurement_i = np.zeros(len(self.wave_data[0]))
+            arrival_times, distances = de.get_travel_times(
+                self.actuators[0],
+                self.sensors[sensor_i],
+                self.propagation_vel,
+                surface=self.plate,
+                milliseconds=False,
+                relative_first_reflection=False,
+                print_info=False,
+            )
+            self.arrival_times_list.append(arrival_times)
+            self.travel_distances.append(distances)
+            # print(f'distances: {distances}')
+            # print(f'arrival_times: {arrival_times}')
+            # # Hardcode the arrival times to be only the indices 0, 3, 4, and 11 of arrival_times
+            # #arrival_times = arrival_times[[0, 3, 4, 11]]
+            # for arrival_time in arrival_times:
+            #     arrival_time_index = int(arrival_time * self.SAMPLE_RATE)
+            #     travel_distance_m = arrival_time * self.v_ph_center_freq
+            #     measurement_i[
+            #         arrival_time_index : arrival_time_index + self.signal_length
+            #     ] += self.wave_data[self.positions[0]] * 10 ** (-attenuation_dBpm * travel_distance_m / 20)
+            # sensor_measurements[f"Sensor {sensor_i + 1}"] = measurement_i
+            # travel_distances.append(distances[:2])
+        return self.arrival_times_list, self.travel_distances
+
+
+class RealSetup4:
+    plate = obj.RealPlate()
+    actuators = np.empty(shape=1, dtype=obj.Actuator)
+    sensors = np.empty(shape=3, dtype=obj.Sensor)
+    actuators[0] = obj.Actuator(coordinates=np.array([0.35, 0.15]))
+    sensors[SENSOR_1] = obj.Sensor(coordinates=np.array([0.35, 0.15]), name="Sensor 1")
+    sensors[SENSOR_2] = obj.Sensor(coordinates=([0.35, 0.65]), name="Sensor 2")
+    sensors[SENSOR_3] = obj.Sensor(coordinates=([0.35, 0.9]), name="Sensor 3")
+
+    def __init__(self):
+        self.SAMPLE_RATE = 150000
+        # self.freq_vel = np.fft.rfftfreq(self.signal_length, d=1 / SAMPLE_RATE)
+        self.A0, self.S0 = rt.read_DC_files(6)
+        self.v_gr_max = np.max(self.A0["A0 Energy velocity (m/ms)"])
+        self.propagation_vel = self.v_gr_max
+        self.travel_distances = []
+        self.arrival_times_list = []
+
+    def draw(
+        self,
+        save_fig=False,
+        fig_name=None,
+        file_format="png",
+        actuator_show=True,
+        show_tab=True,
+    ):
+        plt.axes()
+        self.plate.draw()
+        if actuator_show:
+            [actuator.draw() for actuator in self.actuators]
+        [sensor.draw() for sensor in self.sensors if sensor.plot]
+        plt.axis("scaled")
+        plt.xlabel("x (m)")
+        plt.ylabel("y (m)")
+        plot_legend_without_duplicates()
+        if save_fig:
+            plt.savefig(f"{fig_name}.{file_format}", dpi=300, format=file_format)
+        if show_tab:
+            plt.show()
+
+    def set_propagation_vel(self, propagation_vel):
+        self.propagation_vel = propagation_vel
+
+    def get_propagation_vel(self):
+        return self.propagation_vel
+
+    def get_travel_distances_at_sensor(self, sensor=0):
+        try:
+            self.reflections()
+            return self.travel_distances[sensor]
+        except IndexError:
+            print(f"Position {sensor} not found in {self.sensors}")
+
+    def get_travel_times(self):
+        return self.travel_distances
+
+    def get_arrival_times_at_sensor(self, sensor=0):
+        try:
+            self.reflections()
+            return self.arrival_times_list[sensor]
+        except IndexError:
+            print(f"Position {sensor} not found in {self.sensors}")
+
+    def get_arrival_times(self):
+        return self.arrival_times_list
+
+    def reflections(self):
+        attenuation_dBpm = 0
+        # travel_distances = []
+        # arrival_times_list = []
+        # NEED TO FIX THIS IF I EVER USE MORE THAN 1 SENSOR!!
+        for sensor_i in range(len(self.sensors)):
+            # measurement_i = np.zeros(len(self.wave_data[0]))
+            arrival_times, distances = de.get_travel_times(
+                self.actuators[0],
+                self.sensors[sensor_i],
+                self.propagation_vel,
+                surface=self.plate,
+                milliseconds=False,
+                relative_first_reflection=False,
+                print_info=False,
+            )
+            self.arrival_times_list.append(arrival_times)
+            self.travel_distances.append(distances)
+            # print(f'distances: {distances}')
+            # print(f'arrival_times: {arrival_times}')
+            # # Hardcode the arrival times to be only the indices 0, 3, 4, and 11 of arrival_times
+            # #arrival_times = arrival_times[[0, 3, 4, 11]]
+            # for arrival_time in arrival_times:
+            #     arrival_time_index = int(arrival_time * self.SAMPLE_RATE)
+            #     travel_distance_m = arrival_time * self.v_ph_center_freq
+            #     measurement_i[
+            #         arrival_time_index : arrival_time_index + self.signal_length
+            #     ] += self.wave_data[self.positions[0]] * 10 ** (-attenuation_dBpm * travel_distance_m / 20)
+            # sensor_measurements[f"Sensor {sensor_i + 1}"] = measurement_i
+            # travel_distances.append(distances[:2])
+        return self.arrival_times_list, self.travel_distances
+
+
 class Setup2(Setup):
     """Sensors in an 8 cm edge triangle in C2"""
 

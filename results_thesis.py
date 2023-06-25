@@ -11,7 +11,19 @@ import seaborn as sns
 from matplotlib.widgets import Slider, Button
 from pathlib import Path
 from objects import Table, Actuator, Sensor
-from setups import Setup2, Setup3, Setup3_2, Setup3_4, Setup6, Setup9, SimulatedSetup
+from setups import (
+    Setup2,
+    Setup3,
+    Setup3_2,
+    Setup3_4,
+    Setup6,
+    Setup9,
+    SimulatedSetup,
+    RealSetup1,
+    RealSetup3,
+    RealSetup4,
+    RealSetup2,
+)
 from constants import SAMPLE_RATE, CHANNEL_NAMES, CHIRP_CHANNEL_NAMES
 from data_processing import cross_correlation_position as ccp
 from csv_to_df import csv_to_df, csv_to_df_thesis
@@ -291,6 +303,31 @@ def draw_simulated_plate(position=35, comsolefile=9, velocity=None):
     print(setup.get_propagation_vel())
     distances = setup.get_travel_distances_at_position(position)
     arrival_times = setup.get_arrival_times_at_position(position)
+    print(f"arrival times: {sorted(arrival_times)}")
+    distances = sorted(distances)
+    print(f"distances: {distances}")
+    return distances, arrival_times
+
+
+def draw_real_plate(velocity=None, setupn=3, sensor=0):
+    # position = 35
+    print(f"setupn: {setupn}")
+    if setupn == 2:
+        setup = RealSetup2()
+    elif setupn == 4:
+        setup = RealSetup4()
+    elif setupn == 1:
+        setup = RealSetup1()
+    else:
+        print("setup not found")
+        exit()
+    setup.draw()
+    if velocity is not None:
+        print(f"setting velocity: {velocity}")
+        setup.set_propagation_vel(velocity)
+    print(setup.get_propagation_vel())
+    distances = setup.get_travel_distances_at_sensor(sensor)
+    arrival_times = setup.get_arrival_times_at_sensor(sensor)
     print(f"arrival times: {sorted(arrival_times)}")
     distances = sorted(distances)
     print(f"distances: {distances}")
@@ -1631,8 +1668,8 @@ def get_comsol_data(number=2):
 def touch_signal_plot_hold():
     sample_rate = 150e3
     save = True
-    size = 0.45
-    size_name = "045"
+    size = 0.75
+    size_name = str(size).replace(".", "")
     time_type = "new"
     folder = "plate20mm\\setup1_vegard\\touch"
     file_name = "touch_hold_v1"
@@ -1651,9 +1688,9 @@ def touch_signal_plot_hold():
     data3 = data3.drop(columns=["channel 3", "channel 2", "wave_gen"])
     # spectromgram_touch(data, f"spectrogram_touch_hold_v1_fullsignal_{size_name}", size)
     # spectromgram_touch(data2, f"spectrogram_touch_hold_v2_fullsignal_{size_name}", size)
-    spectromgram_touch(
-        data3, f"spectrogram_touch_hold_v3_fullsignal_{size_name}", size, save=save
-    )
+    # spectromgram_touch(
+    #     data3, f"spectrogram_touch_hold_v3_fullsignal_{size_name}", size, save=save
+    # )
 
     fig, ax = figure_size_setup_thesis(size)
     data_long3 = data3.iloc[int(1.7868e5) : int(1.9359e5)]
@@ -1662,30 +1699,30 @@ def touch_signal_plot_hold():
     else:
         time_axis3 = np.linspace(0, len(data_long3) / sample_rate, num=len(data_long3))
     # ax.plot(time_axis3, data_long3, label=data3.columns)
-    ax.plot(time_axis3, data_long3, label="channel 1")
+    ax.plot(time_axis3 * 1000, data_long3, label="channel 1")
     # ax.plot(data3, label='v3')
     # ax.title('v3')
-    ax.set_xlabel("Time [s]")
-    ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
+    ax.set_xlabel("Time (ms)")
+    ax.set_ylabel(r"Accleleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
-            f"entire_signal_v3_touch_hold_ch1_{time_type}time_{size_name}.png",
+            f"entire_{file_name}_ch1_{time_type}time_{size_name}_new.png",
             dpi=300,
             format="png",
         )
         fig.savefig(
-            f"entire_signal_v3_touch_hold_ch1_{time_type}time_{size_name}.svg",
+            f"entire_{file_name}_ch1_{time_type}time_{size_name}_new.svg",
             dpi=300,
             format="svg",
         )
     plt.show()
-    spectromgram_touch(
-        data_long3,
-        f"spectrogram_entire_signal_v3_touch_hold_ch1_regtime_{size_name}",
-        size,
-        save=save,
-    )
+    # spectromgram_touch(
+    #     data_long3,
+    #     f"spectrogram_entire_signal_v3_touch_hold_ch1_regtime_{size_name}",
+    #     size,
+    #     save=save,
+    # )
 
     fig, ax = figure_size_setup_thesis(size)
     data_short3 = data3.iloc[int(179193) : int(180280)]
@@ -1696,142 +1733,142 @@ def touch_signal_plot_hold():
             0, len(data_short3) / sample_rate, num=len(data_short3)
         )
     # ax.plot(time_axis3, data_short3, label=data3.columns)
-    ax.plot(time_axis3, data_short3, label="channel 1")
+    ax.plot(time_axis3 * 1000, data_short3, label="channel 1")
     # ax.plot(data3, label='v3')
     # ax.title('v3')
-    ax.set_xlabel("Time [s]")
+    ax.set_xlabel("Time (ms)")
     ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
-            f"start_signal_v3_touch_hold_ch1_{time_type}time_{size_name}.png",
+            f"start_{file_name}_ch1_{time_type}time_{size_name}_new.png",
             dpi=300,
             format="png",
         )
         fig.savefig(
-            f"start_signal_v3_touch_hold_ch1_{time_type}time_{size_name}.svg",
+            f"start_{file_name}_ch1_{time_type}time_{size_name}_new.svg",
             dpi=300,
             format="svg",
         )
 
     plt.show()
-    spectromgram_touch(
-        data_short3,
-        f"spectrogram_start_signal_v3_touch_hold_ch1_{time_type}time_{size_name}",
-        size,
-        save=save,
-    )
+    # spectromgram_touch(
+    #     data_short3,
+    #     f"spectrogram_start_signal_v3_touch_hold_ch1_{time_type}time_{size_name}",
+    #     size,
+    #     save=save,
+    # )
 
 
 def touch_signal_plot():
     save = True
     sample_rate = 150e3
     size = 0.45
-    size_name = "045"
+    size_name = str(size).replace(".", "")
     time_type = "new"
-    folder = "plate20mm\\setup3_vegard\\touch"
-    # file_name = "touch_v1"
-    file_name2 = "touch_hold_ca2_4s_v1"
+    folder = "plate20mm\\setup1_vegard\\touch"
+    file_name = "touch_v4"
+    # file_name2 = "touch_hold_ca2_4s_v1"
     # file_name3 = "touch_v5"
 
     # fig1, ax1 = figure_size_setup(0.45)
-    # data = csv_to_df_thesis(folder, file_name)
-    data2 = csv_to_df_thesis(folder, file_name2)
+    data = csv_to_df_thesis(folder, file_name)
+    # data2 = csv_to_df_thesis(folder, file_name2)
     # data3 = csv_to_df_thesis(folder, file_name3)
 
-    time_axis = np.linspace(0, len(data2) // sample_rate, num=len(data2))
+    time_axis = np.linspace(0, len(data) // sample_rate, num=len(data))
     # drop wave_gen channel
-    # data = data.drop(columns=["channel 3", "channel 2", "wave_gen"])
-    data2 = data2.drop(columns=["wave_gen"])
+    data = data.drop(columns=["channel 3", "channel 2", "wave_gen"])
+    # data2 = data2.drop(columns=["wave_gen"])
 
     fig, ax = figure_size_setup_thesis(size)
 
-    # ax.plot(time_axis, data2, label="channel 1")'
-    ax.plot(time_axis, data2, label=data2.columns)
-    ax.set_xlabel("Time [s]")
-    ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
+    ax.plot(time_axis, data, label="channel 1")
+    # ax.plot(time_axis, data2, label=data2.columns)
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel(r"Accleleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
-            f"touchholdsetup3_signal_ca24v1_fullsignal_{size_name}_newsize.png",
+            f"{file_name}_fullsignal_{size_name}_new.png",
             dpi=300,
             format="png",
         )
         fig.savefig(
-            f"touchholdsetup3_signal_ca24v1_fullsignal_{size_name}_newsize.svg",
+            f"{file_name}_fullsignal_{size_name}_newsize.svg",
             dpi=300,
             format="svg",
         )
     plt.show()
-    channel = data2["channel 3"]
-    data_fft = scipy.fft.fft(channel.values, axis=0)
-    data_fft_dB = 20 * np.log10(np.abs(data_fft))
-    fftfreq = scipy.fft.fftfreq(len(data_fft_dB), 1 / sample_rate)
-    data_fft_dB = np.fft.fftshift(data_fft_dB)[len(channel) // 2 :]
-    fftfreq = np.fft.fftshift(fftfreq)[len(channel) // 2 :]
-    fig, ax = figure_size_setup_thesis(size)
-    # only use the positive frequencies and plot in db
-    ax.set_xlabel("Frequency [kHz]")
-    ax.set_ylabel("Amplitude [dB]")
 
-    ax.set_xlim(left=0, right=10000 / 1000)
-    ax.set_ylim(bottom=-25, top=80)
-    ax.plot(fftfreq / 1000, data_fft_dB)
-    if save:
-        fig.savefig(
-            f"touchholdsetup3_signal_ca24v1_fullsignal_fftch3_{size_name}_newsize.png",
-            dpi=300,
-            format="png",
-        )
-        fig.savefig(
-            f"touchholdsetup3_signal_ca24v1_fullsignal_fftch3_{size_name}_newsize.svg",
-            dpi=300,
-            format="svg",
-        )
-    plt.show()
-    exit()
-    spectromgram_touch(
-        data2,
-        f"spectrogram_touchholdsetup3_signal_ca24v1_fullsignal_{size_name}_newsize",
-        size,
-        save=save,
-    )
+    # channel = data2["channel 3"]
+    # data_fft = scipy.fft.fft(channel.values, axis=0)
+    # data_fft_dB = 20 * np.log10(np.abs(data_fft))
+    # fftfreq = scipy.fft.fftfreq(len(data_fft_dB), 1 / sample_rate)
+    # data_fft_dB = np.fft.fftshift(data_fft_dB)[len(channel) // 2 :]
+    # fftfreq = np.fft.fftshift(fftfreq)[len(channel) // 2 :]
+    # fig, ax = figure_size_setup_thesis(size)
+    # # only use the positive frequencies and plot in db
+    # ax.set_xlabel("Frequency [kHz]")
+    # ax.set_ylabel("Amplitude [dB]")
+
+    # ax.set_xlim(left=0, right=10000 / 1000)
+    # ax.set_ylim(bottom=-25, top=80)
+    # ax.plot(fftfreq / 1000, data_fft_dB)
+    # if save:
+    #     fig.savefig(
+    #         f"{file_name}_fullsignal_fftch3_{size_name}_new.png",
+    #         dpi=300,
+    #         format="png",
+    #     )
+    #     fig.savefig(
+    #         f"{file_name}_fullsignal_fftch3_{size_name}_new.svg",
+    #         dpi=300,
+    #         format="svg",
+    #     )
+    # plt.show()
+    # spectromgram_touch(
+    #     data2,
+    #     f"spectrogram_touchholdsetup3_signal_ca24v1_fullsignal_{size_name}_newsize",
+    #     size,
+    #     save=save,
+    # )
 
     fig, ax = figure_size_setup_thesis(size)
-    data_long2 = data2.iloc[int(1.8744e5) : int(2.0358e5)]
+    data_long2 = data.iloc[int(1.8744e5) : int(2.0358e5)]
     if time_type == "regular":
         time_axis2 = time_axis[int(1.8744e5) : int(2.0358e5)]
     else:
         time_axis2 = np.linspace(0, len(data_long2) / sample_rate, num=len(data_long2))
     # ax.plot(time_axis2, data_long2, label=data2.columns)
-    ax.plot(time_axis2, data_long2, label="channel 1")
+    ax.plot(time_axis2 * 1000, data_long2, label="channel 1")
     # ax.plot(data2, label='v2')
     # plt.title('v2')
-    ax.set_xlabel("Time [s]")
+    ax.set_xlabel("Time (ms)")
     ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
-            f"entire_signal_v4_touch_ch1_{time_type}time_{size_name}_newsize.png",
+            f"entire_{file_name}_ch1_{time_type}time_{size_name}_new.png",
             dpi=300,
             format="png",
         )
         fig.savefig(
-            f"entire_signal_v4_touch_ch1_{time_type}time_{size_name}_newsize.svg",
+            f"entire_{file_name}_ch1_{time_type}time_{size_name}_new.svg",
             dpi=300,
             format="svg",
         )
 
-    plt.show()
-    spectromgram_touch(
-        data_long2,
-        f"spectrogram_entire_signal_v4_touch_ch1_{time_type}time_{size_name}_newsize",
-        size,
-        save=save,
-    )
+    # plt.show()
+    # spectromgram_touch(
+    #     data_long2,
+    #     f"spectrogram_entire_signal_v4_touch_ch1_{time_type}time_{size_name}_newsize",
+    #     size,
+    #     save=save,
+    # )
 
     fig, ax = figure_size_setup_thesis(size)
-    data_short2 = data2.iloc[int(188530) : int(189575)]
+    data_short2 = data.iloc[int(188530) : int(189575)]
     if time_type == "regular":
         time_axis2 = time_axis[int(188530) : int(189575)]
     else:
@@ -1839,38 +1876,38 @@ def touch_signal_plot():
             0, len(data_short2) / sample_rate, num=len(data_short2)
         )
     # ax.plot(time_axis2, data_short2, label=data2.columns)
-    ax.plot(time_axis2, data_short2, label="channel 1")
+    ax.plot(time_axis2 * 1000, data_short2, label="channel 1")
     # ax.plot(data2, label='v2')
     # plt.title('v2')
-    ax.set_xlabel("Time [s]")
+    ax.set_xlabel("Time (ms)")
     ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
-            f"start_signal_v4_touch_ch1_{time_type}time_{size_name}_newsize.png",
+            f"{file_name}_ch1_{time_type}time_{size_name}_new_short.png",
             dpi=300,
             format="png",
         )
         fig.savefig(
-            f"start_signal_v4_touch_ch1_{time_type}time_{size_name}_newsize.svg",
+            f"{file_name}_ch1_{time_type}time_{size_name}_new_short.svg",
             dpi=300,
             format="svg",
         )
 
     plt.show()
-    spectromgram_touch(
-        data_short2,
-        f"spectrogram_start_signal_v4_touch_ch1_{time_type}time_{size_name}_newsize",
-        size,
-        save=save,
-    )
+    # spectromgram_touch(
+    #     data_short2,
+    #     f"spectrogram_start_signal_v4_touch_ch1_{time_type}time_{size_name}_newsize",
+    #     size,
+    #     save=save,
+    # )
 
 
 def chirp_signal():
     sample_rate = 150e3
     save = True
     size = 0.45
-    size_name = "045"
+    size_name = str(size).replace(".", "")
     time_type = "new"
     folder = "plate20mm\\setup1_vegard\\chirp"
     file_name = "chirp_v1"
@@ -1884,15 +1921,15 @@ def chirp_signal():
     data = data.drop(columns=["channel 3", "channel 2", "wave_gen"])
     fig, ax = figure_size_setup_thesis(size)
     ax.plot(time_axis, data, label="channel 1")
-    ax.set_xlabel("Time [s]")
+    ax.set_xlabel("Time (s)")
     ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
-            f"chirp_signal_v1_fullsignal_{size_name}_newsize.png", dpi=300, format="png"
+            f"{file_name}_fullsignal_{size_name}_new.png", dpi=300, format="png"
         )
         fig.savefig(
-            f"chirp_signal_v1_fullsignal_{size_name}_newsize.svg", dpi=300, format="svg"
+            f"{file_name}_fullsignal_{size_name}_new.svg", dpi=300, format="svg"
         )
     plt.show()
     # plot the fft of the chirp signal
@@ -1909,8 +1946,8 @@ def chirp_signal():
     fftfreq = np.fft.fftshift(fftfreq)[len(channel) // 2 :]
     fig, ax = figure_size_setup_thesis(size)
     # only use the positive frequencies and plot in db
-    ax.set_xlabel("Frequency [kHz]")
-    ax.set_ylabel("Amplitude [dB]")
+    ax.set_xlabel("Frequency (kHz)")
+    ax.set_ylabel("Amplitude (dB)")
 
     ax.set_xlim(left=0, right=50000 / 1000)
     ax.set_ylim(bottom=-25, top=80)
@@ -1918,12 +1955,12 @@ def chirp_signal():
 
     if save:
         fig.savefig(
-            f"chirp_signal_v1_fullsignal_fft_{size_name}_newsize.png",
+            f"{file_name}_fullsignal_fft_{size_name}_newsize.png",
             dpi=300,
             format="png",
         )
         fig.savefig(
-            f"chirp_signal_v1_fullsignal_fft_{size_name}_newsize.svg",
+            f"{file_name}_fullsignal_fft_{size_name}_newsize.svg",
             dpi=300,
             format="svg",
         )
@@ -1932,19 +1969,19 @@ def chirp_signal():
 
 def swipe_signal():
     sample_rate = 150e3
-    save = True
-    size = 0.75
-    size_name = "075"
+    save = False
+    size = 0.45
+    size_name = str(size).replace(".", "")
     time_type = "new"
     folder = "plate20mm\\setup1_vegard\\swipe"
-    file_name = "left_right_swipe_v1"
-    file_name2 = "touch_hold_v2"
-    file_name3 = "right_left_swipe_hold_v1"
+    # file_name = "left_right_swipe_v1"
+    # file_name2 = "touch_hold_v2"
+    file_name = "right_left_swipe_hold_v2"
 
     # fig1, ax1 = figure_size_setup(0.45)
     # data = csv_to_df_thesis(folder, file_name)
     # data2 = csv_to_df_thesis(folder, file_name2)
-    data3 = csv_to_df_thesis(folder, file_name3)
+    data3 = csv_to_df_thesis(folder, file_name)
 
     time_axis = np.linspace(0, len(data3) // sample_rate, num=len(data3))
     # drop wave_gen channel
@@ -1953,28 +1990,27 @@ def swipe_signal():
     data3 = data3.drop(columns=["channel 3", "channel 2", "wave_gen"])
     fig, ax = figure_size_setup_thesis(size)
     ax.plot(time_axis, data3, label="channel 1")
-    ax.set_xlabel("Time [s]")
+    ax.set_xlabel("Time (s)")
     ax.set_ylabel(r"Accleration ($\mathrm{mm/s^2}$)")
     ax.legend()
     if save:
         fig.savefig(
-            f"entire_signal_v1_swipe_holdrl_ch1_{time_type}time_{size_name}_newsize.png",
+            f"entire_{file_name}_ch1_{time_type}time_{size_name}_new.png",
             dpi=300,
             format="png",
         )
         fig.savefig(
-            f"entire_signal_v1_swipe_holdrl_ch1_{time_type}time_{size_name}_newsize.svg",
+            f"entire_{file_name}_ch1_{time_type}time_{size_name}_new.svg",
             dpi=300,
             format="svg",
         )
     plt.show()
-    exit()
     # spectromgram_touch(data, f"spectrogram_touch_hold_v1_fullsignal_{size_name}", size)
     # spectromgram_touch(data2, f"spectrogram_touch_hold_v2_fullsignal_{size_name}", size)
     spectromgram_touch(
         data3, f"spectrogram_touch_hold_v3_fullsignal_{size_name}", size, save=save
     )
-
+    exit()
     fig, ax = figure_size_setup_thesis(size)
     data_long3 = data3.iloc[int(1.7868e5) : int(1.9359e5)]
     if time_type == "regular":
@@ -2926,8 +2962,13 @@ def gen_pulse_dispersion(size=0.75, save=False, distance=0.1):
     shifted_pulse = np.real(shifted_pulse)
 
     fig, axs = figure_size_setup_thesis(size)
-    axs.plot(t_axis * 1000, pulse_padded)
-    axs.plot(t_axis * 1000, shifted_pulse)
+    t_axis_ms = t_axis * 1000
+    # Only interested in the first 5 ms
+    t_axis_ms = t_axis_ms[t_axis_ms < 5]
+    pulse_padded_short = pulse_padded[: len(t_axis_ms)]
+    shifted_pulse_short = shifted_pulse[: len(t_axis_ms)]
+    axs.plot(t_axis_ms, pulse_padded_short)
+    axs.plot(t_axis_ms, shifted_pulse_short)
     axs.set_ylabel("Amplitude")
     axs.set_xlabel("Time (ms)")
     # axs.set_title("Shifted Pulse")
@@ -2953,6 +2994,10 @@ def gen_pulse_dispersion(size=0.75, save=False, distance=0.1):
     peak_value = envelope[peak_index]
 
     fig, axs = figure_size_setup_thesis(size)
+    # only interested in the first 3 m
+    d_step = d_step[d_step < int(distance + 3)]
+    out_signal_real = out_signal_real[: len(d_step)]
+    envelope = envelope[: len(d_step)]
     axs.plot(d_step, out_signal_real, label="Compensated signal")
     axs.plot(d_step, envelope, label="Envelope")
     # annotate and mark the maximum peak of the envelope with the distance with a dot and the distance with two decimals
@@ -3010,6 +3055,7 @@ def gen_pulse_dispersion(size=0.75, save=False, distance=0.1):
     peak_index = np.argmax(envelope)
     d_step[peak_index]
     fig, axs = figure_size_setup_thesis(size)
+
     axs.plot(d_step, signal_corrected, label="Corrected signal")
     # plot envelope
     axs.plot(d_step, envelope, label="Envelope")
@@ -3431,6 +3477,7 @@ def COMSOL_dispersion(
     A0_t_freq = A["A0 f (kHz)"] * 1000
     A0_group = A["A0 Energy velocity (m/ms)"] * 1000
     A0_wavenumber = A["A0 Wavenumber (rad/mm)"]
+    position_str = str(position).replace(".", "_")
     (
         mean_velocities_A0,
         mean_velocities_S0,
@@ -3460,11 +3507,11 @@ def COMSOL_dispersion(
 
     # f = f * 2 * np.pi
     # setting up comsol file
-    # top_data, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(9)
-    # bot_data, x_pos_bot, y_pos_bot, z_pos_bot, time_axis_bot = get_comsol_data(10)
+    top_data, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(9)
+    bot_data, x_pos_bot, y_pos_bot, z_pos_bot, time_axis_bot = get_comsol_data(10)
 
-    top_data, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(11)
-    bot_data, x_pos_bot, y_pos_bot, z_pos_bot, time_axis_bot = get_comsol_data(12)
+    # top_data, x_pos_top, y_pos_top, z_pos_top, time_axis_top = get_comsol_data(11)
+    # bot_data, x_pos_bot, y_pos_bot, z_pos_bot, time_axis_bot = get_comsol_data(12)
     distance = np.sqrt(
         (x_pos_top[position] - x_pos_top[0]) ** 2
         + (y_pos_top[position] - y_pos_top[0]) ** 2
@@ -3487,17 +3534,21 @@ def COMSOL_dispersion(
     fig, axs = figure_size_setup_thesis(size)
     axs.plot(time_axis_ms, top_data[0], label="Source pulse")
     axs.plot(time_axis_ms, A0_pos, label=f"Pulse at {round(distance,2)} m")
-    axs.set_ylabel("Amplitude")
+    axs.set_ylabel(r"Acceleration (m/s$^2$)")
     axs.set_xlabel("Time (ms)")
     axs.legend()
     # axs.set_title("Shifted Pulse")
 
     if save:
         fig.savefig(
-            f"COMSOL_top_A0_{distance_str}_{size_str}_3khz.png", dpi=300, format="png"
+            f"COMSOL_top_A0_{distance_str}_{size_str}_15hz_pos{position_str}.png",
+            dpi=300,
+            format="png",
         )
         fig.savefig(
-            f"COMSOL_top_A0_{distance_str}_{size_str}_3khz.svg", dpi=300, format="svg"
+            f"COMSOL_top_A0_{distance_str}_{size_str}_15hz_pos{position_str}.svg",
+            dpi=300,
+            format="svg",
         )
     plt.show()
 
@@ -3526,14 +3577,16 @@ def COMSOL_dispersion(
     print(f"threshold distance: {threshold_distance}, true distance: {distance}")
     estimated_distance_str = str(round(threshold_distance, 4)).replace(".", "_")
     if reflections:
-        distances, arrival_times = draw_simulated_plate(velocity=max(v_gr))
+        distances, arrival_times = draw_simulated_plate(
+            position=position, velocity=max(v_gr)
+        )
     fig, axs = figure_size_setup_thesis(size)
     axs.plot(d_step, out_signal_real, label="Compensated signal")
     axs.plot(d_step, envelope, label="Envelope")
     # plot the vline at the true distance
     axs.axvline(x=distance, color="k", linestyle="--", label="True distance")
     axs.axvline(
-        x=threshold_distance, color="r", linestyle="--", label="Estimated distance"
+        x=threshold_distance, color="b", linestyle="--", label="Estimated distance"
     )
     # annotate and mark the maximum peak of the envelope with the distance with a dot and the distance with two decimals
     # axs.plot(
@@ -3549,30 +3602,57 @@ def COMSOL_dispersion(
 
     # axs.set_title("Dispersion Compensated Pulse")
     # axs.legend(["Compensated", "Original"])
-    if reflections:
-        n_vlines = 4
-        for i in range(1, n_vlines + 1):
-            axs.axvline(
-                x=distances[i],
-                color="k",
-                linestyle="--",
-                label=f"Simulated reflection {i+1}",
-            )
+
     axs.legend()
     if save:
         fig.savefig(
-            f"dispersion_compensated_pulse_3khz_COMSOL_top_A0{distance_str}_{size_str}_estimated_{estimated_distance_str}_n_vlines_{n_vlines}.png",
+            f"dispersion_compensated_pulse_15khz_COMSOL_top_A0{distance_str}_{size_str}_estimated_{estimated_distance_str}_n_vlines_{n_vlines}_pos{position_str}.png",
             dpi=300,
             format="png",
         )
         fig.savefig(
-            f"dispersion_compensated_pulse_3khz_COMSOL_top_A0{distance_str}_{size_str}_estimated_{estimated_distance_str}_n_vlines_{n_vlines}.svg",
+            f"dispersion_compensated_pulse_15khz_COMSOL_top_A0{distance_str}_{size_str}_estimated_{estimated_distance_str}_n_vlines_{n_vlines}_pos{position_str}.svg",
             dpi=300,
             format="svg",
         )
     print("showing figure")
     plt.show()
+    if reflections:
+        fig, axs = figure_size_setup_thesis(size)
+        axs.plot(d_step, out_signal_real, label="Compensated signal")
+        axs.plot(d_step, envelope, label="Envelope")
+        axs.set_ylabel("Amplitude")
+        axs.set_xlabel("Distance (m)")
+        # plot the vline at the true distance
+        axs.axvline(x=distance, color="k", linestyle="--", label="True distance")
 
+        n_vlines = 4
+        for i in range(1, n_vlines + 1):
+            if i == 1:  # Add label only for the first line
+                axs.axvline(
+                    x=distances[i],
+                    color="r",
+                    linestyle="--",
+                    label="Reflections",
+                )
+            else:  # Plot lines without labels for the rest
+                axs.axvline(
+                    x=distances[i],
+                    color="r",
+                    linestyle="--",
+                )
+        axs.legend()
+        if save:
+            fig.savefig(
+                f"dispersion_compensated_pulse_15hz_COMSOL_top_A0{distance_str}_{size_str}_reflections_n_vlines_{n_vlines}_pos{position_str}.png",
+                dpi=300,
+                format="png",
+            )
+            fig.savefig(
+                f"dispersion_compensated_pulse_15khz_COMSOL_top_A0{distance_str}_{size_str}_reflections_n_vlines_{n_vlines}_pos{position_str}.svg",
+                dpi=300,
+            )
+        plt.show()
     # print(f"peak distance: {peak_distance}")
     # print(f"true distance: {distance}")
     # error_distance = peak_distance - distance
@@ -3653,9 +3733,17 @@ def REAL_dispersion(
     # A0_group = A0_group[mask]
     sample_rate = 150e3
     size_name = str(size).replace(".", "_")
-    folder = "plate20mm\\setup4_vegard\\touch"
+    if distance == 0.5 or distance == 0.75:
+        folder = "plate20mm\\setup4_vegard\\touch"
+        file_name = "touch_ca2_4_v1"
+    elif distance == 0.2:
+        folder = "plate20mm\\setup2_vegard\\touch"
+        file_name = "touch_hold_v2"
+    else:
+        print("setup not found")
+        exit()
     # file_name = "touch_v1"
-    file_name = "touch_ca2_4_v1"
+    # file_name = "touch_ca2_4_v1"
     # file_name3 = "touch_v5"
 
     # fig1, ax1 = figure_size_setup(0.45)
@@ -3670,19 +3758,35 @@ def REAL_dispersion(
     data = data.drop(columns=["wave_gen"])
     # data3 = csv_to_df_thesis(folder, file_name3)
     data_start = data["channel 1"]
-    data_top_50 = data["channel 2"]
-    # data_bot_10 = data["channel 3"]
-    data_top_75 = data["channel 3"]
+    if distance == 0.5 or distance == 0.75:
+        data_ch2 = data["channel 2"]  # top 50 cm
+        # data_bot_10 = data["channel 3"]
+        data_ch3 = data["channel 3"]  # top 75 cm
+        dist1 = "50 cm"
+        dist2 = "75 cm"
+    elif distance == 0.2:
+        data_ch2 = data["channel 2"]  # top 20 cm
+        data_ch3 = data["channel 3"]  # bot 20 cm
+        dist1 = "20 cm"
+        dist2 = "20 cm"
     time_axis = np.linspace(0, len(data) // sample_rate, num=len(data))
     print(f"max time axis: {max(time_axis)}")
     plt.plot(time_axis, data_start, label="start")
-    plt.plot(time_axis, data_top_50, label="top 50 cm")
-    plt.plot(time_axis, data_top_75, label="top 75 cm")
+    plt.plot(time_axis, data_ch2, label=dist1)
+    plt.plot(time_axis, data_ch3, label=dist2)
     plt.legend()
     plt.show()
-
+    if distance == 0.2:
+        threshold = 0.06
+        setup = 2
+    elif distance == 0.5:
+        threshold = 0.065
+        setup = 4
+    elif distance == 0.75:
+        threshold = 0.08
+        setup = 4
     # start point is when data_start is above 0.005
-    start_point = get_first_index_above_threshold(data_start, 0.007)
+    start_point = get_first_index_above_threshold(data_start, threshold)
     seconds = 0.008
     # create new time axis which starts in 0, from start point index
     time_axis_new = (
@@ -3692,18 +3796,28 @@ def REAL_dispersion(
     print(f"max time axis new: {max(time_axis_new)}")
     # remove the data before the start point from all the data
     data_start = data_start[start_point : start_point + int(seconds * sample_rate)]
-    data_top_50 = data_top_50[start_point : start_point + int(seconds * sample_rate)]
-    data_top_75 = data_top_75[start_point : start_point + int(seconds * sample_rate)]
+    data_ch2 = data_ch2[start_point : start_point + int(seconds * sample_rate)]
+    data_ch3 = data_ch3[start_point : start_point + int(seconds * sample_rate)]
     # plot the data
     # plt.plot(time_axis_new, data_start)
-    plt.plot(time_axis_new, data_top_50)
-    plt.plot(time_axis_new, data_top_75)
+    plt.plot(time_axis_new, data_ch2)
+    plt.plot(time_axis_new, data_ch3)
     plt.show()
-    exit()
     if distance == 0.5:
-        A0_pos = data_top_50
+        A0_pos = data_ch2
+        threshold_disp = 0.0016
+        sensorn = 1
+        min_d = 0.4
     elif distance == 0.75:
-        A0_pos = data_top_75
+        A0_pos = data_ch3
+        threshold_disp = 0.0016
+        sensorn = 2
+        min_d = 0.5
+    elif distance == 0.2:
+        A0_pos = data_ch2
+        min_d = 0.2
+        threshold_disp = 0.0016
+        sensorn = 1
     # A0_pos = (data_top_10 - data_bot_10) / 2
     # S0_pos = (data_top_10 + data_bot_10) / 2
     # A0_pos = data_top_50
@@ -3752,12 +3866,12 @@ def REAL_dispersion(
 
     if save:
         fig.savefig(
-            f"REAL_PLATE_A0_setup4_touch_{distance_str}_{size_str}.png",
+            f"REAL_PLATE_A0_{file_name}_{distance_str}_{size_str}.png",
             dpi=300,
             format="png",
         )
         fig.savefig(
-            f"REAL_PLATE_A0_setup4_touch_{distance_str}_{size_str}.svg",
+            f"REAL_PLATE_A0_{file_name}_{distance_str}_{size_str}.svg",
             dpi=300,
             format="svg",
         )
@@ -3780,9 +3894,12 @@ def REAL_dispersion(
     peak_value = envelope[peak_index]
 
     # find the index where the envelope crosses a threshold value
-    threshold = 0.04
-    ignore_index = np.where(d_step > 0.4)[0][0]
-    threshold_index = np.where(envelope[ignore_index:] > threshold)[0][0] + ignore_index
+
+    ignore_index = np.where(d_step > min_d)[0][0]
+    threshold_disp = 0.0016
+    threshold_index = (
+        np.where(envelope[ignore_index:] > threshold_disp)[0][0] + ignore_index
+    )
     # ignore distance values below 0.4m
 
     print(f"threshold index: {threshold_index}")
@@ -3790,7 +3907,9 @@ def REAL_dispersion(
     print(f"threshold distance: {threshold_distance}, true distance: {distance}")
     estimated_distance_str = str(round(threshold_distance, 4)).replace(".", "_")
     if reflections:
-        distances, arrival_times = draw_simulated_plate(velocity=max(v_gr))
+        distances, arrival_times = draw_real_plate(
+            velocity=max(v_gr), setupn=setup, sensor=sensorn
+        )
     # find index of d_step which is above 2m
     # index_above_25m = np.where(d_step > 25)[0][0]
     index_above_25m = -1
@@ -3803,9 +3922,9 @@ def REAL_dispersion(
     axs.plot(d_step[:index_above_25m], envelope[:index_above_25m], label="Envelope")
     # plot the vline at the true distance
     axs.axvline(x=distance, color="k", linestyle="--", label="True distance")
-    # axs.axvline(
-    #     x=threshold_distance, color="r", linestyle="--", label="Estimated distance"
-    # )
+    axs.axvline(
+        x=threshold_distance, color="b", linestyle="--", label="Estimated distance"
+    )
     # annotate and mark the maximum peak of the envelope with the distance with a dot and the distance with two decimals
     # axs.plot(
     #     d_step[peak_index],
@@ -3820,29 +3939,65 @@ def REAL_dispersion(
 
     # axs.set_title("Dispersion Compensated Pulse")
     # axs.legend(["Compensated", "Original"])
-    if reflections:
-        n_vlines = 4
-        for i in range(1, n_vlines + 1):
-            axs.axvline(
-                x=distances[i],
-                color="k",
-                linestyle="--",
-                label=f"Simulated reflection {i+1}",
-            )
+
     axs.legend()
     if save:
         fig.savefig(
-            f"dispersion_compensated_pulse_realplate_top_A0_setup4_touch{distance_str}_{size_str}_estimated_{estimated_distance_str}_short.png",
+            f"dispersion_compensated_pulse_realplate_top_A0_{file_name}_{distance_str}_{size_str}_estimated_{estimated_distance_str}_short.png",
             dpi=300,
             format="png",
         )
         fig.savefig(
-            f"dispersion_compensated_pulse_realplate_top_A0_setup4_touch{distance_str}_{size_str}_estimated_{estimated_distance_str}_short.svg",
+            f"dispersion_compensated_pulse_realplate_top_A0_{file_name}_{distance_str}_{size_str}_estimated_{estimated_distance_str}_short.svg",
             dpi=300,
             format="svg",
         )
 
     plt.show()
+
+    if reflections:
+        fig, axs = figure_size_setup_thesis(size)
+        axs.plot(
+            d_step[:index_above_25m],
+            out_signal_real[:index_above_25m],
+            label="Compensated signal",
+        )
+        axs.plot(d_step[:index_above_25m], envelope[:index_above_25m], label="Envelope")
+        # plot the vline at the true distance
+        axs.axvline(x=distance, color="k", linestyle="--", label="True distance")
+        axs.axvline(
+            x=threshold_distance, color="b", linestyle="--", label="Estimated distance"
+        )
+        n_vlines = 4
+        for i in range(1, n_vlines + 1):
+            if i == 1:  # Add label only for the first line
+                axs.axvline(
+                    x=distances[i],
+                    color="r",
+                    linestyle="--",
+                    label="Reflections",
+                )
+            else:  # Plot lines without labels for the rest
+                axs.axvline(
+                    x=distances[i],
+                    color="r",
+                    linestyle="--",
+                )
+        axs.set_ylabel("Amplitude")
+        axs.set_xlabel("Distance (m)")
+        axs.legend()
+        if save:
+            fig.savefig(
+                f"dispersion_compensated_pulse_realplate_top_A0_{file_name}_{distance_str}_{size_str}_reflections_n_vlines_{n_vlines}_short.png",
+                dpi=300,
+                format="png",
+            )
+            fig.savefig(
+                f"dispersion_compensated_pulse_realplate_top_A0_{file_name}_{distance_str}_{size_str}_reflections_n_vlines_{n_vlines}_short.svg",
+                dpi=300,
+                format="svg",
+            )
+        plt.show()
 
 
 def REAL_wavemodes(distance=0.2, size=0.75, save=False, chirp=False):

@@ -133,6 +133,60 @@ class Plate:
             plt.gca().add_patch(line_y)
 
 
+class RealPlate:
+    """Represents the table and its edges."""
+
+    """Table dimensions"""
+    LENGTH = 0.7  # m
+    WIDTH = 1  # m
+    """Enum for representing edges"""
+    TOP_EDGE = 1
+    RIGHT_EDGE = 2
+    BOTTOM_EDGE = 3
+    LEFT_EDGE = 4
+    """Colour settings for drawing"""
+    SURFACE_COLOUR = "#f8f8f8"
+    LINE_COLOUR = "lightgrey"
+
+    def draw(self):
+        "Draw the table with the real dimensions, including the lines."
+        table = patches.Rectangle(
+            (0, 0),
+            self.LENGTH,
+            self.WIDTH,
+            fc=self.SURFACE_COLOUR,
+            ec=self.LINE_COLOUR,
+            lw=2,
+            zorder=0,
+        )
+
+        plt.gca().add_patch(table)
+
+        for i in range(1, 3):
+            line_x = patches.Rectangle(
+                (i / 3 * self.LENGTH, 0),
+                0,
+                self.WIDTH,
+                linewidth=0.75,
+                linestyle="--",
+                edgecolor=self.LINE_COLOUR,
+                facecolor="none",
+                zorder=1,
+            )
+            line_y = patches.Rectangle(
+                (0, i / 3 * self.WIDTH),
+                self.LENGTH,
+                0,
+                linewidth=0.75,
+                linestyle="--",
+                edgecolor=self.LINE_COLOUR,
+                facecolor="none",
+                zorder=1,
+            )
+            plt.gca().add_patch(line_x)
+            plt.gca().add_patch(line_y)
+
+
 class SimulatedPlate:
     """Represents the table and its edges."""
 
@@ -147,8 +201,6 @@ class SimulatedPlate:
     """Colour settings for drawing"""
     SURFACE_COLOUR = "#f8f8f8"
     LINE_COLOUR = "lightgrey"
-
-
 
     def draw(self):
         "Draw the table with the real dimensions, including the lines."
